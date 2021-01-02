@@ -1,10 +1,8 @@
 ﻿using GalaxyCheck.ExampleSpaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace GalaxyCheck.Tests.ExampleSpaces
+namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
 {
     public static class ExampleSpaceExtensions
     {

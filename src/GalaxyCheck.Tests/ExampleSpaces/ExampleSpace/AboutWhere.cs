@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
+using ES = GalaxyCheck.ExampleSpaces;
 
-namespace GalaxyCheck.Tests.ExampleSpaces
+namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutWhere
     {
@@ -16,7 +17,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces
             Func<object, int> measure,
             Func<object, bool> pred)
         {
-            var sourceExampleSpace = ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var sourceExampleSpace = ES.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             // Limitation of either the FsCheck function generator, or two generated functions interacting with each
             // other, is that it can converge on a value that never passes the predicate, which causes a crash (will

@@ -3,8 +3,9 @@ using FsCheck.Xunit;
 using GalaxyCheck.ExampleSpaces;
 using System;
 using Xunit;
+using ES = GalaxyCheck.ExampleSpaces;
 
-namespace GalaxyCheck.Tests.ExampleSpaces
+namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutAny
     {
@@ -20,7 +21,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces
 
             Action test = () =>
             {
-                var sourceExampleSpace = ExampleSpace.Singleton(value).Where(pred);
+                var sourceExampleSpace = ES.ExampleSpace.Singleton(value).Where(pred);
 
                 Assert.True(sourceExampleSpace.Any());
             };
@@ -35,7 +36,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces
 
             Action test = () =>
             {
-                var sourceExampleSpace = ExampleSpace.Singleton(value).Where(pred);
+                var sourceExampleSpace = ES.ExampleSpace.Singleton(value).Where(pred);
 
                 Assert.False(sourceExampleSpace.Any());
             };
