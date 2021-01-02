@@ -1,6 +1,5 @@
 ﻿using FsCheck;
 using FsCheck.Xunit;
-using GalaxyCheck.ExampleSpaces;
 using System;
 using Xunit;
 using ES = GalaxyCheck.ExampleSpaces;
