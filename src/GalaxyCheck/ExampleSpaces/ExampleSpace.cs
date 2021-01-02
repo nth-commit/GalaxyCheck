@@ -27,7 +27,6 @@ namespace GalaxyCheck.ExampleSpaces
             Value = value;
             Distance = distance;
         }
-
     }
 
     /// <summary>
