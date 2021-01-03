@@ -36,7 +36,7 @@ This metric can be used as a mechanism to solve for the shrinking challenge ["Le
 
 The metric also gives some nice introspection into how generators behave, for testing purposes.
 
-The RNG model in GalaxyCheck should therefore behave like a single linked-list. The seed that an RNG uses is not only used to generate values from that RNG, but also the next RNG. For contrast, in other frameworks, to ensure distribution of values, the RNG is split and then one part of it is handed off to a generator, whether or not the generator needs to consume that randomness or not. The other part is used to seed the next RNG.
+The RNG model in GalaxyCheck should therefore behave like a single linked-list. The seed that an RNG uses is not only used to generate values from that RNG, but also to create the next RNG. For contrast, in other frameworks, to ensure distribution of values, the RNG is split and then one part of it is handed off to a generator, whether or not the generator needs to consume that randomness or not. The other part is used to seed the next RNG.
 
 2021-01-03
 
@@ -49,3 +49,9 @@ However, it's a lot of effort to use this function. The "more public" API is one
 It's also nice to test the public API, and means we probably won't need to test the aggregation functions directly.
 
 2021-01-03
+
+## Test generators with a hard-coded seed
+
+Most of the generator behaviour is itself tested through properties.
+
+It becomes tricky when you have to manage two levels of randomness. That's two levels of replication required when a test fails, one to control the test itself, and one to control the generator-under-test. We still get good variation in our tests if the other parameters are injected through properties.

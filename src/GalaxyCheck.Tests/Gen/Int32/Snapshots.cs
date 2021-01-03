@@ -4,13 +4,12 @@ using static GalaxyCheck.Tests.TestUtils;
 
 namespace GalaxyCheck.Tests.Gen.Int32
 {
-    public class AboutProductionOfValues
+    public class Snapshots
     {
         [Fact]
         public void Example() => SnapshotGenValues(G.Int32());
 
         [Fact]
-        // TODO: Constrain these integers to a reasonable level to witness the tree in the future.
-        public void ExampleOfExampleSpaces() => SnapshotGenExampleSpaces(G.Int32());
+        public void ExampleOfExampleSpaces() => SnapshotGenExampleSpaces(G.Int32().Between(-10, 10));
     }
 }
