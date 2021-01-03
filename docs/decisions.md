@@ -4,9 +4,9 @@
 
 Space puns, mostly. The meat of a property-based testing framework is centered around exploring example _spaces_ (not problem spaces, as an example is not necessarily a counterexample).
 
-Also, I feel there's something magical/existential living inside of a good property-based testing framework, which also really encroaches on the essence of code at the same time. Like, when you write a function (or a module or an appplication), you are spinning up a little universe with some basic rules that apply. These rules may interact in weird ways that are measureable, but not encoded into the universe. Similarly, it's unlikely that if we look close enough at the universe, that we will read C = 299,792,458ms, but yet, that rule exists.
+Also, I feel there's something magical/existential living inside of a good property-based testing framework, which also really encroaches on the essence of code at the same time. Like, when you write a function (or a module or an application), you are spinning up a little universe with some basic rules that apply. These rules may interact in weird ways that are measurable, but not encoded into the universe. Similarly, it's unlikely that if we look close enough at the universe, that we will read C = 299,792,458ms, but yet, that rule exists.
 
-A property-based testing framework can tell us factually about the universes we create. It can also tell us the rules of a chaotic universes that already exist.
+A property-based testing framework can tell us factually about the universes we create. It can also tell us the rules of chaotic universes that already exist.
 
 2021-01-01
 
@@ -16,7 +16,7 @@ From prior experience, shrinking after initialisation of an example space is har
 
 However, we can also achieve the same result by building the new shrinks into the new example space as we create it.
 
-This is a less useful than applying any shrink function to any generator at any point in time, and be able to determine if the shrink function should happen before or after the existing shrinks. But, it probably covers most use-cases, and (whilst complex), simplifies things a lot.
+This is less useful than applying any shrink function to any generator at any point in time, and being able to determine if the shrink function should happen before or after the existing shrinks. But, it probably covers most use-cases, and (whilst complex), simplifies things a lot.
 
 2021-01-01
 
@@ -27,3 +27,15 @@ FsCheck just seems easier to use with the `[Property]` attribute. However, I'm n
 FsCheck is good for now, for terseness. But will experiment with Hedgehog further down the line. GalaxyCheck will be used when stable enough.
 
 2021-01-01
+
+## Randomness is treated with prudence, and its consumption measured
+
+With all generators, we should be careful to use randomness as sparingly and as deliberately as possible. Not necessarily because of efficiency, although that might be a factor, but because of simplicity. Each iteration of a generator should announce what RNG it was seeded with (for repetition purposes), but also what the RNG the next iteration should use. For a primitive generator like `Gen.Constant`, the initial RNG and the next RNG should be equivalent, denoting no randomness was consumed. For something like `Gen.Int32`, the RNG should only progress by one step for an iteration, denoting that one random integer was generated in the process.
+
+This metric can be used as a mechanism to solve for the shrinking challenge ["Length List"](https://github.com/jlink/shrinking-challenge/blob/main/challenges/lengthlist.md) because it allows us to analyse how much randomness was consumed. In our bound shrinks, when we notice the randomness consumed lessens, we can try different permutations of the RNG that fit into the original consumed space. For example, if the original instance consumed randomness twice, and the shrunk consumed randomness once, we can generate a second shrink by skipping the first RNG.
+
+The metric also gives some nice introspection into how generators behave, for testing purposes.
+
+The RNG model in GalaxyCheck should therefore behave like a single linked-list. The seed that an RNG uses is not only used to generate values from that RNG, but also the next RNG. For contrast, in other frameworks, to ensure distribution of values, the RNG is split and then one part of it is handed off to a generator, whether or not the generator needs to consume that randomness or not. The other part is used to seed the next RNG.
+
+2021-01-03
