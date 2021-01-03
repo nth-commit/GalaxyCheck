@@ -33,15 +33,19 @@ namespace GalaxyCheck.Abstractions
 
     public sealed record GenInstance<T>(IExampleSpace<T> ExampleSpace) : GenIteration<T>;
 
+    public sealed record GenError<T>(string GenName, string Message) : GenIteration<T>;
+
     public static class GenIterationExtensions
     {
         public static TResult Match<T, TResult>(
             this GenIteration<T> iteration,
-            Func<GenInstance<T>, TResult> onInstance)
+            Func<GenInstance<T>, TResult> onInstance,
+            Func<GenError<T>, TResult> onError)
         {
             return iteration switch
             {
                 GenInstance<T> instance => onInstance(instance),
+                GenError<T> error => onError(error),
                 _ => throw new NotSupportedException()
             };
         }

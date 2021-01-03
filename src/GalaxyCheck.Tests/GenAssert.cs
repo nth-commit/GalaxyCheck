@@ -13,5 +13,15 @@ namespace GalaxyCheck.Tests
 
             Assert.All(Enumerable.Zip(expectedSample, actualSample), (x) => Assert.Equal(x.First, x.Second));
         }
+
+        public static void Errors<T>(IGen<T> gen, string errorMessage, int seed)
+        {
+            var ex = Assert.Throws<GenErrorException>(() =>
+            {
+                gen.Sample(opts => opts.WithSeed(seed));
+            });
+
+            Assert.Equal(errorMessage, ex.Message);
+        }
     }
 }

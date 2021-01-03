@@ -55,3 +55,21 @@ It's also nice to test the public API, and means we probably won't need to test 
 Most of the generator behaviour is itself tested through properties.
 
 It becomes tricky when you have to manage two levels of randomness. That's two levels of replication required when a test fails, one to control the test itself, and one to control the generator-under-test. We still get good variation in our tests if the other parameters are injected through properties.
+
+2021-01-03
+
+## Generators should never throw
+
+Instead, they should produce an error token, so that the feedback can bubble up to the consumers in the same way as if a generator was exhausted.
+
+An example of a case where we might consider crashing, is if the given origin of a range is outside it's bounds. However, we cannot presume all the ways in which consumers might construct generators. For example, a consumer might be generating random ranges and binding those to a random integer. It is feasible that, due to an error in their generator, the origin of their range is outside the range's bounds. For the consumer's perspective, this error is equatable to say - trying to filter with an impossible predicate - so they should receive feedback in the same way.
+
+This means we need to place an error signal into the stream, so that the consumer of that stream can handle any errors in a consistent manner.
+
+2021-01-03
+
+## Generators should never terminate
+
+It's a feature that generators produce streams rather than single values. It enables infinite loop handling (we can write discard tokens into the stream, then the consumer can give up after seeing a certain density of discards). Because a generator needs to produce an arbitrary amount of iterations whenever it's called, then consumers should be prepared for excruciatingly large amounts of iterations. To ensure they can handle excruciatingly large streams, then we should always be generating infinite streams. For the stream aggregating code to be regular, then streams should always be infinite. This includes when streams terminate by error - rather than terminating they should repeat the error token.
+
+2021-01-03

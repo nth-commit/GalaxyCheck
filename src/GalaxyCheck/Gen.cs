@@ -26,7 +26,7 @@ namespace GalaxyCheck
         /// the produced integers further.
         /// </summary>
         /// <returns></returns>
-        public static IIntegerGenBuilder Int32() => IntegerGenBuilder.Create();
+        public static IInt32GenBuilder Int32() => Int32GenBuilder.Create();
 
         /// <summary>
         /// Enumerates a generator to produce a sample of it's values.

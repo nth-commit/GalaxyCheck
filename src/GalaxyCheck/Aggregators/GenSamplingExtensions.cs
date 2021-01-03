@@ -73,7 +73,8 @@ namespace GalaxyCheck.Aggregators
             foreach (var iteration in gen.Run(rng))
             {
                 var valueOption = iteration.Match<T, Option<GenInstance<T>>>(
-                    instance => new Option.Some<GenInstance<T>>(instance));
+                    instance => new Option.Some<GenInstance<T>>(instance),
+                    error => throw new GenErrorException(error.GenName, error.Message));
 
                 if (valueOption is Option.Some<GenInstance<T>> valueSome)
                 {
