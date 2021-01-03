@@ -1,12 +1,11 @@
 ﻿using FsCheck;
 using FsCheck.Xunit;
-using Snapshooter;
-using Snapshooter.Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using R = GalaxyCheck.Random;
+using static GalaxyCheck.Tests.TestUtils;
 
 namespace GalaxyCheck.Tests.Random.Rng
 {
@@ -46,11 +45,8 @@ namespace GalaxyCheck.Tests.Random.Rng
             Assert.Equal(value, rng.Value(value, value));
         }
 
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void Examples(int seed)
+        [Fact]
+        public void Examples()
         {
             var ranges = new List<(int min, int max)>
             {
@@ -65,13 +61,14 @@ namespace GalaxyCheck.Tests.Random.Rng
                 (-1000, 1000)
             };
 
-            var rng = R.Rng.Create(seed);
+            SnapshotWithSeed(seed =>
+            {
+                var rng = R.Rng.Create(seed);
 
-            Snapshot.Match(
-                ranges
+                return ranges
                     .Select((range) => new { range.min, range.max, value = rng.Value(range.min, range.max) })
-                    .ToList(),
-                SnapshotNameExtension.Create(seed));
+                    .ToList();
+            });
         }
     }
 }

@@ -1,13 +1,12 @@
 ﻿using FsCheck;
 using FsCheck.Xunit;
 using GalaxyCheck.Abstractions;
-using Snapshooter;
-using Snapshooter.Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using R = GalaxyCheck.Random;
+using static GalaxyCheck.Tests.TestUtils;
 
 namespace GalaxyCheck.Tests.Random.Rng
 {
@@ -36,20 +35,29 @@ namespace GalaxyCheck.Tests.Random.Rng
             return test.When(nextCount >= 0);
         }
 
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        public void Example(int seed)
+        [Fact]
+        public void Examples()
         {
-            var rngs = Enumerable
-                .Range(0, 10)
-                .Aggregate<int, IEnumerable<IRng>>(
-                    new[] { R.Rng.Create(seed) },
-                    (acc, _) => Enumerable.Append(acc, acc.Last().Next()))
-                .ToArray();
+            var ranges = new List<(int min, int max)>
+            {
+                (0, 10),
+                (0, 100),
+                (0, 1000),
+                (-10, 0),
+                (-100, 0),
+                (-1000, 0),
+                (-10, 10),
+                (-100, 100),
+                (-1000, 1000)
+            };
 
-            Snapshot.Match(rngs, SnapshotNameExtension.Create(seed));
+            SnapshotWithSeed(seed =>
+                Enumerable
+                    .Range(0, 10)
+                    .Aggregate<int, IEnumerable<IRng>>(
+                        new[] { R.Rng.Create(seed) },
+                        (acc, _) => Enumerable.Append(acc, acc.Last().Next()))
+                    .ToArray());
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck.Abstractions;
 using GalaxyCheck.Random;
 using GalaxyCheck.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,13 +9,21 @@ namespace GalaxyCheck.Runners
 {
     public record SampleOptions
     {
-        public int Iterations => 100;
+        public static SampleOptions Create() => new SampleOptions(iterations: 100, seed: null);
 
-        public int? Seed => null;
+        public int Iterations { get; init; }
 
-        public SampleOptions()
+        public int? Seed { get; init; }
+
+        private SampleOptions(int iterations, int? seed)
         {
+            Iterations = iterations;
+            Seed = seed;
         }
+
+        public SampleOptions WithSeed(int seed) => new SampleOptions(
+            iterations: Iterations,
+            seed: seed);
     }
 
     public static class GenSampleWithMetricsExtensions
@@ -23,9 +32,12 @@ namespace GalaxyCheck.Runners
             List<T> Values,
             int RandomConsumptionCount);
 
-        public static SampleWithMetricsResult<T> SampleWithMetrics<T>(this IGen<T> gen)
+        public static SampleWithMetricsResult<T> SampleWithMetrics<T>(
+            this IGen<T> gen,
+            Func<SampleOptions, SampleOptions>? configure = null)
         {
-            var options = new SampleOptions();
+            var defaultOptions = SampleOptions.Create();
+            var options = configure == null ? defaultOptions : configure.Invoke(defaultOptions);
             var rng = options.Seed == null ? Rng.Spawn() : Rng.Create(options.Seed.Value);
 
             var instances = Sample(gen, rng).Take(options.Iterations).ToList();
