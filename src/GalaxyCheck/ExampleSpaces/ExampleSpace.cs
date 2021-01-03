@@ -1,41 +1,17 @@
-﻿using System;
+﻿using GalaxyCheck.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace GalaxyCheck.ExampleSpaces
 {
     /// <summary>
-    /// An example that lives inside an example space.
-    /// </summary>
-    /// <typeparam name="T">The type of the example's value.</typeparam>
-    public record Example<T>
-    {
-        /// <summary>
-        /// The example value.
-        /// </summary>
-        public T Value { get; init; }
-
-        /// <summary>
-        /// A metric which indicates how far the value is away from the smallest possible value. The metric is
-        /// originally a proportion out of 100, but it composes when example spaces are composed. Therefore, it's
-        /// possible for the distance metric to be arbitrarily high.
-        /// </summary>
-        public int Distance { get; init; }
-
-        public Example(T value, int distance)
-        {
-            Value = value;
-            Distance = distance;
-        }
-    }
-
-    /// <summary>
     /// Represents an abstract space of examples. An example space generally has an original or root value, which can
     /// be explored recursively, and the space itself is a tree-like structure to enable efficient exploration of the
     /// example space.
     /// </summary>
     /// <typeparam name="T">The type of an example's value</typeparam>
-    public abstract record ExampleSpace<T>
+    public abstract record ExampleSpace<T> : IExampleSpace<T>
     {
         internal ExampleSpace() { }
 
@@ -60,7 +36,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// <returns>`true` if so, `false` otherwise.</returns>
         public abstract bool Any();
 
-        public abstract IEnumerable<Example<T>> Traverse();
+        public abstract IEnumerable<LocatedExample<T>> Traverse();
     }
 
     public record PopulatedExampleSpace<T>(Example<T> Current, IEnumerable<PopulatedExampleSpace<T>> Subspace) : ExampleSpace<T>
@@ -92,14 +68,26 @@ namespace GalaxyCheck.ExampleSpaces
 
         public override bool Any() => true;
 
-        public override IEnumerable<Example<T>> Traverse()
+        public override IEnumerable<LocatedExample<T>> Traverse()
         {
-            yield return Current;
-
-            foreach (var child in Subspace.SelectMany(exampleSpace => exampleSpace.Traverse()))
+            static IEnumerable<LocatedExample<T>> TraverseRec(PopulatedExampleSpace<T> exampleSpace, int levelIndex, int siblingIndex)
             {
-                yield return child;
+                yield return new LocatedExample<T>(
+                    exampleSpace.Current.Value,
+                    exampleSpace.Current.Distance,
+                    levelIndex,
+                    siblingIndex);
+
+                var children = exampleSpace.Subspace.SelectMany((childExampleSpace, siblingIndex) =>
+                    TraverseRec(childExampleSpace, levelIndex + 1, siblingIndex));
+
+                foreach (var child in children)
+                {
+                    yield return child;
+                }
             }
+
+            return TraverseRec(this, 0, 0);
         }
     }
 
@@ -111,7 +99,7 @@ namespace GalaxyCheck.ExampleSpaces
 
         public override bool Any() => false;
 
-        public override IEnumerable<Example<T>> Traverse() => Enumerable.Empty<Example<T>>();
+        public override IEnumerable<LocatedExample<T>> Traverse() => Enumerable.Empty<LocatedExample<T>>();
     }
 
     public static class ExampleSpace

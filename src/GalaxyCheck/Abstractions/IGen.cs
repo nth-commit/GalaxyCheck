@@ -31,7 +31,7 @@ namespace GalaxyCheck.Abstractions
         }
     }
 
-    public sealed record GenInstance<T>(T Value) : GenIteration<T>;
+    public sealed record GenInstance<T>(IExampleSpace<T> ExampleSpace) : GenIteration<T>;
 
     public static class GenIterationExtensions
     {

@@ -1,6 +1,9 @@
-﻿using Snapshooter;
+﻿using GalaxyCheck.Abstractions;
+using GalaxyCheck.Aggregators;
+using Snapshooter;
 using Snapshooter.Xunit;
 using System;
+using System.Linq;
 
 namespace GalaxyCheck.Tests
 {
@@ -13,5 +16,17 @@ namespace GalaxyCheck.Tests
                 Snapshot.Match(fromSeed(seed), SnapshotNameExtension.Create(seed));
             }
         }
+
+        public static void SnapshotGenValues<T>(IGen<T> gen) =>
+            SnapshotWithSeed(seed => gen.Sample(opts => opts.WithSeed(seed)));
+
+        public static void SnapshotGenExampleSpaces<T>(IGen<T> gen) =>
+            SnapshotWithSeed(seed =>
+            {
+                return gen
+                    .SampleExampleSpaces(opts => opts.WithSeed(seed).WithIterations(1))
+                    .Single()
+                    .Render(x => x.ToString());
+            });
     }
 }

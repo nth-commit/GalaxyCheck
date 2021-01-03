@@ -39,3 +39,13 @@ The metric also gives some nice introspection into how generators behave, for te
 The RNG model in GalaxyCheck should therefore behave like a single linked-list. The seed that an RNG uses is not only used to generate values from that RNG, but also the next RNG. For contrast, in other frameworks, to ensure distribution of values, the RNG is split and then one part of it is handed off to a generator, whether or not the generator needs to consume that randomness or not. The other part is used to seed the next RNG.
 
 2021-01-03
+
+## Test generators through an aggregation function
+
+A generator's behaviour is mostly defined by the implementation of it's `Run` function. Therefore, there is an argument to testing this function directly.
+
+However, it's a lot of effort to use this function. The "more public" API is one of the aggregation functions, like `Sample` or `Minimal` - which will handle the cases of a generated iteration (discards, errors), have infinite loop protection built in, and more.
+
+It's also nice to test the public API, and means we probably won't need to test the aggregation functions directly.
+
+2021-01-03

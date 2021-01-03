@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Runners
+namespace GalaxyCheck.Aggregators
 {
     public record SampleOptions
     {
@@ -21,18 +21,38 @@ namespace GalaxyCheck.Runners
             Seed = seed;
         }
 
+        public SampleOptions WithIterations(int iterations) => new SampleOptions(
+            iterations: iterations,
+            seed: Seed);
+
         public SampleOptions WithSeed(int seed) => new SampleOptions(
             iterations: Iterations,
             seed: seed);
     }
 
-    public static class GenSampleWithMetricsExtensions
+    public static class GenSamplingExtensions
     {
         public record SampleWithMetricsResult<T>(
             List<T> Values,
-            int RandomConsumptionCount);
+            int RandomnessConsumption);
 
         public static SampleWithMetricsResult<T> SampleWithMetrics<T>(
+            this IGen<T> gen,
+            Func<SampleOptions, SampleOptions>? configure = null)
+        {
+            var exampleSpacesSample = gen.SampleExampleSpacesWithMetrics(configure);
+
+            return new SampleWithMetricsResult<T>(
+                exampleSpacesSample.Values.Select(exampleSpace => exampleSpace.Traverse().First().Value).ToList(),
+                exampleSpacesSample.RandomnessConsumption);
+        }
+
+        public static List<IExampleSpace<T>> SampleExampleSpaces<T>(
+            this IGen<T> gen,
+            Func<SampleOptions, SampleOptions>? configure = null) =>
+                gen.SampleExampleSpacesWithMetrics(configure).Values;
+
+        public static SampleWithMetricsResult<IExampleSpace<T>> SampleExampleSpacesWithMetrics<T>(
             this IGen<T> gen,
             Func<SampleOptions, SampleOptions>? configure = null)
         {
@@ -42,10 +62,10 @@ namespace GalaxyCheck.Runners
 
             var instances = Sample(gen, rng).Take(options.Iterations).ToList();
 
-            var values = instances.Select(instance => instance.Value).ToList();
-            var randomnessCount = 0; // TODO: Infer from instance metadata
+            var exampleSpaces = instances.Select(instance => instance.ExampleSpace).ToList();
+            var randomnessConsumption = 0; // TODO: Infer from instance metadata
 
-            return new SampleWithMetricsResult<T>(values, randomnessCount);
+            return new SampleWithMetricsResult<IExampleSpace<T>>(exampleSpaces, randomnessConsumption);
         }
 
         private static IEnumerable<GenInstance<T>> Sample<T>(IGen<T> gen, IRng rng)

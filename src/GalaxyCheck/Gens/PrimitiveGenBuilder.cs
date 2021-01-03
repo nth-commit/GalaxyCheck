@@ -18,9 +18,9 @@ namespace GalaxyCheck.Gens
 
         private class PrimitiveGen<T> : IGen<T>
         {
-            private StatefulGenFunc<T> _generate;
-            private ShrinkFunc<T> _shrink;
-            private MeasureFunc<T> _measure;
+            private readonly StatefulGenFunc<T> _generate;
+            private readonly ShrinkFunc<T> _shrink;
+            private readonly MeasureFunc<T> _measure;
 
             public PrimitiveGen(StatefulGenFunc<T> generate, ShrinkFunc<T> shrink, MeasureFunc<T> measure)
             {
@@ -44,7 +44,7 @@ namespace GalaxyCheck.Gens
 
                     var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt), _shrink, _measure);
 
-                    yield return new GenInstance<T>(exampleSpace.Traverse().First().Value);
+                    yield return new GenInstance<T>(exampleSpace);
                 } while (true);
             }
         }

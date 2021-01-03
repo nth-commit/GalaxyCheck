@@ -1,5 +1,5 @@
 ﻿using FsCheck.Xunit;
-using GalaxyCheck.Runners;
+using GalaxyCheck.Aggregators;
 using Xunit;
 using G = GalaxyCheck.Gen;
 
@@ -28,7 +28,7 @@ namespace GalaxyCheck.Tests.Gen.Constant
 
             var sample = gen.SampleWithMetrics();
 
-            Assert.Equal(0, sample.RandomConsumptionCount);
+            Assert.Equal(0, sample.RandomnessConsumption);
         }
     }
 }

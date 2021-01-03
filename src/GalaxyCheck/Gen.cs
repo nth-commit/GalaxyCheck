@@ -1,7 +1,7 @@
 ﻿using GalaxyCheck.Abstractions;
+using GalaxyCheck.Aggregators;
 using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Gens;
-using GalaxyCheck.Runners;
 using System;
 using System.Collections.Generic;
 

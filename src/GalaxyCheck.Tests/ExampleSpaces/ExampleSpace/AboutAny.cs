@@ -16,7 +16,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         [Property]
         public Property WhenRootValuePassesThePredicate_ItReturnsTrue(int value)
         {
-            Func<int, bool> pred = (x) => x % 2 == 0;
+            static bool pred(int x) => x % 2 == 0;
 
             Action test = () =>
             {
@@ -31,7 +31,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         [Property]
         public Property WhenRootValueFailsThePredicate_ItReturnsFalse(int value)
         {
-            Func<int, bool> pred = (x) => x % 2 == 0;
+            static bool pred(int x) => x % 2 == 0;
 
             Action test = () =>
             {
