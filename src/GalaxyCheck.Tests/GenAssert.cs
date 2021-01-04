@@ -9,10 +9,12 @@ namespace GalaxyCheck.Tests
     {
         public static void Equal<T>(IGen<T> expected, IGen<T> actual, int seed)
         {
-            var expectedSample = expected.Sample(opts => opts.WithSeed(seed));
-            var actualSample = actual.Sample(opts => opts.WithSeed(seed));
+            var expectedSample = expected.SampleExampleSpaces(opts => opts.WithSeed(seed));
+            var actualSample = actual.SampleExampleSpaces(opts => opts.WithSeed(seed));
 
-            Assert.All(Enumerable.Zip(expectedSample, actualSample), (x) => Assert.Equal(x.First, x.Second));
+            Assert.All(
+                Enumerable.Zip(expectedSample, actualSample),
+                (x) => Assert.Equal(x.First.TraverseGreedy(), x.Second.TraverseGreedy()));
         }
 
         public static void ShrinksTo<T>(IGen<T> gen, T expected, int seed)

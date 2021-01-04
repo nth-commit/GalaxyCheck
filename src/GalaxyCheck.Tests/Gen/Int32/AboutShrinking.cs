@@ -20,44 +20,5 @@ namespace GalaxyCheck.Tests.Gen.Int32
 
             return test.When(min <= origin && origin <= max);
         }
-
-        [Property]
-        public Property WhenMinIsLessThanEqualZeroAndMaxIsGreaterThanEqualZero_ItShrinksTowardsZero(int min, int max)
-        {
-            Action test = () => TestWithSeed(seed =>
-            {
-                var gen = G.Int32().GreaterThanEqual(min).LessThanEqual(max);
-
-                GenAssert.ShrinksTo(gen, 0, seed);
-            });
-
-            return test.When(min <= 0 && 0 <= max);
-        }
-
-        [Property]
-        public Property WhenMinIsGreaterThanZero_ItShrinksTowardsMin(int min, int max)
-        {
-            Action test = () => TestWithSeed(seed =>
-            {
-                var gen = G.Int32().GreaterThanEqual(min).LessThanEqual(max);
-
-                GenAssert.ShrinksTo(gen, min, seed);
-            });
-
-            return test.When(min > 0 && max >= min);
-        }
-
-        [Property]
-        public Property WhenMaxIsLessThanZero_ItShrinksTowardsMax(int min, int max)
-        {
-            Action test = () => TestWithSeed(seed =>
-            {
-                var gen = G.Int32().GreaterThanEqual(min).LessThanEqual(max);
-
-                GenAssert.ShrinksTo(gen, max, seed);
-            });
-
-            return test.When(max < 0 && max >= min);
-        }
     }
 }
