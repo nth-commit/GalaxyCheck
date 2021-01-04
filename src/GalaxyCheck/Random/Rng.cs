@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.Abstractions;
+using System;
 
 namespace GalaxyCheck.Random
 {
@@ -31,6 +32,13 @@ namespace GalaxyCheck.Random
 
         public IRng Next() => new Rng(Random.Next(), Order + 1);
 
-        public int Value(int min, int max) => Random.Next(min, max);
+        public int Value(int min, int max)
+        {
+            if (min > max) throw new ArgumentOutOfRangeException(nameof(min), "'min' cannot be greater than 'max'");
+
+            var maxOffset = max == int.MaxValue ? max : max + 1;
+
+            return Random.Next(min, maxOffset);
+        }
     }
 }

@@ -46,7 +46,7 @@ namespace GalaxyCheck.Tests.Random.Rng
         }
 
         [Fact]
-        public void Examples()
+        public void Snapshots()
         {
             var ranges = new List<(int min, int max)>
             {

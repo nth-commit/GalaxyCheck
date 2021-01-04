@@ -2,46 +2,46 @@
   {
     "min": 0,
     "max": 10,
-    "value": 2
+    "value": 3
   },
   {
     "min": 0,
     "max": 100,
-    "value": 24
+    "value": 34
   },
   {
     "min": 0,
     "max": 1000,
-    "value": 248
+    "value": 338
   },
   {
     "min": -10,
     "max": 0,
-    "value": -8
+    "value": -7
   },
   {
     "min": -100,
     "max": 0,
-    "value": -76
+    "value": -66
   },
   {
     "min": -1000,
     "max": 0,
-    "value": -752
+    "value": -662
   },
   {
     "min": -10,
     "max": 10,
-    "value": -6
+    "value": -3
   },
   {
     "min": -100,
     "max": 100,
-    "value": -51
+    "value": -32
   },
   {
     "min": -1000,
     "max": 1000,
-    "value": -503
+    "value": -323
   }
 ]
