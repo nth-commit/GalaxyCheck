@@ -5,6 +5,8 @@ namespace GalaxyCheck.Abstractions
     public interface IExampleSpace<T>
     {
         IEnumerable<LocatedExample<T>> Traverse();
+
+        Example<T>? Minimal();
     }
 
     /// <summary>

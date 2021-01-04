@@ -37,6 +37,8 @@ namespace GalaxyCheck.ExampleSpaces
         public abstract bool Any();
 
         public abstract IEnumerable<LocatedExample<T>> Traverse();
+
+        public abstract Example<T>? Minimal();
     }
 
     public record PopulatedExampleSpace<T>(Example<T> Current, IEnumerable<PopulatedExampleSpace<T>> Subspace) : ExampleSpace<T>
@@ -89,6 +91,21 @@ namespace GalaxyCheck.ExampleSpaces
 
             return TraverseRec(this, 0, 0);
         }
+
+        public override Example<T>? Minimal()
+        {
+            static Example<T> MinimalRec(PopulatedExampleSpace<T> exampleSpace)
+            {
+                if (exampleSpace.Subspace.Any())
+                {
+                    return MinimalRec(exampleSpace.Subspace.First());
+                }
+
+                return exampleSpace.Current;
+            }
+
+            return MinimalRec(this);
+        }
     }
 
     public record EmptyExampleSpace<T>() : ExampleSpace<T>
@@ -100,6 +117,8 @@ namespace GalaxyCheck.ExampleSpaces
         public override bool Any() => false;
 
         public override IEnumerable<LocatedExample<T>> Traverse() => Enumerable.Empty<LocatedExample<T>>();
+
+        public override Example<T>? Minimal() => null;
     }
 
     public static class ExampleSpace

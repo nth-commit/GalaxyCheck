@@ -10,7 +10,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ShrinkFunc
     public class AboutShrinkTowards
     {
         [Property]
-        public Property ItReturnsAnEnumerableWhereTheFirstIsTheTarget(int value, int target)
+        public Property ItProducesTheTargetValueFirst(int value, int target)
         {
             Action test = () =>
             {
@@ -25,7 +25,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ShrinkFunc
         }
 
         [Property]
-        public void ItReturnsAnEnumerableWhichDoesNotContainTheValue(int value, int target)
+        public void ItDoesNotProduceTheOriginalValue(int value, int target)
         {
             var shrink = ES.ShrinkFunc.Towards(target);
 
@@ -35,13 +35,24 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ShrinkFunc
         }
 
         [Property]
-        public void ItReturnsAnEnumerableWhichDoesNotContainDuplicates(int value, int target)
+        public void ItDoesNotProduceDuplicates(int value, int target)
         {
             var shrink = ES.ShrinkFunc.Towards(target);
 
             var result = shrink(value);
 
             Assert.Equal(result.Distinct(), result);
+        }
+
+        [Property]
+        public void ItReflectsAroundZero(int value)
+        {
+            var shrink = ES.ShrinkFunc.Towards(0);
+
+            var result0 = shrink(value).Select(x => Math.Abs(x));
+            var result1 = shrink(-value).Select(x => Math.Abs(x));
+
+            Assert.Equal(result0, result1);
         }
 
         [Property]

@@ -26,27 +26,21 @@ namespace GalaxyCheck.Gens
         /// <param name="y">The second bound of the range.</param>
         /// <returns>A new generator with the constraint applied.</returns>
         IInt32GenBuilder Between(int x, int y);
+
+        /// <summary>
+        /// Modifies the generator so that values will ultimately shrink to the supplied origin. The origin is the
+        /// "smallest" value that all values should shrink towards. By default, the origin will be 0. The origin must
+        /// be within the the bounds of the generator. If the bounds have been modified so that they don't contain 0,
+        /// and an origin has not been supplied, the generator will try and infer the most sensible origin.
+        /// </summary>
+        /// <param name="origin">The "smallest" value that generated integers should shrink towards.</param>
+        /// <returns>A new generator with the origin applied.</returns>
+        IInt32GenBuilder ShrinkTowards(int origin);
     }
 
     public class Int32GenBuilder : BaseGenBuilder<int>, IInt32GenBuilder
     {
-        public static Int32GenBuilder Create() => new Int32GenBuilder(new IntegerGenConfig(Min: null, Max: null));
-
-        private record IntegerGenConfig(int? Min, int? Max)
-        {
-            public IGen<int> ToGen() => new DelayedGen<int>(() =>
-            {
-                if (Min != null && Max != null && Min > Max)
-                {
-                    return new ErrorGen<int>(nameof(Int32GenBuilder), "'min' cannot be greater than 'max'");
-                }
-
-                return PrimitiveGenBuilder.Create(
-                    (useNextInt) => useNextInt(Min ?? int.MinValue, Max ?? int.MaxValue),
-                    ShrinkFunc.Towards(0),
-                    MeasureFunc.Unmeasured<int>());
-            });
-        }
+        public static Int32GenBuilder Create() => new Int32GenBuilder(new IntegerGenConfig(Min: null, Max: null, Origin: null));
 
         private readonly IntegerGenConfig _config;
 
@@ -63,11 +57,63 @@ namespace GalaxyCheck.Gens
             min: x > y ? y : x,
             max: x > y ? x : y);
 
-        private IInt32GenBuilder WithPartialConfig(int? min = null, int? max = null)
+        public IInt32GenBuilder ShrinkTowards(int origin) => WithPartialConfig(origin: origin);
+
+        private IInt32GenBuilder WithPartialConfig(int? min = null, int? max = null, int? origin = null)
         {
             return new Int32GenBuilder(new IntegerGenConfig(
                 Min: min ?? _config.Min,
-                Max: max ?? _config.Max));
+                Max: max ?? _config.Max,
+                Origin: origin ?? _config.Origin));
+        }
+
+        private record IntegerGenConfig(int? Min, int? Max, int? Origin)
+        {
+            public IGen<int> ToGen() => new DelayedGen<int>(() =>
+            {
+                var min = Min ?? int.MinValue;
+                var max = Max ?? int.MaxValue;
+
+                if (min > max)
+                {
+                    return Error("'min' cannot be greater than 'max'");
+                }
+
+                if (Origin != null && (Origin < min || Origin > max))
+                {
+                    return Error("'origin' must be between 'min' and 'max'");
+                }
+
+                var origin = Origin ?? InferOrigin(min, max);
+
+                return PrimitiveGenBuilder.Create(
+                    (useNextInt) => useNextInt(min, max),
+                    ShrinkFunc.Towards(origin),
+                    MeasureFunc.Unmeasured<int>());
+            });
+
+            private static IGen<int> Error(string message) => new ErrorGen<int>(nameof(Int32GenBuilder), message);
+
+            /// <summary>
+            /// Infer the origin by finding the closest value to 0 that is within the bounds.
+            /// </summary>
+            private static int InferOrigin(int min, int max)
+            {
+                if (min > 0)
+                {
+                    // If the min is greater than 0, then it must be the closer value to 0 out of min/max
+                    return min;
+                }
+
+                if (max < 0)
+                {
+                    // If the max is less than 0, then it must be the closer value to 0 out of min/max
+                    return max;
+                }
+
+                // Else, 0 definitely is within the bounds of min/max.
+                return 0;
+            }
         }
     }
 }
