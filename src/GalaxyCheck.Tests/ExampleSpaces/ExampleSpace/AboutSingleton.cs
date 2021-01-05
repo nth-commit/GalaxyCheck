@@ -21,7 +21,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         public void ItBehavesLikeUnfoldWithPrimitiveFunctions(object value)
         {
             var singletonExampleSpace = ES.ExampleSpace.Singleton(value);
-            var unfoldedExampleSpace = ES.ExampleSpace.Unfold(value, ES.ShrinkFunc.None<object>(), MeasureFunc.Unmeasured<object>());
+            var unfoldedExampleSpace = ES.ExampleSpace.Unfold(value, ES.ShrinkFunc.None<object>(), ES.MeasureFunc.Unmeasured<object>());
 
             Assert.Equal(unfoldedExampleSpace.TraverseGreedy(), singletonExampleSpace.TraverseGreedy());
         }

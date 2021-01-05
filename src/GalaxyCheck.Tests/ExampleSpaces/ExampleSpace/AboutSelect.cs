@@ -1,5 +1,4 @@
 ﻿using FsCheck.Xunit;
-using GalaxyCheck.ExampleSpaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         public void ItBehavesLikeALinqSelectOnValues(
             object value,
             Func<object, List<object>> shrink,
-            Func<object, int> measure,
+            Func<object, decimal> measure,
             Func<object, object> selector)
         {
             var sourceExampleSpace = ES.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
@@ -28,7 +27,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         public void ItDoesNotAffectDistance(
             object value,
             Func<object, List<object>> shrink,
-            Func<object, int> measure,
+            Func<object, decimal> measure,
             Func<object, object> selector)
         {
             var sourceExampleSpace = ES.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);

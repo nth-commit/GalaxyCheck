@@ -37,13 +37,13 @@ namespace GalaxyCheck.Tests
             TestWithSeed(seed => Snapshot.Match(fromSeed(seed), SnapshotNameExtension.Create(seed)));
 
         public static void SnapshotGenValues<T>(IGen<T> gen) =>
-            SnapshotWithSeed(seed => gen.Sample(opts => opts.WithSeed(seed)));
+            SnapshotWithSeed(seed => gen.Sample(opts => opts.WithSeed(seed).WithSize(GalaxyCheck.Sizing.Size.MaxValue)));
 
         public static void SnapshotGenExampleSpaces<T>(IGen<T> gen) =>
             SnapshotWithSeed(seed =>
             {
                 return gen
-                    .SampleExampleSpaces(opts => opts.WithSeed(seed).WithIterations(1))
+                    .SampleExampleSpaces(opts => opts.WithSeed(seed).WithIterations(1).WithSize(GalaxyCheck.Sizing.Size.MaxValue))
                     .Single()
                     .Render(x => x.ToString());
             });

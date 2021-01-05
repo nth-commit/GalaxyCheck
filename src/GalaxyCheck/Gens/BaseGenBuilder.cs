@@ -12,9 +12,9 @@ namespace GalaxyCheck.Gens
             _innerGen = innerGen;
         }
 
-        public IEnumerable<GenIteration<T>> Run(IRng rng)
+        public IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
         {
-            return _innerGen.Run(rng);
+            return _innerGen.Run(rng, size);
         }
     }
 }

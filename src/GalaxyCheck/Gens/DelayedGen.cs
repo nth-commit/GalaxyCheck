@@ -13,10 +13,10 @@ namespace GalaxyCheck.Gens
             _create = create;
         }
 
-        public IEnumerable<GenIteration<T>> Run(IRng rng)
+        public IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
         {
             var gen = _create();
-            return gen.Run(rng);
+            return gen.Run(rng, size);
         }
     }
 }

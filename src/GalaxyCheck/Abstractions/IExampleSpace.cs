@@ -25,9 +25,9 @@ namespace GalaxyCheck.Abstractions
         /// originally a proportion out of 100, but it composes when example spaces are composed. Therefore, it's
         /// possible for the distance metric to be arbitrarily high.
         /// </summary>
-        public int Distance { get; init; }
+        public decimal Distance { get; init; }
 
-        public Example(T value, int distance)
+        public Example(T value, decimal distance)
         {
             Value = value;
             Distance = distance;
@@ -46,7 +46,7 @@ namespace GalaxyCheck.Abstractions
 
         public LocatedExample(
             T value,
-            int distance,
+            decimal distance,
             int levelIndex,
             int childIndex)
             : base(value, distance)

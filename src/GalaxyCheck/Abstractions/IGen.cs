@@ -20,20 +20,30 @@ namespace GalaxyCheck.Abstractions
         /// Instead, use `Sample()` or `Minimal()`.
         /// </summary>
         /// <param name="rng">The initial RNG to seed the generator with.</param>
+        /// <param name="size">The initial size to run the generator with. Determines how large the generated values
+        /// are.</param>
         /// <returns>An infinite enumerable of generated iterations.</returns>
-        IEnumerable<GenIteration<T>> Run(IRng rng);
+        IEnumerable<GenIteration<T>> Run(IRng rng, ISize size);
     }
 
     public abstract record GenIteration<T>
     {
-        internal GenIteration()
+        public IRng InitialRng { get; init; }
+
+        public IRng NextRng { get; init; }
+
+        internal GenIteration(IRng initialRng, IRng nextRng)
         {
+            InitialRng = initialRng;
+            NextRng = nextRng;
         }
     }
 
-    public sealed record GenInstance<T>(IExampleSpace<T> ExampleSpace) : GenIteration<T>;
+    public sealed record GenInstance<T>(IRng InitialRng, IRng NextRng, IExampleSpace<T> ExampleSpace)
+        : GenIteration<T>(InitialRng, NextRng);
 
-    public sealed record GenError<T>(string GenName, string Message) : GenIteration<T>;
+    public sealed record GenError<T>(IRng InitialRng, IRng NextRng, string GenName, string Message)
+        : GenIteration<T>(InitialRng, NextRng);
 
     public static class GenIterationExtensions
     {

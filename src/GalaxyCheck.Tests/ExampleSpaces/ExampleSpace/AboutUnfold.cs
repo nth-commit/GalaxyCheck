@@ -14,7 +14,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         {
             static IEnumerable<int> shrink(int x) => x <= 1 ? Enumerable.Empty<int>() : new[] { x - 1 };
 
-            var exampleSpace = ES.ExampleSpace.Unfold(10, shrink, MeasureFunc.Unmeasured<int>());
+            var exampleSpace = ES.ExampleSpace.Unfold(10, shrink, ES.MeasureFunc.Unmeasured<int>());
 
             Assert.Equal(
                 new[] { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 },

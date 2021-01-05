@@ -10,38 +10,59 @@ namespace GalaxyCheck.Tests.Gen.Int32
     public class AboutConstraints
     {
         [Property]
-        public void ItProducesValuesLessThanOrEqualMax(int max) => TestWithSeed(seed =>
-        {
-            var gen = G.Int32().LessThanEqual(max);
-
-            var sample = gen.Sample(opts => opts.WithSeed(seed));
-
-            Assert.All(sample, x => Assert.True(x <= max));
-        });
-
-        [Property]
-        public void ItProducesValuesGreaterThanOrEqualMin(int min) => TestWithSeed(seed =>
-        {
-            var gen = G.Int32().GreaterThanEqual(min);
-
-            var sample = gen.Sample(opts => opts.WithSeed(seed));
-
-            Assert.All(sample, x => Assert.True(x >= min));
-        });
-
-        [Property]
-        public Property ItProducesValuesBetweenRange(int min, int max)
+        public Property ItProducesValuesGreaterThanOrEqualMin(int min, int max, int origin, G.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32().Between(min, max);
+                var gen = G.Int32()
+                    .GreaterThanEqual(min)
+                    .LessThanEqual(max)
+                    .ShrinkTowards(origin)
+                    .WithBias(bias);
+
+                var sample = gen.Sample(opts => opts.WithSeed(seed));
+
+                Assert.All(sample, x => Assert.True(x >= min));
+            });
+
+            return test.When(min <= origin && origin <= max);
+        }
+
+        [Property]
+        public Property ItProducesValuesLessThanOrEqualMax(int min, int max, int origin, G.Bias bias)
+        {
+            Action test = () => TestWithSeed(seed =>
+            {
+                var gen = G.Int32()
+                    .GreaterThanEqual(min)
+                    .LessThanEqual(max)
+                    .ShrinkTowards(origin)
+                    .WithBias(bias);
+
+                var sample = gen.Sample(opts => opts.WithSeed(seed));
+
+                Assert.All(sample, x => Assert.True(x <= max));
+            });
+
+            return test.When(min <= origin && origin <= max);
+        }
+
+        [Property]
+        public Property ItProducesValuesBetweenRange(int min, int max, int origin, G.Bias bias)
+        {
+            Action test = () => TestWithSeed(seed =>
+            {
+                var gen = G.Int32()
+                    .Between(min, max)
+                    .ShrinkTowards(origin)
+                    .WithBias(bias);
 
                 var sample = gen.Sample(opts => opts.WithSeed(seed));
 
                 Assert.All(sample, x => Assert.InRange(x, min, max));
             });
 
-            return test.When(min <= max);
+            return test.When(min <= origin && origin <= max);
         }
 
         [Property]

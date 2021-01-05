@@ -1,5 +1,6 @@
 ﻿using GalaxyCheck.Abstractions;
 using GalaxyCheck.ExampleSpaces;
+using System;
 
 namespace GalaxyCheck.Gens
 {
@@ -36,11 +37,18 @@ namespace GalaxyCheck.Gens
         /// <param name="origin">The "smallest" value that generated integers should shrink towards.</param>
         /// <returns>A new generator with the origin applied.</returns>
         IInt32GenBuilder ShrinkTowards(int origin);
+
+        /// <summary>
+        /// Modifies how the generator biases values with respect to the size parameter.
+        /// </summary>
+        /// <returns>A new generator with the biasing effect applied.</returns>
+        IInt32GenBuilder WithBias(Gen.Bias bias);
     }
 
     public class Int32GenBuilder : BaseGenBuilder<int>, IInt32GenBuilder
     {
-        public static Int32GenBuilder Create() => new Int32GenBuilder(new IntegerGenConfig(Min: null, Max: null, Origin: null));
+        public static Int32GenBuilder Create() => new Int32GenBuilder(
+            new IntegerGenConfig(Min: null, Max: null, Origin: null, Bias: null));
 
         private readonly IntegerGenConfig _config;
 
@@ -53,21 +61,23 @@ namespace GalaxyCheck.Gens
 
         public IInt32GenBuilder GreaterThanEqual(int min) => WithPartialConfig(min: min);
 
-        public IInt32GenBuilder Between(int x, int y) => WithPartialConfig(
-            min: x > y ? y : x,
-            max: x > y ? x : y);
+        public IInt32GenBuilder Between(int x, int y) => WithPartialConfig(min: x > y ? y : x, max: x > y ? x : y);
 
         public IInt32GenBuilder ShrinkTowards(int origin) => WithPartialConfig(origin: origin);
 
-        private IInt32GenBuilder WithPartialConfig(int? min = null, int? max = null, int? origin = null)
+        public IInt32GenBuilder WithBias(Gen.Bias bias) => WithPartialConfig(bias: bias);
+
+        private IInt32GenBuilder WithPartialConfig(
+            int? min = null, int? max = null, int? origin = null, Gen.Bias? bias = null)
         {
             return new Int32GenBuilder(new IntegerGenConfig(
                 Min: min ?? _config.Min,
                 Max: max ?? _config.Max,
-                Origin: origin ?? _config.Origin));
+                Origin: origin ?? _config.Origin,
+                Bias: bias ?? _config.Bias));
         }
 
-        private record IntegerGenConfig(int? Min, int? Max, int? Origin)
+        private record IntegerGenConfig(int? Min, int? Max, int? Origin, Gen.Bias? Bias)
         {
             public IGen<int> ToGen() => new DelayedGen<int>(() =>
             {
@@ -86,10 +96,21 @@ namespace GalaxyCheck.Gens
 
                 var origin = Origin ?? InferOrigin(min, max);
 
+                var getBounds = (Bias ?? Gen.Bias.Linear) switch
+                {
+                    Gen.Bias.None => Sizing.BoundsScalingFactoryFuncs.Unscaled(min, max, origin),
+                    Gen.Bias.Linear => Sizing.BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin),
+                    _ => throw new NotSupportedException()
+                };
+
                 return PrimitiveGenBuilder.Create(
-                    (useNextInt) => useNextInt(min, max),
+                    (useNextInt, size) =>
+                    {
+                        var (min, max) = getBounds(size);
+                        return useNextInt(min, max);
+                    },
                     ShrinkFunc.Towards(origin),
-                    MeasureFunc.Unmeasured<int>());
+                    MeasureFunc.DistanceFromOrigin(origin, min, max));
             });
 
             private static IGen<int> Error(string message) => new ErrorGen<int>(nameof(Int32GenBuilder), message);

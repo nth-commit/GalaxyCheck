@@ -9,11 +9,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
     public class AboutDefaults
     {
         [Property]
-        public Property TheDefaultMinIsTheMinInt32(int max, int origin)
+        public Property TheDefaultMinIsTheMinInt32(int max, int origin, G.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().LessThanEqual(max).ShrinkTowards(origin);
+                var gen0 = G.Int32().LessThanEqual(max).ShrinkTowards(origin).WithBias(bias);
                 var gen1 = gen0.GreaterThanEqual(int.MinValue);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -23,11 +23,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property TheDefaultMaxIsTheMaxInt32(int min, int origin)
+        public Property TheDefaultMaxIsTheMaxInt32(int min, int origin, G.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).ShrinkTowards(origin);
+                var gen0 = G.Int32().GreaterThanEqual(min).ShrinkTowards(origin).WithBias(bias);
                 var gen1 = gen0.LessThanEqual(int.MaxValue);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -37,11 +37,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property WhenMinIsLessThanEqualZeroAndMaxIsGreaterThanEqualZero_TheDefaultOriginIsZero(int min, int max)
+        public Property WhenMinIsLessThanEqualZeroAndMaxIsGreaterThanEqualZero_TheDefaultOriginIsZero(int min, int max, G.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max);
+                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
                 var gen1 = gen0.ShrinkTowards(0);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -51,11 +51,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property WhenMinIsGreaterThanZero_TheDefaultOriginIsMin(int min, int max)
+        public Property WhenMinIsGreaterThanZero_TheDefaultOriginIsMin(int min, int max, G.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max);
+                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
                 var gen1 = gen0.ShrinkTowards(min);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -65,17 +65,31 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property WhenMaxIsLessThanZero_TheDefaultOriginIsMax(int min, int max)
+        public Property WhenMaxIsLessThanZero_TheDefaultOriginIsMax(int min, int max, G.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max);
+                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
                 var gen1 = gen0.ShrinkTowards(max);
 
                 GenAssert.Equal(gen0, gen1, seed);
             });
 
             return test.When(max < 0 && max >= min);
+        }
+
+        [Property]
+        public Property TheDefaultBiasIsLinear(int min, int max, int origin)
+        {
+            Action test = () => TestWithSeed(seed =>
+            {
+                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).ShrinkTowards(origin);
+                var gen1 = gen0.WithBias(G.Bias.Linear);
+
+                GenAssert.Equal(gen0, gen1, seed);
+            });
+
+            return test.When(min <= origin && origin <= max);
         }
     }
 }

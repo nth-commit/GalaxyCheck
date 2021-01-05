@@ -7,7 +7,7 @@ namespace GalaxyCheck.Gens
 {
     public delegate int NextIntFunc(int min, int max);
 
-    public delegate T StatefulGenFunc<T>(NextIntFunc useNextInt);
+    public delegate T StatefulGenFunc<T>(NextIntFunc useNextInt, ISize size);
 
     public static class PrimitiveGenBuilder
     {
@@ -29,7 +29,7 @@ namespace GalaxyCheck.Gens
                 _measure = measure;
             }
 
-            public IEnumerable<GenIteration<T>> Run(IRng rng)
+            public IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
             {
                 NextIntFunc useNextInt = (min, max) =>
                 {
@@ -40,11 +40,11 @@ namespace GalaxyCheck.Gens
 
                 do
                 {
-                    var initRng = rng;
+                    var initialRng = rng;
 
-                    var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt), _shrink, _measure);
+                    var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt, size), _shrink, _measure);
 
-                    yield return new GenInstance<T>(exampleSpace);
+                    yield return new GenInstance<T>(initialRng, rng, exampleSpace);
                 } while (true);
             }
         }
