@@ -8,5 +8,6 @@ namespace GalaxyCheck.Abstractions
     /// <typeparam name="T">The type of the generator's values.</typeparam>
     public interface IGenBuilder<T> : IGen<T>
     {
+        IGenBuilder<U> Select<U>(Func<T, U> selector);
     }
 }

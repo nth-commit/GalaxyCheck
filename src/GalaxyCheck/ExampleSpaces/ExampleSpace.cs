@@ -17,13 +17,7 @@ namespace GalaxyCheck.ExampleSpaces
     {
         internal ExampleSpace() { }
 
-        /// <summary>
-        /// Maps all of the examples in an example space by the given selector function.
-        /// </summary>
-        /// <typeparam name="TResult">The new type of an example's value</typeparam>
-        /// <param name="selector">A function to apply to each value in the example space.</param>
-        /// <returns>A new example space with the selector function applied.</returns>
-        public abstract ExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector);
+        public abstract IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector);
 
         /// <summary>
         /// Filters the examples in an example space by the given predicate.
@@ -45,7 +39,7 @@ namespace GalaxyCheck.ExampleSpaces
 
     public record PopulatedExampleSpace<T>(Example<T> Current, IEnumerable<PopulatedExampleSpace<T>> Subspace) : ExampleSpace<T>
     {
-        public override ExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector)
+        public override IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector)
         {
             static PopulatedExampleSpace<TResult> SelectRec(
                 PopulatedExampleSpace<T> exampleSpace,
@@ -112,7 +106,7 @@ namespace GalaxyCheck.ExampleSpaces
 
     public record EmptyExampleSpace<T>() : ExampleSpace<T>
     {
-        public override ExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector) => new EmptyExampleSpace<TResult>();
+        public override IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector) => new EmptyExampleSpace<TResult>();
 
         public override ExampleSpace<T> Where(Func<T, bool> _) => new EmptyExampleSpace<T>();
 

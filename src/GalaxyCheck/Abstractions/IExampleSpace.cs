@@ -1,9 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GalaxyCheck.Abstractions
 {
     public interface IExampleSpace<T>
     {
+        /// <summary>
+        /// Maps all of the examples in an example space by the given selector function.
+        /// </summary>
+        /// <typeparam name="TResult">The new type of an example's value</typeparam>
+        /// <param name="selector">A function to apply to each value in the example space.</param>
+        /// <returns>A new example space with the selector function applied.</returns>
+        IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector);
+
         IEnumerable<LocatedExample<T>> Traverse();
 
         Example<T>? Minimal();
