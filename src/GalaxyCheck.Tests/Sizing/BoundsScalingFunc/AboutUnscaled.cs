@@ -5,13 +5,13 @@ using System;
 using Xunit;
 using S = GalaxyCheck.Sizing;
 
-namespace GalaxyCheck.Tests.Sizing.BoundsScalingFunc
+namespace Tests.Sizing.BoundsScalingFunc
 {
     [Properties(Arbitrary = new [] { typeof(ArbitrarySize) })]
     public class AboutUnscaled
     {
         [Property]
-        public Property ItAlwaysReturnsTheGivenBounds(int min, int max, int origin, ISize size)
+        public FsCheck.Property ItAlwaysReturnsTheGivenBounds(int min, int max, int origin, ISize size)
         {
             Action test = () =>
             {

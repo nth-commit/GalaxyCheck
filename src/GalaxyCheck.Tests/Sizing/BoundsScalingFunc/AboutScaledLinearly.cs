@@ -5,13 +5,13 @@ using System;
 using Xunit;
 using S = GalaxyCheck.Sizing;
 
-namespace GalaxyCheck.Tests.Sizing.BoundsScalingFunc
+namespace Tests.Sizing.BoundsScalingFunc
 {
     [Properties(Arbitrary = new [] { typeof(ArbitrarySize) })]
     public class AboutScaledLinearly
     {
         [Property]
-        public Property WhenSizeIsMin_ItReturnsTheOriginAsTheBounds(int min, int max, int origin)
+        public FsCheck.Property WhenSizeIsMin_ItReturnsTheOriginAsTheBounds(int min, int max, int origin)
         {
             Action test = () =>
             {
@@ -26,7 +26,7 @@ namespace GalaxyCheck.Tests.Sizing.BoundsScalingFunc
         }
 
         [Property]
-        public Property WhenSizeIsMax_ItAlwaysReturnsTheGivenBounds(int min, int max, int origin)
+        public FsCheck.Property WhenSizeIsMax_ItAlwaysReturnsTheGivenBounds(int min, int max, int origin)
         {
             Action test = () =>
             {

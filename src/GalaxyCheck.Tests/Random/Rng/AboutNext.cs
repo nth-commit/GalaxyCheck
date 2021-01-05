@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using R = GalaxyCheck.Random;
-using static GalaxyCheck.Tests.TestUtils;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Random.Rng
+namespace Tests.Random.Rng
 {
     public class AboutNext
     {
@@ -21,7 +21,7 @@ namespace GalaxyCheck.Tests.Random.Rng
         }
 
         [Property(StartSize = 0, EndSize = 100)]
-        public Property ItIncrementsTheOrder(int seed, int nextCount)
+        public FsCheck.Property ItIncrementsTheOrder(int seed, int nextCount)
         {
             Action test = () =>
             {

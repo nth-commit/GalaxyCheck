@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using R = GalaxyCheck.Random;
-using static GalaxyCheck.Tests.TestUtils;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Random.Rng
+namespace Tests.Random.Rng
 {
     public class AboutValue
     {
         [Property]
-        public Property ItIsIdempotent(int seed, int min, int max)
+        public FsCheck.Property ItIsIdempotent(int seed, int min, int max)
         {
             Action test = () =>
             {
@@ -25,7 +25,7 @@ namespace GalaxyCheck.Tests.Random.Rng
         }
 
         [Property]
-        public Property ItThrowsWhenMinIsGreaterThanMax(int seed, int min, int max)
+        public FsCheck.Property ItThrowsWhenMinIsGreaterThanMax(int seed, int min, int max)
         {
             Action test = () =>
             {

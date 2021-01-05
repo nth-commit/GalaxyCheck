@@ -1,7 +1,7 @@
 ﻿using Xunit;
-using ES = GalaxyCheck.ExampleSpaces;
+using GC = GalaxyCheck;
 
-namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
+namespace Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutLinqCompatibility
     {
@@ -9,7 +9,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         public void ItSupportsFromKeyword()
         {
             var _ =
-                from x in ES.ExampleSpace.Singleton(0)
+                from x in GC.ExampleSpaces.ExampleSpace.Singleton(0)
                 select x;
         }
 
@@ -17,7 +17,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         public void ItSupportsWhereKeyword()
         {
             var _ =
-                from x in ES.ExampleSpace.Singleton(0)
+                from x in GC.ExampleSpaces.ExampleSpace.Singleton(0)
                 where x % 2 == 0
                 select x;
         }

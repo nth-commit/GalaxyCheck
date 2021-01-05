@@ -1,8 +1,10 @@
 ﻿using Xunit;
 using G = GalaxyCheck.Gen;
-using static GalaxyCheck.Tests.TestUtils;
+using GalaxyCheck;
+using static Tests.TestUtils;
+using FsCheck;
 
-namespace GalaxyCheck.Tests.Gen.GenericOperators
+namespace Tests.Gen.GenericOperators
 {
     public class AboutSelect
     {

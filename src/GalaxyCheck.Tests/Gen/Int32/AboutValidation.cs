@@ -1,21 +1,21 @@
 ﻿using FsCheck;
 using FsCheck.Xunit;
 using System;
-using G = GalaxyCheck.Gen;
-using static GalaxyCheck.Tests.TestUtils;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Gen.Int32
+namespace Tests.Gen.Int32
 {
     public class AboutValidation
     {
         [Property]
-        public Property ItErrorsWhenMinIsGreaterThanMax(int min, int max)
+        public FsCheck.Property ItErrorsWhenMinIsGreaterThanMax(int min, int max)
         {
             Action test = () => TestWithSeed(seed => 
             {
-                var gen = G.Int32().GreaterThanEqual(max).LessThanEqual(min);
+                var gen = GC.Gen.Int32().GreaterThanEqual(max).LessThanEqual(min);
 
-                var expectedMessage = "Error while running generator Int32GenBuilder: 'min' cannot be greater than 'max'";
+                var expectedMessage = "Error while running generator Int32Gen: 'min' cannot be greater than 'max'";
                 GenAssert.Errors(gen, expectedMessage, seed);
             });
 
@@ -23,13 +23,13 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property ItErrorsWhenMinIsGreaterThanOrigin(int min, int origin)
+        public FsCheck.Property ItErrorsWhenMinIsGreaterThanOrigin(int min, int origin)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32().GreaterThanEqual(min).ShrinkTowards(origin);
+                var gen = GC.Gen.Int32().GreaterThanEqual(min).ShrinkTowards(origin);
 
-                var expectedMessage = "Error while running generator Int32GenBuilder: 'origin' must be between 'min' and 'max'";
+                var expectedMessage = "Error while running generator Int32Gen: 'origin' must be between 'min' and 'max'";
                 GenAssert.Errors(gen, expectedMessage, seed);
             });
 
@@ -37,13 +37,13 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property ItErrorsWhenMaxIsLessThanOrigin(int max, int origin)
+        public FsCheck.Property ItErrorsWhenMaxIsLessThanOrigin(int max, int origin)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32().LessThanEqual(max).ShrinkTowards(origin);
+                var gen = GC.Gen.Int32().LessThanEqual(max).ShrinkTowards(origin);
 
-                var expectedMessage = "Error while running generator Int32GenBuilder: 'origin' must be between 'min' and 'max'";
+                var expectedMessage = "Error while running generator Int32Gen: 'origin' must be between 'min' and 'max'";
                 GenAssert.Errors(gen, expectedMessage, seed);
             });
 
@@ -51,13 +51,13 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property ItErrorsWhenOriginIsNotBetweenRange(int x, int y, int origin)
+        public FsCheck.Property ItErrorsWhenOriginIsNotBetweenRange(int x, int y, int origin)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32().Between(x, y).ShrinkTowards(origin);
+                var gen = GC.Gen.Int32().Between(x, y).ShrinkTowards(origin);
 
-                var expectedMessage = "Error while running generator Int32GenBuilder: 'origin' must be between 'min' and 'max'";
+                var expectedMessage = "Error while running generator Int32Gen: 'origin' must be between 'min' and 'max'";
                 GenAssert.Errors(gen, expectedMessage, seed);
             });
 

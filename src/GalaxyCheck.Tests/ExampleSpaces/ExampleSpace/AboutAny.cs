@@ -2,9 +2,9 @@
 using FsCheck.Xunit;
 using System;
 using Xunit;
-using ES = GalaxyCheck.ExampleSpaces;
+using GC = GalaxyCheck;
 
-namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
+namespace Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutAny
     {
@@ -14,13 +14,13 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         // you're trying to filter upon, and then gives up straight away.
 
         [Property]
-        public Property WhenRootValuePassesThePredicate_ItReturnsTrue(int value)
+        public FsCheck.Property WhenRootValuePassesThePredicate_ItReturnsTrue(int value)
         {
             static bool pred(int x) => x % 2 == 0;
 
             Action test = () =>
             {
-                var sourceExampleSpace = ES.ExampleSpace.Singleton(value).Where(pred);
+                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Where(pred);
 
                 Assert.True(sourceExampleSpace.Any());
             };
@@ -29,13 +29,13 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         }
 
         [Property]
-        public Property WhenRootValueFailsThePredicate_ItReturnsFalse(int value)
+        public FsCheck.Property WhenRootValueFailsThePredicate_ItReturnsFalse(int value)
         {
             static bool pred(int x) => x % 2 == 0;
 
             Action test = () =>
             {
-                var sourceExampleSpace = ES.ExampleSpace.Singleton(value).Where(pred);
+                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Where(pred);
 
                 Assert.False(sourceExampleSpace.Any());
             };

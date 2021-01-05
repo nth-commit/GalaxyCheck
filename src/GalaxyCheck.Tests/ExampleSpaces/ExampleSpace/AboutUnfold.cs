@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using ES = GalaxyCheck.ExampleSpaces;
+using GC = GalaxyCheck;
 
-namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
+namespace Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutUnfold
     {
@@ -13,7 +13,10 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         {
             static IEnumerable<int> shrink(int x) => new[] { x };
 
-            var exampleSpace = ES.ExampleSpace.Unfold(value, shrink, ES.MeasureFunc.Unmeasured<int>());
+            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink,
+                GC.ExampleSpaces.MeasureFunc.Unmeasured<int>());
 
             Assert.Equal(new [] { value }, exampleSpace.TraverseGreedy().Select(problem => problem.Value));
         }
@@ -23,7 +26,10 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         {
             static IEnumerable<int> shrink(int x) => x <= 1 ? Enumerable.Empty<int>() : new[] { x - 1 };
 
-            var exampleSpace = ES.ExampleSpace.Unfold(10, shrink, ES.MeasureFunc.Unmeasured<int>());
+            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(
+                10,
+                shrink,
+                GC.ExampleSpaces.MeasureFunc.Unmeasured<int>());
 
             Assert.Equal(
                 new[] { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 },

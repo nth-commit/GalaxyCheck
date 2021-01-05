@@ -2,7 +2,7 @@
 using Xunit;
 using S = GalaxyCheck.Sizing;
 
-namespace GalaxyCheck.Tests.Sizing.Size
+namespace Tests.Sizing.Size
 {
     public class AboutSize
     {

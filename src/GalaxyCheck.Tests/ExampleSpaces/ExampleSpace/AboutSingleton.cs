@@ -1,16 +1,15 @@
 ﻿using FsCheck.Xunit;
-using GalaxyCheck.ExampleSpaces;
 using Xunit;
-using ES = GalaxyCheck.ExampleSpaces;
+using GC = GalaxyCheck;
 
-namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
+namespace Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutSingleton
     {
         [Property]
         public void ItContainsOneExample(object value)
         {
-            var exampleSpace = ES.ExampleSpace.Singleton(value);
+            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value);
 
             var example = Assert.Single(exampleSpace.TraverseGreedy());
             Assert.Equal(value, example.Value);
@@ -20,8 +19,11 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
         [Property]
         public void ItBehavesLikeUnfoldWithPrimitiveFunctions(object value)
         {
-            var singletonExampleSpace = ES.ExampleSpace.Singleton(value);
-            var unfoldedExampleSpace = ES.ExampleSpace.Unfold(value, ES.ShrinkFunc.None<object>(), ES.MeasureFunc.Unmeasured<object>());
+            var singletonExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value);
+            var unfoldedExampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                GC.ExampleSpaces.ShrinkFunc.None<object>(),
+                GC.ExampleSpaces.MeasureFunc.Unmeasured<object>());
 
             Assert.Equal(unfoldedExampleSpace.TraverseGreedy(), singletonExampleSpace.TraverseGreedy());
         }

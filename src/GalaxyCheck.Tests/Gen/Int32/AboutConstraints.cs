@@ -2,25 +2,26 @@
 using FsCheck.Xunit;
 using FsCheck;
 using System;
-using G = GalaxyCheck.Gen;
-using static GalaxyCheck.Tests.TestUtils;
+using GalaxyCheck;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Gen.Int32
+namespace Tests.Gen.Int32
 {
     public class AboutConstraints
     {
         [Property]
-        public Property ItProducesValuesGreaterThanOrEqualMin(int min, int max, int origin, G.Bias bias)
+        public FsCheck.Property ItProducesValuesGreaterThanOrEqualMin(int min, int max, int origin, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32()
+                var gen = GC.Gen.Int32()
                     .GreaterThanEqual(min)
                     .LessThanEqual(max)
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.Sample(opts => opts.WithSeed(seed));
+                var sample = gen.Sample(new RunConfig(seed: seed));
 
                 Assert.All(sample, x => Assert.True(x >= min));
             });
@@ -29,17 +30,17 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property ItProducesValuesLessThanOrEqualMax(int min, int max, int origin, G.Bias bias)
+        public FsCheck.Property ItProducesValuesLessThanOrEqualMax(int min, int max, int origin, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32()
+                var gen = GC.Gen.Int32()
                     .GreaterThanEqual(min)
                     .LessThanEqual(max)
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.Sample(opts => opts.WithSeed(seed));
+                var sample = gen.Sample(new RunConfig(seed: seed));
 
                 Assert.All(sample, x => Assert.True(x <= max));
             });
@@ -48,16 +49,16 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property ItProducesValuesBetweenRange(int min, int max, int origin, G.Bias bias)
+        public FsCheck.Property ItProducesValuesBetweenRange(int min, int max, int origin, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32()
+                var gen = GC.Gen.Int32()
                     .Between(min, max)
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.Sample(opts => opts.WithSeed(seed));
+                var sample = gen.Sample(new RunConfig(seed: seed));
 
                 Assert.All(sample, x => Assert.InRange(x, min, max));
             });
@@ -68,19 +69,19 @@ namespace GalaxyCheck.Tests.Gen.Int32
         [Property]
         public void BetweenIsResilientToParameterOrdering(int x, int y) => TestWithSeed(seed =>
         {
-            var gen0 = G.Int32().Between(x, y);
-            var gen1 = G.Int32().Between(y, x);
+            var gen0 = GC.Gen.Int32().Between(x, y);
+            var gen1 = GC.Gen.Int32().Between(y, x);
 
             GenAssert.Equal(gen0, gen1, seed);
         });
 
         [Property]
-        public Property BetweenIsEquivalentToGreaterThanEqualAndLessThenEqual(int min, int max)
+        public FsCheck.Property BetweenIsEquivalentToGreaterThanEqualAndLessThenEqual(int min, int max)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max);
-                var gen1 = G.Int32().Between(min, max);
+                var gen0 = GC.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max);
+                var gen1 = GC.Gen.Int32().Between(min, max);
 
                 GenAssert.Equal(gen0, gen1, seed);
             });

@@ -1,19 +1,19 @@
 ﻿using System;
-using G = GalaxyCheck.Gen;
-using static GalaxyCheck.Tests.TestUtils;
 using FsCheck.Xunit;
 using FsCheck;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Gen.Int32
+namespace Tests.Gen.Int32
 {
     public class AboutDefaults
     {
         [Property]
-        public Property TheDefaultMinIsTheMinInt32(int max, int origin, G.Bias bias)
+        public FsCheck.Property TheDefaultMinIsTheMinInt32(int max, int origin, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().LessThanEqual(max).ShrinkTowards(origin).WithBias(bias);
+                var gen0 = GC.Gen.Int32().LessThanEqual(max).ShrinkTowards(origin).WithBias(bias);
                 var gen1 = gen0.GreaterThanEqual(int.MinValue);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -23,11 +23,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property TheDefaultMaxIsTheMaxInt32(int min, int origin, G.Bias bias)
+        public FsCheck.Property TheDefaultMaxIsTheMaxInt32(int min, int origin, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).ShrinkTowards(origin).WithBias(bias);
+                var gen0 = GC.Gen.Int32().GreaterThanEqual(min).ShrinkTowards(origin).WithBias(bias);
                 var gen1 = gen0.LessThanEqual(int.MaxValue);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -37,11 +37,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property WhenMinIsLessThanEqualZeroAndMaxIsGreaterThanEqualZero_TheDefaultOriginIsZero(int min, int max, G.Bias bias)
+        public FsCheck.Property WhenMinIsLessThanEqualZeroAndMaxIsGreaterThanEqualZero_TheDefaultOriginIsZero(int min, int max, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
+                var gen0 = GC.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
                 var gen1 = gen0.ShrinkTowards(0);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -51,11 +51,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property WhenMinIsGreaterThanZero_TheDefaultOriginIsMin(int min, int max, G.Bias bias)
+        public FsCheck.Property WhenMinIsGreaterThanZero_TheDefaultOriginIsMin(int min, int max, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
+                var gen0 = GC.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
                 var gen1 = gen0.ShrinkTowards(min);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -65,11 +65,11 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property WhenMaxIsLessThanZero_TheDefaultOriginIsMax(int min, int max, G.Bias bias)
+        public FsCheck.Property WhenMaxIsLessThanZero_TheDefaultOriginIsMax(int min, int max, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
+                var gen0 = GC.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max).WithBias(bias);
                 var gen1 = gen0.ShrinkTowards(max);
 
                 GenAssert.Equal(gen0, gen1, seed);
@@ -79,12 +79,12 @@ namespace GalaxyCheck.Tests.Gen.Int32
         }
 
         [Property]
-        public Property TheDefaultBiasIsLinear(int min, int max, int origin)
+        public FsCheck.Property TheDefaultBiasIsLinear(int min, int max, int origin)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen0 = G.Int32().GreaterThanEqual(min).LessThanEqual(max).ShrinkTowards(origin);
-                var gen1 = gen0.WithBias(G.Bias.Linear);
+                var gen0 = GC.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max).ShrinkTowards(origin);
+                var gen1 = gen0.WithBias(GC.Gen.Bias.Linear);
 
                 GenAssert.Equal(gen0, gen1, seed);
             });

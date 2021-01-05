@@ -73,3 +73,15 @@ This means we need to place an error signal into the stream, so that the consume
 It's a feature that generators produce streams rather than single values. It enables infinite loop handling (we can write discard tokens into the stream, then the consumer can give up after seeing a certain density of discards). Because a generator needs to produce an arbitrary amount of iterations whenever it's called, then consumers should be prepared for excruciatingly large amounts of iterations. To ensure they can handle excruciatingly large streams, then we should always be generating infinite streams. For the stream aggregating code to be regular, then streams should always be infinite. This includes when streams terminate by error - rather than terminating they should repeat the error token.
 
 2021-01-03
+
+## Properties are generators
+
+This is an aspirational decision.
+
+Properties are basically a boolean generator, indicating whether the the iteration passed or failed.
+
+However, there is a fair bit more to them. For instance, they terminate when falsified, they need to be repeatable without re-shrinking, they need to run with a varying size. We should hopefully be able to either lift these special behaviours into the generator behaviour, or pull it out into the `Check` aggregation function.
+
+If we are successful, it means we will get sampling and printing of properties for free, and there will be less code to maintain.
+
+2021-01-05

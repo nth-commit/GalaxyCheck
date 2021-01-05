@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using ES = GalaxyCheck.ExampleSpaces;
+using GC = GalaxyCheck;
 
-namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
+namespace Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutSelect
     {
@@ -16,7 +16,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = ES.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             Assert.Equal(
                 sourceExampleSpace.TraverseGreedy().Select(example => selector(example.Value)),
@@ -30,7 +30,7 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = ES.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             Assert.Equal(
                 sourceExampleSpace.TraverseGreedy().Select(example => selector(example.Value)),

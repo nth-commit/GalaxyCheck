@@ -2,7 +2,7 @@
 using Xunit;
 using R = GalaxyCheck.Random;
 
-namespace GalaxyCheck.Tests.Random.Rng
+namespace Tests.Random.Rng
 {
     public class AboutSpawn
     {

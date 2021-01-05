@@ -1,16 +1,16 @@
 ﻿using FsCheck.Xunit;
-using GalaxyCheck.Aggregators;
 using Xunit;
-using G = GalaxyCheck.Gen;
+using GalaxyCheck;
+using GC = GalaxyCheck;
 
-namespace GalaxyCheck.Tests.Gen.Constant
+namespace Tests.Gen.Constant
 {
     public class AboutConstant
     {
         [Property]
         public void ItProducesTheGivenValue(object value)
         {
-            var gen = G.Constant(value);
+            var gen = GC.Gen.Constant(value);
 
             var sample = gen.Sample();
 
@@ -24,7 +24,7 @@ namespace GalaxyCheck.Tests.Gen.Constant
         [Property]
         public void ItDoesNotConsumeRandomness(object value)
         {
-            var gen = G.Constant(value);
+            var gen = GC.Gen.Constant(value);
 
             var sample = gen.SampleWithMetrics();
 

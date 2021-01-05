@@ -1,22 +1,21 @@
 ﻿using Xunit;
-using G = GalaxyCheck.Gen;
-using S = GalaxyCheck.Sizing;
-using static GalaxyCheck.Tests.TestUtils;
 using System.Linq;
 using FsCheck.Xunit;
-using GalaxyCheck.Abstractions;
+using GalaxyCheck;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Gen.Int32
+namespace Tests.Gen.Int32
 {
     [Properties(Arbitrary = new[] { typeof(ArbitrarySize) }, MaxTest = 10)]
     public class AboutDistribution
     {
         [Property]
-        public void WhenBiasIsNone_ItHasAnEvenDistribution(ISize size) => TestWithSeed(seed =>
+        public void WhenBiasIsNone_ItHasAnEvenDistribution(GC.Abstractions.ISize size) => TestWithSeed(seed =>
         {
-            var gen = G.Int32().Between(0, 100).WithBias(G.Bias.None);
+            var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.None);
 
-            var values = gen.Sample(opts => opts.WithSeed(seed).WithIterations(10000).WithSize(size));
+            var values = gen.Sample(new RunConfig(iterations: 10000, seed: seed, size: size));
             var mean = values.Average();
 
             Assert.Equal(50, mean, 0);
@@ -27,9 +26,9 @@ namespace GalaxyCheck.Tests.Gen.Int32
         {
             TestWithSeed(seed =>
             {
-                var gen = G.Int32().Between(0, 100).WithBias(G.Bias.Linear);
+                var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.Linear);
 
-                var values = gen.Sample(opts => opts.WithSeed(seed).WithIterations(10000).WithSize(S.Size.MinValue));
+                var values = gen.Sample(new RunConfig(iterations: 10000, seed: seed, size: GC.Sizing.Size.MinValue));
 
                 Assert.All(values, x => Assert.Equal(0, x));
             });
@@ -40,9 +39,9 @@ namespace GalaxyCheck.Tests.Gen.Int32
         {
             TestWithSeed(seed =>
             {
-                var gen = G.Int32().Between(0, 100).WithBias(G.Bias.Linear);
+                var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.Linear);
 
-                var values = gen.Sample(opts => opts.WithSeed(seed).WithIterations(10000).WithSize(new S.Size(50)));
+                var values = gen.Sample(new RunConfig(iterations: 10000, seed: seed, size: new GC.Sizing.Size(50)));
                 var mean = values.Average();
 
                 Assert.Equal(25, mean, 0);
@@ -54,9 +53,9 @@ namespace GalaxyCheck.Tests.Gen.Int32
         {
             TestWithSeed(seed =>
             {
-                var gen = G.Int32().Between(0, 100).WithBias(G.Bias.Linear);
+                var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.Linear);
 
-                var values = gen.Sample(opts => opts.WithSeed(seed).WithIterations(10000).WithSize(S.Size.MaxValue));
+                var values = gen.Sample(new RunConfig(iterations: 10000, seed: seed, size: GC.Sizing.Size.MaxValue));
                 var mean = values.Average();
 
                 Assert.Equal(50, mean, 0);

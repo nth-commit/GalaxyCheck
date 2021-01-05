@@ -4,6 +4,7 @@ using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Gens;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GalaxyCheck
 {
@@ -31,7 +32,7 @@ namespace GalaxyCheck
         /// <typeparam name="T">The type of the generator's value.</typeparam>
         /// <param name="value">The constant value the generator should produce.</param>
         /// <returns>The new generator.</returns>
-        public static IGenBuilder<T> Constant<T>(T value) => PrimitiveGenBuilder.Create(
+        public static IGen<T> Constant<T>(T value) => new PrimitiveGen<T>(
             (useNextInt, size) => value,
             ShrinkFunc.None<T>(),
             MeasureFunc.Unmeasured<T>());
@@ -42,16 +43,26 @@ namespace GalaxyCheck
         /// the produced integers further.
         /// </summary>
         /// <returns></returns>
-        public static IInt32GenBuilder Int32() => Int32GenBuilder.Create();
+        public static IInt32Gen Int32() => new Int32Gen();
 
         /// <summary>
-        /// Enumerates a generator to produce a sample of it's values.
+        /// Projects each element in a generator to a new form.
         /// </summary>
         /// <typeparam name="T">The type of the generator's value.</typeparam>
-        /// <param name="gen">The generator to sample.</param>
-        /// <param name="configure">An optional configuration function for the sample.</param>
-        /// <returns>A list of values produced by the generator.</returns>
-        public static List<T> Sample<T>(this IGen<T> gen, Func<SampleOptions, SampleOptions>? configure = null) =>
-            gen.SampleWithMetrics(configure).Values;
+        /// <typeparam name="U">The type of the resultant generator's value.</typeparam>
+        /// <param name="gen">The generator to apply the projection to.</param>
+        /// <param name="selector">A transform function to apply to each value.</param>
+        /// <returns>A new generator with the projection applied.</returns>
+        public static IGen<U> Select<T, U>(this IGen<T> gen, Func<T, U> selector) => gen.Transform(stream =>
+        {
+            return stream.Select(iteration => iteration.Match<T, GenIteration<U>>(
+                onInstance: (instance) => new GenInstance<U>(instance.InitialRng, instance.NextRng, instance.ExampleSpace.Select(selector)),
+                onError: (error) => new GenError<U>(error.InitialRng, error.NextRng, error.GenName, error.Message)));
+        });
+
+        internal static IGen<U> Transform<T, U>(
+            this IGen<T> gen,
+            Func<IEnumerable<GenIteration<T>>, IEnumerable<GenIteration<U>>> transformer) =>
+                new FunctionGen<U>((rng, size) => transformer(gen.Run(rng, size)));
     }
 }

@@ -1,34 +1,33 @@
-﻿using FsCheck.Xunit;
+﻿using FsCheck;
+using FsCheck.Xunit;
 using System;
 using Xunit;
-using GalaxyCheck.Aggregators;
-using G = GalaxyCheck.Gen;
-using static GalaxyCheck.Tests.TestUtils;
-using FsCheck;
+using GalaxyCheck;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Gen.Int32
+namespace Tests.Gen.Int32
 {
+    [Properties(Arbitrary = new [] { typeof(ArbitraryIterations) })]
     public class AboutRandomnessConsumption
     {
         [Property]
-        public Property ItConsumesRandomnessOncePerIteration(int min, int max, int origin, G.Bias bias)
+        public FsCheck.Property ItConsumesRandomnessOncePerIteration(int min, int max, int origin, GC.Gen.Bias bias, Iterations iterations)
         {
-            var iterations = 10;
-
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32()
+                var gen = GC.Gen.Int32()
                     .GreaterThanEqual(min)
                     .LessThanEqual(max)
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.SampleWithMetrics(opts => opts.WithSeed(seed).WithIterations(iterations));
+                var sample = gen.SampleWithMetrics(new RunConfig(iterations: iterations.Value, seed: seed));
 
-                Assert.Equal(iterations, sample.RandomnessConsumption);
+                Assert.Equal(iterations.Value, sample.RandomnessConsumption);
             });
 
-            return test.When(min <= origin && origin <= max);
+            return test.When(iterations.Value > 0 && min <= origin && origin <= max);
         }
     }
 }

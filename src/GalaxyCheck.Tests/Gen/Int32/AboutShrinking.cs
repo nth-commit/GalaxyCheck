@@ -1,19 +1,24 @@
 ﻿using FsCheck;
 using FsCheck.Xunit;
 using System;
-using G = GalaxyCheck.Gen;
-using static GalaxyCheck.Tests.TestUtils;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
-namespace GalaxyCheck.Tests.Gen.Int32
+namespace Tests.Gen.Int32
 {
     public class AboutShrinking
     {
         [Property]
-        public Property ItShrinksTowardsTheSuppliedOrigin(int min, int max, int origin, G.Bias bias)
+        public FsCheck.Property ItShrinksTowardsTheSuppliedOrigin(int min, int max, int origin, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var gen = G.Int32().GreaterThanEqual(min).LessThanEqual(max).ShrinkTowards(origin).WithBias(bias);
+                var gen = GC.Gen
+                    .Int32()
+                    .GreaterThanEqual(min)
+                    .LessThanEqual(max)
+                    .ShrinkTowards(origin)
+                    .WithBias(bias);
 
                 GenAssert.ShrinksTo(gen, origin, seed);
             });
