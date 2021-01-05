@@ -1,6 +1,8 @@
 ﻿using GalaxyCheck.Abstractions;
+using GalaxyCheck.Utility;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace GalaxyCheck.ExampleSpaces
@@ -142,26 +144,59 @@ namespace GalaxyCheck.ExampleSpaces
         /// <param name="measure"></param>
         /// <returns></returns>
         public static ExampleSpace<T> Unfold<T>(T rootValue, ShrinkFunc<T> shrink, MeasureFunc<T> measure) =>
-            UnfoldInternal(rootValue, shrink, measure, x => x);
+            UnfoldInternal(rootValue, shrink, measure, x => x, ImmutableHashSet.Create<T>(rootValue));
 
         private static PopulatedExampleSpace<TProjection> UnfoldInternal<TAccumulator, TProjection>(
             TAccumulator accumulator,
             ShrinkFunc<TAccumulator> shrink,
             MeasureFunc<TAccumulator> measure,
-            Func<TAccumulator, TProjection> projection)
+            Func<TAccumulator, TProjection> projection,
+            ImmutableHashSet<TAccumulator> encountered)
         {
             var value = projection(accumulator);
             var distance = measure(accumulator);
             return new PopulatedExampleSpace<TProjection>(
                 new Example<TProjection>(value, distance),
-                UnfoldSubspaceInternal(shrink(accumulator), shrink, measure, projection));
+                UnfoldSubspaceInternal(shrink(accumulator), shrink, measure, projection, encountered));
         }
 
         private static IEnumerable<PopulatedExampleSpace<TProjection>> UnfoldSubspaceInternal<TAccumulator, TProjection>(
             IEnumerable<TAccumulator> accumulators,
             ShrinkFunc<TAccumulator> shrink,
             MeasureFunc<TAccumulator> measure,
-            Func<TAccumulator, TProjection> projection) =>
-                accumulators.Select(accumulator => UnfoldInternal(accumulator, shrink, measure, projection));
+            Func<TAccumulator, TProjection> projection,
+            ImmutableHashSet<TAccumulator> encountered) =>
+                accumulators
+                    .Scan(
+                        new UnfoldSubspaceState<TAccumulator>(new Option.None<TAccumulator>(), encountered),
+                        (acc, curr) =>
+                        {
+                            var hasBeenEncountered = acc.Encountered.Contains(curr);
+                            return hasBeenEncountered
+                                ? new UnfoldSubspaceState<TAccumulator>(new Option.None<TAccumulator>(), acc.Encountered)
+                                : new UnfoldSubspaceState<TAccumulator>(new Option.Some<TAccumulator>(curr), acc.Encountered.Add(curr));
+                        }
+                    )
+                    .Select(x => x.UnencounteredValue switch
+                    {
+                        Option.None<TAccumulator> _ => null,
+                        Option.Some<TAccumulator> some => UnfoldInternal(some.Value, shrink, measure, projection, x.Encountered),
+                        _ => null
+                    })
+                    .Where(exampleSpace => exampleSpace != null)
+                    .Cast<PopulatedExampleSpace<TProjection>>();
+
+        private class UnfoldSubspaceState<T>
+        {
+            public Option<T> UnencounteredValue { get; init; }
+
+            public ImmutableHashSet<T> Encountered { get; init; }
+
+            public UnfoldSubspaceState(Option<T> unencounteredValue, ImmutableHashSet<T> encountered)
+            {
+                UnencounteredValue = unencounteredValue;
+                Encountered = encountered;
+            }
+        }
     }
 }

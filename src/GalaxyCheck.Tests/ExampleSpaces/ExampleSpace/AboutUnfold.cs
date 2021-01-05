@@ -1,5 +1,4 @@
 ﻿using FsCheck.Xunit;
-using GalaxyCheck.ExampleSpaces;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -9,6 +8,16 @@ namespace GalaxyCheck.Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutUnfold
     {
+        [Property]
+        public void ItRemovesDuplicates(int value)
+        {
+            static IEnumerable<int> shrink(int x) => new[] { x };
+
+            var exampleSpace = ES.ExampleSpace.Unfold(value, shrink, ES.MeasureFunc.Unmeasured<int>());
+
+            Assert.Equal(new [] { value }, exampleSpace.TraverseGreedy().Select(problem => problem.Value));
+        }
+
         [Property]
         public void ExampleOfUnfoldWithSimpleDecrementShrinker()
         {
