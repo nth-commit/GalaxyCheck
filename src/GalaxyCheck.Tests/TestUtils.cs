@@ -43,6 +43,7 @@ namespace Tests
             SnapshotWithSeed(seed =>
             {
                 return gen
+                    .Advanced
                     .SampleExampleSpaces(new RunConfig(iterations: 1, seed: seed, size: GalaxyCheck.Sizing.Size.MaxValue))
                     .Single()
                     .Render(x => x!.ToString()!);

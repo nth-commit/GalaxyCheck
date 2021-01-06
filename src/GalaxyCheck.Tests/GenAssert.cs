@@ -1,6 +1,5 @@
 ﻿using GalaxyCheck;
 using GalaxyCheck.Abstractions;
-using GalaxyCheck.Aggregators;
 using System.Linq;
 using Xunit;
 
@@ -11,8 +10,8 @@ namespace Tests
         public static void Equal<T>(IGen<T> expected, IGen<T> actual, int seed)
         {
             var config = new RunConfig(seed: seed);
-            var expectedSample = expected.SampleExampleSpaces(config);
-            var actualSample = actual.SampleExampleSpaces(config);
+            var expectedSample = expected.Advanced.SampleExampleSpaces(config);
+            var actualSample = actual.Advanced.SampleExampleSpaces(config);
 
             Assert.All(
                 Enumerable.Zip(expectedSample, actualSample),

@@ -85,7 +85,7 @@ namespace GalaxyCheck
 
         private static IEnumerable<GenIteration<PropertyResult<T>>> CheckOnce<T>(IProperty<T> property, IRng rng, ISize size)
         {
-            foreach (var iteration in property.Run(rng, size))
+            foreach (var iteration in property.Advanced.Run(rng, size))
             {
                 yield return iteration;
 

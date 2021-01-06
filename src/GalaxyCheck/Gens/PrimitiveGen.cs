@@ -8,7 +8,7 @@ namespace GalaxyCheck.Gens
 
     public delegate T StatefulGenFunc<T>(NextIntFunc useNextInt, ISize size);
 
-    public class PrimitiveGen<T> : IGen<T>
+    public class PrimitiveGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly StatefulGenFunc<T> _generate;
         private readonly ShrinkFunc<T> _shrink;
@@ -21,7 +21,7 @@ namespace GalaxyCheck.Gens
             _measure = measure;
         }
 
-        public IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
+        protected override IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
         {
             NextIntFunc useNextInt = (min, max) =>
             {

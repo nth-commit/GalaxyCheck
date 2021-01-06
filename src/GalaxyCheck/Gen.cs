@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck.Abstractions;
-using GalaxyCheck.Aggregators;
 using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Gens;
 using System;
@@ -63,6 +62,6 @@ namespace GalaxyCheck
         internal static IGen<U> Transform<T, U>(
             this IGen<T> gen,
             Func<IEnumerable<GenIteration<T>>, IEnumerable<GenIteration<U>>> transformer) =>
-                new FunctionGen<U>((rng, size) => transformer(gen.Run(rng, size)));
+                new FunctionGen<U>((rng, size) => transformer(gen.Advanced.Run(rng, size)));
     }
 }

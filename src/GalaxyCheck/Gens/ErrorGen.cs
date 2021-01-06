@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Gens
 {
-    public class ErrorGen<T> : IGen<T>
+    public class ErrorGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly string _genName;
         private readonly string _message;
@@ -14,7 +14,7 @@ namespace GalaxyCheck.Gens
             _message = message;
         }
 
-        public IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
+        protected override IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
         {
             while (true)
             {

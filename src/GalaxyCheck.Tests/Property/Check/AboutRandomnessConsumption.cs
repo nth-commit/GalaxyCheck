@@ -26,7 +26,7 @@ namespace Tests.Property.Check
                 var property = GC.Property.ForAll(gen, _ => true);
                 var config = new RunConfig(iterations: iterations.Value, seed: seed);
 
-                var sample = gen.SampleWithMetrics(config);
+                var sample = gen.Advanced.SampleWithMetrics(config);
                 var check = property.Check(config);
 
                 Assert.Equal(sample.RandomnessConsumption, check.RandomnessConsumption);

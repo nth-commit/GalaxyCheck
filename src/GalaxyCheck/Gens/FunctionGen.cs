@@ -5,7 +5,7 @@ namespace GalaxyCheck.Gens
 {
     public delegate IEnumerable<GenIteration<T>> GenFunc<T>(IRng rng, ISize size);
 
-    public class FunctionGen<T> : IGen<T>
+    public class FunctionGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly GenFunc<T> _func;
 
@@ -14,6 +14,6 @@ namespace GalaxyCheck.Gens
             _func = func;
         }
 
-        public IEnumerable<GenIteration<T>> Run(IRng rng, ISize size) => _func(rng, size);
+        protected override IEnumerable<GenIteration<T>> Run(IRng rng, ISize size) => _func(rng, size);
     }
 }

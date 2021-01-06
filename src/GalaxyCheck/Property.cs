@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.Abstractions;
+using GalaxyCheck.Gens;
 using System;
 using System.Collections.Generic;
 
@@ -11,7 +12,7 @@ namespace GalaxyCheck
                 ? new PropertyResult.Success<T0>()
                 : new PropertyResult.Failure<T0>()));
 
-        private class PropertyImpl<T0> : IProperty<T0>
+        private class PropertyImpl<T0> : BaseGen<PropertyResult<T0>>, IProperty<T0>
         {
             private readonly IGen<PropertyResult<T0>> _gen;
 
@@ -20,7 +21,8 @@ namespace GalaxyCheck
                 _gen = gen;
             }
 
-            public IEnumerable<GenIteration<PropertyResult<T0>>> Run(IRng rng, ISize size) => _gen.Run(rng, size);
+            protected override IEnumerable<GenIteration<PropertyResult<T0>>> Run(IRng rng, ISize size) =>
+                _gen.Advanced.Run(rng, size);
         }
     }
 }

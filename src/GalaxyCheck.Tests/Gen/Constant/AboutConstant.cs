@@ -26,7 +26,7 @@ namespace Tests.Gen.Constant
         {
             var gen = GC.Gen.Constant(value);
 
-            var sample = gen.SampleWithMetrics();
+            var sample = gen.Advanced.SampleWithMetrics();
 
             Assert.Equal(0, sample.RandomnessConsumption);
         }

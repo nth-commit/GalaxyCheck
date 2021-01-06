@@ -22,7 +22,7 @@ namespace Tests.Gen.Int32
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.SampleWithMetrics(new RunConfig(iterations: iterations.Value, seed: seed));
+                var sample = gen.Advanced.SampleWithMetrics(new RunConfig(iterations: iterations.Value, seed: seed));
 
                 Assert.Equal(iterations.Value, sample.RandomnessConsumption);
             });
