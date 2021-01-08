@@ -9,8 +9,6 @@ namespace GalaxyCheck.Sizing
 
         public static readonly Size MaxValue = new Size(100);
 
-        public int Value { get; init; }
-
         public Size(int value)
         {
             if (value < 0 || value > 100)
@@ -20,5 +18,9 @@ namespace GalaxyCheck.Sizing
 
             Value = value;
         }
+
+        public int Value { get; init; }
+
+        public ISize Increment() => new Size((Value + 1) % 100);
     }
 }

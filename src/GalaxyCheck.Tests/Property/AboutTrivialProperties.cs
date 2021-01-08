@@ -4,6 +4,7 @@ using GalaxyCheck;
 using System;
 using Xunit;
 using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
 namespace Tests.Property
 {
@@ -13,30 +14,26 @@ namespace Tests.Property
         [Property]
         public FsCheck.Property ATriviallyFalsePropertyIsFalsified(Iterations iterations)
         {
-            Action test = () =>
+            Action test = () => TestWithSeed(seed =>
             {
-                var gen = GC.Gen.Constant(false);
-                var property = GC.Property.ForAll(gen, x => x);
+                var property = GC.Gen.Constant(false).ToProperty(x => x);
 
-                var result = property.Check(new RunConfig(iterations: iterations.Value));
+                var falsifiedResult = PropertyAssert.Falsifies(property, seed, iterations: iterations.Value);
 
-                Assert.True(result is CheckResult.Falsified<bool>);
-                Assert.Equal(1, result.Runs);
-            };
+                Assert.Equal(1, falsifiedResult.Iterations);
+            });
 
             return test.When(iterations.Value > 0);
         }
 
         [Property]
-        public void ATriviallyTruePropertyIsNotFalsified(Iterations iterations)
+        public void ATriviallyTruePropertyIsNotFalsified(Iterations iterations) => TestWithSeed(seed =>
         {
-            var gen = GC.Gen.Constant(true);
-            var property = GC.Property.ForAll(gen, x => x);
+            var property = GC.Gen.Constant(true).ToProperty(x => x);
 
-            var result = property.Check(new RunConfig(iterations: iterations.Value));
+            var unfalsifiedResult = PropertyAssert.DoesNotFalsify(property, seed, iterations: iterations.Value);
 
-            Assert.True(result is CheckResult.Unfalsified<bool>);
-            Assert.Equal(iterations.Value, result.Runs);
-        }
+            Assert.Equal(iterations.Value, unfalsifiedResult.Iterations);
+        });
     }
 }

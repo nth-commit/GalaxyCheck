@@ -11,13 +11,6 @@ namespace Tests.Property.Check
     [Properties(Arbitrary = new [] { typeof(ArbitraryIterations) })]
     public class AboutRandomnessConsumption
     {
-        public static class ArbitraryGen
-        {
-            public static Arbitrary<GC.Abstractions.IGen<object>> Gen() => FsCheck.Gen.Elements(
-                GC.Gen.Constant(false).Select(x => x as object),
-                GC.Gen.Int32().Select(x => x as object)).ToArbitrary();
-        }
-
         [Property(Arbitrary = new[] { typeof(ArbitraryGen) })]
         public FsCheck.Property ItConsumesRandomnessLikeSample(Iterations iterations, GC.Abstractions.IGen<object> gen)
         {

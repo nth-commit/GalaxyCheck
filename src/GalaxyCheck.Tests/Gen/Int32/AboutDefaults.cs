@@ -6,6 +6,7 @@ using static Tests.TestUtils;
 
 namespace Tests.Gen.Int32
 {
+    [Properties(MaxTest = 10)]
     public class AboutDefaults
     {
         [Property]

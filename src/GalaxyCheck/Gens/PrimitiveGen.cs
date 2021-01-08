@@ -36,7 +36,7 @@ namespace GalaxyCheck.Gens
 
                 var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt, size), _shrink, _measure);
 
-                yield return new GenInstance<T>(initialRng, rng, exampleSpace);
+                yield return new GenInstance<T>(initialRng, size, rng, size, exampleSpace);
             } while (true);
         }
     }

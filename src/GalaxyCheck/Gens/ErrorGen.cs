@@ -18,7 +18,7 @@ namespace GalaxyCheck.Gens
         {
             while (true)
             {
-                yield return new GenError<T>(rng, rng, _genName, _message);
+                yield return new GenError<T>(rng, size, rng, size, _genName, _message);
             }
         }
     }

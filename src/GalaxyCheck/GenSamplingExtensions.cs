@@ -43,7 +43,7 @@ namespace GalaxyCheck
             this IGenAdvanced<T> advanced,
             RunConfig? config = null)
         {
-            config = config ?? new RunConfig();
+            config ??= new RunConfig();
             var rng = config.Rng;
             var iterations = config.Iterations ?? 100;
             var size = config.Size ?? new Size(50);

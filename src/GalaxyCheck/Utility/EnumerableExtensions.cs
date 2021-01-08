@@ -18,6 +18,24 @@ namespace GalaxyCheck.Utility
             }
         }
 
+        public static IEnumerable<T> TakeWhileInclusive<T>(
+            this IEnumerable<T> source,
+            Func<T, bool> pred)
+        {
+            var hasPredFailed = false;
+            foreach (var element in source)
+            {
+                yield return element;
+
+                if (hasPredFailed)
+                {
+                    break;
+                }
+
+                hasPredFailed = !pred(element);
+            }
+        }
+
         public static IEnumerable<T> Unfold<T>(T seed, Func<T, Option<T>> tryGenerateNext)
         {
             var current = seed;

@@ -3,5 +3,7 @@
     public interface ISize
     {
         int Value { get; }
+
+        ISize Increment();
     }
 }
