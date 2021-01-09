@@ -1,5 +1,6 @@
 ﻿using GalaxyCheck.Abstractions;
 using GalaxyCheck.Sizing;
+using GalaxyCheck.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -111,7 +112,29 @@ namespace GalaxyCheck
             IRng rng,
             ISize size)
         {
-            foreach (var iteration in property.Advanced.Run(rng, size))
+            var stream = property.Advanced
+                .Run(rng, size)
+                .Scan(
+                    new { iteration = (GenIteration<PropertyIteration<T>>?)null, consecutiveDiscards = 0 },
+                    (acc, curr) =>
+                    {
+                        var consecutiveDiscards = curr is GenIteration<PropertyIteration<T>> ? acc.consecutiveDiscards + 1 : 0;
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        return new { iteration = curr, consecutiveDiscards };
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                    })
+                .Skip(1)
+                .Select(x =>
+                {
+                    if (x.consecutiveDiscards > 1000)
+                    {
+                        throw new GenExhaustionException();
+                    }
+
+                    return x.iteration!;
+                });
+
+            foreach (var iteration in stream)
             {
                 yield return iteration;
 

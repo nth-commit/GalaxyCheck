@@ -59,7 +59,29 @@ namespace GalaxyCheck
 
         private static IEnumerable<GenInstance<T>> Sample<T>(this IGenAdvanced<T> advanced, IRng rng, ISize size)
         {
-            foreach (var iteration in advanced.Run(rng, size))
+            var stream = advanced
+                .Run(rng, size)
+                .Scan(
+                    new { iteration = (GenIteration<T>?)null, consecutiveDiscards = 0 },
+                    (acc, curr) =>
+                    {
+                        var consecutiveDiscards = curr is GenDiscard<T> ? acc.consecutiveDiscards + 1 : 0;
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        return new { iteration = curr, consecutiveDiscards };
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                    })
+                .Skip(1)
+                .Select(x =>
+                {
+                    if (x.consecutiveDiscards > 1000)
+                    {
+                        throw new GenExhaustionException();
+                    }
+
+                    return x.iteration!;
+                });
+
+            foreach (var iteration in stream)
             {
                 var valueOption = iteration.Match<T, Option<GenInstance<T>>>(
                     onInstance: instance => new Option.Some<GenInstance<T>>(instance),
