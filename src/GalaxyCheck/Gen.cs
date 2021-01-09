@@ -48,21 +48,46 @@ namespace GalaxyCheck
         /// Projects each element in a generator to a new form.
         /// </summary>
         /// <typeparam name="T">The type of the generator's value.</typeparam>
-        /// <typeparam name="U">The type of the resultant generator's value.</typeparam>
+        /// <typeparam name="TResult">The type of the resultant generator's value.</typeparam>
         /// <param name="gen">The generator to apply the projection to.</param>
         /// <param name="selector">A transform function to apply to each value.</param>
         /// <returns>A new generator with the projection applied.</returns>
-        public static IGen<U> Select<T, U>(this IGen<T> gen, Func<T, U> selector) => gen.Transform(stream =>
+        public static IGen<TResult> Select<T, TResult>(this IGen<T> gen, Func<T, TResult> selector)
         {
-            return stream.Select(iteration =>
+            return gen.Transform(stream => stream.Select(iteration =>
             {
                 var iterationBuilder = GenIterationBuilder.FromIteration(iteration);
 
-                return iteration.Match<T, GenIteration<U>>(
+                return iteration.Match<T, GenIteration<TResult>>(
                     onInstance: (instance) => iterationBuilder.ToInstance(instance.ExampleSpace.Select(selector)),
-                    onError: (error) => iterationBuilder.ToError<U>(error.GenName, error.Message));
-            });
+                    onDiscard: (discard) => iterationBuilder.ToDiscard<TResult>(),
+                    onError: (error) => iterationBuilder.ToError<TResult>(error.GenName, error.Message));
+            }));
+        }
+
+        /// <summary>
+        /// Filters a generator's values based on a predicate. Does not alter the structure of the stream. Instead,
+        /// it replaces the filtered value with a token, which enables discard counting whilst running the generator.
+        /// </summary>
+        /// <typeparam name="T">The type of the genreator's value.</typeparam>
+        /// <param name="gen">The generator to apply the predicate to.</param>
+        /// <param name="pred">A predicate function that tests each value.</param>
+        /// <returns>A new generator with the filter applied.</returns>
+        public static IGen<T> Where<T>(this IGen<T> gen, Func<T, bool> pred) => gen.Transform(stream =>
+        {
+            return stream.Select(iteration => iteration.Match<T, GenIteration<T>>(
+                onInstance: instance =>
+                {
+                    var iterationBuilder = GenIterationBuilder.FromIteration(iteration);
+                    var filteredExampleSpace = instance.ExampleSpace.Where(pred);
+                    return filteredExampleSpace.Any()
+                        ? iterationBuilder.ToInstance(filteredExampleSpace)
+                        : iterationBuilder.ToDiscard<T>();
+                },
+                onDiscard: discard => discard,
+                onError: error => error));
         });
+
 
         /// <summary>
         /// Converts a generator into a property the supplied property function.

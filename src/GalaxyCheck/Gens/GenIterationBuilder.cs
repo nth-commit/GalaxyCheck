@@ -38,5 +38,11 @@ namespace GalaxyCheck.Gens
             _parameters.NextSize,
             genName,
             message);
+
+        public GenDiscard<T> ToDiscard<T>() => new GenDiscard<T>(
+            _parameters.InitialRng,
+            _parameters.InitialSize,
+            _parameters.NextRng,
+            _parameters.NextSize);
     }
 }

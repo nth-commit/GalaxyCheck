@@ -62,8 +62,9 @@ namespace GalaxyCheck
             foreach (var iteration in advanced.Run(rng, size))
             {
                 var valueOption = iteration.Match<T, Option<GenInstance<T>>>(
-                    instance => new Option.Some<GenInstance<T>>(instance),
-                    error => throw new GenErrorException(error.GenName, error.Message));
+                    onInstance: instance => new Option.Some<GenInstance<T>>(instance),
+                    onDiscard: discard => new Option.None<GenInstance<T>>(),
+                    onError: error => throw new GenErrorException(error.GenName, error.Message));
 
                 if (valueOption is Option.Some<GenInstance<T>> valueSome)
                 {

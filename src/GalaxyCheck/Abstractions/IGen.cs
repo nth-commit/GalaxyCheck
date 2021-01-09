@@ -53,33 +53,45 @@ namespace GalaxyCheck.Abstractions
         }
     }
 
-    public sealed record GenInstance<T>(IRng InitialRng, ISize InitialSize, IRng NextRng, ISize NextSize, IExampleSpace<T> ExampleSpace)
-        : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
+    public sealed record GenInstance<T>(
+        IRng InitialRng,
+        ISize InitialSize,
+        IRng NextRng,
+        ISize NextSize,
+        IExampleSpace<T> ExampleSpace)
+            : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
 
-    public sealed record GenError<T>(IRng InitialRng, ISize InitialSize, IRng NextRng, ISize NextSize, string GenName, string Message)
-        : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
+    public sealed record GenError<T>(
+        IRng InitialRng,
+        ISize InitialSize,
+        IRng NextRng,
+        ISize NextSize,
+        string GenName,
+        string Message)
+            : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
+
+    public sealed record GenDiscard<T>(
+        IRng InitialRng,
+        ISize InitialSize,
+        IRng NextRng,
+        ISize NextSize)
+            : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
 
     public static class GenIterationExtensions
     {
         public static TResult Match<T, TResult>(
             this GenIteration<T> iteration,
             Func<GenInstance<T>, TResult> onInstance,
+            Func<GenDiscard<T>, TResult> onDiscard,
             Func<GenError<T>, TResult> onError)
         {
             return iteration switch
             {
                 GenInstance<T> instance => onInstance(instance),
+                GenDiscard<T> discard => onDiscard(discard),
                 GenError<T> error => onError(error),
                 _ => throw new NotSupportedException()
             };
         }
-
-        //public static GenIteration<TResult> Select<T, TResult>(
-        //    this GenIteration<T> iteration,
-        //    Func<T, TResult> selector)
-        //{
-        //    return iteration.Match(
-        //        onInstance: instance => new GenInstance<TResult>())
-        //}
     }
 }

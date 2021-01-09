@@ -106,7 +106,10 @@ namespace GalaxyCheck
             return currentResult;
         }
 
-        private static IEnumerable<GenIteration<PropertyIteration<T>>> CheckOnce<T>(IProperty<T> property, IRng rng, ISize size)
+        private static IEnumerable<GenIteration<PropertyIteration<T>>> CheckOnce<T>(
+            IProperty<T> property,
+            IRng rng,
+            ISize size)
         {
             foreach (var iteration in property.Advanced.Run(rng, size))
             {
@@ -115,6 +118,7 @@ namespace GalaxyCheck
                 // TODO: Don't break on a discard
                 var shouldBreak = iteration.Match(
                     onInstance: _ => true,
+                    onDiscard: _ => false,
                     onError: _ => true);
 
                 if (shouldBreak)
@@ -132,6 +136,7 @@ namespace GalaxyCheck
                 previousResult,
                 (result, iteration) => iteration.Match(
                     onInstance: instance => MergeInstanceIntoCheckResult(result, instance),
+                    onDiscard: _ => result,
                     onError: error => new CheckResult<T>(
                         new CheckResultState.Error<T>(),
                         result.Iterations,
