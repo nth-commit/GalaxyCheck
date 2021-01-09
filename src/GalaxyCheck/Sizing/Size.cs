@@ -22,5 +22,7 @@ namespace GalaxyCheck.Sizing
         public int Value { get; init; }
 
         public ISize Increment() => new Size((Value + 1) % 100);
+
+        public ISize BigIncrement() => new Size((Value + 10) % 100);
     }
 }

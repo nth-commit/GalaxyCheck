@@ -61,16 +61,7 @@ namespace GalaxyCheck
         {
             var stream = advanced
                 .Run(rng, size)
-                .Scan(
-                    new { iteration = (GenIteration<T>?)null, consecutiveDiscards = 0 },
-                    (acc, curr) =>
-                    {
-                        var consecutiveDiscards = curr is GenDiscard<T> ? acc.consecutiveDiscards + 1 : 0;
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                        return new { iteration = curr, consecutiveDiscards };
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-                    })
-                .Skip(1)
+                .WithConsecutiveDiscardCount()
                 .Select(x =>
                 {
                     if (x.consecutiveDiscards > 1000)
@@ -78,7 +69,7 @@ namespace GalaxyCheck
                         throw new GenExhaustionException();
                     }
 
-                    return x.iteration!;
+                    return x.iteration;
                 });
 
             foreach (var iteration in stream)

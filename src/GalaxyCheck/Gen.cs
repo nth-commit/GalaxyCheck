@@ -1,8 +1,8 @@
 ﻿using GalaxyCheck.Abstractions;
 using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Gens;
+using GalaxyCheck.Utility;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace GalaxyCheck
@@ -31,10 +31,7 @@ namespace GalaxyCheck
         /// <typeparam name="T">The type of the generator's value.</typeparam>
         /// <param name="value">The constant value the generator should produce.</param>
         /// <returns>The new generator.</returns>
-        public static IGen<T> Constant<T>(T value) => new PrimitiveGen<T>(
-            (useNextInt, size) => value,
-            ShrinkFunc.None<T>(),
-            MeasureFunc.Unmeasured<T>());
+        public static IGen<T> Constant<T>(T value) => Advanced.Create((useNextInt, size) => value);
 
         /// <summary>
         /// Creates a generator that produces 32-bit integers. By default, it will generate integers in the full range
@@ -54,15 +51,11 @@ namespace GalaxyCheck
         /// <returns>A new generator with the projection applied.</returns>
         public static IGen<TResult> Select<T, TResult>(this IGen<T> gen, Func<T, TResult> selector)
         {
-            return gen.Transform(stream => stream.Select(iteration =>
-            {
-                var iterationBuilder = GenIterationBuilder.FromIteration(iteration);
+            GenInstanceTransformation<T, TResult> transformation = (instance) => GenIterationBuilder
+                .FromIteration(instance)
+                .ToInstance(instance.ExampleSpace.Select(selector));
 
-                return iteration.Match<T, GenIteration<TResult>>(
-                    onInstance: (instance) => iterationBuilder.ToInstance(instance.ExampleSpace.Select(selector)),
-                    onDiscard: (discard) => iterationBuilder.ToDiscard<TResult>(),
-                    onError: (error) => iterationBuilder.ToError<TResult>(error.GenName, error.Message));
-            }));
+            return gen.TransformInstances(transformation);
         }
 
         /// <summary>
@@ -73,21 +66,57 @@ namespace GalaxyCheck
         /// <param name="gen">The generator to apply the predicate to.</param>
         /// <param name="pred">A predicate function that tests each value.</param>
         /// <returns>A new generator with the filter applied.</returns>
-        public static IGen<T> Where<T>(this IGen<T> gen, Func<T, bool> pred) => gen.Transform(stream =>
+        public static IGen<T> Where<T>(this IGen<T> gen, Func<T, bool> pred)
         {
-            return stream.Select(iteration => iteration.Match<T, GenIteration<T>>(
-                onInstance: instance =>
-                {
-                    var iterationBuilder = GenIterationBuilder.FromIteration(iteration);
-                    var filteredExampleSpace = instance.ExampleSpace.Where(pred);
-                    return filteredExampleSpace.Any()
-                        ? iterationBuilder.ToInstance(filteredExampleSpace)
-                        : iterationBuilder.ToDiscard<T>();
-                },
-                onDiscard: discard => discard,
-                onError: error => error));
-        });
+            GenInstanceTransformation<T, T> applyPredicateToInstance = (instance) =>
+            {
+                var iterationBuilder = GenIterationBuilder.FromIteration(instance);
+                var filteredExampleSpace = instance.ExampleSpace.Where(pred);
+                return filteredExampleSpace.Any()
+                    ? iterationBuilder.ToInstance(filteredExampleSpace)
+                    : iterationBuilder.ToDiscard<T>();
+            };
 
+            GenStreamTransformation<T, T> resizeAndTerminateAfterConsecutiveDiscards = (stream) =>
+            {
+                const int MaxConsecutiveDiscards = 10;
+                return stream
+                    .WithConsecutiveDiscardCount()
+                    .Select((x) =>
+                    {
+                        if (x.consecutiveDiscards >= MaxConsecutiveDiscards)
+                        {
+                            var resizedIteration = GenIterationBuilder
+                                .FromIteration(x.iteration)
+                                .WithNextSize(x.iteration.NextSize.BigIncrement())
+                                .ToDiscard<T>();
+                            return (resizedIteration, x.consecutiveDiscards);
+                        }
+                        else
+                        {
+                            return (x.iteration, x.consecutiveDiscards);
+                        }
+                    })
+                    .TakeWhileInclusive((x) => x.consecutiveDiscards < MaxConsecutiveDiscards)
+                    .Select(x => x.iteration);
+            };
+
+            GenTransformation<T, T> repeat = (IGen<T> gen) => new FunctionGen<T>((rng, size) =>
+            {
+                 return EnumerableExtensions
+                     .Repeat(() => gen.Advanced.Run(rng, size))
+                     .Tap((iteration) =>
+                     {
+                         rng = iteration.NextRng;
+                         size = iteration.NextSize;
+                     });
+             });
+
+            return gen
+                .TransformInstances(applyPredicateToInstance)
+                .TransformStream(resizeAndTerminateAfterConsecutiveDiscards)
+                .Transform(repeat);
+        }
 
         /// <summary>
         /// Converts a generator into a property the supplied property function.
@@ -98,9 +127,15 @@ namespace GalaxyCheck
         /// <returns>The property comprised of the generator and the supplied property function.</returns>
         public static IProperty<T> ToProperty<T>(this IGen<T> gen, Func<T, bool> func) => Property.ForAll(gen, func);
 
-        private static IGen<U> Transform<T, U>(
-            this IGen<T> gen,
-            Func<IEnumerable<GenIteration<T>>, IEnumerable<GenIteration<U>>> transformer) =>
-                new FunctionGen<U>((rng, size) => transformer(gen.Advanced.Run(rng, size)));
+        public static class Advanced
+        {
+            public static IGen<T> Create<T>(
+                StatefulGenFunc<T> generate,
+                ShrinkFunc<T>? shrink = null,
+                MeasureFunc<T>? measure = null) => new PrimitiveGen<T>(
+                    generate,
+                    shrink ?? ShrinkFunc.None<T>(),
+                    measure ?? MeasureFunc.Unmeasured<T>());
+        }
     }
 }

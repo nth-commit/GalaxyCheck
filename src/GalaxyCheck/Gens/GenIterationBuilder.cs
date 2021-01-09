@@ -24,6 +24,12 @@ namespace GalaxyCheck.Gens
             _parameters = parameters;
         }
 
+        public GenIterationBuilder WithNextSize(ISize size) => new GenIterationBuilder(new BaseGenIterationParameters(
+            _parameters.InitialRng,
+            _parameters.InitialSize,
+            _parameters.NextRng,
+            size));
+
         public GenInstance<T> ToInstance<T>(IExampleSpace<T> exampleSpace) => new GenInstance<T>(
             _parameters.InitialRng,
             _parameters.InitialSize,

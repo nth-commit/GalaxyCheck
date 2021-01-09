@@ -5,5 +5,7 @@
         int Value { get; }
 
         ISize Increment();
+
+        ISize BigIncrement();
     }
 }

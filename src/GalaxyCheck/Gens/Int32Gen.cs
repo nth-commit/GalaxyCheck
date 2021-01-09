@@ -109,12 +109,14 @@ namespace GalaxyCheck.Gens
                 _ => throw new NotSupportedException()
             };
 
-            return new PrimitiveGen<int>(
-                (useNextInt, size) =>
-                {
-                    var (min, max) = getBounds(size);
-                    return useNextInt(min, max);
-                },
+            StatefulGenFunc<int> statefulGenFunc = (useNextInt, size) =>
+            {
+                var (min, max) = getBounds(size);
+                return useNextInt(min, max);
+            };
+
+            return Gen.Advanced.Create(
+                statefulGenFunc,
                 ShrinkFunc.Towards(origin),
                 MeasureFunc.DistanceFromOrigin(origin, min, max));
         }
