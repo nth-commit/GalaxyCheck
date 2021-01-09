@@ -1,7 +1,6 @@
 ﻿using FsCheck.Xunit;
 using System;
 using GalaxyCheck;
-using GC = GalaxyCheck;
 using static Tests.TestUtils;
 using Xunit;
 
@@ -11,7 +10,7 @@ namespace Tests.Gen.Sample
     public class AboutExhaustion
     {
         [Property]
-        public void ItExhaustsWithAnImpossiblePredicate(GC.Abstractions.IGen<object> gen0)
+        public void ItExhaustsWithAnImpossiblePredicate(IGen<object> gen0)
         {
             var gen = gen0.Where(_ => false);
 

@@ -1,5 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
-using System;
+﻿using System;
 
 namespace GalaxyCheck.Random
 {

@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck.Abstractions
+﻿namespace GalaxyCheck
 {
     /// <summary>
     /// A side-effect-less random number generator for 32-bit integers.

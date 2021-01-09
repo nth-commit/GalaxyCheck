@@ -1,5 +1,5 @@
-﻿using GalaxyCheck.Abstractions;
-using GalaxyCheck.Gens;
+﻿using GalaxyCheck.Gens;
+using GalaxyCheck.Sizing;
 using System;
 using System.Collections.Generic;
 
@@ -19,7 +19,7 @@ namespace GalaxyCheck
                 _gen = gen;
             }
 
-            protected override IEnumerable<GenIteration<PropertyIteration<T0>>> Run(IRng rng, ISize size) =>
+            protected override IEnumerable<GenIteration<PropertyIteration<T0>>> Run(IRng rng, Size size) =>
                 _gen.Advanced.Run(rng, size);
         }
     }

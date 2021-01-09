@@ -1,9 +1,8 @@
-﻿using GalaxyCheck.Abstractions;
-using System;
+﻿using System;
 
 namespace GalaxyCheck.Sizing
 {
-    public record Size : ISize
+    public record Size
     {
         public static readonly Size MinValue = new Size(0);
 
@@ -21,8 +20,8 @@ namespace GalaxyCheck.Sizing
 
         public int Value { get; init; }
 
-        public ISize Increment() => new Size((Value + 1) % 100);
+        public Size Increment() => new Size((Value + 1) % 100);
 
-        public ISize BigIncrement() => new Size((Value + 10) % 100);
+        public Size BigIncrement() => new Size((Value + 10) % 100);
     }
 }

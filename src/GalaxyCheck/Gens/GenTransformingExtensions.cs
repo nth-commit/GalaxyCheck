@@ -1,6 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
-using GalaxyCheck.Gens;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace GalaxyCheck.Gens

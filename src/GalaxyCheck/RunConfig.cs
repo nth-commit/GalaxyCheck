@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
+﻿using GalaxyCheck.Sizing;
 
 namespace GalaxyCheck
 {
@@ -8,11 +8,11 @@ namespace GalaxyCheck
 
         public int? Seed { get; init; }
 
-        public ISize? Size { get; init; }
+        public Size? Size { get; init; }
 
         public IRng Rng => Seed == null ? Random.Rng.Spawn() : Random.Rng.Create(Seed.Value);
 
-        public RunConfig(int? iterations = null, int? seed = null, ISize? size = null)
+        public RunConfig(int? iterations = null, int? seed = null, Size? size = null)
         {
             Iterations = iterations;
             Seed = seed;
@@ -29,7 +29,7 @@ namespace GalaxyCheck
             seed: seed,
             size: Size);
 
-        public RunConfig WithSize(ISize size) => new RunConfig(
+        public RunConfig WithSize(Size size) => new RunConfig(
             iterations: Iterations,
             seed: Seed,
             size: size);

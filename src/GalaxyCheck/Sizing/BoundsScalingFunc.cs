@@ -1,9 +1,8 @@
-﻿using GalaxyCheck.Abstractions;
-using System;
+﻿using System;
 
 namespace GalaxyCheck.Sizing
 {
-    public delegate (int min, int max) BoundsScalingFunc(ISize size);
+    public delegate (int min, int max) BoundsScalingFunc(Size size);
 
     public delegate BoundsScalingFunc BoundsScalingFactoryFunc(int min, int max, int origin);
 
@@ -22,7 +21,7 @@ namespace GalaxyCheck.Sizing
             return (ScaleLinear(min, origin, size), ScaleLinear(origin, max, size));
         };
 
-        private static int ScaleLinear(int from, int to, ISize size)
+        private static int ScaleLinear(int from, int to, Size size)
         {
             var width = CalculateWidthSafe(from, to);
             var multiplier = (decimal)size.Value / 100;

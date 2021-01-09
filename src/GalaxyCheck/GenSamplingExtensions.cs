@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
+﻿using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Sizing;
 using GalaxyCheck.Utility;
 using System.Collections.Generic;
@@ -36,10 +36,10 @@ namespace GalaxyCheck
                 exampleSpacesSample.RandomnessConsumption);
         }
 
-        public static List<IExampleSpace<T>> SampleExampleSpaces<T>(this IGenAdvanced<T> gen, RunConfig? config = null) =>
+        public static List<ExampleSpace<T>> SampleExampleSpaces<T>(this IGenAdvanced<T> gen, RunConfig? config = null) =>
             gen.SampleExampleSpacesWithMetrics(config).Values;
 
-        public static SampleWithMetricsResult<IExampleSpace<T>> SampleExampleSpacesWithMetrics<T>(
+        public static SampleWithMetricsResult<ExampleSpace<T>> SampleExampleSpacesWithMetrics<T>(
             this IGenAdvanced<T> advanced,
             RunConfig? config = null)
         {
@@ -54,10 +54,10 @@ namespace GalaxyCheck
             var nextRng = instances.Last().NextRng;
             var randomnessConsumption = nextRng.Order - rng.Order;
 
-            return new SampleWithMetricsResult<IExampleSpace<T>>(exampleSpaces, randomnessConsumption);
+            return new SampleWithMetricsResult<ExampleSpace<T>>(exampleSpaces, randomnessConsumption);
         }
 
-        private static IEnumerable<GenInstance<T>> Sample<T>(this IGenAdvanced<T> advanced, IRng rng, ISize size)
+        private static IEnumerable<GenInstance<T>> Sample<T>(this IGenAdvanced<T> advanced, IRng rng, Size size)
         {
             var stream = advanced
                 .Run(rng, size)

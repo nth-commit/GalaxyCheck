@@ -11,7 +11,7 @@ namespace Tests.Property.Check
     public class AboutExhaustion
     {
         [Property]
-        public void ItExhaustsWithAnImpossiblePredicate(GC.Abstractions.IGen<object> gen)
+        public void ItExhaustsWithAnImpossiblePredicate(IGen<object> gen)
         {
             var property = gen.Where(_ => false).ToProperty(x => true);
 

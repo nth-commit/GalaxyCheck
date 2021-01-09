@@ -10,7 +10,7 @@ namespace Tests.Property.Check
     public class AboutSizing
     {
         [Property]
-        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtSmallerSizes(GC.Abstractions.ISize size) => TestWithSeed(seed =>
+        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtSmallerSizes(GC.Sizing.Size size) => TestWithSeed(seed =>
         {
             var property = GC.Gen.Int32().Between(0, 100).ToProperty(x => x > 50);
 
@@ -18,7 +18,7 @@ namespace Tests.Property.Check
         });
 
         [Property]
-        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtLargerSizes(GC.Abstractions.ISize size) => TestWithSeed(seed =>
+        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtLargerSizes(GC.Sizing.Size size) => TestWithSeed(seed =>
         {
             var property = GC.Gen.Int32().Between(0, 100).ToProperty(x => x < 50);
 

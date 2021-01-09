@@ -1,5 +1,5 @@
-﻿using GalaxyCheck.Abstractions;
-using GalaxyCheck.ExampleSpaces;
+﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Sizing;
 using System;
 using System.Collections.Generic;
 
@@ -72,7 +72,7 @@ namespace GalaxyCheck.Gens
 
         public IInt32Gen WithBias(Gen.Bias bias) => WithPartialConfig(bias: bias);
 
-        protected override IEnumerable<GenIteration<int>> Run(IRng rng, ISize size) =>
+        protected override IEnumerable<GenIteration<int>> Run(IRng rng, Size size) =>
             BuildGen(_config).Advanced.Run(rng, size);
 
         private IInt32Gen WithPartialConfig(

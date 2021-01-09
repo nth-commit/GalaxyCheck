@@ -1,6 +1,5 @@
 ﻿using FsCheck;
 using FsCheck.Xunit;
-using GalaxyCheck.Abstractions;
 using System;
 using Xunit;
 using S = GalaxyCheck.Sizing;
@@ -11,7 +10,7 @@ namespace Tests.Sizing.BoundsScalingFunc
     public class AboutUnscaled
     {
         [Property]
-        public FsCheck.Property ItAlwaysReturnsTheGivenBounds(int min, int max, int origin, ISize size)
+        public FsCheck.Property ItAlwaysReturnsTheGivenBounds(int min, int max, int origin, S.Size size)
         {
             Action test = () =>
             {

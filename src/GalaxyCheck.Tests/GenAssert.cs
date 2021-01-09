@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck;
-using GalaxyCheck.Abstractions;
 using System;
 using System.Linq;
 using Xunit;

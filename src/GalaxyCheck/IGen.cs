@@ -1,7 +1,9 @@
-﻿using System;
+﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Sizing;
+using System;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Abstractions
+namespace GalaxyCheck
 {
     /// <summary>
     /// A random data generator.
@@ -31,20 +33,20 @@ namespace GalaxyCheck.Abstractions
         /// <param name="size">The initial size to run the generator with. Determines how large the generated values
         /// are.</param>
         /// <returns>An infinite enumerable of generated iterations.</returns>
-        IEnumerable<GenIteration<T>> Run(IRng rng, ISize size);
+        IEnumerable<GenIteration<T>> Run(IRng rng, Size size);
     }
 
     public abstract record GenIteration<T> 
     {
         public IRng InitialRng { get; init; }
 
-        public ISize InitialSize { get; init; }
+        public Size InitialSize { get; init; }
 
         public IRng NextRng { get; init; }
 
-        public ISize NextSize { get; init; }
+        public Size NextSize { get; init; }
 
-        internal GenIteration(IRng initialRng, ISize initialSize, IRng nextRng, ISize nextSize)
+        internal GenIteration(IRng initialRng, Size initialSize, IRng nextRng, Size nextSize)
         {
             InitialRng = initialRng;
             InitialSize = initialSize;
@@ -55,26 +57,26 @@ namespace GalaxyCheck.Abstractions
 
     public sealed record GenInstance<T>(
         IRng InitialRng,
-        ISize InitialSize,
+        Size InitialSize,
         IRng NextRng,
-        ISize NextSize,
-        IExampleSpace<T> ExampleSpace)
+        Size NextSize,
+        ExampleSpace<T> ExampleSpace)
             : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
 
     public sealed record GenError<T>(
         IRng InitialRng,
-        ISize InitialSize,
+        Size InitialSize,
         IRng NextRng,
-        ISize NextSize,
+        Size NextSize,
         string GenName,
         string Message)
             : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
 
     public sealed record GenDiscard<T>(
         IRng InitialRng,
-        ISize InitialSize,
+        Size InitialSize,
         IRng NextRng,
-        ISize NextSize)
+        Size NextSize)
             : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
 
     public static class GenIterationExtensions

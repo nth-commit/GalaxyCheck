@@ -1,9 +1,9 @@
-﻿using GalaxyCheck.Abstractions;
+﻿using GalaxyCheck.Sizing;
 using System.Collections.Generic;
 
 namespace GalaxyCheck.Gens
 {
-    public delegate IEnumerable<GenIteration<T>> GenFunc<T>(IRng rng, ISize size);
+    public delegate IEnumerable<GenIteration<T>> GenFunc<T>(IRng rng, Size size);
 
     public class FunctionGen<T> : BaseGen<T>, IGen<T>
     {
@@ -14,6 +14,6 @@ namespace GalaxyCheck.Gens
             _func = func;
         }
 
-        protected override IEnumerable<GenIteration<T>> Run(IRng rng, ISize size) => _func(rng, size);
+        protected override IEnumerable<GenIteration<T>> Run(IRng rng, Size size) => _func(rng, size);
     }
 }

@@ -1,5 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
-using GalaxyCheck.Sizing;
+﻿using GalaxyCheck.Sizing;
 using GalaxyCheck.Utility;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,7 @@ namespace GalaxyCheck
         /// <summary>
         /// The size required to repeat the final iteration of the property.
         /// </summary>
-        public ISize Size { get; init; }
+        public Size Size { get; init; }
 
         /// <summary>
         /// The initial RNG that seeded this check.
@@ -32,11 +31,11 @@ namespace GalaxyCheck
         /// <summary>
         /// The initial RNG that seeded this check.
         /// </summary>
-        public ISize InitialSize { get; init; }
+        public Size InitialSize { get; init; }
 
         public IRng NextRng { get; init; }
 
-        public ISize NextSize { get; init; }
+        public Size NextSize { get; init; }
 
         public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
 
@@ -45,11 +44,11 @@ namespace GalaxyCheck
             int iterations,
             int discards,
             IRng rng,
-            ISize size,
+            Size size,
             IRng initialRng,
-            ISize initialSize,
+            Size initialSize,
             IRng nextRng,
-            ISize nextSize)
+            Size nextSize)
         {
             State = state;
             Iterations = iterations;
@@ -110,7 +109,7 @@ namespace GalaxyCheck
         private static IEnumerable<GenIteration<PropertyIteration<T>>> CheckOnce<T>(
             IProperty<T> property,
             IRng rng,
-            ISize size)
+            Size size)
         {
             var stream = property.Advanced
                 .Run(rng, size)

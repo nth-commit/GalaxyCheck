@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck.Abstractions
+﻿namespace GalaxyCheck
 {
     public interface IProperty<T> : IGen<PropertyIteration<T>>
     {

@@ -1,12 +1,12 @@
 ﻿using GalaxyCheck;
-using GalaxyCheck.Abstractions;
+using GalaxyCheck.Sizing;
 using Xunit;
 
 namespace Tests
 {
     public static class PropertyAssert
     {
-        public static (CheckResult<T>, CheckResultState.Falsified<T>) Falsifies<T>(IProperty<T> property, int seed, ISize? size = null, int? iterations = null)
+        public static (CheckResult<T>, CheckResultState.Falsified<T>) Falsifies<T>(IProperty<T> property, int seed, Size? size = null, int? iterations = null)
         {
             var result = property.Check(new RunConfig(iterations: iterations, seed: seed, size: size));
 
@@ -15,7 +15,7 @@ namespace Tests
             return (result, (CheckResultState.Falsified<T>)result.State);
         }
 
-        public static (CheckResult<T>, CheckResultState.Unfalsified<T>) DoesNotFalsify<T>(IProperty<T> property, int seed, ISize? size = null, int? iterations = null)
+        public static (CheckResult<T>, CheckResultState.Unfalsified<T>) DoesNotFalsify<T>(IProperty<T> property, int seed, Size? size = null, int? iterations = null)
         {
             var result = property.Check(new RunConfig(iterations: iterations, seed: seed, size: size));
 

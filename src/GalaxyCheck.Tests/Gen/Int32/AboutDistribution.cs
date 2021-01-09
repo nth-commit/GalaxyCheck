@@ -11,7 +11,7 @@ namespace Tests.Gen.Int32
     public class AboutDistribution
     {
         [Property]
-        public void WhenBiasIsNone_ItHasAnEvenDistribution(GC.Abstractions.ISize size) => TestWithSeed(seed =>
+        public void WhenBiasIsNone_ItHasAnEvenDistribution(GC.Sizing.Size size) => TestWithSeed(seed =>
         {
             var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.None);
 

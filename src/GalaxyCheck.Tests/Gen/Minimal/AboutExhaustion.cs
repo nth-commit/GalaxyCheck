@@ -11,7 +11,7 @@ namespace Tests.Gen.Minimal
     public class AboutExhaustion
     {
         [Property]
-        public void ItExhaustsWithAnImpossiblePredicate(GC.Abstractions.IGen<object> gen0)
+        public void ItExhaustsWithAnImpossiblePredicate(GC.IGen<object> gen0)
         {
             var gen = gen0.Where(_ => false);
 

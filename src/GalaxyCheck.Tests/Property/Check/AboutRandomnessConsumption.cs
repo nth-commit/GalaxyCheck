@@ -12,7 +12,7 @@ namespace Tests.Property.Check
     public class AboutRandomnessConsumption
     {
         [Property(Arbitrary = new[] { typeof(ArbitraryGen) })]
-        public FsCheck.Property ItConsumesRandomnessLikeSample(Iterations iterations, GC.Abstractions.IGen<object> gen)
+        public FsCheck.Property ItConsumesRandomnessLikeSample(Iterations iterations, IGen<object> gen)
         {
             Action test = () => TestWithSeed(seed =>
             {

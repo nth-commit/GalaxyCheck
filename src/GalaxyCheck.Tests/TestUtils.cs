@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck;
-using GalaxyCheck.Abstractions;
 using Snapshooter;
 using Snapshooter.Xunit;
 using System;

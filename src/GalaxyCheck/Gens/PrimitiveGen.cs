@@ -1,12 +1,12 @@
-﻿using GalaxyCheck.Abstractions;
-using GalaxyCheck.ExampleSpaces;
+﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Sizing;
 using System.Collections.Generic;
 
 namespace GalaxyCheck.Gens
 {
     public delegate int NextIntFunc(int min, int max);
 
-    public delegate T StatefulGenFunc<T>(NextIntFunc useNextInt, ISize size);
+    public delegate T StatefulGenFunc<T>(NextIntFunc useNextInt, Size size);
 
     public class PrimitiveGen<T> : BaseGen<T>, IGen<T>
     {
@@ -21,7 +21,7 @@ namespace GalaxyCheck.Gens
             _measure = measure;
         }
 
-        protected override IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
+        protected override IEnumerable<GenIteration<T>> Run(IRng rng, Size size)
         {
             NextIntFunc useNextInt = (min, max) =>
             {

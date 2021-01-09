@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
+﻿using GalaxyCheck.Sizing;
 using System.Collections.Generic;
 
 namespace GalaxyCheck.Gens
@@ -14,7 +14,7 @@ namespace GalaxyCheck.Gens
             _message = message;
         }
 
-        protected override IEnumerable<GenIteration<T>> Run(IRng rng, ISize size)
+        protected override IEnumerable<GenIteration<T>> Run(IRng rng, Size size)
         {
             while (true)
             {

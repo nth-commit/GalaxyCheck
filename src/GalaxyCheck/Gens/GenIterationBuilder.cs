@@ -1,4 +1,5 @@
-﻿using GalaxyCheck.Abstractions;
+﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Sizing;
 
 namespace GalaxyCheck.Gens
 {
@@ -13,9 +14,9 @@ namespace GalaxyCheck.Gens
 
         private record BaseGenIterationParameters(
             IRng InitialRng,
-            ISize InitialSize,
+            Size InitialSize,
             IRng NextRng,
-            ISize NextSize);
+            Size NextSize);
 
         private readonly BaseGenIterationParameters _parameters;
 
@@ -24,13 +25,13 @@ namespace GalaxyCheck.Gens
             _parameters = parameters;
         }
 
-        public GenIterationBuilder WithNextSize(ISize size) => new GenIterationBuilder(new BaseGenIterationParameters(
+        public GenIterationBuilder WithNextSize(Size size) => new GenIterationBuilder(new BaseGenIterationParameters(
             _parameters.InitialRng,
             _parameters.InitialSize,
             _parameters.NextRng,
             size));
 
-        public GenInstance<T> ToInstance<T>(IExampleSpace<T> exampleSpace) => new GenInstance<T>(
+        public GenInstance<T> ToInstance<T>(ExampleSpace<T> exampleSpace) => new GenInstance<T>(
             _parameters.InitialRng,
             _parameters.InitialSize,
             _parameters.NextRng,

@@ -1,12 +1,11 @@
 ﻿using FsCheck;
-using GalaxyCheck.Abstractions;
-using S = GalaxyCheck.Sizing;
+using GC = GalaxyCheck;
 
 namespace Tests
 {
     public static class ArbitrarySize
     {
-        public static Arbitrary<ISize> Size() => FsCheck.Gen.Choose(0, 100).Select<int, ISize>(x => new S.Size(x)).ToArbitrary();
+        public static Arbitrary<GC.Sizing.Size> Size() => FsCheck.Gen.Choose(0, 100).Select(x => new GC.Sizing.Size(x)).ToArbitrary();
 
     }
 }

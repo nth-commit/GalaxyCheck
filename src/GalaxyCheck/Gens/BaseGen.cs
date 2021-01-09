@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
+﻿using GalaxyCheck.Sizing;
 using System.Collections.Generic;
 
 namespace GalaxyCheck.Gens
@@ -14,7 +14,7 @@ namespace GalaxyCheck.Gens
                 _gen = gen;
             }
 
-            public IEnumerable<GenIteration<T>> Run(IRng rng, ISize size) => _gen.Run(rng, size);
+            public IEnumerable<GenIteration<T>> Run(IRng rng, Size size) => _gen.Run(rng, size);
         }
 
         public BaseGen()
@@ -24,6 +24,6 @@ namespace GalaxyCheck.Gens
 
         public IGenAdvanced<T> Advanced { get; }
 
-        protected abstract IEnumerable<GenIteration<T>> Run(IRng rng, ISize size);
+        protected abstract IEnumerable<GenIteration<T>> Run(IRng rng, Size size);
     }
 }

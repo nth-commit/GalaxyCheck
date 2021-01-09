@@ -1,5 +1,4 @@
-﻿using GalaxyCheck.Abstractions;
-using GalaxyCheck.ExampleSpaces;
+﻿using GalaxyCheck.ExampleSpaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +8,12 @@ namespace Tests
     public static class ExampleSpaceExtensions
     {
         public static List<LocatedExample<T>> TraverseGreedy<T>(
-            this IExampleSpace<T> exampleSpace,
+            this ExampleSpace<T> exampleSpace,
             int maxExamples = 10) =>
                 exampleSpace.Traverse().Take(maxExamples).ToList();
 
         public static string Render<T>(
-            this IExampleSpace<T> exampleSpace,
+            this ExampleSpace<T> exampleSpace,
             Func<T, string> renderValue,
             int indentation = 2,
             int maxExamples = 500)

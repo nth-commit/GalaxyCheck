@@ -14,7 +14,7 @@ namespace Tests.Gen.GenericOperators
         public void Snapshots() => SnapshotGenExampleSpaces(GC.Gen.Int32().Between(65, 90).Select(x => ((char)x).ToString()));
 
         [Property]
-        public void LinqSupport(GC.Abstractions.IGen<object> gen)
+        public void LinqSupport(GC.IGen<object> gen)
         {
             var _ =
                 from x in gen

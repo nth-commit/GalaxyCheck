@@ -10,7 +10,7 @@ namespace Tests.Property.Check
     public class AboutIterations
     {
         [Property]
-        public void ItCallsTheTestFunctionForEachIteration(GC.Abstractions.IGen<object> gen, Iterations iterations)
+        public void ItCallsTheTestFunctionForEachIteration(IGen<object> gen, Iterations iterations)
         {
             TestWithSeed(seed =>
             {
@@ -28,7 +28,7 @@ namespace Tests.Property.Check
         }
 
         [Property]
-        public void ItReturnsTheGivenIterations(GC.Abstractions.IGen<object> gen, Iterations iterations)
+        public void ItReturnsTheGivenIterations(IGen<object> gen, Iterations iterations)
         {
             TestWithSeed(seed =>
             {
