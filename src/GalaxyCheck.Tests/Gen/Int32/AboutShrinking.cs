@@ -9,7 +9,7 @@ namespace Tests.Gen.Int32
     public class AboutShrinking
     {
         [Property]
-        public FsCheck.Property ItShrinksTowardsTheSuppliedOrigin(int min, int max, int origin, GC.Gen.Bias bias)
+        public FsCheck.Property ItShrinksToTheSuppliedOrigin(int min, int max, int origin, GC.Gen.Bias bias)
         {
             Action test = () => TestWithSeed(seed =>
             {
@@ -24,6 +24,22 @@ namespace Tests.Gen.Int32
             });
 
             return test.When(min <= origin && origin <= max);
+        }
+
+        [Property]
+        public FsCheck.Property ItShrinksToTheLocalMinimum(int origin, int localMin, GC.Gen.Bias bias)
+        {
+            Action test = () => TestWithSeed(seed =>
+            {
+                var gen = GC.Gen
+                    .Int32()
+                    .ShrinkTowards(origin)
+                    .WithBias(bias);
+
+                GenAssert.ShrinksTo(gen, localMin, seed, x => x >= localMin);
+            });
+
+            return test.When(localMin >= origin);
         }
     }
 }

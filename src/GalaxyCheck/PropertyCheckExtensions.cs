@@ -5,8 +5,10 @@ using System.Linq;
 
 namespace GalaxyCheck
 {
-    public abstract record CheckResult<T>
+    public record CheckResult<T>
     {
+        public CheckResultState<T> State { get; init; }
+
         public int Iterations { get; init; }
 
         public int Discards { get; init; }
@@ -37,8 +39,18 @@ namespace GalaxyCheck
 
         public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
 
-        internal CheckResult(int iterations, int discards, IRng rng, ISize size, IRng initialRng, ISize initialSize, IRng nextRng, ISize nextSize)
+        internal CheckResult(
+            CheckResultState<T> state,
+            int iterations,
+            int discards,
+            IRng rng,
+            ISize size,
+            IRng initialRng,
+            ISize initialSize,
+            IRng nextRng,
+            ISize nextSize)
         {
+            State = state;
             Iterations = iterations;
             Discards = discards;
             Rng = rng;
@@ -50,16 +62,17 @@ namespace GalaxyCheck
         }
     }
 
-    public static class CheckResult
+    public abstract record CheckResultState<T>
     {
-        public sealed record Unfalsified<T>(int Iterations, int Discards, IRng Rng, ISize Size, IRng InitialRng, ISize InitialSize, IRng NextRng, ISize NextSize)
-            : CheckResult<T>(Iterations, Discards, Rng, Size, InitialRng, InitialSize, NextRng, NextSize);
+    }
 
-        public sealed record Falsified<T>(int Iterations, int Discards, IRng Rng, ISize Size, IRng InitialRng, ISize InitialSize, IRng NextRng, ISize NextSize) :
-            CheckResult<T>(Iterations, Discards, Rng, Size, InitialRng, InitialSize, NextRng, NextSize);
+    public static class CheckResultState
+    {
+        public sealed record Unfalsified<T>() : CheckResultState<T>();
 
-        public sealed record Error<T>(int Iterations, int Discards, IRng Rng, ISize Size, IRng InitialRng, ISize InitialSize, IRng NextRng, ISize NextSize) :
-            CheckResult<T>(Iterations, Discards, Rng, Size, InitialRng, InitialSize, NextRng, NextSize);
+        public sealed record Falsified<T>(T Value, decimal Distance, IEnumerable<int> Path) : CheckResultState<T>();
+
+        public sealed record Error<T>() : CheckResultState<T>();
     }
 
     public static class PropertyCheckExtensions
@@ -71,7 +84,8 @@ namespace GalaxyCheck
             var iterations = config.Iterations ?? 100;
             var size = config.Size ?? Size.MinValue;
 
-            var currentResult = new CheckResult.Unfalsified<T>(0, 0, rng, size, rng, size, rng, size);
+            var currentResult = new CheckResult<T>(
+                new CheckResultState.Unfalsified<T>(), 0, 0, rng, size, rng, size, rng, size);
 
             while (currentResult.Iterations < iterations)
             {
@@ -81,18 +95,18 @@ namespace GalaxyCheck
                     currentResult.NextSize.Increment());
                 var nextResult = AggregateIterationsIntoResult(currentResult, nextIterationResults);
 
-                if (nextResult is not CheckResult.Unfalsified<T> unfalsifiedResult)
+                if (nextResult.State is not CheckResultState.Unfalsified<T>)
                 {
                     return nextResult;
                 }
 
-                currentResult = unfalsifiedResult;
+                currentResult = nextResult;
             }
 
             return currentResult;
         }
 
-        private static IEnumerable<GenIteration<PropertyResult<T>>> CheckOnce<T>(IProperty<T> property, IRng rng, ISize size)
+        private static IEnumerable<GenIteration<PropertyIteration<T>>> CheckOnce<T>(IProperty<T> property, IRng rng, ISize size)
         {
             foreach (var iteration in property.Advanced.Run(rng, size))
             {
@@ -112,21 +126,48 @@ namespace GalaxyCheck
 
         private static CheckResult<T> AggregateIterationsIntoResult<T>(
             CheckResult<T> previousResult,
-            IEnumerable<GenIteration<PropertyResult<T>>> iterations)
+            IEnumerable<GenIteration<PropertyIteration<T>>> iterations)
         {
             return iterations.Aggregate(
                 previousResult,
                 (result, iteration) => iteration.Match(
                     onInstance: instance => MergeInstanceIntoCheckResult(result, instance),
-                    onError: error => new CheckResult.Error<T>(result.Iterations, result.Discards, error.InitialRng, result.InitialSize, result.InitialRng, result.InitialSize, error.NextRng, result.InitialSize)));
+                    onError: error => new CheckResult<T>(
+                        new CheckResultState.Error<T>(),
+                        result.Iterations,
+                        result.Discards,
+                        error.InitialRng,
+                        result.InitialSize,
+                        result.InitialRng,
+                        result.InitialSize,
+                        error.NextRng,
+                        result.InitialSize)));
         }
 
-        private static CheckResult<T> MergeInstanceIntoCheckResult<T>(CheckResult<T> checkResult, GenInstance<PropertyResult<T>> instance)
+        private static CheckResult<T> MergeInstanceIntoCheckResult<T>(
+            CheckResult<T> checkResult, GenInstance<PropertyIteration<T>> instance)
         {
-            var propertyResult = instance.ExampleSpace.Traverse().First().Value;
-            return propertyResult is PropertyResult.Success<T>
-                ? new CheckResult.Unfalsified<T>(checkResult.Iterations + 1, checkResult.Discards, instance.InitialRng, instance.InitialSize, checkResult.InitialRng, checkResult.InitialSize, instance.NextRng, instance.NextSize)
-                : new CheckResult.Falsified<T>(checkResult.Iterations + 1, checkResult.Discards, instance.InitialRng, instance.InitialSize, checkResult.InitialRng, checkResult.InitialSize, instance.NextRng, instance.NextSize);
+            var smallestCounterexample = instance.ExampleSpace
+                .Counterexamples(x => x.Func(x.Input))
+                .LastOrDefault();
+
+            CheckResultState<T> state = smallestCounterexample == null
+                ? new CheckResultState.Unfalsified<T>()
+                : new CheckResultState.Falsified<T>(
+                    smallestCounterexample.Value.Input,
+                    smallestCounterexample.Distance,
+                    smallestCounterexample.Path);
+
+            return new CheckResult<T>(
+                state,
+                checkResult.Iterations + 1,
+                checkResult.Discards,
+                instance.InitialRng,
+                instance.InitialSize,
+                checkResult.InitialRng,
+                checkResult.InitialSize,
+                instance.NextRng,
+                instance.NextSize);
         }
     }
 }

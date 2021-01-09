@@ -18,9 +18,9 @@ namespace Tests.Property
             {
                 var property = GC.Gen.Constant(false).ToProperty(x => x);
 
-                var falsifiedResult = PropertyAssert.Falsifies(property, seed, iterations: iterations.Value);
+                var (result, falsified) = PropertyAssert.Falsifies(property, seed, iterations: iterations.Value);
 
-                Assert.Equal(1, falsifiedResult.Iterations);
+                Assert.Equal(1, result.Iterations);
             });
 
             return test.When(iterations.Value > 0);
@@ -31,9 +31,9 @@ namespace Tests.Property
         {
             var property = GC.Gen.Constant(true).ToProperty(x => x);
 
-            var unfalsifiedResult = PropertyAssert.DoesNotFalsify(property, seed, iterations: iterations.Value);
+            var (result, _) = PropertyAssert.DoesNotFalsify(property, seed, iterations: iterations.Value);
 
-            Assert.Equal(iterations.Value, unfalsifiedResult.Iterations);
+            Assert.Equal(iterations.Value, result.Iterations);
         });
     }
 }

@@ -6,22 +6,22 @@ namespace Tests
 {
     public static class PropertyAssert
     {
-        public static CheckResult.Falsified<T> Falsifies<T>(IProperty<T> property, int seed, ISize? size = null, int? iterations = null)
+        public static (CheckResult<T>, CheckResultState.Falsified<T>) Falsifies<T>(IProperty<T> property, int seed, ISize? size = null, int? iterations = null)
         {
             var result = property.Check(new RunConfig(iterations: iterations, seed: seed, size: size));
 
-            Assert.True(result is CheckResult.Falsified<T>);
+            Assert.True(result.State is CheckResultState.Falsified<T>);
 
-            return (CheckResult.Falsified<T>)result;
+            return (result, (CheckResultState.Falsified<T>)result.State);
         }
 
-        public static CheckResult.Unfalsified<T> DoesNotFalsify<T>(IProperty<T> property, int seed, ISize? size = null, int? iterations = null)
+        public static (CheckResult<T>, CheckResultState.Unfalsified<T>) DoesNotFalsify<T>(IProperty<T> property, int seed, ISize? size = null, int? iterations = null)
         {
             var result = property.Check(new RunConfig(iterations: iterations, seed: seed, size: size));
 
-            Assert.True(result is CheckResult.Unfalsified<T>);
+            Assert.True(result.State is CheckResultState.Unfalsified<T>);
 
-            return (CheckResult.Unfalsified<T>)result;
+            return (result, (CheckResultState.Unfalsified<T>)result.State);
         }
     }
 }

@@ -17,51 +17,57 @@ namespace GalaxyCheck.ExampleSpaces
     {
         internal ExampleSpace() { }
 
+        public abstract IEnumerable<IExampleSpace<T>> Subspace { get; }
+
         public abstract IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector);
 
-        /// <summary>
-        /// Filters the examples in an example space by the given predicate.
-        /// </summary>
-        /// <param name="pred">The predicate used to test each value in the example space.</param>
-        /// <returns>A new example space, containing only the examples whose values passed the predicate.</returns>
-        public abstract ExampleSpace<T> Where(Func<T, bool> pred);
+        public abstract IExampleSpace<T> Where(Func<T, bool> pred);
 
-        /// <summary>
-        /// Returns a value indicating if there are any examples in the example space.
-        /// </summary>
-        /// <returns>`true` if so, `false` otherwise.</returns>
         public abstract bool Any();
+
+        public abstract Example<T>? Navigate(List<int> path);
 
         public abstract IEnumerable<LocatedExample<T>> Traverse();
 
-        public abstract Example<T>? Minimal();
+        public abstract IEnumerable<Counterexample<T>> Counterexamples(Func<T, bool> pred);
     }
 
-    public record PopulatedExampleSpace<T>(Example<T> Current, IEnumerable<PopulatedExampleSpace<T>> Subspace) : ExampleSpace<T>
+    public record PopulatedExampleSpace<T> : ExampleSpace<T>
     {
+        private readonly Example<T> _current;
+        private readonly IEnumerable<PopulatedExampleSpace<T>> _subspace;
+
+        public PopulatedExampleSpace(Example<T> current, IEnumerable<PopulatedExampleSpace<T>> subspace)
+        {
+            _current = current;
+            _subspace = subspace;
+        }
+
+        public override IEnumerable<IExampleSpace<T>> Subspace => _subspace;
+
         public override IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector)
         {
             static PopulatedExampleSpace<TResult> SelectRec(
                 PopulatedExampleSpace<T> exampleSpace,
                 Func<T, TResult> selector) => new PopulatedExampleSpace<TResult>(
-                    new Example<TResult>(selector(exampleSpace.Current.Value), exampleSpace.Current.Distance),
-                    exampleSpace.Subspace.Select(exampleSpace0 => SelectRec(exampleSpace0, selector)));
+                    new Example<TResult>(selector(exampleSpace._current.Value), exampleSpace._current.Distance),
+                    exampleSpace._subspace.Select(exampleSpace0 => SelectRec(exampleSpace0, selector)));
 
             return SelectRec(this, selector);
         }
 
-        public override ExampleSpace<T> Where(Func<T, bool> pred)
+        public override IExampleSpace<T> Where(Func<T, bool> pred)
         {
-            if (pred(Current.Value) == false) return new EmptyExampleSpace<T>();
+            if (pred(_current.Value) == false) return new EmptyExampleSpace<T>();
 
             static IEnumerable<PopulatedExampleSpace<T>> WhereRec(
                 IEnumerable<PopulatedExampleSpace<T>> subspace,
                 Func<T, bool> pred) => subspace
-                    .Where(exampleSpace => pred(exampleSpace.Current.Value))
+                    .Where(exampleSpace => pred(exampleSpace._current.Value))
                     .Select(exampleSpace => new PopulatedExampleSpace<T>(
-                        exampleSpace.Current, WhereRec(exampleSpace.Subspace, pred)));
+                        exampleSpace._current, WhereRec(exampleSpace._subspace, pred)));
 
-            return new PopulatedExampleSpace<T>(Current, WhereRec(Subspace, pred));
+            return new PopulatedExampleSpace<T>(_current, WhereRec(_subspace, pred));
         }
 
         public override bool Any() => true;
@@ -71,12 +77,12 @@ namespace GalaxyCheck.ExampleSpaces
             static IEnumerable<LocatedExample<T>> TraverseRec(PopulatedExampleSpace<T> exampleSpace, int levelIndex, int siblingIndex)
             {
                 yield return new LocatedExample<T>(
-                    exampleSpace.Current.Value,
-                    exampleSpace.Current.Distance,
+                    exampleSpace._current.Value,
+                    exampleSpace._current.Distance,
                     levelIndex,
                     siblingIndex);
 
-                var children = exampleSpace.Subspace.SelectMany((childExampleSpace, siblingIndex) =>
+                var children = exampleSpace._subspace.SelectMany((childExampleSpace, siblingIndex) =>
                     TraverseRec(childExampleSpace, levelIndex + 1, siblingIndex));
 
                 foreach (var child in children)
@@ -88,33 +94,68 @@ namespace GalaxyCheck.ExampleSpaces
             return TraverseRec(this, 0, 0);
         }
 
-        public override Example<T>? Minimal()
+        public override IEnumerable<Counterexample<T>> Counterexamples(Func<T, bool> pred)
         {
-            static Example<T> MinimalRec(PopulatedExampleSpace<T> exampleSpace)
+            IEnumerable<Counterexample<T>> CounterexamplesRec(IEnumerable<PopulatedExampleSpace<T>> exampleSpaces)
             {
-                if (exampleSpace.Subspace.Any())
-                {
-                    return MinimalRec(exampleSpace.Subspace.First());
-                }
+                var exampleSpaceAndIndex = exampleSpaces
+                    .Select((exampleSpace, index) => new { exampleSpace, index })
+                    .Where(x => pred(x.exampleSpace._current.Value) == false)
+                    .FirstOrDefault();
 
-                return exampleSpace.Current;
+                if (exampleSpaceAndIndex == null) yield break;
+
+                var counterexample = new Counterexample<T>(
+                    exampleSpaceAndIndex.exampleSpace._current.Value,
+                    exampleSpaceAndIndex.exampleSpace._current.Distance,
+                    new[] { exampleSpaceAndIndex.index });
+
+                yield return counterexample;
+
+                foreach (var smallerCounterexample in CounterexamplesRec(exampleSpaceAndIndex.exampleSpace._subspace))
+                {
+                    yield return new Counterexample<T>(
+                        smallerCounterexample.Value,
+                        smallerCounterexample.Distance,
+                        Enumerable.Concat(counterexample.Path, smallerCounterexample.Path));
+                }
             }
 
-            return MinimalRec(this);
+            return CounterexamplesRec(new[] { this });
+        }
+
+        public override Example<T>? Navigate(List<int> path)
+        {
+            static Example<T>? NavigateRec(PopulatedExampleSpace<T> exampleSpace, List<int> path)
+            {
+                if (path.Any() == false) return exampleSpace._current;
+
+                var nextExampleSpace = exampleSpace._subspace.Skip(path.First()).FirstOrDefault();
+
+                if (nextExampleSpace == null) return null;
+
+                return NavigateRec(nextExampleSpace, path.Skip(1).ToList());
+            }
+
+            return NavigateRec(this, path.Skip(1).ToList());
         }
     }
 
     public record EmptyExampleSpace<T>() : ExampleSpace<T>
     {
+        public override IEnumerable<IExampleSpace<T>> Subspace => Enumerable.Empty<IExampleSpace<T>>();
+
         public override IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector) => new EmptyExampleSpace<TResult>();
 
-        public override ExampleSpace<T> Where(Func<T, bool> _) => new EmptyExampleSpace<T>();
+        public override IExampleSpace<T> Where(Func<T, bool> _) => new EmptyExampleSpace<T>();
 
         public override bool Any() => false;
 
         public override IEnumerable<LocatedExample<T>> Traverse() => Enumerable.Empty<LocatedExample<T>>();
 
-        public override Example<T>? Minimal() => null;
+        public override IEnumerable<Counterexample<T>> Counterexamples(Func<T, bool> pred) => Enumerable.Empty<Counterexample<T>>();
+
+        public override Example<T>? Navigate(List<int> path) => null;
     }
 
     public static class ExampleSpace

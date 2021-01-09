@@ -13,9 +13,31 @@ namespace GalaxyCheck.Abstractions
         /// <returns>A new example space with the selector function applied.</returns>
         IExampleSpace<TResult> Select<TResult>(Func<T, TResult> selector);
 
+        /// <summary>
+        /// Filters the examples in an example space by the given predicate.
+        /// </summary>
+        /// <param name="pred">The predicate used to test each value in the example space.</param>
+        /// <returns>A new example space, containing only the examples whose values passed the predicate.</returns>
+        IExampleSpace<T> Where(Func<T, bool> pred);
+
+        /// <summary>
+        /// Returns a value indicating if there are any examples in the example space.
+        /// </summary>
+        /// <returns>`true` if so, `false` otherwise.</returns>
+        bool Any();
+
         IEnumerable<LocatedExample<T>> Traverse();
 
-        Example<T>? Minimal();
+        /// <summary>
+        /// Returns an enumerable of increasingly smaller counterexamples to the given predicate. An empty enumerable
+        /// indicates that no counterexamples exist in this example space.
+        /// </summary>
+        /// <param name="pred">The predicate used to test an example. If the predicate returns `false` for an example, it
+        /// indicates that example is a counterexample.</param>
+        /// <returns>An enumerable of counterexamples.</returns>
+        IEnumerable<Counterexample<T>> Counterexamples(Func<T, bool> pred);
+
+        IEnumerable<IExampleSpace<T>> Subspace { get; }
     }
 
     /// <summary>
@@ -40,6 +62,16 @@ namespace GalaxyCheck.Abstractions
         {
             Value = value;
             Distance = distance;
+        }
+    }
+
+    public record Counterexample<T> : Example<T>
+    {
+        public IEnumerable<int> Path { get; init; }
+
+        public Counterexample(T value, decimal distance, IEnumerable<int> path) : base(value, distance)
+        {
+            Path = path;
         }
     }
 

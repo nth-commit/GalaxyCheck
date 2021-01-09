@@ -1,5 +1,6 @@
 ﻿using GalaxyCheck;
 using GalaxyCheck.Abstractions;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -18,9 +19,9 @@ namespace Tests
                 (x) => Assert.Equal(x.First.TraverseGreedy(), x.Second.TraverseGreedy()));
         }
 
-        public static void ShrinksTo<T>(IGen<T> gen, T expected, int seed)
+        public static void ShrinksTo<T>(IGen<T> gen, T expected, int seed, Func<T, bool>? pred = null)
         {
-            var actual = gen.Minimal(new RunConfig(seed: seed));
+            var actual = gen.Minimal(new RunConfig(seed: seed), pred);
 
             Assert.Equal(expected, actual);
         }

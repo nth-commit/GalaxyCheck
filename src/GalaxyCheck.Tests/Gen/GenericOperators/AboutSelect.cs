@@ -1,21 +1,23 @@
 ﻿using Xunit;
-using G = GalaxyCheck.Gen;
-using GalaxyCheck;
-using static Tests.TestUtils;
 using FsCheck;
+using FsCheck.Xunit;
+using GalaxyCheck;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
 namespace Tests.Gen.GenericOperators
 {
+    [Properties(Arbitrary = new [] { typeof(ArbitraryGen) })]
     public class AboutSelect
     {
         [Fact]
-        public void Snapshots() => SnapshotGenExampleSpaces(G.Int32().Between(65, 90).Select(x => ((char)x).ToString()));
+        public void Snapshots() => SnapshotGenExampleSpaces(GC.Gen.Int32().Between(65, 90).Select(x => ((char)x).ToString()));
 
-        [Fact]
-        public void LinqSupport()
+        [Property]
+        public void LinqSupport(GC.Abstractions.IGen<object> gen)
         {
             var _ =
-                from x in G.Int32()
+                from x in gen
                 select x;
         }
     }

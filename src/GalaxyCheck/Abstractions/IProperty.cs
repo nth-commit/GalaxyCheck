@@ -1,17 +1,21 @@
 ﻿namespace GalaxyCheck.Abstractions
 {
-    public interface IProperty<T> : IGen<PropertyResult<T>>
+    public interface IProperty<T> : IGen<PropertyIteration<T>>
     {
     }
 
-    public abstract record PropertyResult<T>
-    {
-    }
+    public delegate bool PropertyFunc<T>(T value);
 
-    public static class PropertyResult
+    public record PropertyIteration<T>
     {
-        public sealed record Success<T>() : PropertyResult<T>;
+        public PropertyFunc<T> Func { get; init; }
 
-        public sealed record Failure<T>() : PropertyResult<T>;
+        public T Input { get; init; }
+
+        public PropertyIteration(PropertyFunc<T> func, T input)
+        {
+            Func = func;
+            Input = input;
+        }
     }
 }
