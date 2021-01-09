@@ -85,3 +85,13 @@ However, there is a fair bit more to them. For instance, they terminate when fal
 If we are successful, it means we will get sampling and printing of properties for free, and there will be less code to maintain.
 
 2021-01-05
+
+## Property iterations are lazy
+
+A property is a generator.
+
+However, it's facets, some input values and a function, should be stored on the generator iteration, rather than storing the evaluated result.
+
+This allows a property to leverage operators that are present on generators, such as `Where()` in useful ways, as they can operate on the inputs.
+
+2021-01-10

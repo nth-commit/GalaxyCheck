@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Exceptions;
 using GalaxyCheck.Sizing;
 using GalaxyCheck.Utility;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace GalaxyCheck
             var exampleSpacesSample = advanced.SampleExampleSpacesWithMetrics(config);
 
             return new SampleWithMetricsResult<T>(
-                exampleSpacesSample.Values.Select(exampleSpace => exampleSpace.Traverse().First().Value).ToList(),
+                exampleSpacesSample.Values.Select(exampleSpace => exampleSpace.Current.Value).ToList(),
                 exampleSpacesSample.RandomnessConsumption);
         }
 

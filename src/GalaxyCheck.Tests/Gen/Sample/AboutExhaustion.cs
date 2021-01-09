@@ -1,8 +1,9 @@
 ﻿using FsCheck.Xunit;
 using System;
-using GalaxyCheck;
-using static Tests.TestUtils;
 using Xunit;
+using GalaxyCheck;
+using GC = GalaxyCheck;
+using static Tests.TestUtils;
 
 namespace Tests.Gen.Sample
 {
@@ -18,7 +19,7 @@ namespace Tests.Gen.Sample
             {
                 Action test = () => gen.Sample(new RunConfig(seed: seed));
 
-                Assert.Throws<GenExhaustionException>(test);
+                Assert.Throws<GC.Exceptions.GenExhaustionException>(test);
             });
         }
     }

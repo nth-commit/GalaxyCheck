@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck
+namespace GalaxyCheck.Exceptions
 {
     public class GenErrorException : Exception
     {

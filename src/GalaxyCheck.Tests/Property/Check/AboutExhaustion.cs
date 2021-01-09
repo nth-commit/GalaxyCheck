@@ -1,9 +1,9 @@
 ﻿using FsCheck.Xunit;
 using System;
+using Xunit;
 using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
-using Xunit;
 
 namespace Tests.Property.Check
 {
@@ -19,7 +19,7 @@ namespace Tests.Property.Check
             {
                 Action test = () => property.Check(new RunConfig(seed: seed));
 
-                Assert.Throws<GenExhaustionException>(test);
+                Assert.Throws<GC.Exceptions.GenExhaustionException>(test);
             });
         }
     }

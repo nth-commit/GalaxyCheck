@@ -11,7 +11,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         {
             var exampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value);
 
-            var example = Assert.Single(exampleSpace.TraverseGreedy());
+            var example = Assert.Single(exampleSpace.Sample());
             Assert.Equal(value, example.Value);
             Assert.Equal(0, example.Distance);
         }
@@ -25,7 +25,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
                 GC.ExampleSpaces.ShrinkFunc.None<object>(),
                 GC.ExampleSpaces.MeasureFunc.Unmeasured<object>());
 
-            Assert.Equal(unfoldedExampleSpace.TraverseGreedy(), singletonExampleSpace.TraverseGreedy());
+            Assert.Equal(unfoldedExampleSpace.Sample(), singletonExampleSpace.Sample());
         }
     }
 }

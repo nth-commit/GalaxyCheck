@@ -3,10 +3,11 @@ using FsCheck.Xunit;
 using System;
 using Xunit;
 using GC = GalaxyCheck;
+using GalaxyCheck.ExampleSpaces;
 
 namespace Tests.ExampleSpaces.ExampleSpace
 {
-    public class AboutAny
+    public class AboutFilter
     {
         // Ideally the tests in this class would inject all the functions and also inject an `object` like the other
         // tests do, but FsCheck doesn't allow a conditional property if all the generated values are not comparable.
@@ -14,15 +15,15 @@ namespace Tests.ExampleSpaces.ExampleSpace
         // you're trying to filter upon, and then gives up straight away.
 
         [Property]
-        public FsCheck.Property WhenRootValuePassesThePredicate_ItReturnsTrue(int value)
+        public FsCheck.Property WhenRootValuePassesThePredicate_ItReturnsNotNull(int value)
         {
             static bool pred(int x) => x % 2 == 0;
 
             Action test = () =>
             {
-                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Where(pred);
+                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
 
-                Assert.True(sourceExampleSpace.Any());
+                Assert.NotNull(sourceExampleSpace);
             };
 
             return test.When(pred(value));
@@ -35,9 +36,9 @@ namespace Tests.ExampleSpaces.ExampleSpace
 
             Action test = () =>
             {
-                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Where(pred);
+                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
 
-                Assert.False(sourceExampleSpace.Any());
+                Assert.Null(sourceExampleSpace);
             };
 
             return test.When(pred(value) == false);

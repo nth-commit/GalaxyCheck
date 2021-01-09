@@ -1,7 +1,8 @@
-﻿using GalaxyCheck;
-using System;
+﻿using System;
 using System.Linq;
 using Xunit;
+using GalaxyCheck;
+using GC = GalaxyCheck;
 
 namespace Tests
 {
@@ -15,7 +16,7 @@ namespace Tests
 
             Assert.All(
                 Enumerable.Zip(expectedSample, actualSample),
-                (x) => Assert.Equal(x.First.TraverseGreedy(), x.Second.TraverseGreedy()));
+                (x) => Assert.Equal(x.First.Sample(), x.Second.Sample()));
         }
 
         public static void ShrinksTo<T>(IGen<T> gen, T expected, int seed, Func<T, bool>? pred = null)
@@ -29,7 +30,7 @@ namespace Tests
         {
             var config = new RunConfig(seed: seed);
 
-            var ex = Assert.Throws<GenErrorException>(() =>
+            var ex = Assert.Throws<GC.Exceptions.GenErrorException>(() =>
             {
                 gen.Sample(config);
             });

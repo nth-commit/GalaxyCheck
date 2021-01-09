@@ -34,7 +34,7 @@ namespace Tests.Gen.GenericOperators
 
             Assert.All(exampleSpaces, exampleSpace =>
             {
-                Assert.All(exampleSpace.TraverseGreedy(), example =>
+                Assert.All(exampleSpace.Sample(), example =>
                 {
                     Assert.True(pred(example.Value));
                 });

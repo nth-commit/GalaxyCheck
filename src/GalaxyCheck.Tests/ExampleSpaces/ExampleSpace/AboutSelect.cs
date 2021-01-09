@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using GC = GalaxyCheck;
+using GalaxyCheck.ExampleSpaces;
 
 namespace Tests.ExampleSpaces.ExampleSpace
 {
@@ -19,8 +20,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             Assert.Equal(
-                sourceExampleSpace.TraverseGreedy().Select(example => selector(example.Value)),
-                sourceExampleSpace.Select(selector).TraverseGreedy().Select(example => example.Value));
+                sourceExampleSpace.Sample().Select(example => selector(example.Value)),
+                sourceExampleSpace.Map(selector).Sample().Select(example => example.Value));
         }
 
         [Property]
@@ -33,8 +34,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             Assert.Equal(
-                sourceExampleSpace.TraverseGreedy().Select(example => selector(example.Value)),
-                sourceExampleSpace.Select(selector).TraverseGreedy().Select(example => example.Value));
+                sourceExampleSpace.Sample().Select(example => selector(example.Value)),
+                sourceExampleSpace.Map(selector).Sample().Select(example => example.Value));
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
                 shrink,
                 GC.ExampleSpaces.MeasureFunc.Unmeasured<int>());
 
-            Assert.Equal(new [] { value }, exampleSpace.TraverseGreedy().Select(problem => problem.Value));
+            Assert.Equal(new [] { value }, exampleSpace.Sample().Select(problem => problem.Value));
         }
 
         [Property]
@@ -33,7 +33,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
 
             Assert.Equal(
                 new[] { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 },
-                exampleSpace.TraverseGreedy().Select(problem => problem.Value));
+                exampleSpace.Sample().Select(problem => problem.Value));
         }
     }
 }

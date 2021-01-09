@@ -1,4 +1,6 @@
-﻿using GalaxyCheck.Sizing;
+﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Exceptions;
+using GalaxyCheck.Sizing;
 using GalaxyCheck.Utility;
 using System.Collections.Generic;
 using System.Linq;

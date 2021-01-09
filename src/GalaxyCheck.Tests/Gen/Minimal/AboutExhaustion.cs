@@ -1,9 +1,9 @@
 ﻿using FsCheck.Xunit;
 using System;
+using Xunit;
 using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
-using Xunit;
 
 namespace Tests.Gen.Minimal
 {
@@ -19,7 +19,7 @@ namespace Tests.Gen.Minimal
             {
                 Action test = () => gen.Minimal(new RunConfig(seed: seed));
 
-                Assert.Throws<GenExhaustionException>(test);
+                Assert.Throws<GC.Exceptions.GenExhaustionException>(test);
             });
         }
     }

@@ -52,7 +52,7 @@ namespace GalaxyCheck
         {
             GenInstanceTransformation<T, TResult> transformation = (instance) => GenIterationBuilder
                 .FromIteration(instance)
-                .ToInstance(instance.ExampleSpace.Select(selector));
+                .ToInstance(instance.ExampleSpace.Map(selector));
 
             return gen.TransformInstances(transformation);
         }
@@ -70,10 +70,10 @@ namespace GalaxyCheck
             GenInstanceTransformation<T, T> applyPredicateToInstance = (instance) =>
             {
                 var iterationBuilder = GenIterationBuilder.FromIteration(instance);
-                var filteredExampleSpace = instance.ExampleSpace.Where(pred);
-                return filteredExampleSpace.Any()
-                    ? iterationBuilder.ToInstance(filteredExampleSpace)
-                    : iterationBuilder.ToDiscard<T>();
+                var filteredExampleSpace = instance.ExampleSpace.Filter(pred);
+                return filteredExampleSpace == null
+                    ? iterationBuilder.ToDiscard<T>()
+                    : iterationBuilder.ToInstance(filteredExampleSpace);
             };
 
             GenStreamTransformation<T, T> resizeAndTerminateAfterConsecutiveDiscards = (stream) =>
