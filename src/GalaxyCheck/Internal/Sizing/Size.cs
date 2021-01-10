@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Sizing
+namespace GalaxyCheck.Internal.Sizing
 {
     public record Size
     {

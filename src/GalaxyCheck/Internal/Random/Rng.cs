@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Random
+namespace GalaxyCheck.Internal.Random
 {
     public record Rng : IRng
     {

@@ -1,10 +1,11 @@
-﻿using GalaxyCheck.Utility;
+﻿using GalaxyCheck;
+using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.ExampleSpaces
+namespace GalaxyCheck.Internal.ExampleSpaces
 {
     /// <summary>
     /// Represents an space of examples. An example space generally has an original or root value, which can be
@@ -69,7 +70,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// <param name="pred">The predicate used to test each value in the example space.</param>
         /// <returns>A new example space, containing only the examples whose values passed the predicate.</returns>
         public static ExampleSpace<T>? Filter<T>(
-            this ExampleSpace<T> exampleSpace, 
+            this ExampleSpace<T> exampleSpace,
             Func<T, bool> pred)
         {
             if (pred(exampleSpace.Current.Value) == false) return null;
@@ -116,7 +117,7 @@ namespace GalaxyCheck.ExampleSpaces
                     yield return new Counterexample<T>(
                         smallerCounterexample.Value,
                         smallerCounterexample.Distance,
-                        Enumerable.Concat(counterexample.Path, smallerCounterexample.Path));
+                        counterexample.Path.Concat(smallerCounterexample.Path));
                 }
             }
 
@@ -196,7 +197,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// <param name="measure"></param>
         /// <returns></returns>
         public static ExampleSpace<T> Unfold<T>(T rootValue, ShrinkFunc<T> shrink, MeasureFunc<T> measure) =>
-            UnfoldInternal(rootValue, shrink, measure, x => x, ImmutableHashSet.Create<T>(rootValue));
+            UnfoldInternal(rootValue, shrink, measure, x => x, ImmutableHashSet.Create(rootValue));
 
         private static ExampleSpace<TProjection> UnfoldInternal<TAccumulator, TProjection>(
             TAccumulator accumulator,

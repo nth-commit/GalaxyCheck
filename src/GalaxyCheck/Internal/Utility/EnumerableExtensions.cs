@@ -1,8 +1,9 @@
-﻿using System;
+﻿using GalaxyCheck.Internal.GenIterations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Utility
+namespace GalaxyCheck.Internal.Utility
 {
     internal static class EnumerableExtensions
     {

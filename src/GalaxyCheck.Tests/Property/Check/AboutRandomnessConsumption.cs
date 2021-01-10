@@ -16,11 +16,10 @@ namespace Tests.Property.Check
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var property = GC.Property.ForAll(gen, _ => true);
-                var config = new RunConfig(iterations: iterations.Value, seed: seed);
+                var property = gen.ForAll(_ => true);
 
-                var sample = gen.Advanced.SampleWithMetrics(config);
-                var check = property.Check(config);
+                var sample = gen.Advanced.SampleWithMetrics(iterations: iterations.Value, seed: seed);
+                var check = property.Check(iterations: iterations.Value, seed: seed);
 
                 Assert.Equal(sample.RandomnessConsumption, check.RandomnessConsumption);
             });

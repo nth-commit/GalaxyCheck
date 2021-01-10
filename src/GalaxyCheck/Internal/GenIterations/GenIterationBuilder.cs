@@ -1,7 +1,7 @@
-﻿using GalaxyCheck.ExampleSpaces;
-using GalaxyCheck.Sizing;
+﻿using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.Internal.Sizing;
 
-namespace GalaxyCheck.Gens
+namespace GalaxyCheck.Internal.GenIterations
 {
     public class GenIterationBuilder
     {

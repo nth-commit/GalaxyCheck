@@ -19,7 +19,7 @@ namespace Tests.Gen.GenericOperators
             Func<int, bool> pred = x => x % 2 == 0;
             var gen = GC.Gen.Int32().Where(pred);
 
-            var values = gen.Sample(new RunConfig(seed: seed));
+            var values = gen.Sample(seed: seed);
 
             Assert.All(values, x => Assert.True(pred(x)));
         });
@@ -30,7 +30,7 @@ namespace Tests.Gen.GenericOperators
             Func<int, bool> pred = x => x % 2 == 0;
             var gen = GC.Gen.Int32().Where(pred);
 
-            var exampleSpaces = gen.Advanced.SampleExampleSpaces(new RunConfig(seed: seed));
+            var exampleSpaces = gen.Advanced.SampleExampleSpaces(seed: seed);
 
             Assert.All(exampleSpaces, exampleSpace =>
             {
@@ -48,10 +48,10 @@ namespace Tests.Gen.GenericOperators
             {
                 var gen = GC.Gen.Advanced.Create((useNextInt, size) => size.Value).Where(size => size > 50);
 
-                var values = gen.Sample(new RunConfig(
+                var values = gen.Sample(
                     seed: seed,
-                    size: GC.Sizing.Size.MinValue,
-                    iterations: iterations.Value));
+                    size: 0,
+                    iterations: iterations.Value);
 
                 Assert.True(values.Count == iterations.Value);
                 Assert.All(values, x => Assert.True(x > 50));

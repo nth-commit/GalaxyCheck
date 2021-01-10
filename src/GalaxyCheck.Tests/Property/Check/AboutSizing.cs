@@ -1,5 +1,4 @@
-﻿using FsCheck;
-using GalaxyCheck;
+﻿using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
 using FsCheck.Xunit;
@@ -10,19 +9,19 @@ namespace Tests.Property.Check
     public class AboutSizing
     {
         [Property]
-        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtSmallerSizes(GC.Sizing.Size size) => TestWithSeed(seed =>
+        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtSmallerSizes(Size size) => TestWithSeed(seed =>
         {
-            var property = GC.Gen.Int32().Between(0, 100).ToProperty(x => x > 50);
+            var property = GC.Gen.Int32().Between(0, 100).ForAll(x => x > 50);
 
-            PropertyAssert.Falsifies(property, seed, size);
+            PropertyAssert.Falsifies(property, seed, size.Value);
         });
 
         [Property]
-        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtLargerSizes(GC.Sizing.Size size) => TestWithSeed(seed =>
+        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtLargerSizes(Size size) => TestWithSeed(seed =>
         {
-            var property = GC.Gen.Int32().Between(0, 100).ToProperty(x => x < 50);
+            var property = GC.Gen.Int32().Between(0, 100).ForAll(x => x < 50);
 
-            PropertyAssert.Falsifies(property, seed, size);
+            PropertyAssert.Falsifies(property, seed, size.Value);
         });
     }
 }

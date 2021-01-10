@@ -13,11 +13,11 @@ namespace Tests.Property.Check
         [Property]
         public void ItExhaustsWithAnImpossiblePredicate(IGen<object> gen)
         {
-            var property = gen.Where(_ => false).ToProperty(x => true);
+            var property = gen.Where(_ => false).ForAll(x => true);
 
             TestWithSeed(seed =>
             {
-                Action test = () => property.Check(new RunConfig(seed: seed));
+                Action test = () => property.Check(seed: seed);
 
                 Assert.Throws<GC.Exceptions.GenExhaustionException>(test);
             });

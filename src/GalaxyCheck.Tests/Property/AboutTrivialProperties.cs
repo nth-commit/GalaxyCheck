@@ -16,7 +16,7 @@ namespace Tests.Property
         {
             Action test = () => TestWithSeed(seed =>
             {
-                var property = GC.Gen.Constant(false).ToProperty(x => x);
+                var property = GC.Gen.Constant(false).ForAll(x => x);
 
                 var (result, falsified) = PropertyAssert.Falsifies(property, seed, iterations: iterations.Value);
 
@@ -29,7 +29,7 @@ namespace Tests.Property
         [Property]
         public void ATriviallyTruePropertyIsNotFalsified(Iterations iterations) => TestWithSeed(seed =>
         {
-            var property = GC.Gen.Constant(true).ToProperty(x => x);
+            var property = GC.Gen.Constant(true).ForAll(x => x);
 
             var (result, _) = PropertyAssert.DoesNotFalsify(property, seed, iterations: iterations.Value);
 

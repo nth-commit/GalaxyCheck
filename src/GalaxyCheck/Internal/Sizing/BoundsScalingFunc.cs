@@ -1,6 +1,7 @@
-﻿using System;
+﻿using GalaxyCheck.Internal.Sizing;
+using System;
 
-namespace GalaxyCheck.Sizing
+namespace GalaxyCheck.Internal.Sizing
 {
     public delegate (int min, int max) BoundsScalingFunc(Size size);
 

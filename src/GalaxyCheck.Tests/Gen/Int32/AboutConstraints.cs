@@ -21,7 +21,7 @@ namespace Tests.Gen.Int32
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.Sample(new RunConfig(seed: seed));
+                var sample = gen.Sample(seed: seed);
 
                 Assert.All(sample, x => Assert.True(x >= min));
             });
@@ -40,7 +40,7 @@ namespace Tests.Gen.Int32
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.Sample(new RunConfig(seed: seed));
+                var sample = gen.Sample(seed: seed);
 
                 Assert.All(sample, x => Assert.True(x <= max));
             });
@@ -58,7 +58,7 @@ namespace Tests.Gen.Int32
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.Sample(new RunConfig(seed: seed));
+                var sample = gen.Sample(seed: seed);
 
                 Assert.All(sample, x => Assert.InRange(x, min, max));
             });

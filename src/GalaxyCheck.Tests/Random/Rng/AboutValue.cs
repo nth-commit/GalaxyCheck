@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using R = GalaxyCheck.Random;
+using R = GalaxyCheck.Internal.Random;
 using static Tests.TestUtils;
 
 namespace Tests.Random.Rng

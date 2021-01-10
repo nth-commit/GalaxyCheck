@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck.Utility
+﻿namespace GalaxyCheck.Internal.Utility
 {
     internal abstract record Option<T>
     {

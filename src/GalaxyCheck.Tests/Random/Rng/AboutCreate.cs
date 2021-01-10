@@ -1,6 +1,6 @@
 ﻿using FsCheck.Xunit;
 using Xunit;
-using R = GalaxyCheck.Random;
+using R = GalaxyCheck.Internal.Random;
 
 namespace Tests.Random.Rng
 {

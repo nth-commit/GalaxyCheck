@@ -10,9 +10,8 @@ namespace Tests
     {
         public static void Equal<T>(IGen<T> expected, IGen<T> actual, int seed)
         {
-            var config = new RunConfig(seed: seed);
-            var expectedSample = expected.Advanced.SampleExampleSpaces(config);
-            var actualSample = actual.Advanced.SampleExampleSpaces(config);
+            var expectedSample = expected.Advanced.SampleExampleSpaces(seed: seed);
+            var actualSample = actual.Advanced.SampleExampleSpaces(seed: seed);
 
             Assert.All(
                 Enumerable.Zip(expectedSample, actualSample),
@@ -21,18 +20,16 @@ namespace Tests
 
         public static void ShrinksTo<T>(IGen<T> gen, T expected, int seed, Func<T, bool>? pred = null)
         {
-            var actual = gen.Minimal(new RunConfig(seed: seed), pred);
+            var actual = gen.Minimal(seed: seed, pred: pred);
 
             Assert.Equal(expected, actual);
         }
 
         public static void Errors<T>(IGen<T> gen, string errorMessage, int seed)
         {
-            var config = new RunConfig(seed: seed);
-
             var ex = Assert.Throws<GC.Exceptions.GenErrorException>(() =>
             {
-                gen.Sample(config);
+                gen.Sample(seed: seed);
             });
 
             Assert.Equal(errorMessage, ex.Message);

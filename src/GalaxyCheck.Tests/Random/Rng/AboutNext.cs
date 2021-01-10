@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using GC = GalaxyCheck;
+using R = GalaxyCheck.Internal.Random;
 using static Tests.TestUtils;
 
 namespace Tests.Random.Rng
@@ -14,7 +15,7 @@ namespace Tests.Random.Rng
         [Fact]
         public void ItIsIdempotent()
         {
-            var rng = GC.Random.Rng.Spawn();
+            var rng = R.Rng.Spawn();
 
             Assert.Equal(rng.Next(), rng.Next());
         }
@@ -24,7 +25,7 @@ namespace Tests.Random.Rng
         {
             Action test = () =>
             {
-                var rng0 = GC.Random.Rng.Create(seed);
+                var rng0 = R.Rng.Create(seed);
 
                 var rngFinal = Enumerable.Range(0, nextCount).Aggregate(rng0, (acc, _) => acc.Next());
 
@@ -54,7 +55,7 @@ namespace Tests.Random.Rng
                 Enumerable
                     .Range(0, 10)
                     .Aggregate<int, IEnumerable<GC.IRng>>(
-                        new[] { GC.Random.Rng.Create(seed) },
+                        new[] { R.Rng.Create(seed) },
                         (acc, _) => Enumerable.Append(acc, acc.Last().Next()))
                     .ToArray());
         }

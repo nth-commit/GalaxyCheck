@@ -3,7 +3,7 @@ using FsCheck.Xunit;
 using System;
 using Xunit;
 using GC = GalaxyCheck;
-using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Internal.ExampleSpaces;
 
 namespace Tests.ExampleSpaces.ExampleSpace
 {
@@ -21,7 +21,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
 
             Action test = () =>
             {
-                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
+                var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
 
                 Assert.NotNull(sourceExampleSpace);
             };
@@ -36,7 +36,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
 
             Action test = () =>
             {
-                var sourceExampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
+                var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
 
                 Assert.Null(sourceExampleSpace);
             };

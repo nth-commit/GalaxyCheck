@@ -2,7 +2,7 @@
 using FsCheck.Xunit;
 using System;
 using Xunit;
-using S = GalaxyCheck.Sizing;
+using S = GalaxyCheck.Internal.Sizing;
 
 namespace Tests.Sizing.BoundsScalingFunc
 {

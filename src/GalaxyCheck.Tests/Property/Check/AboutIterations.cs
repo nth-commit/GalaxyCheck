@@ -15,13 +15,13 @@ namespace Tests.Property.Check
             TestWithSeed(seed =>
             {
                 var calls = 0;
-                var property = gen.ToProperty(_ =>
+                var property = gen.ForAll(_ =>
                 {
                     calls++;
                     return true;
                 });
 
-                property.Check(new RunConfig(iterations: iterations.Value, seed: seed));
+                property.Check(iterations: iterations.Value, seed: seed);
 
                 Assert.Equal(iterations.Value, calls);
             });
@@ -32,9 +32,9 @@ namespace Tests.Property.Check
         {
             TestWithSeed(seed =>
             {
-                var property = gen.ToProperty(_ => true);
+                var property = gen.ForAll(_ => true);
 
-                var result = property.Check(new RunConfig(iterations: iterations.Value, seed: seed));
+                var result = property.Check(iterations: iterations.Value, seed: seed);
 
                 Assert.Equal(iterations.Value, result.Iterations);
             });

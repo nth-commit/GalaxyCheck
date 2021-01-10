@@ -1,9 +1,11 @@
-﻿using GalaxyCheck.ExampleSpaces;
-using GalaxyCheck.Sizing;
+﻿using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Internal.Gens;
+using GalaxyCheck.Internal.Sizing;
 using System;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Gens
+namespace GalaxyCheck
 {
     public interface IInt32Gen : IGen<int>
     {
@@ -104,8 +106,8 @@ namespace GalaxyCheck.Gens
 
             var getBounds = (config.Bias ?? Gen.Bias.Linear) switch
             {
-                Gen.Bias.None => Sizing.BoundsScalingFactoryFuncs.Unscaled(min, max, origin),
-                Gen.Bias.Linear => Sizing.BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin),
+                Gen.Bias.None => BoundsScalingFactoryFuncs.Unscaled(min, max, origin),
+                Gen.Bias.Linear => BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin),
                 _ => throw new NotSupportedException()
             };
 

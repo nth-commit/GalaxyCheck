@@ -2,7 +2,7 @@
 using FsCheck.Xunit;
 using System;
 using Xunit;
-using S = GalaxyCheck.Sizing;
+using S = GalaxyCheck.Internal.Sizing;
 
 namespace Tests.Sizing.BoundsScalingFunc
 {
@@ -31,7 +31,7 @@ namespace Tests.Sizing.BoundsScalingFunc
             {
                 var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin);
 
-                var bounds = f(S.Size.MaxValue);
+                var bounds = f(GalaxyCheck.Internal.Sizing.Size.MaxValue);
 
                 Assert.Equal((min, max), bounds);
             };
@@ -40,7 +40,7 @@ namespace Tests.Sizing.BoundsScalingFunc
         }
 
         [Property]
-        public void WhenMinAndMaxAreOrigin_ItAlwaysReturnsTheGivenBounds(int origin, S.Size size)
+        public void WhenMinAndMaxAreOrigin_ItAlwaysReturnsTheGivenBounds(int origin, GalaxyCheck.Internal.Sizing.Size size)
         {
             var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(origin, origin, origin);
 

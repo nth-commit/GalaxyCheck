@@ -36,13 +36,13 @@ namespace Tests
             TestWithSeed(seed => Snapshot.Match(fromSeed(seed), SnapshotNameExtension.Create(seed)), repeatSeed);
 
         public static void SnapshotGenValues<T>(IGen<T> gen, int? repeatSeed = null) =>
-            SnapshotWithSeed(seed => gen.Sample(new RunConfig(seed: seed, size: GalaxyCheck.Sizing.Size.MaxValue)), repeatSeed);
+            SnapshotWithSeed(seed => gen.Sample(seed: seed, size: 100), repeatSeed);
 
         public static void SnapshotGenExampleSpaces<T>(IGen<T> gen, int? repeatSeed = null) =>
             SnapshotWithSeed(
                 seed => gen
                     .Advanced
-                    .SampleExampleSpaces(new RunConfig(iterations: 1, seed: seed, size: GalaxyCheck.Sizing.Size.MaxValue))
+                    .SampleExampleSpaces(iterations: 1, seed: seed, size: 100)
                     .Single()
                     .Render(x => x!.ToString()!),
                 repeatSeed);

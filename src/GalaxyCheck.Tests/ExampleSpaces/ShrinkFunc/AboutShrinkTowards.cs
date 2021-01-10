@@ -14,7 +14,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         {
             Action test = () =>
             {
-                var shrink = GC.ExampleSpaces.ShrinkFunc.Towards(target);
+                var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
                 var first = shrink(value).First();
 
@@ -27,7 +27,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [Property]
         public void ItDoesNotProduceTheOriginalValue(int value, int target)
         {
-            var shrink = GC.ExampleSpaces.ShrinkFunc.Towards(target);
+            var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
             var result = shrink(value);
 
@@ -37,7 +37,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [Property]
         public void ItDoesNotProduceDuplicates(int value, int target)
         {
-            var shrink = GC.ExampleSpaces.ShrinkFunc.Towards(target);
+            var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
             var result = shrink(value);
 
@@ -47,7 +47,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [Property]
         public void ItReflectsAroundZero(int value)
         {
-            var shrink = GC.ExampleSpaces.ShrinkFunc.Towards(0);
+            var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(0);
 
             var result0 = shrink(value).Select(x => Math.Abs(x));
             var result1 = shrink(-value).Select(x => Math.Abs(x));
@@ -58,7 +58,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [Property]
         public void WhenTheValueIsTheTarget_ItReturnsAnEmptyEnumerable(int target)
         {
-            var shrink = GC.ExampleSpaces.ShrinkFunc.Towards(target);
+            var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
             var result = shrink(target);
 
@@ -72,7 +72,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [InlineData(100, 0, new int[] { 0, 50, 75, 88, 94, 97, 99 })]
         public void Examples(int value, int target, int[] expected)
         {
-            var shrink = GC.ExampleSpaces.ShrinkFunc.Towards(target);
+            var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
             var actual = shrink(value);
 

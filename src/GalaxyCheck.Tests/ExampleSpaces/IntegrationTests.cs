@@ -2,7 +2,7 @@
 using Snapshooter.Xunit;
 using Xunit;
 using GC = GalaxyCheck;
-using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Internal.ExampleSpaces;
 
 namespace Tests.ExampleSpaces
 {
@@ -15,9 +15,9 @@ namespace Tests.ExampleSpaces
         [InlineData(10, 0)]
         public void IntegerExampleSpace(int value, int target)
         {
-            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
                 value,
-                GC.ExampleSpaces.ShrinkFunc.Towards(target),
+                GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target),
                 x => x);
 
             Snapshot.Match(exampleSpace.Render(x => x.ToString()), SnapshotNameExtension.Create(value, target));
@@ -26,8 +26,8 @@ namespace Tests.ExampleSpaces
         [Fact]
         public void IntegerExampleSpaceFiltered()
         {
-            var exampleSpace = GC.ExampleSpaces.ExampleSpace
-                .Unfold(10, GC.ExampleSpaces.ShrinkFunc.Towards(0), x => x)
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace
+                .Unfold(10, GC.Internal.ExampleSpaces.ShrinkFunc.Towards(0), x => x)
                 .Filter(x => x % 2 == 0);
 
             Snapshot.Match(exampleSpace?.Render(x => x.ToString()) ?? "");

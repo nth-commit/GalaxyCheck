@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using GC = GalaxyCheck;
-using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Internal.ExampleSpaces;
 
 namespace Tests.ExampleSpaces.ExampleSpace
 {
@@ -17,7 +17,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, List<object>> shrink,
             Func<object, decimal> measure)
         {
-            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             var counterexamples = exampleSpace.Counterexamples(_ => true);
 
@@ -27,7 +27,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         [Fact]
         public void WhenPredicateIsAlwaysFalseAndExampleSpaceIsSingleton_ItReturnsASingleCounterexample()
         {
-            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Singleton(1);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(1);
 
             var counterexamples = exampleSpace.Counterexamples(_ => false);
 
@@ -40,7 +40,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, List<object>> shrink,
             Func<object, decimal> measure)
         {
-            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             Action test = () =>
             {
@@ -59,7 +59,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, bool> pred)
         {
-            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             var counterexamples = exampleSpace.Counterexamples(pred).Take(10);
 
@@ -76,7 +76,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, bool> pred)
         {
-            var exampleSpace = GC.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
 
             var counterexamples = exampleSpace.Counterexamples(pred).Take(10);
 

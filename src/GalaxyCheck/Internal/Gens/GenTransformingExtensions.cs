@@ -1,8 +1,10 @@
-﻿using GalaxyCheck.Utility;
+﻿using GalaxyCheck;
+using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Internal.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Gens
+namespace GalaxyCheck.Internal.Gens
 {
     public delegate IGen<U> GenTransformation<T, U>(IGen<T> gen);
 
@@ -40,7 +42,7 @@ namespace GalaxyCheck.Gens
 
     public static class GenTransformations
     {
-        public static GenTransformation<T, T> Repeat<T>() => (IGen<T> gen) => new FunctionGen<T>((rng, size) =>
+        public static GenTransformation<T, T> Repeat<T>() => (gen) => new FunctionGen<T>((rng, size) =>
         {
             return EnumerableExtensions
                 .Repeat(() => gen.Advanced.Run(rng, size))

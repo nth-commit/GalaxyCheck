@@ -1,8 +1,9 @@
-﻿using GalaxyCheck.ExampleSpaces;
-using GalaxyCheck.Sizing;
+﻿using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Internal.Sizing;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Gens
+namespace GalaxyCheck.Internal.Gens
 {
     public delegate int NextIntFunc(int min, int max);
 

@@ -1,9 +1,10 @@
-﻿using GalaxyCheck.Utility;
+﻿using GalaxyCheck;
+using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.ExampleSpaces
+namespace GalaxyCheck.Internal.ExampleSpaces
 {
     /// <summary>
     /// A function which "shrinks" a value. Generates a sample of smaller incantations of the original value. An
