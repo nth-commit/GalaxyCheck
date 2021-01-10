@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GalaxyCheck.Utility;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GalaxyCheck.Gens
@@ -35,5 +36,19 @@ namespace GalaxyCheck.Gens
                         onDiscard: discard => iterationBuilder.ToDiscard<U>(),
                         onError: error => iterationBuilder.ToError<U>(error.GenName, error.Message));
                 });
+    }
+
+    public static class GenTransformations
+    {
+        public static GenTransformation<T, T> Repeat<T>() => (IGen<T> gen) => new FunctionGen<T>((rng, size) =>
+        {
+            return EnumerableExtensions
+                .Repeat(() => gen.Advanced.Run(rng, size))
+                .Tap((iteration) =>
+                {
+                    rng = iteration.NextRng;
+                    size = iteration.NextSize;
+                });
+        });
     }
 }

@@ -19,8 +19,8 @@ namespace Tests
 
     public static class TestUtils
     {
-        public static void TestWithSeed(Action<int> testAction) =>
-            Enumerable.Range(0, 10).ToList().ForEach(seed =>
+        public static void TestWithSeed(Action<int> testAction, int? repeatSeed = null) =>
+            Enumerable.Range(0, 10).Where(x => repeatSeed == null || repeatSeed == x).ToList().ForEach(seed =>
             {
                 try
                 {
@@ -32,20 +32,19 @@ namespace Tests
                 }
             });
 
-        public static void SnapshotWithSeed<T>(Func<int, T> fromSeed) =>
-            TestWithSeed(seed => Snapshot.Match(fromSeed(seed), SnapshotNameExtension.Create(seed)));
+        public static void SnapshotWithSeed<T>(Func<int, T> fromSeed, int? repeatSeed = null) =>
+            TestWithSeed(seed => Snapshot.Match(fromSeed(seed), SnapshotNameExtension.Create(seed)), repeatSeed);
 
-        public static void SnapshotGenValues<T>(IGen<T> gen) =>
-            SnapshotWithSeed(seed => gen.Sample(new RunConfig(seed: seed, size: GalaxyCheck.Sizing.Size.MaxValue)));
+        public static void SnapshotGenValues<T>(IGen<T> gen, int? repeatSeed = null) =>
+            SnapshotWithSeed(seed => gen.Sample(new RunConfig(seed: seed, size: GalaxyCheck.Sizing.Size.MaxValue)), repeatSeed);
 
-        public static void SnapshotGenExampleSpaces<T>(IGen<T> gen) =>
-            SnapshotWithSeed(seed =>
-            {
-                return gen
+        public static void SnapshotGenExampleSpaces<T>(IGen<T> gen, int? repeatSeed = null) =>
+            SnapshotWithSeed(
+                seed => gen
                     .Advanced
                     .SampleExampleSpaces(new RunConfig(iterations: 1, seed: seed, size: GalaxyCheck.Sizing.Size.MaxValue))
                     .Single()
-                    .Render(x => x!.ToString()!);
-            });
+                    .Render(x => x!.ToString()!),
+                repeatSeed);
     }
 }

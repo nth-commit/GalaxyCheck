@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.Sizing;
+using System;
 
 namespace GalaxyCheck
 {
@@ -10,13 +11,28 @@ namespace GalaxyCheck
 
         public Size? Size { get; init; }
 
-        public IRng Rng => Seed == null ? Random.Rng.Spawn() : Random.Rng.Create(Seed.Value);
+        public Func<int, IRng>? MakeRng { get; init; }
 
-        public RunConfig(int? iterations = null, int? seed = null, Size? size = null)
+        public IRng Rng
+        {
+            get
+            {
+                var seed = Seed == null ? Random.Rng.Spawn().Seed : Seed.Value;
+                var makeRng = MakeRng == null ? Random.Rng.Create : MakeRng;
+                return makeRng(seed);
+            }
+        }
+
+        public RunConfig(
+            int? iterations = null,
+            int? seed = null,
+            Size? size = null,
+            Func<int, IRng>? makeRng = null)
         {
             Iterations = iterations;
             Seed = seed;
             Size = size;
+            MakeRng = makeRng;
         }
 
         public RunConfig WithIterations(int iterations) => new RunConfig(

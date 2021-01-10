@@ -25,6 +25,18 @@ namespace GalaxyCheck.Gens
             _parameters = parameters;
         }
 
+        public GenIterationBuilder WithInitialRng(IRng rng) => new GenIterationBuilder(new BaseGenIterationParameters(
+            rng,
+            _parameters.InitialSize,
+            _parameters.NextRng,
+            _parameters.NextSize));
+
+        public GenIterationBuilder WithInitialSize(Size size) => new GenIterationBuilder(new BaseGenIterationParameters(
+            _parameters.InitialRng,
+            size,
+            _parameters.NextRng,
+            _parameters.NextSize));
+
         public GenIterationBuilder WithNextSize(Size size) => new GenIterationBuilder(new BaseGenIterationParameters(
             _parameters.InitialRng,
             _parameters.InitialSize,
