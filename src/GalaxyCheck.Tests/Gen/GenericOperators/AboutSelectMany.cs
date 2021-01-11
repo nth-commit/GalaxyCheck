@@ -4,6 +4,8 @@ using System;
 using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
+using GalaxyCheck.Internal.Random;
+using System.Linq;
 
 namespace Tests.Gen.GenericOperators
 {
@@ -18,6 +20,24 @@ namespace Tests.Gen.GenericOperators
                 from x in gen0
                 from y in gen0
                 select (x, y));
+        }
+
+        [Property(MaxTest = 1)]
+        public void ItConsumesRandomnessAsMuchAsTheLeftAndRightGenerator(IGen<object> leftGen, IGen<object> rightGen)
+        {
+            TestWithSeed(seed =>
+            {
+                var gen = leftGen.SelectMany((_) => rightGen);
+
+                var leftRandomness = leftGen.Advanced.SampleWithMetrics(seed: seed).RandomnessConsumption;
+                var rightRandomness = rightGen.Advanced.SampleWithMetrics(seed: seed).RandomnessConsumption;
+
+                var randomness = gen.Advanced
+                    .SampleExampleSpacesWithMetrics(seed: seed)
+                    .RandomnessConsumption;
+
+                Assert.Equal(leftRandomness + rightRandomness, randomness);
+            });
         }
 
         [Property]

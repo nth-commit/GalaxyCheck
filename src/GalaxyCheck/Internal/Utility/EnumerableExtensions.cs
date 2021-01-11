@@ -54,17 +54,14 @@ namespace GalaxyCheck.Internal.Utility
             this IEnumerable<T> source,
             Func<T, bool> pred)
         {
-            var hasPredFailed = false;
             foreach (var element in source)
             {
                 yield return element;
 
-                if (hasPredFailed)
+                if (!pred(element))
                 {
                     break;
                 }
-
-                hasPredFailed = !pred(element);
             }
         }
 

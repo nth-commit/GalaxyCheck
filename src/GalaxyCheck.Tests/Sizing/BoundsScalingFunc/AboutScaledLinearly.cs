@@ -40,11 +40,11 @@ namespace Tests.Sizing.BoundsScalingFunc
         }
 
         [Property]
-        public void WhenMinAndMaxAreOrigin_ItAlwaysReturnsTheGivenBounds(int origin, GalaxyCheck.Internal.Sizing.Size size)
+        public void WhenMinAndMaxAreOrigin_ItAlwaysReturnsTheGivenBounds(int origin, Tests.Size size)
         {
             var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(origin, origin, origin);
 
-            var bounds = f(size);
+            var bounds = f(new S.Size(size.Value));
 
             Assert.Equal((origin, origin), bounds);
         }

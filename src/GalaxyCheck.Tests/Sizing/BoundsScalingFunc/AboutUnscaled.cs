@@ -10,13 +10,13 @@ namespace Tests.Sizing.BoundsScalingFunc
     public class AboutUnscaled
     {
         [Property]
-        public FsCheck.Property ItAlwaysReturnsTheGivenBounds(int min, int max, int origin, S.Size size)
+        public FsCheck.Property ItAlwaysReturnsTheGivenBounds(int min, int max, int origin, Tests.Size size)
         {
             Action test = () =>
             {
                 var f = S.BoundsScalingFactoryFuncs.Unscaled(min, max, origin);
 
-                var bounds = f(size);
+                var bounds = f(new S.Size(size.Value));
 
                 Assert.Equal((min, max), bounds);
             };

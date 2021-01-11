@@ -35,16 +35,24 @@ namespace Tests
         public static void SnapshotWithSeed<T>(Func<int, T> fromSeed, int? repeatSeed = null) =>
             TestWithSeed(seed => Snapshot.Match(fromSeed(seed), SnapshotNameExtension.Create(seed)), repeatSeed);
 
-        public static void SnapshotGenValues<T>(IGen<T> gen, int? repeatSeed = null) =>
-            SnapshotWithSeed(seed => gen.Sample(seed: seed, size: 100), repeatSeed);
+        public static void SnapshotGenValues<T>(IGen<T> gen, int? repeatSeed = null, Func<T, string>? format = null)
+        {
+            format ??= x => x!.ToString()!;
+            SnapshotWithSeed(
+                seed => gen.Sample(seed: seed, size: 100).Select(x => format(x)),
+                repeatSeed);
+        }
 
-        public static void SnapshotGenExampleSpaces<T>(IGen<T> gen, int? repeatSeed = null) =>
+        public static void SnapshotGenExampleSpaces<T>(IGen<T> gen, int? repeatSeed = null, Func<T, string>? format = null)
+        {
+            format ??= x => x!.ToString()!;
             SnapshotWithSeed(
                 seed => gen
                     .Advanced
                     .SampleExampleSpaces(iterations: 1, seed: seed, size: 100)
                     .Single()
-                    .Render(x => x!.ToString()!),
+                    .Render(x => format(x)),
                 repeatSeed);
+        }
     }
 }

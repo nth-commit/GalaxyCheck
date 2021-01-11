@@ -114,13 +114,18 @@ namespace GalaxyCheck
 
                         foreach (var innerIteration in innerStream)
                         {
+                            var innerIterationBuilder = GenIterationBuilder
+                                .FromIteration(iteration)
+                                .WithNextRng(innerIteration.NextRng)
+                                .WithNextSize(innerIteration.NextSize);
+
                             yield return innerIteration.Match<TResult, GenIteration<TResult>>(
-                                onInstance: instance => iterationBuilder.ToInstance(instance.ExampleSpace),
-                                onDiscard: discard => iterationBuilder.ToDiscard<TResult>(),
-                                onError: error => iterationBuilder.ToError<TResult>(error.GenName, error.Message));
+                                onInstance: instance => innerIterationBuilder.ToInstance(instance.ExampleSpace),
+                                onDiscard: discard => innerIterationBuilder.ToDiscard<TResult>(),
+                                onError: error => innerIterationBuilder.ToError<TResult>(error.GenName, error.Message));
                         }
 
-                        yield break;
+                        break;
                     }
                 }
             }
