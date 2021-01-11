@@ -34,6 +34,21 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Assert.Single(counterexamples);
         }
 
+        [Fact]
+        public void WhenPredicateAlwaysThrowsAndExampleSpaceIsSingleton_ItReturnsASingleCounterexample()
+        {
+            var exception = new Exception();
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(1);
+
+            var counterexamples = exampleSpace.Counterexamples(_ =>
+            {
+                throw exception;
+            });
+
+            var counterexample = Assert.Single(counterexamples);
+            Assert.Equal(exception, counterexample.Exception);
+        }
+
         [Property]
         public FsCheck.Property WhenPredicateIsAlwaysFalseAndSubspaceIsNotEmpty_ItReturnsAnEnumerableWithLengthGreaterThanOne(
             object value,

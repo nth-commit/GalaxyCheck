@@ -96,27 +96,45 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             this ExampleSpace<T> exampleSpace,
             Func<T, bool> pred)
         {
+            (bool success, Exception? exception) Invoke(T value) {
+                try
+                {
+                    var success = pred(value);
+                    return (success, null);
+                }
+                catch (Exception ex)
+                {
+                    return (false, ex);
+                }
+            }
+
             IEnumerable<Counterexample<T>> CounterexamplesRec(IEnumerable<ExampleSpace<T>> exampleSpaces)
             {
-                var exampleSpaceAndIndex = exampleSpaces
-                    .Select((exampleSpace, index) => new { exampleSpace, index })
-                    .Where(x => pred(x.exampleSpace.Current.Value) == false)
+                var failure = exampleSpaces
+                    .Select((exampleSpace, index) =>
+                    {
+                        var (success, exception) = Invoke(exampleSpace.Current.Value);
+                        return new { exampleSpace, index, success, exception };
+                    })
+                    .Where(x => x.success == false)
                     .FirstOrDefault();
 
-                if (exampleSpaceAndIndex == null) yield break;
+                if (failure == null) yield break;
 
                 var counterexample = new Counterexample<T>(
-                    exampleSpaceAndIndex.exampleSpace.Current.Value,
-                    exampleSpaceAndIndex.exampleSpace.Current.Distance,
-                    new[] { exampleSpaceAndIndex.index });
+                    failure.exampleSpace.Current.Value,
+                    failure.exampleSpace.Current.Distance,
+                    failure.exception,
+                    new[] { failure.index });
 
                 yield return counterexample;
 
-                foreach (var smallerCounterexample in CounterexamplesRec(exampleSpaceAndIndex.exampleSpace.Subspace))
+                foreach (var smallerCounterexample in CounterexamplesRec(failure.exampleSpace.Subspace))
                 {
                     yield return new Counterexample<T>(
                         smallerCounterexample.Value,
                         smallerCounterexample.Distance,
+                        smallerCounterexample.Exception,
                         counterexample.Path.Concat(smallerCounterexample.Path));
                 }
             }
@@ -170,9 +188,17 @@ namespace GalaxyCheck.Internal.ExampleSpaces
     {
         public IEnumerable<int> Path { get; init; }
 
-        public Counterexample(T value, decimal distance, IEnumerable<int> path) : base(value, distance)
+        public Exception? Exception { get; init; }
+
+        public Counterexample(
+            T value,
+            decimal distance,
+            Exception? exception,
+            IEnumerable<int> path)
+            : base(value, distance)
         {
             Path = path;
+            Exception = exception;
         }
     }
 

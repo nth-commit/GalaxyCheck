@@ -5,6 +5,7 @@ using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.Random;
 using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
+using System;
 
 namespace GalaxyCheck
 {
@@ -110,6 +111,7 @@ namespace GalaxyCheck
                 : new CheckResultState.Falsified<T>(
                     smallestCounterexample.Value.Input,
                     smallestCounterexample.Distance,
+                    smallestCounterexample.Exception,
                     smallestCounterexample.Path);
 
             return new CheckResult<T>(
@@ -190,7 +192,7 @@ namespace GalaxyCheck
     {
         public sealed record Unfalsified<T>() : CheckResultState<T>();
 
-        public sealed record Falsified<T>(T Value, decimal Distance, IEnumerable<int> Path) : CheckResultState<T>();
+        public sealed record Falsified<T>(T Value, decimal Distance, Exception? Exception, IEnumerable<int> Path) : CheckResultState<T>();
 
         public sealed record Error<T>() : CheckResultState<T>();
     }
