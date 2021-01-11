@@ -6,15 +6,15 @@ using S = GalaxyCheck.Internal.Sizing;
 
 namespace Tests.Sizing.BoundsScalingFunc
 {
-    [Properties(Arbitrary = new [] { typeof(ArbitrarySize) })]
-    public class AboutScaledLinearly
+    [Properties(Arbitrary = new[] { typeof(ArbitrarySize) })]
+    public class AboutScaledExponentially
     {
         [Property]
         public FsCheck.Property WhenSizeIsMin_ItReturnsTheOriginAsTheBounds(int min, int max, int origin)
         {
             Action test = () =>
             {
-                var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin);
+                var f = S.BoundsScalingFactoryFuncs.ScaledExponentially(min, max, origin);
 
                 var bounds = f(S.Size.MinValue);
 
@@ -29,7 +29,7 @@ namespace Tests.Sizing.BoundsScalingFunc
         {
             Action test = () =>
             {
-                var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin);
+                var f = S.BoundsScalingFactoryFuncs.ScaledExponentially(min, max, origin);
 
                 var bounds = f(S.Size.MaxValue);
 
@@ -42,7 +42,7 @@ namespace Tests.Sizing.BoundsScalingFunc
         [Property]
         public void WhenMinAndMaxAreOrigin_ItAlwaysReturnsTheGivenBounds(int origin, Tests.Size size)
         {
-            var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(origin, origin, origin);
+            var f = S.BoundsScalingFactoryFuncs.ScaledExponentially(origin, origin, origin);
 
             var bounds = f(new S.Size(size.Value));
 
@@ -51,27 +51,17 @@ namespace Tests.Sizing.BoundsScalingFunc
 
         [Theory]
         [InlineData(1, -1, 1)]
-        [InlineData(2, -2, 2)]
+        [InlineData(10, -2, 2)]
+        [InlineData(50, -10, 10)]
+        [InlineData(75, -32, 32)]
+        [InlineData(99, -95, 95)]
         public void ExamplesForARangeFromNegative100ToPositive100AndOrigin0(int size, int expectedMin, int expectedMax)
         {
-            var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(-100, 100, 0);
+            var f = S.BoundsScalingFactoryFuncs.ScaledExponentially(-100, 100, 0);
 
             var bounds = f(new S.Size(size));
 
             Assert.Equal((expectedMin, expectedMax), bounds);
-        }
-
-        [Theory]
-        [InlineData(0, 10, 0, 50, 0, 5)] 
-        [InlineData(10, 0, 0, 50, 5, 0)]
-        [InlineData(-10, 10, 0, 50, -5, 5)]
-        public void Examples(int min, int max, int origin, int size, int scaledMin, int scaledMax)
-        {
-            var f = S.BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin);
-
-            var bounds = f(new S.Size(size));
-
-            Assert.Equal(bounds, (scaledMin, scaledMax));
         }
     }
 }

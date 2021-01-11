@@ -61,5 +61,46 @@ namespace Tests.Gen.Int32
                 Assert.Equal(50, mean, 0);
             });
         }
+
+        [Fact]
+        public void WhenBiasIsExponential_AndWhenSizeIsMin_ItProducesValuesOnlyOfTheMin()
+        {
+            TestWithSeed(seed =>
+            {
+                var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.Exponential);
+
+                var values = gen.Sample(iterations: 10000, seed: seed, size: 0);
+
+                Assert.All(values, x => Assert.Equal(0, x));
+            });
+        }
+
+        [Fact]
+        public void WhenBiasIsExponential_AndWhenSizeIsHalf_ItHasAnEvenDistributionOverLowerHalfOfExponentialRange()
+        {
+            TestWithSeed(seed =>
+            {
+                var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.Exponential);
+
+                var values = gen.Sample(iterations: 10000, seed: seed, size: 50);
+                var mean = values.Average();
+
+                Assert.Equal(5, mean, 0);
+            });
+        }
+
+        [Fact]
+        public void WhenBiasIsExponential_AndWhenSizeIsMax_ItHasAnEvenDistributionOverWholeRange()
+        {
+            TestWithSeed(seed =>
+            {
+                var gen = GC.Gen.Int32().Between(0, 100).WithBias(GC.Gen.Bias.Exponential);
+
+                var values = gen.Sample(iterations: 10000, seed: seed, size: 100);
+                var mean = values.Average();
+
+                Assert.Equal(50, mean, 0);
+            });
+        }
     }
 }

@@ -104,10 +104,11 @@ namespace GalaxyCheck
 
             var origin = config.Origin ?? InferOrigin(min, max);
 
-            var getBounds = (config.Bias ?? Gen.Bias.Linear) switch
+            var getBounds = (config.Bias ?? Gen.Bias.Exponential) switch
             {
                 Gen.Bias.None => BoundsScalingFactoryFuncs.Unscaled(min, max, origin),
                 Gen.Bias.Linear => BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin),
+                Gen.Bias.Exponential => BoundsScalingFactoryFuncs.ScaledExponentially(min, max, origin),
                 _ => throw new NotSupportedException()
             };
 
