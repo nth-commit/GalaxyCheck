@@ -3,6 +3,7 @@ using System.Linq;
 using Xunit;
 using GalaxyCheck;
 using GC = GalaxyCheck;
+using Newtonsoft.Json;
 
 namespace Tests
 {
@@ -10,8 +11,8 @@ namespace Tests
     {
         public static void Equal<T>(IGen<T> expected, IGen<T> actual, int seed)
         {
-            var expectedSample = expected.Advanced.SampleExampleSpaces(seed: seed);
-            var actualSample = actual.Advanced.SampleExampleSpaces(seed: seed);
+            var expectedSample = expected.Select(x => JsonConvert.SerializeObject(x)).Advanced.SampleExampleSpaces(seed: seed);
+            var actualSample = actual.Select(x => JsonConvert.SerializeObject(x)).Advanced.SampleExampleSpaces(seed: seed);
 
             Assert.All(
                 Enumerable.Zip(expectedSample, actualSample),

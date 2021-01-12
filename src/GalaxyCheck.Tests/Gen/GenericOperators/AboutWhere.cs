@@ -46,7 +46,7 @@ namespace Tests.Gen.GenericOperators
         {
             TestWithSeed(seed =>
             {
-                var gen = GC.Gen.Advanced.Create((useNextInt, size) => size.Value).Where(size => size > 50);
+                var gen = GC.Gen.Advanced.Create((useNextInt, size) => size.Value).Where(size => size > 10);
 
                 var values = gen.Sample(
                     seed: seed,
@@ -54,7 +54,7 @@ namespace Tests.Gen.GenericOperators
                     iterations: iterations.Value);
 
                 Assert.True(values.Count == iterations.Value);
-                Assert.All(values, x => Assert.True(x > 50));
+                Assert.All(values, x => Assert.True(x > 10));
             });
         }
     }
