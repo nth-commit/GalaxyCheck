@@ -277,5 +277,43 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 Encountered = encountered;
             }
         }
+
+        public static ExampleSpace<TResult> Merge<T, TResult>(
+            IEnumerable<ExampleSpace<T>> exampleSpaces,
+            Func<IEnumerable<T>, TResult> mergeValues,
+            ShrinkFunc<IEnumerable<ExampleSpace<T>>> shrinkExampleSpaces,
+            MeasureFunc<IEnumerable<ExampleSpace<T>>> measureMerge)
+        {
+            var current = new Example<TResult>(
+                mergeValues(exampleSpaces.Select(es => es.Current.Value)),
+                measureMerge(exampleSpaces));
+
+            // TODO: Tree culling shrinks
+            var exampleSpaceCullingShrinks = Enumerable.Empty<IEnumerable<ExampleSpace<T>>>();
+
+            var subspaceMergingShrinks = exampleSpaces
+                .Select((exampleSpace, index) => LiftAndInsertSubspace(exampleSpaces, exampleSpace.Subspace, index))
+                .SelectMany(exampleSpaces => exampleSpaces);
+
+            var shrinks = Enumerable
+                .Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks)
+                .Select(exampleSpaces => Merge(exampleSpaces, mergeValues, shrinkExampleSpaces, measureMerge));
+
+            return new ExampleSpace<TResult>(current, shrinks);
+        }
+
+        private static IEnumerable<IEnumerable<ExampleSpace<T>>> LiftAndInsertSubspace<T>(
+            IEnumerable<ExampleSpace<T>> exampleSpaces,
+            IEnumerable<ExampleSpace<T>> subspace,
+            int index)
+        {
+            var leftExampleSpaces = exampleSpaces.Take(index);
+            var rightExampleSpaces = exampleSpaces.Skip(index + 1);
+
+            return subspace.Select(exampleSpace =>
+                Enumerable.Concat(
+                    leftExampleSpaces,
+                    Enumerable.Concat(new[] { exampleSpace }, rightExampleSpaces)));
+        }
     }
-}
+} 
