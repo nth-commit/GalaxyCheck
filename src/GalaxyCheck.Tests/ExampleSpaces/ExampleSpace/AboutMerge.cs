@@ -20,16 +20,17 @@ namespace Tests.ExampleSpaces.ExampleSpace
 
         [Theory]
         [InlineData(new [] { 1, 1 })]
-        [InlineData(new [] { 2, 1 })]
-        [InlineData(new [] { 1, 2 })]
-        [InlineData(new [] { 1, 1, 1 })]
-        [InlineData(new [] { 1, 2, 1 })]
+        [InlineData(new[] { 2, 1 })]
+        [InlineData(new[] { 1, 2 })]
+        [InlineData(new[] { 1, 1, 1 })]
+        [InlineData(new[] { 1, 2, 1 })]
         public void Snapshots_ArrayConcat_NoMergeShrink(int[] values)
         {
             var exampleSpaces = values.Select(value => ES.ExampleSpace.Unfold(
                 value,
                 ES.ShrinkFunc.Towards(0),
-                ES.MeasureFunc.Unmeasured<int>()));
+                ES.MeasureFunc.Unmeasured<int>(),
+                ES.IdentifyFuncs.Default<int>()));
 
             var mergedExampleSpace = ES.ExampleSpace.Merge(
                 exampleSpaces,
@@ -53,7 +54,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var exampleSpaces = values.Select(value => ES.ExampleSpace.Unfold(
                 value,
                 ES.ShrinkFunc.Towards(0),
-                ES.MeasureFunc.Unmeasured<int>()));
+                ES.MeasureFunc.Unmeasured<int>(),
+                ES.IdentifyFuncs.Default<int>()));
 
             var mergedExampleSpace = ES.ExampleSpace.Merge(
                 exampleSpaces,

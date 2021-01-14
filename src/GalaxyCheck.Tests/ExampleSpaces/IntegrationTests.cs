@@ -18,7 +18,8 @@ namespace Tests.ExampleSpaces
             var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
                 value,
                 GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target),
-                x => x);
+                x => x,
+                IdentifyFuncs.Default<int>());
 
             Snapshot.Match(exampleSpace.Render(x => x.ToString()), SnapshotNameExtension.Create(value, target));
         }
@@ -27,7 +28,11 @@ namespace Tests.ExampleSpaces
         public void IntegerExampleSpaceFiltered()
         {
             var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace
-                .Unfold(10, GC.Internal.ExampleSpaces.ShrinkFunc.Towards(0), x => x)
+                .Unfold(
+                    10,
+                    GC.Internal.ExampleSpaces.ShrinkFunc.Towards(0),
+                    x => x,
+                    IdentifyFuncs.Default<int>())
                 .Filter(x => x % 2 == 0);
 
             Snapshot.Match(exampleSpace?.Render(x => x.ToString()) ?? "");

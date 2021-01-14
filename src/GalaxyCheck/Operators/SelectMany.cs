@@ -47,6 +47,7 @@ namespace GalaxyCheck
                 Size size)
             {
                 var jointExampleSpace = rightExampleSpace.MapExamples(example => new Example<TResult>(
+                    ExampleId.Combine(leftExampleSpace.Current.Id, example.Id),
                     example.Value,
                     leftExampleSpace.Current.Distance + example.Distance));
 

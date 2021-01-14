@@ -14,12 +14,18 @@ namespace GalaxyCheck.Internal.Gens
         private readonly StatefulGenFunc<T> _generate;
         private readonly ShrinkFunc<T> _shrink;
         private readonly MeasureFunc<T> _measure;
+        private readonly IdentifyFunc<T> _identify;
 
-        public PrimitiveGen(StatefulGenFunc<T> generate, ShrinkFunc<T> shrink, MeasureFunc<T> measure)
+        public PrimitiveGen(
+            StatefulGenFunc<T> generate,
+            ShrinkFunc<T> shrink,
+            MeasureFunc<T> measure,
+            IdentifyFunc<T> identify)
         {
             _generate = generate;
             _shrink = shrink;
             _measure = measure;
+            _identify = identify;
         }
 
         protected override IEnumerable<GenIteration<T>> Run(IRng rng, Size size)
@@ -35,7 +41,7 @@ namespace GalaxyCheck.Internal.Gens
             {
                 var initialRng = rng;
 
-                var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt, size), _shrink, _measure);
+                var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt, size), _shrink, _measure, _identify);
 
                 yield return new GenInstance<T>(initialRng, size, rng, size, exampleSpace);
             } while (true);

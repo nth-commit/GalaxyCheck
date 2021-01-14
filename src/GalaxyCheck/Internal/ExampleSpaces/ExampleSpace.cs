@@ -41,6 +41,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             Func<T, TResult> f)
         {
             return exampleSpace.MapExamples(example => new Example<TResult>(
+                example.Id,
                 f(example.Value),
                 example.Distance));
         }
@@ -122,6 +123,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 if (failure == null) yield break;
 
                 var counterexample = new Counterexample<T>(
+                    failure.exampleSpace.Current.Id,
                     failure.exampleSpace.Current.Value,
                     failure.exampleSpace.Current.Distance,
                     failure.exception,
@@ -132,6 +134,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 foreach (var smallerCounterexample in CounterexamplesRec(failure.exampleSpace.Subspace))
                 {
                     yield return new Counterexample<T>(
+                        smallerCounterexample.Id,
                         smallerCounterexample.Value,
                         smallerCounterexample.Distance,
                         smallerCounterexample.Exception,
@@ -159,31 +162,6 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         }
     }
 
-    /// <summary>
-    /// An example that lives inside an example space.
-    /// </summary>
-    /// <typeparam name="T">The type of the example's value.</typeparam>
-    public record Example<T>
-    {
-        /// <summary>
-        /// The example value.
-        /// </summary>
-        public T Value { get; init; }
-
-        /// <summary>
-        /// A metric which indicates how far the value is away from the smallest possible value. The metric is
-        /// originally a proportion out of 100, but it composes when example spaces are composed. Therefore, it's
-        /// possible for the distance metric to be arbitrarily high.
-        /// </summary>
-        public decimal Distance { get; init; }
-
-        public Example(T value, decimal distance)
-        {
-            Value = value;
-            Distance = distance;
-        }
-    }
-
     public record Counterexample<T> : Example<T>
     {
         public IEnumerable<int> Path { get; init; }
@@ -191,11 +169,12 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         public Exception? Exception { get; init; }
 
         public Counterexample(
+            ExampleId id,
             T value,
             decimal distance,
             Exception? exception,
             IEnumerable<int> path)
-            : base(value, distance)
+            : base(id, value, distance)
         {
             Path = path;
             Exception = exception;
@@ -211,7 +190,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="value">The example value.</param>
         /// <returns>The example space.</returns>
         public static ExampleSpace<T> Singleton<T>(T value) => new ExampleSpace<T>(
-            new Example<T>(value, 0),
+            new Example<T>(ExampleId.Empty, value, 0),
             Enumerable.Empty<ExampleSpace<T>>());
 
         /// <summary>
@@ -222,69 +201,74 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="shrink"></param>
         /// <param name="measure"></param>
         /// <returns></returns>
-        public static ExampleSpace<T> Unfold<T>(T rootValue, ShrinkFunc<T> shrink, MeasureFunc<T> measure) =>
-            UnfoldInternal(rootValue, shrink, measure, x => x, ImmutableHashSet.Create(rootValue));
+        public static ExampleSpace<T> Unfold<T>(
+            T rootValue,
+            ShrinkFunc<T> shrink,
+            MeasureFunc<T> measure,
+            IdentifyFunc<T> identify)
+        {
+            var id = identify(rootValue);
+            return UnfoldInternal(
+                rootValue,
+                shrink,
+                measure,
+                identify,
+                x => x,
+                ImmutableHashSet.Create(id));
+        }
 
         private static ExampleSpace<TProjection> UnfoldInternal<TAccumulator, TProjection>(
             TAccumulator accumulator,
             ShrinkFunc<TAccumulator> shrink,
             MeasureFunc<TAccumulator> measure,
+            IdentifyFunc<TAccumulator> identify,
             Func<TAccumulator, TProjection> projection,
-            ImmutableHashSet<TAccumulator> encountered)
+            ImmutableHashSet<ExampleId> encountered)
         {
+            var id = identify(accumulator);
             var value = projection(accumulator);
             var distance = measure(accumulator);
             return new ExampleSpace<TProjection>(
-                new Example<TProjection>(value, distance),
-                UnfoldSubspaceInternal(shrink(accumulator), shrink, measure, projection, encountered));
+                new Example<TProjection>(id, value, distance),
+                UnfoldSubspaceInternal(shrink(accumulator), shrink, measure, identify, projection, encountered));
         }
 
         private static IEnumerable<ExampleSpace<TProjection>> UnfoldSubspaceInternal<TAccumulator, TProjection>(
             IEnumerable<TAccumulator> accumulators,
             ShrinkFunc<TAccumulator> shrink,
             MeasureFunc<TAccumulator> measure,
+            IdentifyFunc<TAccumulator> identify,
             Func<TAccumulator, TProjection> projection,
-            ImmutableHashSet<TAccumulator> encountered) =>
-                accumulators
-                    .Scan(
-                        new UnfoldSubspaceState<TAccumulator>(new Option.None<TAccumulator>(), encountered),
-                        (acc, curr) =>
-                        {
-                            var hasBeenEncountered = acc.Encountered.Contains(curr);
-                            return hasBeenEncountered
-                                ? new UnfoldSubspaceState<TAccumulator>(new Option.None<TAccumulator>(), acc.Encountered)
-                                : new UnfoldSubspaceState<TAccumulator>(new Option.Some<TAccumulator>(curr), acc.Encountered.Add(curr));
-                        }
-                    )
-                    .Select(x => x.UnencounteredValue switch
-                    {
-                        Option.None<TAccumulator> _ => null,
-                        Option.Some<TAccumulator> some => UnfoldInternal(some.Value, shrink, measure, projection, x.Encountered),
-                        _ => null
-                    })
-                    .Where(exampleSpace => exampleSpace != null)
-                    .Cast<ExampleSpace<TProjection>>();
-
-        private class UnfoldSubspaceState<T>
+            ImmutableHashSet<ExampleId> encountered)
         {
-            public Option<T> UnencounteredValue { get; init; }
-
-            public ImmutableHashSet<T> Encountered { get; init; }
-
-            public UnfoldSubspaceState(Option<T> unencounteredValue, ImmutableHashSet<T> encountered)
-            {
-                UnencounteredValue = unencounteredValue;
-                Encountered = encountered;
-            }
+            return TraverseUnencountered(
+                accumulators,
+                (accumulator, encountered) =>
+                    UnfoldInternal(accumulator, shrink, measure, identify, projection, encountered),
+                encountered);
         }
 
         public static ExampleSpace<TResult> Merge<T, TResult>(
             IEnumerable<ExampleSpace<T>> exampleSpaces,
             Func<IEnumerable<T>, TResult> mergeValues,
             ShrinkFunc<IEnumerable<ExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<IEnumerable<ExampleSpace<T>>> measureMerge)
+            MeasureFunc<IEnumerable<ExampleSpace<T>>> measureMerge) =>
+                MergeInternal(
+                    exampleSpaces,
+                    mergeValues,
+                    shrinkExampleSpaces,
+                    measureMerge,
+                    ImmutableHashSet.Create<ExampleId>());
+
+        private static ExampleSpace<TResult> MergeInternal<T, TResult>(
+            IEnumerable<ExampleSpace<T>> exampleSpaces,
+            Func<IEnumerable<T>, TResult> mergeValues,
+            ShrinkFunc<IEnumerable<ExampleSpace<T>>> shrinkExampleSpaces,
+            MeasureFunc<IEnumerable<ExampleSpace<T>>> measureMerge,
+            ImmutableHashSet<ExampleId> encountered)
         {
             var current = new Example<TResult>(
+                exampleSpaces.Aggregate(ExampleId.Empty, (acc, curr) => ExampleId.Combine(acc, curr.Current.Id)),
                 mergeValues(exampleSpaces.Select(es => es.Current.Value)),
                 measureMerge(exampleSpaces));
 
@@ -294,9 +278,11 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 .Select((exampleSpace, index) => LiftAndInsertSubspace(exampleSpaces, exampleSpace.Subspace, index))
                 .SelectMany(exampleSpaces => exampleSpaces);
 
-            var shrinks = Enumerable
-                .Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks)
-                .Select(exampleSpaces => Merge(exampleSpaces, mergeValues, shrinkExampleSpaces, measureMerge));
+            var shrinks = TraverseUnencountered(
+                Enumerable.Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks),
+                (exampleSpaces, encountered) =>
+                    MergeInternal(exampleSpaces, mergeValues, shrinkExampleSpaces, measureMerge, encountered),
+                encountered);
 
             return new ExampleSpace<TResult>(current, shrinks);
         }
@@ -313,6 +299,56 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 Enumerable.Concat(
                     leftExampleSpaces,
                     Enumerable.Concat(new[] { exampleSpace }, rightExampleSpaces)));
+        }
+
+        private static IEnumerable<ExampleSpace<T>> TraverseUnencountered<TAccumulator, T>(
+            IEnumerable<TAccumulator> accumulators,
+            Func<TAccumulator, ImmutableHashSet<ExampleId>, ExampleSpace<T>> generateNextExampleSpace,
+            ImmutableHashSet<ExampleId> encountered)
+        {
+            return accumulators
+                .Scan(
+                    new UnfoldSubspaceState<ExampleSpace<T>>(
+                        new Option.None<ExampleSpace<T>>(),
+                        encountered),
+                    (acc, curr) =>
+                    {
+                        var exampleSpace = generateNextExampleSpace(curr, acc.Encountered);
+
+                        var hasBeenEncountered = acc.Encountered.Contains(exampleSpace.Current.Id);
+                        if (hasBeenEncountered)
+                        {
+                            return new UnfoldSubspaceState<ExampleSpace<T>>(
+                                new Option.None<ExampleSpace<T>>(),
+                                acc.Encountered);
+                        }
+
+                        return new UnfoldSubspaceState<ExampleSpace<T>>(
+                                new Option.Some<ExampleSpace<T>>(exampleSpace),
+                                acc.Encountered.Add(exampleSpace.Current.Id));
+                    }
+                )
+                .Select(x => x.UnencounteredValue switch
+                {
+                    Option.None<ExampleSpace<T>> _ => null,
+                    Option.Some<ExampleSpace<T>> some => some.Value,
+                    _ => null
+                })
+                .Where(exampleSpace => exampleSpace != null)
+                .Cast<ExampleSpace<T>>();
+        }
+
+        private class UnfoldSubspaceState<T>
+        {
+            public Option<T> UnencounteredValue { get; init; }
+
+            public ImmutableHashSet<ExampleId> Encountered { get; init; }
+
+            public UnfoldSubspaceState(Option<T> unencounteredValue, ImmutableHashSet<ExampleId> encountered)
+            {
+                UnencounteredValue = unencounteredValue;
+                Encountered = encountered;
+            }
         }
     }
 } 

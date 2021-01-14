@@ -34,7 +34,9 @@ namespace GalaxyCheck
         /// <typeparam name="T">The type of the generator's value.</typeparam>
         /// <param name="value">The constant value the generator should produce.</param>
         /// <returns>The new generator.</returns>
-        public static IGen<T> Constant<T>(T value) => Advanced.Create((useNextInt, size) => value);
+        public static IGen<T> Constant<T>(T value) => Advanced.Create(
+            (useNextInt, size) => value,
+            identify: IdentifyFuncs.Constant<T>());
 
         /// <summary>
         /// Creates a generator that produces 32-bit integers. By default, it will generate integers in the full range
@@ -57,10 +59,12 @@ namespace GalaxyCheck
             public static IGen<T> Create<T>(
                 StatefulGenFunc<T> generate,
                 ShrinkFunc<T>? shrink = null,
-                MeasureFunc<T>? measure = null) => new PrimitiveGen<T>(
+                MeasureFunc<T>? measure = null,
+                IdentifyFunc<T>? identify = null) => new PrimitiveGen<T>(
                     generate,
                     shrink ?? ShrinkFunc.None<T>(),
-                    measure ?? MeasureFunc.Unmeasured<T>());
+                    measure ?? MeasureFunc.Unmeasured<T>(),
+                    identify ?? IdentifyFuncs.Default<T>());
         }
     }
 }

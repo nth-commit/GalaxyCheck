@@ -16,7 +16,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
                 value,
                 shrink,
-                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>());
+                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>(),
+                GC.Internal.ExampleSpaces.IdentifyFuncs.Default<int>());
 
             Assert.Equal(new [] { value }, exampleSpace.Sample().Select(problem => problem.Value));
         }
@@ -29,7 +30,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
                 10,
                 shrink,
-                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>());
+                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>(),
+                GC.Internal.ExampleSpaces.IdentifyFuncs.Default<int>());
 
             Assert.Equal(
                 new[] { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 },

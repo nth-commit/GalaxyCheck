@@ -17,7 +17,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, List<object>> shrink,
             Func<object, decimal> measure)
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink.Invoke,
+                measure.Invoke,
+                IdentifyFuncs.Default<object>());
 
             var counterexamples = exampleSpace.Counterexamples(_ => true);
 
@@ -55,7 +59,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, List<object>> shrink,
             Func<object, decimal> measure)
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink.Invoke,
+                measure.Invoke,
+                IdentifyFuncs.Default<object>());
 
             Action test = () =>
             {
@@ -74,7 +82,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, bool> pred)
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink.Invoke,
+                measure.Invoke,
+                IdentifyFuncs.Default<object>());
 
             var counterexamples = exampleSpace.Counterexamples(pred).Take(10);
 
@@ -91,7 +103,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, bool> pred)
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink.Invoke,
+                measure.Invoke,
+                IdentifyFuncs.Default<object>());
 
             var counterexamples = exampleSpace.Counterexamples(pred).Take(10);
 

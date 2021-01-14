@@ -17,7 +17,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink.Invoke,
+                measure.Invoke,
+                IdentifyFuncs.Default<object>());
 
             Assert.Equal(
                 sourceExampleSpace.Sample().Select(example => selector(example.Value)),
@@ -31,11 +35,33 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(value, shrink.Invoke, measure.Invoke);
+            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink.Invoke,
+                measure.Invoke,
+                IdentifyFuncs.Default<object>());
 
             Assert.Equal(
-                sourceExampleSpace.Sample().Select(example => selector(example.Value)),
-                sourceExampleSpace.Map(selector).Sample().Select(example => example.Value));
+                sourceExampleSpace.Sample().Select(example => example.Distance),
+                sourceExampleSpace.Map(selector).Sample().Select(example => example.Distance));
+        }
+
+        [Property]
+        public void ItDoesNotAffectId(
+            object value,
+            Func<object, List<object>> shrink,
+            Func<object, decimal> measure,
+            Func<object, object> selector)
+        {
+            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+                value,
+                shrink.Invoke,
+                measure.Invoke,
+                IdentifyFuncs.Default<object>());
+
+            Assert.Equal(
+                sourceExampleSpace.Sample().Select(example => example.Id),
+                sourceExampleSpace.Map(selector).Sample().Select(example => example.Id));
         }
     }
 }

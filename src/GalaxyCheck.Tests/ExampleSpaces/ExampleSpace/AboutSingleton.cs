@@ -23,7 +23,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var unfoldedExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
                 value,
                 GC.Internal.ExampleSpaces.ShrinkFunc.None<object>(),
-                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<object>());
+                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<object>(),
+                GC.Internal.ExampleSpaces.IdentifyFuncs.Constant<object>());
 
             Assert.Equal(unfoldedExampleSpace.Sample(), singletonExampleSpace.Sample());
         }
