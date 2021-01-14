@@ -21,7 +21,6 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// Creates a no-op shrink function for `T`, which always returns an empty enumerable (indicating that any
         /// given value will not shrink).
         /// </summary>
-        /// <typeparam name="T">The type of the value which should not be shrunk.</typeparam>
         /// <returns>A no-op shrink function for any type.</returns>
         public static ShrinkFunc<T> None<T>() => (_) => Enumerable.Empty<T>();
 
@@ -36,6 +35,86 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         public static ShrinkFunc<int> Towards(int target) => (value) => value == target
             ? Enumerable.Empty<int>()
             : Halves(value - target).Select(difference => value - difference);
+
+        /// <summary>
+        /// Creates a shrink function that generates all the combinations (of n choose k) of the given enumerable.
+        /// However, if k >= n, it returns an empty enumerable.
+        /// </summary>
+        /// <param name="k">The number of elements to choose for a combination.</param>
+        /// <returns>A shrink function for enumerables.</returns>
+        public static ShrinkFunc<IEnumerable<T>> OtherCombinations<T>(int k)
+        {
+            static IEnumerable<IEnumerable<T>> TailCombinations(int k, List<T> list)
+            {
+                if (list.Any() == false)
+                {
+                    return Enumerable.Empty<IEnumerable<T>>();
+                }
+
+                var head = list[0];
+                var tail = list.Skip(1).ToList();
+                return AllCombinations(k - 1, tail).Select(tail => Enumerable.Concat(new[] { head }, tail));
+            }
+
+            static IEnumerable<IEnumerable<T>> AllCombinations(int k, List<T> list)
+            {
+                if (k == 1)
+                {
+                    foreach (var element in list)
+                    {
+                        yield return new[] { element };
+                    }
+                }
+                else
+                {
+                    var n = list.Count;
+
+                    for (int i = 0; i < n; i++)
+                    {
+                        var subList = list.Skip(i).ToList();
+                        foreach (var combination in TailCombinations(k, subList))
+                        {
+                            yield return combination;
+                        }
+                    }
+                }
+            }
+
+            return (source) =>
+            {
+                var list = source.ToList();
+                return k >= list.Count()
+                    ? Enumerable.Empty<IEnumerable<T>>()
+                    : AllCombinations(k, list);
+            };
+        }
+
+        /// <summary>
+        /// Creates a shrink function that shrinks a source enumerable towards a target count, like
+        /// <see cref="Towards(int)"/>. Whilst shrinking the enumerable, it will generate combinations for a count from
+        /// the original source.
+        /// </summary>
+        /// <param name="target">The count to shrink towards.</param>
+        /// <returns>A shrink function for enumerables.</returns>
+        public static ShrinkFunc<IEnumerable<T>> TowardsCount<T>(int target)
+        {
+            var towardsCount = Towards(target);
+
+            return (source) =>
+            {
+                var lengths = towardsCount(source.Count());
+
+                var shrinksForSource = lengths.Select(length => source.Take(length));
+
+                var shrinksForCombinations = lengths.SelectMany(length =>
+                {
+                    // Skip the first, as we already have this combination from shrinksForSource
+                    return OtherCombinations<T>(length)(source).Skip(1);
+                });
+
+                return Enumerable.Concat(shrinksForSource, shrinksForCombinations);
+            };
+        }
 
         private static IEnumerable<int> Halves(int value) =>
             EnumerableExtensions

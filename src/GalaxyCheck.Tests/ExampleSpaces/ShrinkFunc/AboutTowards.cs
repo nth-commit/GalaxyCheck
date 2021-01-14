@@ -7,7 +7,7 @@ using GC = GalaxyCheck;
 
 namespace Tests.ExampleSpaces.ShrinkFunc
 {
-    public class AboutShrinkTowards
+    public class AboutTowards
     {
         [Property]
         public FsCheck.Property ItProducesTheTargetValueFirst(int value, int target)

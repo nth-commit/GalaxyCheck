@@ -24,7 +24,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         [InlineData(new [] { 1, 2 })]
         [InlineData(new [] { 1, 1, 1 })]
         [InlineData(new [] { 1, 2, 1 })]
-        public void Snapshots_NoMergeShrink(int[] values)
+        public void Snapshots_ArrayConcat_NoMergeShrink(int[] values)
         {
             var exampleSpaces = values.Select(value => ES.ExampleSpace.Unfold(
                 value,
@@ -35,6 +35,30 @@ namespace Tests.ExampleSpaces.ExampleSpace
                 exampleSpaces,
                 (values) => values.ToArray(),
                 NoShrink,
+                Unmeasured);
+
+            Snapshot.Match(
+                mergedExampleSpace.Render(values => JsonConvert.SerializeObject(values)),
+                SnapshotNameExtension.Create(values.Select(x => x.ToString()).ToArray()));
+        }
+
+        [Theory]
+        [InlineData(new[] { 1, 1 })]
+        [InlineData(new[] { 2, 1 })]
+        [InlineData(new[] { 1, 2 })]
+        [InlineData(new[] { 1, 1, 1 })]
+        [InlineData(new[] { 1, 2, 1 })]
+        public void Snapshots_ArrayConcat_TowardsCountShrink(int[] values)
+        {
+            var exampleSpaces = values.Select(value => ES.ExampleSpace.Unfold(
+                value,
+                ES.ShrinkFunc.Towards(0),
+                ES.MeasureFunc.Unmeasured<int>()));
+
+            var mergedExampleSpace = ES.ExampleSpace.Merge(
+                exampleSpaces,
+                (values) => values.ToArray(),
+                ES.ShrinkFunc.TowardsCount<ES.ExampleSpace<int>>(0),
                 Unmeasured);
 
             Snapshot.Match(

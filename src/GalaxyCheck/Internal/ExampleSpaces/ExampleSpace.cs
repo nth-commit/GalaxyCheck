@@ -288,8 +288,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 mergeValues(exampleSpaces.Select(es => es.Current.Value)),
                 measureMerge(exampleSpaces));
 
-            // TODO: Tree culling shrinks
-            var exampleSpaceCullingShrinks = Enumerable.Empty<IEnumerable<ExampleSpace<T>>>();
+            var exampleSpaceCullingShrinks = shrinkExampleSpaces(exampleSpaces);
 
             var subspaceMergingShrinks = exampleSpaces
                 .Select((exampleSpace, index) => LiftAndInsertSubspace(exampleSpaces, exampleSpace.Subspace, index))
