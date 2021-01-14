@@ -55,7 +55,7 @@ namespace GalaxyCheck
             return gen
                 .TransformInstances(applyPredicateToInstance)
                 .TransformStream(resizeAndTerminateAfterConsecutiveDiscards)
-                .Transform(GenTransformations.Repeat<T>());
+                .Repeat();
         }
     }
 }

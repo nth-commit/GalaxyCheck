@@ -131,8 +131,7 @@ namespace GalaxyCheck
                 }
             }
 
-            return new FunctionGen<TResult>((rng, size) => Run(gen, selector, rng, size))
-                .Transform(GenTransformations.Repeat<TResult>());
+            return new FunctionGen<TResult>((rng, size) => Run(gen, selector, rng, size)).Repeat();
         }
 
         /// <summary>

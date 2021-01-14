@@ -38,6 +38,8 @@ namespace GalaxyCheck.Internal.Gens
                         onDiscard: discard => iterationBuilder.ToDiscard<U>(),
                         onError: error => iterationBuilder.ToError<U>(error.GenName, error.Message));
                 });
+
+        public static IGen<T> Repeat<T>(this IGen<T> gen) => gen.Transform(GenTransformations.Repeat<T>());
     }
 
     public static class GenTransformations

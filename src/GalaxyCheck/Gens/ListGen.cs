@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.Gens;
+using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.Sizing;
@@ -18,7 +19,19 @@ namespace GalaxyCheck
         /// </summary>
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
         /// <returns>The new generator.</returns>
-        public static IListGen<T> List<T>(IGen<T> elementGen) => new ListGen<T>(elementGen);
+        public static IListGen<T> List<T>(IGen<T> elementGen) => elementGen.ListOf();
+    }
+
+    public static class ListGenExtensions
+    {
+        /// <summary>
+        /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
+        /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the
+        /// builder methods on <see cref="IListGen{T}"/>.
+        /// </summary>
+        /// <param name="elementGen">The generator used to produce the elements of the list.</param>
+        /// <returns>The new generator.</returns>
+        public static IListGen<T> ListOf<T>(this IGen<T> gen) => new ListGen<T>(gen);
     }
 }
 
@@ -124,9 +137,9 @@ namespace GalaxyCheck.Gens
                 _elementGen);
 
         protected override IEnumerable<GenIteration<ImmutableList<T>>> Run(IRng rng, Size size) =>
-            BuildGen(_config, _elementGen).Advanced.Run(rng, size);
+            Gen(_config, _elementGen).Advanced.Run(rng, size);
 
-        private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
+        private static IGen<ImmutableList<T>> Gen(ListGenConfig config, IGen<T> elementGen)
         {
             var minLength = 0;
             var maxLength = 20;
@@ -161,7 +174,63 @@ namespace GalaxyCheck.Gens
                 return Error("'minLength' cannot be greater than 'maxLength'");
             }
 
-            throw new NotImplementedException();
+            return
+                from length in GalaxyCheck.Gen.Int32().GreaterThanEqual(minLength).LessThanEqual(maxLength).NoShrink()
+                from list in GenOfLength(length, elementGen, ShrinkFunc.TowardsCount<ExampleSpace<T>>(minLength))
+                select list;
+        }
+
+        private static IGen<ImmutableList<T>> GenOfLength(
+            int length,
+            IGen<T> elementGen,
+            ShrinkFunc<IEnumerable<ExampleSpace<T>>> shrink)
+        {
+            IEnumerable<GenIteration<ImmutableList<T>>> Run(IRng rng, Size size)
+            {
+                var result = ImmutableList<GenInstance<T>>.Empty;
+
+                var elementIterationEnumerator = elementGen.Advanced.Run(rng, size).GetEnumerator();
+
+                while (result.Count < length)
+                {
+                    if (!elementIterationEnumerator.MoveNext())
+                    {
+                        throw new Exception("Fatal: Element generator exhausted");
+                    }
+
+                    var elementIteration = elementIterationEnumerator.Current;
+                    if (elementIteration is GenInstance<T> elementInstance)
+                    {
+                        result = result.Add(elementInstance);
+                    }
+                    else
+                    {
+                        var elementIterationBuilder = GenIterationBuilder.FromIteration(elementIteration);
+                        yield return elementIteration.Match<T, GenIteration<ImmutableList<T>>>(
+                            onInstance: _ => throw new NotSupportedException(),
+                            onDiscard: discard => elementIterationBuilder.ToDiscard<ImmutableList<T>>(),
+                            onError: error => elementIterationBuilder.ToError<ImmutableList<T>>(error.GenName, error.Message));
+                    }
+                }
+
+                var nextRng = result.Any() ? result.Last().NextRng : rng;
+                var nextSize = result.Any() ? result.Last().NextSize : size;
+
+                var exampleSpace = ExampleSpace.Merge(
+                    result.Select(instance => instance.ExampleSpace),
+                    values => values.ToImmutableList(),
+                    shrink,
+                    exampleSpaces => exampleSpaces.Count());
+
+                yield return new GenInstance<ImmutableList<T>>(
+                    rng,
+                    size,
+                    nextRng,
+                    nextSize,
+                    exampleSpace);
+            }
+
+            return new FunctionGen<ImmutableList<T>>(Run).Repeat() ;
         }
 
         private static IGen<ImmutableList<T>> Error(string message) => new ErrorGen<ImmutableList<T>>(nameof(ListGen<T>), message);
