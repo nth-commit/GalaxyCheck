@@ -5,7 +5,7 @@ using GalaxyCheck.Internal.Sizing;
 using System;
 using System.Collections.Generic;
 
-namespace GalaxyCheck
+namespace GalaxyCheck.Gens
 {
     public interface IInt32Gen : IGen<int>
     {

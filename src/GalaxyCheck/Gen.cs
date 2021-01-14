@@ -1,4 +1,5 @@
-﻿using GalaxyCheck.Injection;
+﻿using GalaxyCheck.Gens;
+using GalaxyCheck.Injection;
 using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Gens;
 using System.Reflection;
