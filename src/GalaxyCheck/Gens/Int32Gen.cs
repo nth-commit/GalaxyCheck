@@ -87,7 +87,7 @@ namespace GalaxyCheck.Gens
                 Bias: bias ?? _config.Bias));
         }
 
-        private IGen<int> BuildGen(IntegerGenConfig config)
+        private static IGen<int> BuildGen(IntegerGenConfig config)
         {
             var min = config.Min ?? int.MinValue;
             var max = config.Max ?? int.MaxValue;
