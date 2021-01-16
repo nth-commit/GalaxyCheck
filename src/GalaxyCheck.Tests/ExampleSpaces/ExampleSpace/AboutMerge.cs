@@ -1,4 +1,5 @@
-﻿using FsCheck.Xunit;
+﻿using FsCheck;
+using FsCheck.Xunit;
 using Newtonsoft.Json;
 using Snapshooter;
 using Snapshooter.Xunit;
@@ -60,7 +61,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var mergedExampleSpace = ES.ExampleSpace.Merge(
                 exampleSpaces,
                 (values) => values.ToArray(),
-                ES.ShrinkFunc.TowardsCount<ES.ExampleSpace<int>>(0),
+                ES.ShrinkFunc.TowardsCount<ES.ExampleSpace<int>, decimal>(0, es => es.Current.Distance),
                 Unmeasured);
 
             Snapshot.Match(
@@ -80,7 +81,10 @@ namespace Tests.ExampleSpaces.ExampleSpace
         }
 
         [Property]
-        public void ItMeasuresTheMergeUsingTheGivenFunction(List<int> values, Func<IEnumerable<int>, int> mergeValues, int mergeDistance)
+        public void ItMeasuresTheMergeUsingTheGivenFunction(
+            List<int> values,
+            Func<IEnumerable<int>, int> mergeValues,
+            int mergeDistance)
         {
             ES.MeasureFunc<IEnumerable<ES.ExampleSpace<int>>> measureMerge = _ => mergeDistance;
             var exampleSpaces = values.Select(ES.ExampleSpace.Singleton);
@@ -88,6 +92,28 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var mergedExampleSpace = ES.ExampleSpace.Merge(exampleSpaces, mergeValues, NoShrink, measureMerge);
 
             Assert.Equal(mergeDistance, mergedExampleSpace.Current.Distance);
+        }
+
+        [Property]
+        public FsCheck.Property ItAlwaysProducesADifferentId(
+            object value,
+            int mergeCount,
+            Func<IEnumerable<object>, object> mergeValues)
+        {
+            Action test = () =>
+            {
+                var exampleSpace = ES.ExampleSpace.Singleton(value);
+
+                var mergedExampleSpace = ES.ExampleSpace.Merge(
+                    Enumerable.Repeat(exampleSpace, mergeCount),
+                    mergeValues,
+                    ES.ShrinkFunc.None<IEnumerable<ES.ExampleSpace<object>>>(),
+                    ES.MeasureFunc.Unmeasured<IEnumerable<ES.ExampleSpace<object>>>());
+
+                Assert.NotEqual(exampleSpace.Current.Id, mergedExampleSpace.Current.Id);
+            };
+
+            return test.When(mergeCount > 0);
         }
     }
 }

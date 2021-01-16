@@ -12,7 +12,7 @@ namespace Tests.Gen.Int32
     public class AboutRandomnessConsumption
     {
         [Property]
-        public FsCheck.Property ItConsumesRandomnessOncePerIteration(int min, int max, int origin, GC.Gen.Bias bias, Iterations iterations)
+        public FsCheck.Property ItConsumesRandomnessOnce(int min, int max, int origin, GC.Gen.Bias bias, Iterations iterations)
         {
             Action test = () => TestWithSeed(seed =>
             {

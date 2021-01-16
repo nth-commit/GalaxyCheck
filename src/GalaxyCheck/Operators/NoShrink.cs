@@ -13,6 +13,8 @@ namespace GalaxyCheck
                 instance.InitialSize,
                 instance.NextRng,
                 instance.NextSize,
-                new ExampleSpace<T>(instance.ExampleSpace.Current, Enumerable.Empty<ExampleSpace<T>>())));
+                new ExampleSpace<T>(
+                    new Example<T>(instance.ExampleSpace.Current.Id, instance.ExampleSpace.Current.Value, 0),
+                    Enumerable.Empty<ExampleSpace<T>>())));
     }
 }

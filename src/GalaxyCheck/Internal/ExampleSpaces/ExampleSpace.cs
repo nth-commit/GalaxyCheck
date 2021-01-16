@@ -268,7 +268,9 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             ImmutableHashSet<ExampleId> encountered)
         {
             var current = new Example<TResult>(
-                exampleSpaces.Aggregate(ExampleId.Empty, (acc, curr) => ExampleId.Combine(acc, curr.Current.Id)),
+                exampleSpaces.Aggregate(
+                    ExampleId.Primitive(exampleSpaces.Count()),
+                    (acc, curr) => ExampleId.Combine(acc, curr.Current.Id)),
                 mergeValues(exampleSpaces.Select(es => es.Current.Value)),
                 measureMerge(exampleSpaces));
 

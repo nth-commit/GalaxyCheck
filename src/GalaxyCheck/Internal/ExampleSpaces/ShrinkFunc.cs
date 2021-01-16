@@ -37,6 +37,38 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             : Halves(value - target).Select(difference => value - difference);
 
         /// <summary>
+        /// Creates a shrink function that shrinks a source enumerable towards a target count, like
+        /// <see cref="Towards(int)"/>. Whilst shrinking the enumerable, it will generate combinations for a count from
+        /// the original source.
+        /// </summary>
+        /// <param name="target">The count to shrink towards.</param>
+        /// <returns>A shrink function for enumerables.</returns>
+        public static ShrinkFunc<IEnumerable<T>> TowardsCount<T, TKey>(int target, Func<T, TKey> orderKeySelector)
+        {
+            var order = Order(orderKeySelector);
+            var towardsCount = Towards(target);
+
+            return (source) =>
+            {
+                var shrinksForOrdering = order(source);
+
+                var lengths = towardsCount(source.Count());
+
+                var shrinksForSource = lengths.Select(length => source.Take(length));
+
+                var shrinksForCombinations = lengths.SelectMany(length =>
+                {
+                    // Skip the first, as we already have this combination from shrinksForSource
+                    return OtherCombinations<T>(length)(source).Skip(1);
+                });
+
+                return Enumerable.Concat(
+                    shrinksForOrdering,
+                    Enumerable.Concat(shrinksForSource, shrinksForCombinations));
+            };
+        }
+
+        /// <summary>
         /// Creates a shrink function that generates all the combinations (of n choose k) of the given enumerable.
         /// However, if k >= n, it returns an empty enumerable.
         /// </summary>
@@ -90,31 +122,30 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         }
 
         /// <summary>
-        /// Creates a shrink function that shrinks a source enumerable towards a target count, like
-        /// <see cref="Towards(int)"/>. Whilst shrinking the enumerable, it will generate combinations for a count from
-        /// the original source.
+        /// Creates a shrink function that generates a single sorted shrink if the input is unsorted, but returns no
+        /// such shrink if the input is (already) sorted.
         /// </summary>
-        /// <param name="target">The count to shrink towards.</param>
+        /// <param name="keySelector">A function used to select the comparator for the sort.</param>
         /// <returns>A shrink function for enumerables.</returns>
-        public static ShrinkFunc<IEnumerable<T>> TowardsCount<T>(int target)
+        public static ShrinkFunc<IEnumerable<T>> Order<T, TKey>(Func<T, TKey> keySelector) => source =>
         {
-            var towardsCount = Towards(target);
+            var orderedWithInitialIndex = source
+                .Select((element, index) => new { element, index })
+                .OrderBy(x => keySelector(x.element))
+                .ToList();
 
-            return (source) =>
-            {
-                var lengths = towardsCount(source.Count());
+            var initialIndices = Enumerable.Range(0, orderedWithInitialIndex.Count);
+            var orderedIndices = orderedWithInitialIndex.Select(x => x.index);
 
-                var shrinksForSource = lengths.Select(length => source.Take(length));
+            var wasOrderByEffectful = orderedIndices.SequenceEqual(initialIndices) == false;
 
-                var shrinksForCombinations = lengths.SelectMany(length =>
+            return wasOrderByEffectful
+                ? new[]
                 {
-                    // Skip the first, as we already have this combination from shrinksForSource
-                    return OtherCombinations<T>(length)(source).Skip(1);
-                });
-
-                return Enumerable.Concat(shrinksForSource, shrinksForCombinations);
-            };
-        }
+                    orderedWithInitialIndex.Select(x => x.element)
+                }
+                : Enumerable.Empty<IEnumerable<T>>();
+        };
 
         private static IEnumerable<int> Halves(int value) =>
             EnumerableExtensions

@@ -88,7 +88,7 @@ namespace GalaxyCheck.Gens
             public record Ranged(int? MinLength, int? MaxLength) : ListGenLengthConfig;
         }
 
-        private record ListGenConfig(ListGenLengthConfig? LengthConfig);
+        private record ListGenConfig(ListGenLengthConfig? LengthConfig, Gen.Bias? Bias);
 
         private readonly ListGenConfig _config;
         private readonly IGen<T> _elementGen;
@@ -100,7 +100,7 @@ namespace GalaxyCheck.Gens
         }
 
         public ListGen(IGen<T> elementGen)
-            : this(new ListGenConfig(LengthConfig: null), elementGen)
+            : this(new ListGenConfig(LengthConfig: null, Bias: null), elementGen)
         {
         }
 
@@ -126,20 +126,23 @@ namespace GalaxyCheck.Gens
                 MinLength: x < y ? x : y,
                 MaxLength: x > y ? x : y));
 
-        public IListGen<T> WithLengthBias(Gen.Bias bias)
+        public IListGen<T> WithLengthBias(Gen.Bias bias) => WithPartialConfig(bias: bias);
+
+        private IListGen<T> WithPartialConfig(
+            ListGenLengthConfig? lengthConfig = null,
+            Gen.Bias? bias = null)
         {
-            return this;
+            var newConfig = new ListGenConfig(
+                lengthConfig ?? _config.LengthConfig,
+                bias ?? _config.Bias);
+
+            return new ListGen<T>(newConfig, _elementGen);
         }
 
-        private IListGen<T> WithPartialConfig(ListGenLengthConfig? lengthConfig = null) =>
-            new ListGen<T>(
-                new ListGenConfig(lengthConfig ?? _config.LengthConfig),
-                _elementGen);
-
         protected override IEnumerable<GenIteration<ImmutableList<T>>> Run(IRng rng, Size size) =>
-            Gen(_config, _elementGen).Advanced.Run(rng, size);
+            BuildGen(_config, _elementGen).Advanced.Run(rng, size);
 
-        private static IGen<ImmutableList<T>> Gen(ListGenConfig config, IGen<T> elementGen)
+        private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
         {
             var minLength = 0;
             var maxLength = 20;
@@ -174,10 +177,34 @@ namespace GalaxyCheck.Gens
                 return Error("'minLength' cannot be greater than 'maxLength'");
             }
 
+            var lengthGen = Gen
+                .Int32()
+                .GreaterThanEqual(minLength)
+                .LessThanEqual(maxLength)
+                .WithBias(config.Bias ?? Gen.Bias.Linear)
+                .NoShrink();
+
+            var shrink = ShrinkTowardsLength(minLength);
+
             return
-                from length in GalaxyCheck.Gen.Int32().GreaterThanEqual(minLength).LessThanEqual(maxLength).NoShrink()
-                from list in GenOfLength(length, elementGen, ShrinkFunc.TowardsCount<ExampleSpace<T>>(minLength))
+                from length in lengthGen
+                from list in GenOfLength(length, elementGen, shrink)
                 select list;
+        }
+
+        private static ShrinkFunc<IEnumerable<ExampleSpace<T>>> ShrinkTowardsLength(int length)
+        {
+            // TODO: If T implements IEnumerable, order by negative distance.
+
+            // If the value type is a collection, that is, this generator is building a "collection of collections",
+            // it is "less complex" to order the inner collections by descending length. It also lets us find the
+            // minimal shrink a lot more efficiently in some examples,
+            // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
+
+            return ShrinkFunc.TowardsCount<ExampleSpace<T>, decimal>(length, exampleSpace =>
+            {
+                return exampleSpace.Current.Distance;
+            });
         }
 
         private static IGen<ImmutableList<T>> GenOfLength(
@@ -234,6 +261,5 @@ namespace GalaxyCheck.Gens
         }
 
         private static IGen<ImmutableList<T>> Error(string message) => new ErrorGen<ImmutableList<T>>(nameof(ListGen<T>), message);
-
     }
 }

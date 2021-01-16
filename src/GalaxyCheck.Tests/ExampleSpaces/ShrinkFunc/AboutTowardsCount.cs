@@ -9,13 +9,15 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [Theory]
         [InlineData("a", 0, "")]
         [InlineData("ab", 0, ",a,b")]
+        [InlineData("ba", 0, "ab,,b,a")]
         [InlineData("ab", 1, "a,b")]
+        [InlineData("ba", 1, "ab,b,a")]
         [InlineData("abc", 0, ",ab,ac,bc")]
         [InlineData("abc", 1, "a,ab,b,c,ac,bc")]
         [InlineData("abc", 2, "ab,ac,bc")]
         public void Examples(string source, int k, string expectedCombinationsDelimited)
         {
-            var shrink = ES.ShrinkFunc.TowardsCount<string>(k);
+            var shrink = ES.ShrinkFunc.TowardsCount<string, string>(k, x => x);
 
             var result = shrink(source.AsEnumerable().Select(x => x.ToString())).Select(c => string.Join("", c));
 
