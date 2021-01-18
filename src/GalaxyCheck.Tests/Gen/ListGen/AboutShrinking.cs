@@ -61,7 +61,6 @@ namespace Tests.Gen.ListGen
                 var gen = GC.Gen
                     .Int32()
                     .Between(0, max)
-                    .WithBias(GC.Gen.Bias.None)
                     .ListOf();
 
                 var expectedShrink = ImmutableList.Create(minCounterexampleElement);
@@ -73,6 +72,16 @@ namespace Tests.Gen.ListGen
             });
 
             return test.When(minCounterexampleElement > 0 && max > minCounterexampleElement);
+        }
+
+        [Fact(Skip = "Does not normalize")]
+        public void ShrinkElement2()
+        {
+            var elementGen = GC.Gen.Int32().Between(0, 10);
+            var listGen = elementGen.ListOf();
+
+            var expectedShrink = Enumerable.Repeat(1, 11).ToImmutableList();
+            GenAssert.ShrinksTo(listGen, expectedShrink, 0, (xs) => xs.Sum() >= 11);
         }
     }
 }

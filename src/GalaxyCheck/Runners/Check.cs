@@ -13,20 +13,99 @@ namespace GalaxyCheck
     {
         public static CheckResult<T> Check<T>(
             this IProperty<T> property,
-            int? iterations = null,
+            int iterations = 100,
             int? seed = null,
             int? size = null)
         {
-            var resolvedIterations = iterations ?? 100;
-            var resolvedRng = seed == null ? Rng.Spawn() : Rng.Create(seed.Value);
-            var resolvedSize = size == null ? Size.MinValue : new Size(size.Value);
+            var firstCheckOnce = CheckOnce(
+                property,
+                iterations: iterations,
+                rng: seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
+                size: size == null ? Size.MinValue : new Size(size.Value));
 
-            var currentResult = new CheckResult<T>(
-                new CheckResultState.Unfalsified<T>(), 0, 0, resolvedRng, resolvedSize, resolvedRng, resolvedSize, resolvedRng, resolvedSize);
+            var firstCheck = new CheckResult<T>(
+                firstCheckOnce.State,
+                firstCheckOnce.Iterations,
+                firstCheckOnce.Discards,
+                firstCheckOnce.Rng,
+                firstCheckOnce.Size,
+                firstCheckOnce.InitialRng,
+                firstCheckOnce.InitialSize,
+                firstCheckOnce.NextRng,
+                firstCheckOnce.NextSize,
+                0,
+                0);
 
-            while (currentResult.Iterations < resolvedIterations)
+            if (firstCheckOnce.State is not CheckResultState.Falsified<T> falsified ||
+                falsified.Distance == 0)
             {
-                var nextIterationResults = CheckOnce(
+                return firstCheck;
+            }
+
+            return EnumerableExtensions
+                .UnfoldInfinite(firstCheck, check =>
+                {
+                    var nextCheckOnce = CheckAgain(property, iterations, check);
+                    return MergeCheckOnceIntoCheck(check, nextCheckOnce);
+                })
+                .Take(5)
+                .Last();
+        }
+
+        private static CheckResult<T> MergeCheckOnceIntoCheck<T>(
+            CheckResult<T> check,
+            CheckOnceResult<T> checkOnce)
+        {
+            if (checkOnce.State is CheckResultState.Falsified<T> falsified &&
+                (check.State is not CheckResultState.Falsified<T> originalFalsified ||
+                 falsified.Distance < originalFalsified.Distance))
+            {
+                return new CheckResult<T>(
+                    checkOnce.State,
+                    check.Iterations,
+                    check.Discards,
+                    checkOnce.Rng,
+                    checkOnce.Size,
+                    check.InitialRng,
+                    check.InitialSize,
+                    checkOnce.NextRng,
+                    checkOnce.NextSize,
+                    check.IterationsAfterFalsified + checkOnce.Iterations,
+                    check.DiscardsAfterFalsified + checkOnce.Discards);
+            }
+
+            return new CheckResult<T>(
+                check.State,
+                check.Iterations,
+                check.Discards,
+                check.Rng,
+                check.Size,
+                check.InitialRng,
+                check.InitialSize,
+                checkOnce.NextRng,
+                checkOnce.NextSize,
+                check.IterationsAfterFalsified + checkOnce.Iterations,
+                check.DiscardsAfterFalsified + checkOnce.Discards);
+        }
+
+        private static CheckOnceResult<T> CheckAgain<T>(
+            IProperty<T> property,
+            int iterations,
+            CheckResult<T> lastCheckResult) =>
+                CheckOnce(property, iterations, lastCheckResult.NextRng, lastCheckResult.NextSize.BigIncrement());
+
+        private static CheckOnceResult<T> CheckOnce<T>(
+            IProperty<T> property,
+            int iterations,
+            IRng rng,
+            Size size)
+        {
+            var currentResult = new CheckOnceResult<T>(
+                new CheckResultState.Unfalsified<T>(), 0, 0, rng, size, rng, size, rng, size);
+
+            while (currentResult.Iterations < iterations)
+            {
+                var nextIterationResults = RunUntilInstanceOrError(
                     property,
                     currentResult.NextRng,
                     currentResult.NextSize.Increment());
@@ -43,7 +122,7 @@ namespace GalaxyCheck
             return currentResult;
         }
 
-        private static IEnumerable<GenIteration<PropertyIteration<T>>> CheckOnce<T>(
+        private static IEnumerable<GenIteration<PropertyIteration<T>>> RunUntilInstanceOrError<T>(
             IProperty<T> property,
             IRng rng,
             Size size)
@@ -78,8 +157,8 @@ namespace GalaxyCheck
             }
         }
 
-        private static CheckResult<T> AggregateIterationsIntoResult<T>(
-            CheckResult<T> previousResult,
+        private static CheckOnceResult<T> AggregateIterationsIntoResult<T>(
+            CheckOnceResult<T> previousResult,
             IEnumerable<GenIteration<PropertyIteration<T>>> iterations)
         {
             return iterations.Aggregate(
@@ -87,7 +166,7 @@ namespace GalaxyCheck
                 (result, iteration) => iteration.Match(
                     onInstance: instance => MergeInstanceIntoCheckResult(result, instance),
                     onDiscard: _ => result,
-                    onError: error => new CheckResult<T>(
+                    onError: error => new CheckOnceResult<T>(
                         new CheckResultState.Error<T>(),
                         result.Iterations,
                         result.Discards,
@@ -99,8 +178,8 @@ namespace GalaxyCheck
                         result.InitialSize)));
         }
 
-        private static CheckResult<T> MergeInstanceIntoCheckResult<T>(
-            CheckResult<T> checkResult, GenInstance<PropertyIteration<T>> instance)
+        private static CheckOnceResult<T> MergeInstanceIntoCheckResult<T>(
+            CheckOnceResult<T> checkResult, GenInstance<PropertyIteration<T>> instance)
         {
             var smallestCounterexample = instance.ExampleSpace
                 .Counterexamples(x => x.Func(x.Input))
@@ -114,7 +193,7 @@ namespace GalaxyCheck
                     smallestCounterexample.Exception,
                     smallestCounterexample.Path);
 
-            return new CheckResult<T>(
+            return new CheckOnceResult<T>(
                 state,
                 checkResult.Iterations + 1,
                 checkResult.Discards,
@@ -134,6 +213,10 @@ namespace GalaxyCheck
         public int Iterations { get; init; }
 
         public int Discards { get; init; }
+
+        public int IterationsAfterFalsified { get; init; }
+
+        public int DiscardsAfterFalsified { get; init; }
 
         /// <summary>
         /// The RNG required to repeat the final iteration of the property.
@@ -162,6 +245,71 @@ namespace GalaxyCheck
         public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
 
         internal CheckResult(
+            CheckResultState<T> state,
+            int iterations,
+            int discards,
+            IRng rng,
+            Size size,
+            IRng initialRng,
+            Size initialSize,
+            IRng nextRng,
+            Size nextSize,
+            int iterationsAfterFalsified,
+            int discardsAfterFalsified)
+        {
+            State = state;
+            Iterations = iterations;
+            Discards = discards;
+            Rng = rng;
+            Size = size;
+            InitialRng = initialRng;
+            InitialSize = initialSize;
+            NextRng = nextRng;
+            NextSize = nextSize;
+            IterationsAfterFalsified = iterationsAfterFalsified;
+            DiscardsAfterFalsified = discardsAfterFalsified;
+        }
+    }
+
+    public record CheckOnceResult<T>
+    {
+        public CheckResultState<T> State { get; init; }
+
+        public int Iterations { get; init; }
+
+        public int Discards { get; init; }
+
+        public int IterationsAfterFalsified { get; init; }
+
+        public int DiscardsAfterFalsified { get; init; }
+
+        /// <summary>
+        /// The RNG required to repeat the final iteration of the property.
+        /// </summary>
+        public IRng Rng { get; init; }
+
+        /// <summary>
+        /// The size required to repeat the final iteration of the property.
+        /// </summary>
+        public Size Size { get; init; }
+
+        /// <summary>
+        /// The initial RNG that seeded this check.
+        /// </summary>
+        public IRng InitialRng { get; init; }
+
+        /// <summary>
+        /// The initial RNG that seeded this check.
+        /// </summary>
+        public Size InitialSize { get; init; }
+
+        public IRng NextRng { get; init; }
+
+        public Size NextSize { get; init; }
+
+        public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
+
+        internal CheckOnceResult(
             CheckResultState<T> state,
             int iterations,
             int discards,

@@ -181,7 +181,7 @@ namespace GalaxyCheck.Gens
                 .Int32()
                 .GreaterThanEqual(minLength)
                 .LessThanEqual(maxLength)
-                .WithBias(config.Bias ?? Gen.Bias.Linear)
+                .WithBias(config.Bias ?? Gen.Bias.Exponential)
                 .NoShrink();
 
             var shrink = ShrinkTowardsLength(minLength);

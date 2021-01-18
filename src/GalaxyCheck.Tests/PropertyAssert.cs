@@ -9,7 +9,7 @@ namespace Tests
             IProperty<T> property,
             int seed,
             int? size = null,
-            int? iterations = null)
+            int iterations = 100)
         {
             var result = property.Check(iterations: iterations, seed: seed, size: size);
 
@@ -22,7 +22,7 @@ namespace Tests
             IProperty<T> property,
             int seed,
             int? size = null,
-            int? iterations = null)
+            int iterations = 100)
         {
             var result = property.Check(iterations: iterations, seed: seed, size: size);
 

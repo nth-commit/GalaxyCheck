@@ -7,6 +7,9 @@ namespace GalaxyCheck.Internal.Utility
 {
     internal static class EnumerableExtensions
     {
+        public static IEnumerable<T> UnfoldInfinite<T>(T seed, Func<T, T> generateNext) =>
+            Unfold(seed, x => new Option.Some<T>(generateNext(x)));
+
         public static IEnumerable<T> Unfold<T>(T seed, Func<T, Option<T>> tryGenerateNext)
         {
             var current = seed;

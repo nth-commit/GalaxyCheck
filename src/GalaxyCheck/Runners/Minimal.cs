@@ -6,7 +6,7 @@ namespace GalaxyCheck
     {
         public static T Minimal<T>(
             this IGen<T> gen,
-            int? iterations = null,
+            int iterations = 100,
             int? seed = null,
             int? size = null,
             Func<T, bool>? pred = null)

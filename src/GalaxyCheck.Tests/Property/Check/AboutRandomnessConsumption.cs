@@ -3,7 +3,6 @@ using FsCheck.Xunit;
 using System;
 using Xunit;
 using GalaxyCheck;
-using GC = GalaxyCheck;
 using static Tests.TestUtils;
 
 namespace Tests.Property.Check
