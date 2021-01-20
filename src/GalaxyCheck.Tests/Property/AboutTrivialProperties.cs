@@ -31,7 +31,7 @@ namespace Tests.Property
         {
             var property = GC.Gen.Constant(true).ForAll(x => x);
 
-            var (result, _) = PropertyAssert.DoesNotFalsify(property, seed, iterations: iterations.Value);
+            var result = PropertyAssert.DoesNotFalsify(property, seed, iterations: iterations.Value);
 
             Assert.Equal(iterations.Value, result.Iterations);
         });

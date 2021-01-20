@@ -1,347 +1,232 @@
-﻿using GalaxyCheck.Internal.Utility;
-using System.Collections.Generic;
-using System.Linq;
-using GalaxyCheck.Internal.Sizing;
-using GalaxyCheck.Internal.Random;
-using GalaxyCheck.Internal.ExampleSpaces;
+﻿using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Internal.Random;
+using GalaxyCheck.Internal.Sizing;
+using GalaxyCheck.Internal.Utility;
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 
 namespace GalaxyCheck
 {
+    public record CheckResult<T>
+    {
+        public int Iterations { get; init; }
+
+        public int Discards { get; init; }
+
+        public int IterationsAfterFalsified { get; init; }
+
+        public int DiscardsAfterFalsified { get; init; }
+
+        public bool Falsified { get; init; }
+
+        public CheckCounterexample? Counterexample { get; init; }
+
+        public ImmutableList<CheckIteration> Checks { get; init; }
+
+        public IRng InitialRng { get; init; }
+
+        public Size InitialSize { get; init; }
+
+        public IRng NextRng { get; init; }
+
+        public Size NextSize { get; init; }
+
+        public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
+
+
+        public CheckResult(
+            int iterations,
+            int discards,
+            int iterationsAfterFalsified,
+            int discardsAfterFalsified,
+            bool falsified,
+            CheckCounterexample? counterexample,
+            ImmutableList<CheckIteration> checks,
+            IRng initialRng,
+            Size initialSize,
+            IRng nextRng,
+            Size nextSize)
+        {
+            Iterations = iterations;
+            Discards = discards;
+            IterationsAfterFalsified = iterationsAfterFalsified;
+            DiscardsAfterFalsified = discardsAfterFalsified;
+            Falsified = falsified;
+            Counterexample = counterexample;
+            Checks = checks;
+            InitialRng = initialRng;
+            InitialSize = initialSize;
+            NextRng = nextRng;
+            NextSize = nextSize;
+        }
+
+        public record CheckIteration(
+            T Value,
+            decimal Distance,
+            Exception? Exception,
+            IRng InitialRng,
+            Size InitialSize,
+            IRng NextRng,
+            Size NextSize,
+            ImmutableList<int> Path,
+            bool IsCounterexample,
+            bool IsShrink,
+            bool IsDiscard);
+
+        public record CheckCounterexample(
+            T Value,
+            decimal Distance,
+            Exception? Exception,
+            IRng Rng,
+            Size Size,
+            ImmutableList<int> Path);
+    }
+
     public static class CheckExtensions
     {
         public static CheckResult<T> Check<T>(
             this IProperty<T> property,
-            int iterations = 100,
+            int? iterations = null,
             int? seed = null,
             int? size = null)
         {
-            var firstCheckOnce = CheckOnce(
-                property,
-                iterations: iterations,
-                rng: seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
-                size: size == null ? Size.MinValue : new Size(size.Value));
+            var initialRng = seed == null ? Rng.Spawn() : Rng.Create(seed.Value);
+            var initialSize = size == null ? Size.MinValue : new Size(size.Value);
 
-            var firstCheck = new CheckResult<T>(
-                firstCheckOnce.State,
-                firstCheckOnce.Iterations,
-                firstCheckOnce.Discards,
-                firstCheckOnce.Rng,
-                firstCheckOnce.Size,
-                firstCheckOnce.InitialRng,
-                firstCheckOnce.InitialSize,
-                firstCheckOnce.NextRng,
-                firstCheckOnce.NextSize,
-                0,
-                0);
-
-            if (firstCheckOnce.State is not CheckResultState.Falsified<T> falsified ||
-                falsified.Distance == 0)
-            {
-                return firstCheck;
-            }
-
-            return EnumerableExtensions
-                .UnfoldInfinite(firstCheck, check =>
-                {
-                    var nextCheckOnce = CheckAgain(property, iterations, check);
-                    return MergeCheckOnceIntoCheck(check, nextCheckOnce);
-                })
-                .Take(5)
-                .Last();
-        }
-
-        private static CheckResult<T> MergeCheckOnceIntoCheck<T>(
-            CheckResult<T> check,
-            CheckOnceResult<T> checkOnce)
-        {
-            if (checkOnce.State is CheckResultState.Falsified<T> falsified &&
-                (check.State is not CheckResultState.Falsified<T> originalFalsified ||
-                 falsified.Distance < originalFalsified.Distance))
-            {
-                return new CheckResult<T>(
-                    checkOnce.State,
-                    check.Iterations,
-                    check.Discards,
-                    checkOnce.Rng,
-                    checkOnce.Size,
-                    check.InitialRng,
-                    check.InitialSize,
-                    checkOnce.NextRng,
-                    checkOnce.NextSize,
-                    check.IterationsAfterFalsified + checkOnce.Iterations,
-                    check.DiscardsAfterFalsified + checkOnce.Discards);
-            }
+            var checks = CheckOnce(property, iterations ?? 100, initialRng, initialSize).ToImmutableList();
+            var checkAggregation = AggregateCheckIterations(checks.ToImmutableList());
+            var nextRng = checks.LastOrDefault()?.NextRng ?? initialRng;
+            var nextSize = checks.LastOrDefault()?.NextSize ?? initialSize;
 
             return new CheckResult<T>(
-                check.State,
-                check.Iterations,
-                check.Discards,
-                check.Rng,
-                check.Size,
-                check.InitialRng,
-                check.InitialSize,
-                checkOnce.NextRng,
-                checkOnce.NextSize,
-                check.IterationsAfterFalsified + checkOnce.Iterations,
-                check.DiscardsAfterFalsified + checkOnce.Discards);
+                checkAggregation.IterationCount,
+                checkAggregation.DiscardCount,
+                0,
+                0,
+                checkAggregation.Counterexample != null,
+                checkAggregation.Counterexample,
+                checkAggregation.Checks,
+                initialRng,
+                initialSize,
+                nextRng,
+                nextSize);
         }
 
-        private static CheckOnceResult<T> CheckAgain<T>(
+        private static IEnumerable<CheckResult<T>.CheckIteration> CheckOnce<T>(
             IProperty<T> property,
             int iterations,
-            CheckResult<T> lastCheckResult) =>
-                CheckOnce(property, iterations, lastCheckResult.NextRng, lastCheckResult.NextSize.BigIncrement());
-
-        private static CheckOnceResult<T> CheckOnce<T>(
-            IProperty<T> property,
-            int iterations,
-            IRng rng,
-            Size size)
+            IRng initialRng,
+            Size initialSize)
         {
-            var currentResult = new CheckOnceResult<T>(
-                new CheckResultState.Unfalsified<T>(), 0, 0, rng, size, rng, size, rng, size);
-
-            while (currentResult.Iterations < iterations)
+            foreach (var instance in Run(property, initialRng, initialSize).Take(iterations))
             {
-                var nextIterationResults = RunUntilInstanceOrError(
-                    property,
-                    currentResult.NextRng,
-                    currentResult.NextSize.Increment());
-                var nextResult = AggregateIterationsIntoResult(currentResult, nextIterationResults);
+                var isFalsified = false;
 
-                if (nextResult.State is not CheckResultState.Unfalsified<T>)
+                foreach (var exploration in instance.ExampleSpace.Explore(x => x.Func(x.Input)))
                 {
-                    return nextResult;
+                    isFalsified = isFalsified || exploration.IsCounterexample;
+
+                    yield return new CheckResult<T>.CheckIteration(
+                        exploration.Example.Value.Input,
+                        exploration.Example.Distance,
+                        exploration.CounterexampleDetails?.Exception,
+                        instance.InitialRng,
+                        instance.InitialSize,
+                        instance.NextRng,
+                        instance.NextSize,
+                        exploration.Path.ToImmutableList(),
+                        IsCounterexample: exploration.IsCounterexample,
+                        IsShrink: exploration.IsShrink,
+                        IsDiscard: false);
                 }
 
-                currentResult = nextResult;
-            }
-
-            return currentResult;
-        }
-
-        private static IEnumerable<GenIteration<PropertyIteration<T>>> RunUntilInstanceOrError<T>(
-            IProperty<T> property,
-            IRng rng,
-            Size size)
-        {
-            var stream = property.Advanced
-                .Run(rng, size)
-                .WithConsecutiveDiscardCount()
-                .Select(x =>
-                {
-                    if (x.consecutiveDiscards > 1000)
-                    {
-                        throw new Exceptions.GenExhaustionException();
-                    }
-
-                    return x.iteration;
-                });
-
-            foreach (var iteration in stream)
-            {
-                yield return iteration;
-
-                // TODO: Don't break on a discard
-                var shouldBreak = iteration.Match(
-                    onInstance: _ => true,
-                    onDiscard: _ => false,
-                    onError: _ => true);
-
-                if (shouldBreak)
+                if (isFalsified)
                 {
                     break;
                 }
             }
         }
 
-        private static CheckOnceResult<T> AggregateIterationsIntoResult<T>(
-            CheckOnceResult<T> previousResult,
-            IEnumerable<GenIteration<PropertyIteration<T>>> iterations)
+        private static IEnumerable<GenInstance<PropertyIteration<T>>> Run<T>(IProperty<T> property, IRng initialRng, Size initialSize)
         {
-            return iterations.Aggregate(
-                previousResult,
-                (result, iteration) => iteration.Match(
-                    onInstance: instance => MergeInstanceIntoCheckResult(result, instance),
-                    onDiscard: _ => result,
-                    onError: error => new CheckOnceResult<T>(
-                        new CheckResultState.Error<T>(),
-                        result.Iterations,
-                        result.Discards,
-                        error.InitialRng,
-                        result.InitialSize,
-                        result.InitialRng,
-                        result.InitialSize,
-                        error.NextRng,
-                        result.InitialSize)));
+            IEnumerable<GenIteration<PropertyIteration<T>>> RunProperty(IRng rng, Size size) =>
+                property.Advanced
+                    .Run(rng, size)
+                    .TakeWhileInclusive(iteration => iteration is not GenInstance<PropertyIteration<T>>);
+
+            return EnumerableExtensions
+                .UnfoldManyInfinite(
+                    RunProperty(initialRng, initialSize),
+                    (lastIteration) => RunProperty(lastIteration.NextRng, lastIteration.NextSize.Increment()))
+                .ScanInParallel(
+                    new PropertyIterationCounts(0, 0),
+                    (lastState, iteration) => iteration.Match(
+                        onInstance: _ => lastState.IncrementInstances(),
+                        onDiscard: _ => lastState.IncrementDiscards(),
+                        onError: error => throw new Exceptions.GenErrorException(error.GenName, error.Message)
+                    ))
+                .Tap(x =>
+                {
+                    if (x.state.Discards >= 1000)
+                    {
+                        throw new Exceptions.GenExhaustionException();
+                    }
+                })
+                .Select(x => x.element)
+                .OfType<GenInstance<PropertyIteration<T>>>();
         }
 
-        private static CheckOnceResult<T> MergeInstanceIntoCheckResult<T>(
-            CheckOnceResult<T> checkResult, GenInstance<PropertyIteration<T>> instance)
+        private static CheckIterationAggregation<T> AggregateCheckIterations<T>(
+            ImmutableList<CheckResult<T>.CheckIteration> checks)
         {
-            var smallestCounterexample = instance.ExampleSpace
-                .Counterexamples(x => x.Func(x.Input))
-                .LastOrDefault();
+            var iterationCount = 0;
+            var discardCount = 0;
+            CheckResult<T>.CheckCounterexample? counterexample = null;
 
-            CheckResultState<T> state = smallestCounterexample == null
-                ? new CheckResultState.Unfalsified<T>()
-                : new CheckResultState.Falsified<T>(
-                    smallestCounterexample.Value.Input,
-                    smallestCounterexample.Distance,
-                    smallestCounterexample.Exception,
-                    smallestCounterexample.Path);
+            foreach (var check in checks)
+            {
+                if (check.IsDiscard)
+                {
+                    discardCount++;
+                }
+                else
+                {
+                    iterationCount++;
+                }
 
-            return new CheckOnceResult<T>(
-                state,
-                checkResult.Iterations + 1,
-                checkResult.Discards,
-                instance.InitialRng,
-                instance.InitialSize,
-                checkResult.InitialRng,
-                checkResult.InitialSize,
-                instance.NextRng,
-                instance.NextSize);
+                if (check.IsCounterexample)
+                {
+                    counterexample = new CheckResult<T>.CheckCounterexample(
+                        check.Value,
+                        check.Distance,
+                        check.Exception,
+                        check.InitialRng,
+                        check.InitialSize,
+                        check.Path);
+                }
+            }
+
+            return new CheckIterationAggregation<T>(
+                iterationCount,
+                discardCount,
+                counterexample,
+                checks);
         }
-    }
 
-    public record CheckResult<T>
-    {
-        public CheckResultState<T> State { get; init; }
-
-        public int Iterations { get; init; }
-
-        public int Discards { get; init; }
-
-        public int IterationsAfterFalsified { get; init; }
-
-        public int DiscardsAfterFalsified { get; init; }
-
-        /// <summary>
-        /// The RNG required to repeat the final iteration of the property.
-        /// </summary>
-        public IRng Rng { get; init; }
-
-        /// <summary>
-        /// The size required to repeat the final iteration of the property.
-        /// </summary>
-        public Size Size { get; init; }
-
-        /// <summary>
-        /// The initial RNG that seeded this check.
-        /// </summary>
-        public IRng InitialRng { get; init; }
-
-        /// <summary>
-        /// The initial RNG that seeded this check.
-        /// </summary>
-        public Size InitialSize { get; init; }
-
-        public IRng NextRng { get; init; }
-
-        public Size NextSize { get; init; }
-
-        public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
-
-        internal CheckResult(
-            CheckResultState<T> state,
-            int iterations,
-            int discards,
-            IRng rng,
-            Size size,
-            IRng initialRng,
-            Size initialSize,
-            IRng nextRng,
-            Size nextSize,
-            int iterationsAfterFalsified,
-            int discardsAfterFalsified)
+        private record PropertyIterationCounts(int Instances, int Discards)
         {
-            State = state;
-            Iterations = iterations;
-            Discards = discards;
-            Rng = rng;
-            Size = size;
-            InitialRng = initialRng;
-            InitialSize = initialSize;
-            NextRng = nextRng;
-            NextSize = nextSize;
-            IterationsAfterFalsified = iterationsAfterFalsified;
-            DiscardsAfterFalsified = discardsAfterFalsified;
+            public PropertyIterationCounts IncrementInstances() => new PropertyIterationCounts(Instances + 1, Discards);
+
+            public PropertyIterationCounts IncrementDiscards() => new PropertyIterationCounts(Instances, Discards + 1);
         }
-    }
 
-    public record CheckOnceResult<T>
-    {
-        public CheckResultState<T> State { get; init; }
-
-        public int Iterations { get; init; }
-
-        public int Discards { get; init; }
-
-        public int IterationsAfterFalsified { get; init; }
-
-        public int DiscardsAfterFalsified { get; init; }
-
-        /// <summary>
-        /// The RNG required to repeat the final iteration of the property.
-        /// </summary>
-        public IRng Rng { get; init; }
-
-        /// <summary>
-        /// The size required to repeat the final iteration of the property.
-        /// </summary>
-        public Size Size { get; init; }
-
-        /// <summary>
-        /// The initial RNG that seeded this check.
-        /// </summary>
-        public IRng InitialRng { get; init; }
-
-        /// <summary>
-        /// The initial RNG that seeded this check.
-        /// </summary>
-        public Size InitialSize { get; init; }
-
-        public IRng NextRng { get; init; }
-
-        public Size NextSize { get; init; }
-
-        public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
-
-        internal CheckOnceResult(
-            CheckResultState<T> state,
-            int iterations,
-            int discards,
-            IRng rng,
-            Size size,
-            IRng initialRng,
-            Size initialSize,
-            IRng nextRng,
-            Size nextSize)
-        {
-            State = state;
-            Iterations = iterations;
-            Discards = discards;
-            Rng = rng;
-            Size = size;
-            InitialRng = initialRng;
-            InitialSize = initialSize;
-            NextRng = nextRng;
-            NextSize = nextSize;
-        }
-    }
-
-    public abstract record CheckResultState<T>
-    {
-    }
-
-    public static class CheckResultState
-    {
-        public sealed record Unfalsified<T>() : CheckResultState<T>();
-
-        public sealed record Falsified<T>(T Value, decimal Distance, Exception? Exception, IEnumerable<int> Path) : CheckResultState<T>();
-
-        public sealed record Error<T>() : CheckResultState<T>();
+        private record CheckIterationAggregation<T>(
+            int IterationCount,
+            int DiscardCount,
+            CheckResult<T>.CheckCounterexample? Counterexample,
+            ImmutableList<CheckResult<T>.CheckIteration> Checks);
     }
 }

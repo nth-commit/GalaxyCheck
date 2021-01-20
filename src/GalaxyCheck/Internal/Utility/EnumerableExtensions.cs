@@ -29,6 +29,35 @@ namespace GalaxyCheck.Internal.Utility
             }
         }
 
+        public static IEnumerable<T> UnfoldManyInfinite<T>(IEnumerable<T> seed, Func<T, IEnumerable<T>> generateNext) =>
+            UnfoldMany(seed, x => new Option.Some<IEnumerable<T>>(generateNext(x)));
+
+        public static IEnumerable<T> UnfoldMany<T>(IEnumerable<T> seed, Func<T, Option<IEnumerable<T>>> tryGenerateNext)
+        {
+            var current = seed;
+            while (true)
+            {
+                if (!current.Any())
+                {
+                    throw new Exception("Fatal: UnfoldMany expected a non-empty enumerable");
+                }
+
+                foreach (var element in current)
+                {
+                    yield return element;
+                }
+
+                if (tryGenerateNext(current.Last()) is Option.Some<IEnumerable<T>> some)
+                {
+                    current = some.Value;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
         public static IEnumerable<T> Repeat<T>(Func<IEnumerable<T>> generate)
         {
             while (true)
@@ -50,6 +79,19 @@ namespace GalaxyCheck.Internal.Utility
             {
                 seed = next(seed, item);
                 yield return seed;
+            }
+        }
+
+        public static IEnumerable<(TSource element, TAccumulator state)> ScanInParallel<TSource, TAccumulator>(
+            this IEnumerable<TSource> input,
+            TAccumulator seed,
+            Func<TAccumulator, TSource, TAccumulator> next)
+        {
+            var state = seed;
+            foreach (var item in input)
+            {
+                state = next(state, item);
+                yield return (item, state);
             }
         }
 

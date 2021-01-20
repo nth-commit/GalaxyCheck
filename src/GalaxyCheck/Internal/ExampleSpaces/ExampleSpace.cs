@@ -84,6 +84,84 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     .Cast<ExampleSpace<T>>());
         }
 
+        public record CounterexampleDetails(Exception? Exception);
+
+        public record ExplorationStage<T>(
+            IEnumerable<int> Path,
+            Example<T> Example,
+            CounterexampleDetails? CounterexampleDetails)
+        {
+            public bool IsCounterexample => CounterexampleDetails != null;
+
+            public bool IsShrink => Path.Any();
+        }
+
+        // TODO: Deprecate Counterexamples() in favour of this function, which should be tested with unit tests and documented.
+        public static IEnumerable<ExplorationStage<T>> Explore<T>(
+            this ExampleSpace<T> exampleSpace,
+            Func<T, bool> pred)
+        {
+            static CounterexampleDetails? TestPredicate(Func<T, bool> pred, T value)
+            {
+                try
+                {
+                    var success = pred(value);
+                    return success ? null : new CounterexampleDetails(null);
+                }
+                catch (Exception ex)
+                {
+                    return new CounterexampleDetails(ex);
+                }
+            }
+
+            static IEnumerable<ExplorationStage<T>> ExploreSubspace(Func<T, bool> pred, ExampleSpace<T> exampleSpace)
+            {
+                var (counterexampleSpaceAndIndex, explorations) = exampleSpace.Subspace
+                    .Select((exampleSpace, i) => (
+                        exploration: new ExplorationStage<T>(
+                            new[] { i },
+                            exampleSpace.Current,
+                            TestPredicate(pred, exampleSpace.Current.Value)),
+                        exampleSpace))
+                    .TakeWhileInclusive(x => !x.exploration.IsCounterexample)
+                    .Aggregate(
+                        (counterexampleSpaceAndIndex: ((ExampleSpace<T>, int)?)null, explorations: new List<ExplorationStage<T>>()),
+                        (acc, curr) =>
+                        {
+                            acc.explorations.Add(curr.exploration);
+                            return (
+                                curr.exploration.IsCounterexample ? (curr.exampleSpace, curr.exploration.Path.First()) : null,
+                                acc.explorations);
+                        });
+
+                foreach (var exploration in explorations)
+                {
+                    yield return exploration;
+                }
+
+                if (counterexampleSpaceAndIndex != null)
+                {
+                    var (counterexampleSpace, index) = counterexampleSpaceAndIndex.Value;
+                    foreach (var childExploration in ExploreSubspace(pred, counterexampleSpace))
+                    {
+                        yield return new ExplorationStage<T>(
+                            Enumerable.Concat(new [] { index }, childExploration.Path),
+                            childExploration.Example,
+                            childExploration.CounterexampleDetails);
+                    }
+                }
+            }
+
+            var rootExplorationStage = new ExplorationStage<T>(
+                Enumerable.Empty<int>(),
+                exampleSpace.Current,
+                TestPredicate(pred, exampleSpace.Current.Value));
+
+            return rootExplorationStage.IsCounterexample
+                ? Enumerable.Concat(new [] { rootExplorationStage }, ExploreSubspace(pred, exampleSpace))
+                : new[] { rootExplorationStage };
+        }
+
         /// <summary>
         /// Returns an enumerable of increasingly smaller counterexamples to the given predicate. An empty enumerable
         /// indicates that no counterexamples exist in this example space.

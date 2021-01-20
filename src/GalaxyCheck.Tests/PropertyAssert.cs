@@ -5,7 +5,7 @@ namespace Tests
 {
     public static class PropertyAssert
     {
-        public static (CheckResult<T>, CheckResultState.Falsified<T>) Falsifies<T>(
+        public static (CheckResult<T>, CheckResult<T>.CheckCounterexample) Falsifies<T>(
             IProperty<T> property,
             int seed,
             int? size = null,
@@ -13,12 +13,12 @@ namespace Tests
         {
             var result = property.Check(iterations: iterations, seed: seed, size: size);
 
-            Assert.True(result.State is CheckResultState.Falsified<T>);
+            Assert.True(result.Falsified);
 
-            return (result, (CheckResultState.Falsified<T>)result.State);
+            return (result, result.Counterexample!);
         }
 
-        public static (CheckResult<T>, CheckResultState.Unfalsified<T>) DoesNotFalsify<T>(
+        public static CheckResult<T> DoesNotFalsify<T>(
             IProperty<T> property,
             int seed,
             int? size = null,
@@ -26,9 +26,9 @@ namespace Tests
         {
             var result = property.Check(iterations: iterations, seed: seed, size: size);
 
-            Assert.True(result.State is CheckResultState.Unfalsified<T>);
+            Assert.False(result.Falsified);
 
-            return (result, (CheckResultState.Unfalsified<T>)result.State);
+            return result;
         }
     }
 }
