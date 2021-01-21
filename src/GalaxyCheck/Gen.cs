@@ -19,14 +19,9 @@ namespace GalaxyCheck
             None = 0,
 
             /// <summary>
-            /// Generated values should scale linearly with the size parameter.
-            /// </summary>
-            Linear = 1,
-
-            /// <summary>
             /// Generated values should scale exponentially with the size parameter.
             /// </summary>
-            Exponential = 2
+            WithSize = 2
         }
 
         /// <summary>

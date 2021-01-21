@@ -32,9 +32,14 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// </summary>
         /// <param name="target">The smallest possible integer that should be shrunk to.</param>
         /// <returns>A shrink function for integers.</returns>
-        public static ShrinkFunc<int> Towards(int target) => (value) => value == target
-            ? Enumerable.Empty<int>()
-            : Halves(value - target).Select(difference => value - difference);
+        public static ShrinkFunc<int> Towards(int target) => (value) =>
+        {
+            if (value == target) return Enumerable.Empty<int>();
+
+            var difference = value - target;
+            var safeDifference = difference == int.MinValue ? difference + 1 : difference;
+            return Halves(safeDifference).Select(smallerDifference => value - smallerDifference);
+        };
 
         /// <summary>
         /// Creates a shrink function that shrinks a source enumerable towards a target count, like

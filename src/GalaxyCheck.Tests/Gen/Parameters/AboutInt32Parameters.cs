@@ -123,13 +123,11 @@ namespace Tests.Gen.Parameters
         public class AboutWithBias
         {
             private static void WithBiasNoneExample([WithBias(GC.Gen.Bias.None)] int _) { }
-            private static void WithBiasLinearExample([WithBias(GC.Gen.Bias.Linear)] int _) { }
-            private static void WithBiasExponentialExample([WithBias(GC.Gen.Bias.Exponential)] int _) { }
+            private static void WithBiasExponentialExample([WithBias(GC.Gen.Bias.WithSize)] int _) { }
 
             [Theory]
             [InlineData(nameof(WithBiasNoneExample), GC.Gen.Bias.None)]
-            [InlineData(nameof(WithBiasLinearExample), GC.Gen.Bias.Linear)]
-            [InlineData(nameof(WithBiasExponentialExample), GC.Gen.Bias.Exponential)]
+            [InlineData(nameof(WithBiasExponentialExample), GC.Gen.Bias.WithSize)]
             public void ItIsSupportedViaAnAttribute(string methodName, GC.Gen.Bias expectedBias)
             {
                 TestWithSeed(seed =>

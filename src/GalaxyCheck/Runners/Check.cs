@@ -36,7 +36,6 @@ namespace GalaxyCheck
 
         public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
 
-
         public CheckResult(
             int iterations,
             int discards,

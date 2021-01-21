@@ -2,8 +2,11 @@
 using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.Sizing;
+using GalaxyCheck.Internal.WeightedSampling;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 
 namespace GalaxyCheck.Gens
 {
@@ -103,25 +106,107 @@ namespace GalaxyCheck.Gens
             }
 
             var origin = config.Origin ?? InferOrigin(min, max);
+            var bias = config.Bias ?? Gen.Bias.WithSize;
 
-            var getBounds = (config.Bias ?? Gen.Bias.Exponential) switch
-            {
-                Gen.Bias.None => BoundsScalingFactoryFuncs.Unscaled(min, max, origin),
-                Gen.Bias.Linear => BoundsScalingFactoryFuncs.ScaledLinearly(min, max, origin),
-                Gen.Bias.Exponential => BoundsScalingFactoryFuncs.ScaledExponentially(min, max, origin),
-                _ => throw new NotSupportedException()
-            };
-
-            StatefulGenFunc<int> statefulGenFunc = (useNextInt, size) =>
-            {
-                var (min, max) = getBounds(size);
-                return useNextInt(min, max);
-            };
+            var statefulGen = bias == Gen.Bias.WithSize
+                ? CreateBiasedStatefulGen(min, max, origin)
+                : CreateUnbiasedStatefulGen(min, max);
 
             return Gen.Advanced.Create(
-                statefulGenFunc,
+                statefulGen,
                 ShrinkFunc.Towards(origin),
                 MeasureFunc.DistanceFromOrigin(origin, min, max));
+        }
+
+        private static StatefulGenFunc<int> CreateUnbiasedStatefulGen(int min, int max) =>
+            (useNextInt, _) => useNextInt(min, max);
+
+        private static StatefulGenFunc<int> CreateBiasedStatefulGen(int min, int max, int origin)
+        {
+            var getBounds = BoundsScalingFactoryFuncs.ScaledExponentially(min, max, origin);
+            int? extremeMinimum = min == origin ? null : min;
+            int? extremeMaximum = max == origin ? null : max;
+
+
+            StatefulGenFunc<int> scaledBySize = FromBounds(getBounds);
+
+            StatefulGenFunc<int> withExtreme1 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 16, 1);
+
+            StatefulGenFunc<int> withExtreme2 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 8, 1);
+
+            StatefulGenFunc<int> withExtreme3 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 4, 1);
+
+            StatefulGenFunc<int> withExtreme4 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 2, 1);
+
+            StatefulGenFunc<int> withExtreme5 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 1, 1);
+
+            return (useNextInt, size) =>
+            {
+                var innerGenFunc = size.Value switch
+                {
+                    <= 50 => scaledBySize,
+                    <= 60 => withExtreme1,
+                    <= 70 => withExtreme2,
+                    <= 80 => withExtreme3,
+                    <= 90 => withExtreme4,
+                    _ => withExtreme5
+                };
+
+                return innerGenFunc(useNextInt, size);
+            };
+        }
+
+        private static StatefulGenFunc<int> FromBounds(BoundsScalingFunc getBounds) => (useNextInt, size) =>
+        {
+            var (min, max) = getBounds(size);
+            return useNextInt(min, max);
+        };
+
+        /// <summary>
+        /// Creates a stateful generator function which favours the extreme of the generator by a given frequency.
+        /// </summary>
+        private static StatefulGenFunc<int> OrExtreme(
+            StatefulGenFunc<int> inextremeGenerator,
+            int? extremeMinimum,
+            int? extremeMaximum,
+            int inextremeFrequency,
+            int extremeFrequency)
+        {
+            if (extremeMinimum == null && extremeMaximum == null)
+            {
+                return inextremeGenerator;
+            }
+
+            // If both are extremes then we will pick from both. If only one is an extreme then we will double that
+            // extreme's frequency.
+            var sampler = new WeightedSamplerBuilder<BoundsOrExtremeSource>()
+                .WithSample(inextremeFrequency * 2, BoundsOrExtremeSource.Bounds)
+                .WithSample(
+                    extremeFrequency,
+                    extremeMinimum.HasValue ? BoundsOrExtremeSource.ExtremeMinimum : BoundsOrExtremeSource.ExtremeMaximum)
+                .WithSample(
+                    extremeFrequency,
+                    extremeMaximum.HasValue ? BoundsOrExtremeSource.ExtremeMaximum : BoundsOrExtremeSource.ExtremeMinimum)
+                .Build();
+
+            return (useNextInt, size) =>
+            {
+                var source = sampler.Sample(useNextInt(0, sampler.MaxIndex));
+                return source switch
+                {
+                    BoundsOrExtremeSource.Bounds => inextremeGenerator(useNextInt, size),
+                    BoundsOrExtremeSource.ExtremeMinimum => extremeMinimum!.Value,
+                    BoundsOrExtremeSource.ExtremeMaximum => extremeMaximum!.Value,
+                    _ => throw new NotSupportedException("Fatal: Unhandled switch")
+                };
+            };
+        }
+
+        private enum BoundsOrExtremeSource
+        {
+            Bounds = 0,
+            ExtremeMinimum = 1,
+            ExtremeMaximum = 2
         }
 
         private static IGen<int> Error(string message) => new ErrorGen<int>(nameof(Int32Gen), message);

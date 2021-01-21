@@ -85,7 +85,7 @@ namespace Tests.Gen.Int32
             Action test = () => TestWithSeed(seed =>
             {
                 var gen0 = GC.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max).ShrinkTowards(origin);
-                var gen1 = gen0.WithBias(GC.Gen.Bias.Exponential);
+                var gen1 = gen0.WithBias(GC.Gen.Bias.WithSize);
 
                 GenAssert.Equal(gen0, gen1, seed);
             });

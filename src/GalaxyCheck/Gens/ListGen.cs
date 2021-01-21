@@ -181,7 +181,7 @@ namespace GalaxyCheck.Gens
                 .Int32()
                 .GreaterThanEqual(minLength)
                 .LessThanEqual(maxLength)
-                .WithBias(config.Bias ?? Gen.Bias.Exponential)
+                .WithBias(config.Bias ?? Gen.Bias.WithSize)
                 .NoShrink();
 
             var shrink = ShrinkTowardsLength(minLength);
@@ -203,7 +203,7 @@ namespace GalaxyCheck.Gens
 
             return ShrinkFunc.TowardsCount<ExampleSpace<T>, decimal>(length, exampleSpace =>
             {
-                return exampleSpace.Current.Distance;
+                return -exampleSpace.Current.Distance;
             });
         }
 

@@ -3,6 +3,7 @@ using FsCheck.Xunit;
 using System;
 using Xunit;
 using GalaxyCheck;
+using GC = GalaxyCheck;
 using static Tests.TestUtils;
 
 namespace Tests.Property.Check
@@ -10,9 +11,19 @@ namespace Tests.Property.Check
     [Properties(Arbitrary = new [] { typeof(ArbitraryIterations) })]
     public class AboutRandomnessConsumption
     {
-        [Property(Arbitrary = new[] { typeof(ArbitraryGen) })]
-        public FsCheck.Property ItConsumesRandomnessLikeSample(Iterations iterations, IGen<object> gen)
+        [Property(Arbitrary = new[] { typeof(ArbitraryGen) }, EndSize = 50)]
+        public FsCheck.Property ItConsumesRandomnessLikeSample(Iterations iterations, int randomnessConsumptionPerIteration, object value)
         {
+            var gen = GC.Gen.Advanced.Create<object>((useNextInt, _) =>
+            {
+                for (int i = 0; i < randomnessConsumptionPerIteration; i++)
+                {
+                    useNextInt(0, 0);
+                }
+
+                return value;
+            });
+
             Action test = () => TestWithSeed(seed =>
             {
                 var property = gen.ForAll(_ => true);

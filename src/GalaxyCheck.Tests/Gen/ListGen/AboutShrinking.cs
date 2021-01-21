@@ -51,23 +51,20 @@ namespace Tests.Gen.ListGen
             return test.When(localMinLength >= 0 && localMinLength <= 20);
         }
 
-        [Property(EndSize = 50, Skip = "Does not normalize")]
+        [Property(EndSize = 50)]
         public FsCheck.Property ItShrinksToTheSingleSmallestElement(int max, int minCounterexampleElement)
         {
             Action test = () => TestWithSeed(seed =>
             {
-                // TODO: Bias needs to be none so that it has a high chance of picking a number that hits the minimum
-                // counterexample. Need to improve the sizing algorithm so this is not required.
                 var gen = GC.Gen
                     .Int32()
-                    .WithBias(GC.Gen.Bias.None)
                     .Between(0, max)
                     .ListOf();
 
-                var expectedShrink = ImmutableList.Create(minCounterexampleElement);
+                var expectedShrink = new[] { minCounterexampleElement };
                 GenAssert.ShrinksTo(
                     gen,
-                    expectedShrink,
+                    expectedShrink.ToImmutableList(),
                     seed,
                     (xs) => xs.Any(x => x >= minCounterexampleElement));
             });
@@ -76,13 +73,13 @@ namespace Tests.Gen.ListGen
         }
 
         [Fact(Skip = "Does not normalize")]
-        public void ShrinkElement2()
+        public void ItShrinksToACombinationOfTheTwoSmallestElements()
         {
             var elementGen = GC.Gen.Int32().Between(0, 10);
             var listGen = elementGen.ListOf();
 
-            var expectedShrink = Enumerable.Repeat(1, 11).ToImmutableList();
-            GenAssert.ShrinksTo(listGen, expectedShrink, 2, (xs) => xs.Sum() >= 11);
+            var expectedShrink = new[] { 6, 5 };
+            GenAssert.ShrinksTo(listGen, expectedShrink.ToImmutableList(), 2, (xs) => xs.Sum() >= 11);
         }
     }
 }

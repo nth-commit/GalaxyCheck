@@ -13,7 +13,7 @@ namespace GalaxyCheck.Sandbox
 
             var property = gen.ForAll(xs => xs.Sum() < 11);
 
-            property.Print(iterations: 100, size: 0);
+            property.Print(iterations: 100, size: 100);
         }
     }
 }

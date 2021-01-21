@@ -12,7 +12,7 @@ namespace Tests.Gen.Int32
     public class AboutRandomnessConsumption
     {
         [Property]
-        public FsCheck.Property ItConsumesRandomnessOnce(int min, int max, int origin, GC.Gen.Bias bias, Iterations iterations)
+        public FsCheck.Property ItConsumesRandomnessOnceAtSize50(int min, int max, int origin, GC.Gen.Bias bias, Iterations iterations)
         {
             Action test = () => TestWithSeed(seed =>
             {
@@ -22,7 +22,7 @@ namespace Tests.Gen.Int32
                     .ShrinkTowards(origin)
                     .WithBias(bias);
 
-                var sample = gen.Advanced.SampleWithMetrics(iterations: iterations.Value, seed: seed);
+                var sample = gen.Advanced.SampleWithMetrics(iterations: iterations.Value, seed: seed, size: 50);
 
                 Assert.Equal(iterations.Value, sample.RandomnessConsumption);
             });
