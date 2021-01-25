@@ -5,8 +5,6 @@ using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.WeightedSampling;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 
 namespace GalaxyCheck.Gens
 {
@@ -126,7 +124,6 @@ namespace GalaxyCheck.Gens
             var getBounds = BoundsScalingFactoryFuncs.ScaledExponentially(min, max, origin);
             int? extremeMinimum = min == origin ? null : min;
             int? extremeMaximum = max == origin ? null : max;
-
 
             StatefulGenFunc<int> scaledBySize = FromBounds(getBounds);
 

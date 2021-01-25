@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck.Internal.GenIterations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace GalaxyCheck.Internal.Utility
@@ -10,6 +11,7 @@ namespace GalaxyCheck.Internal.Utility
         public static IEnumerable<T> UnfoldInfinite<T>(T seed, Func<T, T> generateNext) =>
             Unfold(seed, x => new Option.Some<T>(generateNext(x)));
 
+        [DebuggerNonUserCode]
         public static IEnumerable<T> Unfold<T>(T seed, Func<T, Option<T>> tryGenerateNext)
         {
             var current = seed;
@@ -133,6 +135,12 @@ namespace GalaxyCheck.Internal.Utility
                         return new (curr, consecutiveDiscards);
                     })
                 .Skip(1);
+        }
+
+        public static void Deconstruct<T>(this IEnumerable<T> source, out T? head, out IEnumerable<T> tail)
+        {
+            head = source.FirstOrDefault();
+            tail = source.Skip(1);
         }
     }
 }

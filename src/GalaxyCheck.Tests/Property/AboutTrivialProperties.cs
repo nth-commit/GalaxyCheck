@@ -18,9 +18,7 @@ namespace Tests.Property
             {
                 var property = GC.Gen.Constant(false).ForAll(x => x);
 
-                var (result, falsified) = PropertyAssert.Falsifies(property, seed, iterations: iterations.Value);
-
-                Assert.Equal(1, result.Iterations);
+                PropertyAssert.Falsifies(property, seed, iterations: iterations.Value);
             });
 
             return test.When(iterations.Value > 0);

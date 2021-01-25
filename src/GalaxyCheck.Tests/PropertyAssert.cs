@@ -5,7 +5,7 @@ namespace Tests
 {
     public static class PropertyAssert
     {
-        public static (CheckResult<T>, CheckResult<T>.CheckCounterexample) Falsifies<T>(
+        public static (CheckResult<T>, Counterexample<T>) Falsifies<T>(
             IProperty<T> property,
             int seed,
             int? size = null,

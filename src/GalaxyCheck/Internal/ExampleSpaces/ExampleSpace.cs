@@ -26,6 +26,18 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         }
     }
 
+    public record CounterexampleDetails(Exception? Exception);
+
+    public record ExplorationStage<T>(
+        IEnumerable<int> Path,
+        Example<T> Example,
+        CounterexampleDetails? CounterexampleDetails)
+    {
+        public bool IsCounterexample => CounterexampleDetails != null;
+
+        public bool IsShrink => Path.Any();
+    }
+
     public static class ExampleSpaceExtensions
     {
         /// <summary>
@@ -82,18 +94,6 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     .Select(es => es.Filter(pred))
                     .Where(es => es != null)
                     .Cast<ExampleSpace<T>>());
-        }
-
-        public record CounterexampleDetails(Exception? Exception);
-
-        public record ExplorationStage<T>(
-            IEnumerable<int> Path,
-            Example<T> Example,
-            CounterexampleDetails? CounterexampleDetails)
-        {
-            public bool IsCounterexample => CounterexampleDetails != null;
-
-            public bool IsShrink => Path.Any();
         }
 
         // TODO: Deprecate Counterexamples() in favour of this function, which should be tested with unit tests and documented.
@@ -345,12 +345,18 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             MeasureFunc<IEnumerable<ExampleSpace<T>>> measureMerge,
             ImmutableHashSet<ExampleId> encountered)
         {
+            var mergedId = exampleSpaces.Aggregate(
+                ExampleId.Primitive(exampleSpaces.Count()),
+                (acc, curr) => ExampleId.Combine(acc, curr.Current.Id));
+
+            var mergedValue = mergeValues(exampleSpaces.Select(es => es.Current.Value));
+
+            var mergedDistance = measureMerge(exampleSpaces);
+
             var current = new Example<TResult>(
-                exampleSpaces.Aggregate(
-                    ExampleId.Primitive(exampleSpaces.Count()),
-                    (acc, curr) => ExampleId.Combine(acc, curr.Current.Id)),
-                mergeValues(exampleSpaces.Select(es => es.Current.Value)),
-                measureMerge(exampleSpaces));
+                mergedId,
+                mergedValue,
+                mergedDistance);
 
             var exampleSpaceCullingShrinks = shrinkExampleSpaces(exampleSpaces);
 
@@ -360,8 +366,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
             var shrinks = TraverseUnencountered(
                 Enumerable.Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks),
-                (exampleSpaces, encountered) =>
-                    MergeInternal(exampleSpaces, mergeValues, shrinkExampleSpaces, measureMerge, encountered),
+                (exampleSpaces0, encountered0) =>
+                    MergeInternal(exampleSpaces0, mergeValues, shrinkExampleSpaces, measureMerge, encountered0),
                 encountered);
 
             return new ExampleSpace<TResult>(current, shrinks);

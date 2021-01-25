@@ -22,10 +22,10 @@ namespace GalaxyCheck
 
             var result = property.Check(iterations: iterations, seed: seed, size: size);
 
-            foreach (var checkIteration in result.Checks)
+            foreach (var checkIteration in result.Checks.OfType<CheckIteration.Check<T>>())
             {
                 var iterationOutput = $@"
-Testing value: {format(checkIteration.Value)} (seed = {checkIteration.InitialRng.Seed}, size = {checkIteration.InitialSize.Value})
+Testing value: {format(checkIteration.Value)} (seed = {checkIteration.Rng.Seed}, size = {checkIteration.Size.Value})
 Result: {(checkIteration.IsCounterexample ? "falsifies property" : "does not falsify property")}
 {string.Join("", Enumerable.Repeat("-", 50))}";
 
