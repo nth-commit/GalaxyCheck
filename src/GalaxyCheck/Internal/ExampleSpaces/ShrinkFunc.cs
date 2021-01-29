@@ -17,6 +17,13 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
     public static class ShrinkFunc
     {
+        public static ShrinkFunc<TResult> Map<T, TResult>(
+            this ShrinkFunc<T> shrink,
+            Func<T, TResult> forwardMapper,
+            Func<TResult, T> reverseMapper) =>
+                value => shrink(reverseMapper(value)).Select(forwardMapper);
+
+
         /// <summary>
         /// Creates a no-op shrink function for `T`, which always returns an empty enumerable (indicating that any
         /// given value will not shrink).
@@ -42,13 +49,15 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         };
 
         /// <summary>
-        /// Creates a shrink function that shrinks a source enumerable towards a target count, like
+        /// Creates a shrink function that shrinks a source list towards a target count, like
         /// <see cref="Towards(int)"/>. Whilst shrinking the enumerable, it will generate combinations for a count from
         /// the original source.
         /// </summary>
         /// <param name="target">The count to shrink towards.</param>
-        /// <returns>A shrink function for enumerables.</returns>
-        public static ShrinkFunc<IEnumerable<T>> TowardsCount<T, TKey>(int target, Func<T, TKey> orderKeySelector)
+        /// <param name="orderKeySelector">A function to order the list by, in an attempt to generate the first
+        /// shrink</param>
+        /// <returns>A shrink function for lists.</returns>
+        public static ShrinkFunc<List<T>> TowardsCount<T, TKey>(int target, Func<T, TKey> orderKeySelector)
         {
             var order = Order(orderKeySelector);
             var towardsCount = Towards(target);
@@ -59,7 +68,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
                 var lengths = towardsCount(source.Count());
 
-                var shrinksForSource = lengths.Select(length => source.Take(length));
+                var shrinksForSource = lengths.Select(length => source.Take(length).ToList());
 
                 var shrinksForCombinations = lengths.SelectMany(length =>
                 {
@@ -67,39 +76,78 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     return OtherCombinations<T>(length)(source).Skip(1);
                 });
 
-                return Enumerable.Concat(
+                return EnumerableExtensions.Concat(
                     shrinksForOrdering,
-                    Enumerable.Concat(shrinksForSource, shrinksForCombinations));
+                    shrinksForSource,
+                    shrinksForCombinations);
             };
         }
 
         /// <summary>
-        /// Creates a shrink function that generates all the combinations (of n choose k) of the given enumerable.
-        /// However, if k >= n, it returns an empty enumerable.
+        /// A second implementation of <see cref="TowardsCount{T, TKey}(int, Func{T, TKey})"/>. Optimised for lists of
+        /// greater length than the original, as it will generate shrinks in O(n) fashion, rather than O(n!). The
+        /// original implementation would edge the length close to the original value, whilst generating all possible
+        /// combinations at that length. This has been replaced by a bisecting phase, which cuts the list in half.
+        /// It may not find the optimal shrink in all cases, but it does for all the current test cases. I think we 
+        /// can probably improve this later on by using a combination of the two.
+        /// </summary>
+        /// <param name="target">The count to shrink towards.</param>
+        /// <param name="orderKeySelector">A function to order the list by, in an attempt to generate the first
+        /// shrink</param>
+        /// <returns></returns>
+        public static ShrinkFunc<List<T>> TowardsCount2<T, TKey>(int target, Func<T, TKey> orderKeySelector)
+        {
+            var order = Order(orderKeySelector);
+            var towardsCount = Towards(target);
+            var bisect = Bisect<T>(target);
+            var dropOne = DropOne<T>(target);
+
+            return (source) =>
+            {
+                var shrinksForOrdering = order(source);
+
+                var withSomeTailElementsDropped =
+                    towardsCount(source.Count()).Select(length => source.Take(length).ToList());
+
+                var bisections = bisect(source);
+
+                var withOneElementDropped = dropOne(source);
+
+                return EnumerableExtensions.Concat(
+                    shrinksForOrdering,
+                    withSomeTailElementsDropped,
+                    bisections,
+                    withOneElementDropped);
+            };
+        }
+
+        /// <summary>
+        /// Creates a shrink function that generates all the combinations (of n choose k) of the given list. However,
+        /// if k >= n, it returns an empty enumerable.
         /// </summary>
         /// <param name="k">The number of elements to choose for a combination.</param>
         /// <returns>A shrink function for enumerables.</returns>
-        public static ShrinkFunc<IEnumerable<T>> OtherCombinations<T>(int k)
+        public static ShrinkFunc<List<T>> OtherCombinations<T>(int k)
         {
-            static IEnumerable<IEnumerable<T>> TailCombinations(int k, List<T> list)
+            static IEnumerable<List<T>> TailCombinations(int k, List<T> list)
             {
                 if (list.Any() == false)
                 {
-                    return Enumerable.Empty<IEnumerable<T>>();
+                    return Enumerable.Empty<List<T>>();
                 }
 
                 var head = list[0];
                 var tail = list.Skip(1).ToList();
-                return AllCombinations(k - 1, tail).Select(tail => Enumerable.Concat(new[] { head }, tail));
+                return AllCombinations(k - 1, tail).Select(tail => Enumerable.Concat(new[] { head }, tail).ToList());
             }
 
-            static IEnumerable<IEnumerable<T>> AllCombinations(int k, List<T> list)
+            static IEnumerable<List<T>> AllCombinations(int k, List<T> list)
             {
                 if (k == 1)
                 {
                     foreach (var element in list)
                     {
-                        yield return new[] { element };
+                        yield return new List<T> { element };
                     }
                 }
                 else
@@ -121,7 +169,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             {
                 var list = source.ToList();
                 return k >= list.Count()
-                    ? Enumerable.Empty<IEnumerable<T>>()
+                    ? Enumerable.Empty<List<T>>()
                     : AllCombinations(k, list);
             };
         }
@@ -132,7 +180,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// </summary>
         /// <param name="keySelector">A function used to select the comparator for the sort.</param>
         /// <returns>A shrink function for enumerables.</returns>
-        public static ShrinkFunc<IEnumerable<T>> Order<T, TKey>(Func<T, TKey> keySelector) => source =>
+        public static ShrinkFunc<List<T>> Order<T, TKey>(Func<T, TKey> keySelector) => source =>
         {
             var orderedWithInitialIndex = source
                 .Select((element, index) => new { element, index })
@@ -147,11 +195,17 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             return wasOrderByEffectful
                 ? new[]
                 {
-                    orderedWithInitialIndex.Select(x => x.element)
+                    orderedWithInitialIndex.Select(x => x.element).ToList()
                 }
-                : Enumerable.Empty<IEnumerable<T>>();
+                : Enumerable.Empty<List<T>>();
         };
 
+        /// <summary>
+        /// Creates a shrink function that bisect the input list. It does not shrink if the list cannot be bisected
+        /// without the resultant lists being less than the minimum length.
+        /// </summary>
+        /// <param name="minLength">The minimum length for a shrunk list.</param>
+        /// <returns>A shrink function for lists.</returns>
         public static ShrinkFunc<List<T>> Bisect<T>(int minLength) => source =>
         {
             var length = source.Count();
@@ -171,6 +225,25 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 source.Take(halfLength).ToList(),
                 source.Skip(halfLength).ToList()
             };
+        };
+        public static ShrinkFunc<List<T>> DropOne<T>(int minLength) => source =>
+        {
+            if (source.Count <= minLength)
+            {
+                return Enumerable.Empty<List<T>>();
+            }
+
+            if (source.Count == 1)
+            {
+                return new[] { new List<T>() };
+            }
+
+            return Enumerable.Range(0, source.Count).Select(i =>
+                Enumerable
+                    .Concat(
+                        source.Take(i),
+                        source.Skip(i + 1))
+                    .ToList());
         };
 
         private static IEnumerable<int> Halves(int value) =>

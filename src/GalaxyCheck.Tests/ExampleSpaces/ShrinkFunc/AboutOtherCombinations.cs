@@ -17,9 +17,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
             {
                 var shrink = ES.ShrinkFunc.OtherCombinations<object>(k);
 
-                var result = shrink(source);
-
-                Assert.Empty(result);
+                ShrinkFuncAssert.CannotShrink(shrink, source);
             };
 
             return test.When(k >= source.Count);
@@ -32,9 +30,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
             {
                 var shrink = ES.ShrinkFunc.OtherCombinations<object>(k);
 
-                var result = shrink(source);
-
-                Assert.NotEmpty(result);
+                ShrinkFuncAssert.CanShrink(shrink, source);
             };
 
             return test.When(k > 0 && k < source.Count);
@@ -64,7 +60,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         {
             var shrink = ES.ShrinkFunc.OtherCombinations<string>(k);
 
-            var result = shrink(source.AsEnumerable().Select(x => x.ToString())).Select(c => string.Join("", c));
+            var result = shrink(source.Select(x => x.ToString()).ToList()).Select(c => string.Join("", c));
 
             var expectedCombinations = expectedCombinationsDelimited.Split(',');
             Assert.Equal(expectedCombinations, result);

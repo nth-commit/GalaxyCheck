@@ -115,27 +115,5 @@ namespace Tests.ExampleSpaces.ShrinkFunc
                 return test.When(ItCanShrink(minLength, value));
             }
         }
-
-        // TODO: Leverage this util in other ShrinkFunc tests
-        public static class ShrinkFuncAssert
-        {
-            public static void CannotShrink<T>(ES.ShrinkFunc<T> shrink, T value)
-            {
-                var result = shrink(value);
-                Assert.Empty(result);
-            }
-
-            public static void HasShrinkCount<T>(ES.ShrinkFunc<T> shrink, T value, int expectedShrinkCount)
-            {
-                var result = shrink(value);
-                Assert.Equal(expectedShrinkCount, result.Count());
-            }
-
-            public static void ForAllShrinks<T>(ES.ShrinkFunc<T> shrink, T value, Action<T> assert)
-            {
-                var result = shrink(value);
-                Assert.All(result, assert);
-            }
-        }
     }
 }

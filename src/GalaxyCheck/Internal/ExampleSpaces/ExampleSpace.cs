@@ -327,10 +327,10 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         }
 
         public static ExampleSpace<TResult> Merge<T, TResult>(
-            IEnumerable<ExampleSpace<T>> exampleSpaces,
-            Func<IEnumerable<T>, TResult> mergeValues,
-            ShrinkFunc<IEnumerable<ExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<IEnumerable<ExampleSpace<T>>> measureMerge) =>
+            List<ExampleSpace<T>> exampleSpaces,
+            Func<List<T>, TResult> mergeValues,
+            ShrinkFunc<List<ExampleSpace<T>>> shrinkExampleSpaces,
+            MeasureFunc<List<ExampleSpace<T>>> measureMerge) =>
                 MergeInternal(
                     exampleSpaces,
                     mergeValues,
@@ -339,17 +339,17 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     ImmutableHashSet.Create<ExampleId>());
 
         private static ExampleSpace<TResult> MergeInternal<T, TResult>(
-            IEnumerable<ExampleSpace<T>> exampleSpaces,
-            Func<IEnumerable<T>, TResult> mergeValues,
-            ShrinkFunc<IEnumerable<ExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<IEnumerable<ExampleSpace<T>>> measureMerge,
+            List<ExampleSpace<T>> exampleSpaces,
+            Func<List<T>, TResult> mergeValues,
+            ShrinkFunc<List<ExampleSpace<T>>> shrinkExampleSpaces,
+            MeasureFunc<List<ExampleSpace<T>>> measureMerge,
             ImmutableHashSet<ExampleId> encountered)
         {
             var mergedId = exampleSpaces.Aggregate(
                 ExampleId.Primitive(exampleSpaces.Count()),
                 (acc, curr) => ExampleId.Combine(acc, curr.Current.Id));
 
-            var mergedValue = mergeValues(exampleSpaces.Select(es => es.Current.Value));
+            var mergedValue = mergeValues(exampleSpaces.Select(es => es.Current.Value).ToList());
 
             var mergedDistance = measureMerge(exampleSpaces);
 
@@ -367,7 +367,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             var shrinks = TraverseUnencountered(
                 Enumerable.Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks),
                 (exampleSpaces0, encountered0) =>
-                    MergeInternal(exampleSpaces0, mergeValues, shrinkExampleSpaces, measureMerge, encountered0),
+                    MergeInternal(exampleSpaces0.ToList(), mergeValues, shrinkExampleSpaces, measureMerge, encountered0),
                 encountered);
 
             return new ExampleSpace<TResult>(current, shrinks);

@@ -16,9 +16,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
             {
                 var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
-                var first = shrink(value).First();
-
-                Assert.Equal(target, first);
+                ShrinkFuncAssert.ShrinksToFirst(shrink, value, target);
             };
 
             return test.When(value != target);
@@ -29,9 +27,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         {
             var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
-            var result = shrink(value);
-
-            Assert.DoesNotContain(value, result);
+            ShrinkFuncAssert.DoesNotShrinkTo(shrink, value, value);
         }
 
         [Property]
@@ -39,9 +35,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         {
             var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
-            var result = shrink(value);
-
-            Assert.Equal(result.Distinct(), result);
+            ShrinkFuncAssert.DoesNotShrinksToDuplicates(shrink, value);
         }
 
         [Property]
@@ -56,13 +50,11 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         }
 
         [Property]
-        public void WhenTheValueIsTheTarget_ItReturnsAnEmptyEnumerable(int target)
+        public void WhenTheValueIsTheTarget_ItCannotShrink(int target)
         {
             var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
-            var result = shrink(target);
-
-            Assert.Empty(result);
+            ShrinkFuncAssert.CannotShrink(shrink, target);
         }
 
         [Theory]
@@ -74,9 +66,7 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         {
             var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
-            var actual = shrink(value);
-
-            Assert.Equal(expected.ToList(), actual.ToList());
+            ShrinkFuncAssert.ShrinksTo(shrink, value, expected);
         }
     }
 }

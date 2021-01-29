@@ -13,7 +13,7 @@ namespace Tests.Gen.ListGen
     [Properties(MaxTest = 10)]
     public class AboutShrinking
     {
-        [Property(EndSize = 50, Skip = "Serious performance concerns with shrinking lists in some cases")]
+        [Property(EndSize = 50)]
         public FsCheck.Property ItShrinksLengthToTheMinimum(int minLength, int maxLength, GC.Gen.Bias bias, object elementValue)
         {
             Action test = () => TestWithSeed(seed =>
@@ -32,7 +32,7 @@ namespace Tests.Gen.ListGen
             return test.When(minLength >= 0 && maxLength >= minLength);
         }
 
-        [Property(EndSize = 50, Skip = "Serious performance concerns with shrinking lists in some cases")]
+        [Property(EndSize = 50)]
         public FsCheck.Property ItShrinksLengthToTheLocalMinimum(int localMinLength, GC.Gen.Bias bias, object elementValue)
         {
             Action test = () => TestWithSeed(seed =>
@@ -50,7 +50,7 @@ namespace Tests.Gen.ListGen
             return test.When(localMinLength >= 0 && localMinLength <= 20);
         }
 
-        [Fact(Skip = "Serious performance concerns with shrinking lists in some cases")]
+        [Fact()]
         public void ItShrinksToTheSingleSmallestElement() => TestWithSeed(seed =>
         {
             var gen = GC.Gen
@@ -66,7 +66,7 @@ namespace Tests.Gen.ListGen
                 (xs) => xs.Any(x => x >= 5));
         });
 
-        [Fact(Skip = "Serious performance concerns with shrinking lists in some cases")]
+        [Fact()]
         public void ItShrinksToACombinationOfTheTwoSmallestElements() => TestWithSeed(seed =>
         {
             var elementGen = GC.Gen.Int32().Between(0, 10);

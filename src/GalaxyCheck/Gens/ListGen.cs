@@ -192,7 +192,7 @@ namespace GalaxyCheck.Gens
                 select list;
         }
 
-        private static ShrinkFunc<IEnumerable<ExampleSpace<T>>> ShrinkTowardsLength(int length)
+        private static ShrinkFunc<List<ExampleSpace<T>>> ShrinkTowardsLength(int length)
         {
             // TODO: If T implements IEnumerable, order by negative distance.
 
@@ -201,7 +201,7 @@ namespace GalaxyCheck.Gens
             // minimal shrink a lot more efficiently in some examples,
             // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
 
-            return ShrinkFunc.TowardsCount<ExampleSpace<T>, decimal>(length, exampleSpace =>
+            return ShrinkFunc.TowardsCount2<ExampleSpace<T>, decimal>(length, exampleSpace =>
             {
                 return -exampleSpace.Current.Distance;
             });
@@ -210,7 +210,7 @@ namespace GalaxyCheck.Gens
         private static IGen<ImmutableList<T>> GenOfLength(
             int length,
             IGen<T> elementGen,
-            ShrinkFunc<IEnumerable<ExampleSpace<T>>> shrink)
+            ShrinkFunc<List<ExampleSpace<T>>> shrink)
         {
             IEnumerable<GenIteration<ImmutableList<T>>> Run(IRng rng, Size size)
             {
@@ -244,7 +244,7 @@ namespace GalaxyCheck.Gens
                 var nextSize = result.Any() ? result.Last().NextSize : size;
 
                 var exampleSpace = ExampleSpace.Merge(
-                    result.Select(instance => instance.ExampleSpace),
+                    result.Select(instance => instance.ExampleSpace).ToList(),
                     values => values.ToImmutableList(),
                     shrink,
                     exampleSpaces => exampleSpaces.Count());

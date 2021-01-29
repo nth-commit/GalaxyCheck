@@ -8,6 +8,9 @@ namespace GalaxyCheck.Internal.Utility
 {
     internal static class EnumerableExtensions
     {
+        public static IEnumerable<T> Concat<T>(params IEnumerable<T>[] sources) =>
+            sources.Aggregate(Enumerable.Empty<T>(), (acc, curr) => Enumerable.Concat(acc, curr));
+
         public static IEnumerable<T> UnfoldInfinite<T>(T seed, Func<T, T> generateNext) =>
             Unfold(seed, x => new Option.Some<T>(generateNext(x)));
 

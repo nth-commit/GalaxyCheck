@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Xunit;
+using GalaxyCheck.Internal.ExampleSpaces;
 using ES = GalaxyCheck.Internal.ExampleSpaces;
 
 namespace Tests.ExampleSpaces.ShrinkFunc
@@ -17,12 +18,11 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [InlineData("abc", 2, "ab,ac,bc")]
         public void Examples(string source, int k, string expectedCombinationsDelimited)
         {
-            var shrink = ES.ShrinkFunc.TowardsCount<string, string>(k, x => x);
+            var shrink = ES.ShrinkFunc
+                .TowardsCount<string, string>(k, x => x)
+                .Map(x => string.Join("", x), x => x.Select(c => c.ToString()).ToList());
 
-            var result = shrink(source.AsEnumerable().Select(x => x.ToString())).Select(c => string.Join("", c));
-
-            var expectedCombinations = expectedCombinationsDelimited.Split(',');
-            Assert.Equal(expectedCombinations, result);
+            ShrinkFuncAssert.ShrinksTo(shrink, source, expectedCombinationsDelimited.Split(','));
         }
     }
 }
