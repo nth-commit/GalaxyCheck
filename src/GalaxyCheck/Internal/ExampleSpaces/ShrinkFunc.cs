@@ -152,6 +152,27 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 : Enumerable.Empty<IEnumerable<T>>();
         };
 
+        public static ShrinkFunc<List<T>> Bisect<T>(int minLength) => source =>
+        {
+            var length = source.Count();
+            if (length <= 1)
+            {
+                return Enumerable.Empty<List<T>>();
+            }
+
+            var halfLength = length / 2;
+            if (halfLength < minLength)
+            {
+                return Enumerable.Empty<List<T>>();
+            }
+
+            return new[]
+            {
+                source.Take(halfLength).ToList(),
+                source.Skip(halfLength).ToList()
+            };
+        };
+
         private static IEnumerable<int> Halves(int value) =>
             EnumerableExtensions
                 .Unfold(Math.Abs(value), x =>
