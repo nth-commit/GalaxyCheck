@@ -1,10 +1,15 @@
 ﻿namespace GalaxyCheck
 {
     /// <summary>
-    /// A side-effect-less random number generator for 32-bit integers.
+    /// A side-effectless random number generator for 32-bit integers.
     /// </summary>
     public interface IRng
     {
+        /// <summary>
+        /// Identifies the lineage of this RNG. The family will always be the seed of the original RNG.
+        /// </summary>
+        int Family { get; }
+
         /// <summary>
         /// The constant seed used to generate integers from this RNG.
         /// </summary>
@@ -23,6 +28,13 @@
         /// </summary>
         /// <returns>The new RNG.</returns>
         IRng Next();
+
+        /// <summary>
+        /// Creates a new RNG based off of, but divorced from, this one. Like <see cref="Next"/>, but the returned RNG
+        /// will be of a different family, and have it's order reset.
+        /// </summary>
+        /// <returns></returns>
+        IRng Fork();
 
         /// <summary>
         /// Generates a random integer, based off of the seed, and some given boundaries. This is a pure function and

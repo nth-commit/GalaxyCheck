@@ -7,7 +7,7 @@ namespace Tests.Random.Rng
     public class AboutCreate
     {
         [Property]
-        public void ItIsIdempotent(int seed)
+        public void ItIsPure(int seed)
         {
             var rng0 = R.Rng.Create(seed);
             var rng1 = R.Rng.Create(seed);

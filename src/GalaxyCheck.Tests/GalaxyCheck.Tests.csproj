@@ -30,4 +30,8 @@
     <ProjectReference Include="..\GalaxyCheck\GalaxyCheck.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Random\Rng\__snapshots__\" />
+  </ItemGroup>
+
 </Project>

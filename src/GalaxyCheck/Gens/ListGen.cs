@@ -144,46 +144,7 @@ namespace GalaxyCheck.Gens
 
         private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
         {
-            var minLength = 0;
-            var maxLength = 20;
-
-            if (config.LengthConfig is ListGenLengthConfig.Specific specificLengthConfig)
-            {
-                if (specificLengthConfig.Length < 0)
-                {
-                    return Error("'length' cannot be negative");
-                }
-
-                minLength = maxLength = specificLengthConfig.Length;
-            }
-            else if (config.LengthConfig is ListGenLengthConfig.Ranged rangedLengthConfig)
-            {
-                if (rangedLengthConfig.MinLength < 0)
-                {
-                    return Error("'minLength' cannot be negative");
-                }
-
-                if (rangedLengthConfig.MaxLength < 0)
-                {
-                    return Error("'maxLength' cannot be negative");
-                }
-
-                minLength = rangedLengthConfig.MinLength ?? minLength;
-                maxLength = rangedLengthConfig.MaxLength ?? maxLength;
-            }
-
-            if (minLength > maxLength)
-            {
-                return Error("'minLength' cannot be greater than 'maxLength'");
-            }
-
-            var lengthGen = Gen
-                .Int32()
-                .GreaterThanEqual(minLength)
-                .LessThanEqual(maxLength)
-                .WithBias(config.Bias ?? Gen.Bias.WithSize)
-                .NoShrink();
-
+            var (minLength, lengthGen) = LengthGen(config);
             var shrink = ShrinkTowardsLength(minLength);
 
             return
@@ -194,8 +155,6 @@ namespace GalaxyCheck.Gens
 
         private static ShrinkFunc<List<ExampleSpace<T>>> ShrinkTowardsLength(int length)
         {
-            // TODO: If T implements IEnumerable, order by negative distance.
-
             // If the value type is a collection, that is, this generator is building a "collection of collections",
             // it is "less complex" to order the inner collections by descending length. It also lets us find the
             // minimal shrink a lot more efficiently in some examples,
@@ -205,6 +164,69 @@ namespace GalaxyCheck.Gens
             {
                 return -exampleSpace.Current.Distance;
             });
+        }
+
+        private static (int minLength, IGen<int> gen) LengthGen(ListGenConfig config)
+        {
+            static (int minLength, IGen<int> gen) LengthError(string message) =>
+                (-1, new ErrorGen<int>(nameof(ListGen<T>), message));
+
+            static (int minLength, IGen<int> gen) SpecificLengthGen(int length)
+            {
+                if (length < 0)
+                {
+                    return LengthError("'length' cannot be negative");
+                }
+
+                return (length, Gen.Constant(length));
+            }
+
+            static (int minLength, IGen<int> gen) RangedLengthGen(int? minLength, int? maxLength, Gen.Bias? bias)
+            {
+                var resolvedMinLength = minLength ?? 0;
+                var resolvedMaxLength = maxLength ?? 20;
+                var resolvedBias = bias ?? Gen.Bias.WithSize;
+
+                if (resolvedMinLength < 0)
+                {
+                    return LengthError("'minLength' cannot be negative");
+                }
+
+                if (resolvedMaxLength < 0)
+                {
+                    return LengthError("'maxLength' cannot be negative");
+                }
+
+                if (resolvedMinLength > resolvedMaxLength)
+                {
+                    return LengthError("'minLength' cannot be greater than 'maxLength'");
+                }
+
+                // TODO: If minLength == maxLength, defer to SpecificLengthGen
+
+                var gen = Gen
+                    .Int32()
+                    .GreaterThanEqual(minLength ?? 0)
+                    .LessThanEqual(maxLength ?? 20)
+                    .WithBias(bias ?? Gen.Bias.WithSize)
+                    .NoShrink();
+
+                return (resolvedMinLength, gen);
+            }
+
+            return config.LengthConfig switch
+            {
+                ListGenLengthConfig.Specific specificLengthConfig => SpecificLengthGen(specificLengthConfig.Length),
+                ListGenLengthConfig.Ranged rangedLengthConfig => RangedLengthGen(
+                    minLength: rangedLengthConfig.MinLength,
+                    maxLength: rangedLengthConfig.MaxLength,
+                    bias: config.Bias),
+                null => RangedLengthGen(
+                    minLength: null,
+                    maxLength: null,
+                    bias: config.Bias),
+                _ => throw new NotSupportedException()
+            };
         }
 
         private static IGen<ImmutableList<T>> GenOfLength(
@@ -257,7 +279,7 @@ namespace GalaxyCheck.Gens
                     exampleSpace);
             }
 
-            return new FunctionGen<ImmutableList<T>>(Run).Repeat() ;
+            return new FunctionGen<ImmutableList<T>>(Run).Repeat();
         }
 
         private static IGen<ImmutableList<T>> Error(string message) => new ErrorGen<ImmutableList<T>>(nameof(ListGen<T>), message);

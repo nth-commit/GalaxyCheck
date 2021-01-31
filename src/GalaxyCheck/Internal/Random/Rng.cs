@@ -8,28 +8,33 @@ namespace GalaxyCheck.Internal.Random
         /// Creates a new RNG with a random seed.
         /// </summary>
         /// <returns>The new RNG.</returns>
-        public static IRng Spawn() => new Rng(new System.Random().Next(), 0);
+        public static IRng Spawn() => Create(new System.Random().Next());
 
         /// <summary>
         /// Create a new RNG with the given seed.
         /// </summary>
         /// <param name="seed">The seed for the RNG.</param>
         /// <returns>The new RNG.</returns>
-        public static IRng Create(int seed) => new Rng(seed, 0);
+        public static IRng Create(int seed) => new Rng(seed, seed, 0);
 
         private System.Random Random => new System.Random(Seed);
+
+        public int Family { get; init; }
 
         public int Seed { get; init; }
 
         public int Order { get; init; }
 
-        private Rng(int seed, int order)
+        private Rng(int family, int seed, int order)
         {
+            Family = family;
             Seed = seed;
             Order = order;
         }
 
-        public IRng Next() => new Rng(Random.Next(), Order + 1);
+        public IRng Next() => new Rng(Family, Random.Next(), Order + 1);
+
+        public IRng Fork() => Create(HashCode.Combine(Family, Order));
 
         public int Value(int min, int max)
         {

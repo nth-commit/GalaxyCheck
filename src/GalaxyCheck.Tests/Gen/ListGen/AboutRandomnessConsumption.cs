@@ -13,36 +13,44 @@ namespace Tests.Gen.ListGen
     public class AboutRandomnessConsumption
     {
         [Property]
-        public FsCheck.Property ForAZeroFactorElementGen_ItConsumesRandomnessForTheLength(object element, Iterations iterations)
+        public void ForRandomLengthLists_AndForAZeroFactorElementGen_ItConsumesRandomnessForTheLength(object element, NonZeroIterations iterations)
         {
-            Action action = () => TestWithSeed(seed =>
+            TestWithSeed(seed =>
             {
-                var elementGen = GC.Gen.Constant(element);
-                var gen = GC.Gen.List(elementGen);
+                var gen = GC.Gen.Constant(element).ListOf();
 
                 var sample = gen.Advanced.SampleWithMetrics(iterations: iterations.Value, seed: seed);
 
                 Assert.Equal(iterations.Value, sample.RandomnessConsumption);
             });
-
-            return action.When(iterations.Value > 0);
         }
 
         [Property]
-        public FsCheck.Property ForAOneFactorElementGen_ItConsumesRandomnessForTheLengthAndEachElement(Iterations iterations)
+        public void ForRandomLengthLists_AndForAOneFactorElementGen_ItConsumesRandomnessForTheLengthAndEachElement(NonZeroIterations iterations)
         {
-            Action action = () => TestWithSeed(seed =>
+            TestWithSeed(seed =>
             {
-                var elementGen = GC.Gen.Int32();
-                var gen = GC.Gen.List(elementGen);
+                var gen = GC.Gen.Int32().ListOf();
 
                 var sample = gen.Advanced.SampleWithMetrics(iterations: iterations.Value, seed: seed);
 
                 var expectedRandomnessConsumption = sample.Values.Select(l => l.Count).Sum() + iterations.Value;
                 Assert.Equal(expectedRandomnessConsumption, sample.RandomnessConsumption);
             });
+        }
 
-            return action.When(iterations.Value > 0);
+        [Property]
+        public void ForSetLengthLists_AndForAZeroFactorElementGen_ItDoesNotConsumeRandomness(object element, NonZeroIterations iterations)
+        {
+            TestWithSeed(seed =>
+            {
+                var length = 5; // TODO: Arbitrary
+                var gen = GC.Gen.Constant(element).ListOf().OfLength(length);
+
+                var sample = gen.Advanced.SampleWithMetrics(iterations: iterations.Value, seed: seed);
+
+                Assert.Equal(0, sample.RandomnessConsumption);
+            });
         }
     }
 }

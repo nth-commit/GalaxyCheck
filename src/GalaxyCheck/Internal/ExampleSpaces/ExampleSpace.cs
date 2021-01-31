@@ -295,6 +295,21 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 ImmutableHashSet.Create(id));
         }
 
+        public static ExampleSpace<T> Delay<T>(
+            Example<T> rootExample,
+            Func<IEnumerable<ExampleSpace<T>>> delayedSubspace)
+        {
+            IEnumerable<U> DelayEnumeration<U>(Func<IEnumerable<U>> source)
+            {
+                foreach (var element in source())
+                {
+                    yield return element;
+                }
+            }
+
+            return new ExampleSpace<T>(rootExample, DelayEnumeration(delayedSubspace));
+        }
+
         private static ExampleSpace<TProjection> UnfoldInternal<TAccumulator, TProjection>(
             TAccumulator accumulator,
             ShrinkFunc<TAccumulator> shrink,

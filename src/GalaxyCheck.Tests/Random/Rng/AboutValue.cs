@@ -12,7 +12,7 @@ namespace Tests.Random.Rng
     public class AboutValue
     {
         [Property]
-        public FsCheck.Property ItIsIdempotent(int seed, int min, int max)
+        public FsCheck.Property ItIsPure(int seed, int min, int max)
         {
             Action test = () =>
             {

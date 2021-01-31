@@ -24,6 +24,11 @@ namespace GalaxyCheck
             int? size = null) =>
                 gen.Advanced.SampleWithMetrics(iterations: iterations, seed: seed, size: size).Values;
 
+        public static T SampleOne<T>(
+            this IGen<T> gen,
+            int? seed = null,
+            int? size = null) => gen.Sample(iterations: 1, seed: seed, size: size).Single();
+
         public record SampleWithMetricsResult<T>(
             List<T> Values,
             int RandomnessConsumption);
@@ -54,6 +59,11 @@ namespace GalaxyCheck
                     seed: seed,
                     size: size).Values;
 
+        public static ExampleSpace<T> SampleOneExampleSpace<T>(
+            this IGenAdvanced<T> gen,
+            int? seed = null,
+            int? size = null) => gen.SampleExampleSpaces(iterations: 1, seed: seed, size: size).Single();
+
         public static SampleWithMetricsResult<ExampleSpace<T>> SampleExampleSpacesWithMetrics<T>(
             this IGenAdvanced<T> advanced,
             int? iterations = null,
@@ -66,7 +76,7 @@ namespace GalaxyCheck
             var instances = advanced.Sample(initialRng, initialSize).Take(iterations ?? 100).ToList();
 
             var exampleSpaces = instances.Select(instance => instance.ExampleSpace).ToList();
-            var nextRng = instances.Last().NextRng;
+            var nextRng = instances.LastOrDefault()?.NextRng ?? initialRng;
             var randomnessConsumption = nextRng.Order - initialRng.Order;
 
             return new SampleWithMetricsResult<ExampleSpace<T>>(exampleSpaces, randomnessConsumption);
