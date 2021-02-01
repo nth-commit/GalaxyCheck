@@ -38,6 +38,13 @@ namespace Tests
             Assert.Equal(expected, actual);
         }
 
+        public static void ShrinksTo<T>(IGen<T> gen, Action<T> assert, int seed, Func<T, bool>? pred = null)
+        {
+            var actual = gen.Minimal(seed: seed, pred: pred);
+
+            assert(actual);
+        }
+
         public static void Errors<T>(IGen<T> gen, string errorMessage, int seed)
         {
             var ex = Assert.Throws<GC.Exceptions.GenErrorException>(() =>

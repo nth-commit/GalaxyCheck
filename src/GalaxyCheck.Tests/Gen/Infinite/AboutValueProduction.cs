@@ -23,24 +23,8 @@ using static Tests.TestUtils;
 namespace Tests.Gen.Infinite
 {
     [Properties(MaxTest = 10, Arbitrary = new [] { typeof(ArbitraryIterations), typeof(ArbitrarySize) })]
-    public class AboutInfinite
+    public class AboutValueProduction
     {
-        [Property]
-        public void ItConsumesRandomnessOncePerIteration(Iterations iterations, Size size)
-        {
-            TestWithSeed(seed =>
-            {
-                var gen = GC.Gen.Int32().InfiniteOf();
-
-                var sample = gen.Advanced.SampleWithMetrics(
-                    iterations: iterations.Value,
-                    seed: seed,
-                    size: size.Value);
-
-                Assert.Equal(iterations.Value, sample.RandomnessConsumption);
-            });
-        }
-
         [Property]
         public void ItProducesTheSameElementsForEachEnumeration(Size size)
         {
@@ -87,7 +71,7 @@ namespace Tests.Gen.Infinite
 
         private static int ForkSeed(int seed)
         {
-            return GalaxyCheck.Internal.Random.Rng.Create(seed).Fork().Seed;
+            return GC.Internal.Random.Rng.Create(seed).Fork().Seed;
         }
     }
 }

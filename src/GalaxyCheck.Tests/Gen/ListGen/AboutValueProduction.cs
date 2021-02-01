@@ -7,7 +7,7 @@ using static Tests.TestUtils;
 
 namespace Tests.Gen.ListGen
 {
-    public class AboutDistribution
+    public class AboutValueProduction
     {
         [Property]
         public FsCheck.Property ItHasADistributionOverLengthLikeInt32Gen(int x, int y, GC.Gen.Bias bias, object element)

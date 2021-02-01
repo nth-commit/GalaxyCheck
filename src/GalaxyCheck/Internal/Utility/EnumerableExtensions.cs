@@ -74,6 +74,16 @@ namespace GalaxyCheck.Internal.Utility
             }
         }
 
+        public static IEnumerable<T> Repeat<T>(this IEnumerable<T> source)
+        {
+            if (!source.Any())
+            {
+                throw new Exception("Fatal: Cannot repeat an empty enumerable");
+            }
+
+            return Repeat(() => source);
+        }
+
         public static IEnumerable<TAccumulator> Scan<TSource, TAccumulator>(
             this IEnumerable<TSource> input,
             TAccumulator seed,

@@ -8,7 +8,7 @@ using static Tests.TestUtils;
 namespace Tests.Gen.Int32
 {
     [Properties(Arbitrary = new[] { typeof(ArbitrarySize) }, MaxTest = 10)]
-    public class AboutDistribution
+    public class AboutValueProduction
     {
         [Property]
         public void WhenBiasIsNone_ItHasAnEvenDistribution(Size size) => TestWithSeed(seed =>
