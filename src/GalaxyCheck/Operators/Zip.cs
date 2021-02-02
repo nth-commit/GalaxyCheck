@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GalaxyCheck.Internal.Utility;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GalaxyCheck
@@ -25,13 +26,15 @@ namespace GalaxyCheck
 
         public static IGen<IEnumerable<T>> Zip<T>(IEnumerable<IGen<T>> gens)
         {
-            if (!gens.Any())
+            var (head, tail) = gens;
+
+            if (head == null)
             {
                 return Constant(Enumerable.Empty<T>());
             }
 
-            return from x in gens.First()
-                   from xs in Zip(gens.Skip(1))
+            return from x in head
+                   from xs in Zip(tail)
                    select Enumerable.Concat(new[] { x }, xs);
         }
 

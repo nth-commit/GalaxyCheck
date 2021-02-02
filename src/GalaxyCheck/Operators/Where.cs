@@ -13,7 +13,6 @@ namespace GalaxyCheck
         /// Filters a generator's values based on a predicate. Does not alter the structure of the stream. Instead,
         /// it replaces the filtered value with a token, which enables discard counting whilst running the generator.
         /// </summary>
-        /// <typeparam name="T">The type of the genreator's value.</typeparam>
         /// <param name="gen">The generator to apply the predicate to.</param>
         /// <param name="pred">A predicate function that tests each value.</param>
         /// <returns>A new generator with the filter applied.</returns>

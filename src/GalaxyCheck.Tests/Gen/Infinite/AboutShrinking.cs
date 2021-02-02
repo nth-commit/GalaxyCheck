@@ -1,12 +1,10 @@
 ﻿using FsCheck;
-using FsCheck.Xunit;
 using System.Linq;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using Xunit;
 using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
-using System.Collections.Generic;
 
 namespace Tests.Gen.Infinite
 {

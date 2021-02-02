@@ -36,7 +36,7 @@ namespace GalaxyCheck
         /// <summary>
         /// When the function is called, it will pull a newly generated value from the source. Hacks purity into the
         /// function by memoizing the result. Without memoization, repeating a function call with the same args would
-        /// continue to pull values from the source, likely generated a different result.
+        /// continue to pull values from the source, likely generating a different result.
         /// </summary>
         private static VariadicFunc<TResult> ToPureFunction<TResult>(IEnumerable<TResult> returnValueSource)
         {
