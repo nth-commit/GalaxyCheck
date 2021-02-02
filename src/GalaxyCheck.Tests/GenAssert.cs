@@ -45,13 +45,21 @@ namespace Tests
             assert(actual);
         }
 
+        public static void DoesNotThrow<T>(IGen<T> gen, int seed)
+        {
+            gen.Sample(seed: seed);
+        }
+
+        public static TException Throws<T, TException>(IGen<T> gen, int seed)
+            where TException : Exception
+        {
+            var ex = Assert.Throws<TException>(() => gen.Sample(seed: seed));
+            return ex;
+        }
+
         public static void Errors<T>(IGen<T> gen, string errorMessage, int seed)
         {
-            var ex = Assert.Throws<GC.Exceptions.GenErrorException>(() =>
-            {
-                gen.Sample(seed: seed);
-            });
-
+            var ex = Throws<T, GC.Exceptions.GenErrorException>(gen, seed);
             Assert.Equal(errorMessage, ex.Message);
         }
     }

@@ -20,10 +20,7 @@ namespace GalaxyCheck
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
         /// <returns>The new generator.</returns>
         public static IListGen<T> List<T>(IGen<T> elementGen) => elementGen.ListOf();
-    }
 
-    public static class ListGenExtensions
-    {
         /// <summary>
         /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
         /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the

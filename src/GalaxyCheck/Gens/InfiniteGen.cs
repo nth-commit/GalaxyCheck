@@ -14,25 +14,89 @@ namespace GalaxyCheck
 {
     public static partial class Gen
     {
+        /// <summary>
+        /// Creates a generator that produces infinite enumerables, the elements of which are produced by the given
+        /// generator. Infinite enumerables are supported by this generator, but by default there is a limit of 1000
+        /// elements in place - and the iterator will throw if that limit is exceeded. This is a pragmatic limit to
+        /// avert confusion of cases where the consuming code trys to enumerate an infinite enumerable (and
+        /// consequently hangs forever). This can be configured with the builder methods
+        /// <see cref="IInfiniteGen{T}.WithIterationLimit(int)"/> or
+        /// <see cref="IInfiniteGen{T}.WithoutIterationLimit"/>.
+        /// </summary>
+        /// <param name="elementGen">The generator used to produce the elements of the list.</param>
+        /// <returns>The new generator.</returns>
         public static IInfiniteGen<T> Infinite<T>(IGen<T> elementGen) => new InfiniteGen<T>(elementGen);
 
+        /// <summary>
+        /// Creates a generator that produces infinite enumerables, the elements of which are produced by the given
+        /// generator. Infinite enumerables are supported by this generator, but by default there is a limit of 1000
+        /// elements in place - and the iterator will throw if that limit is exceeded. This is a pragmatic limit to
+        /// avert confusion of cases where the consuming code trys to enumerate an infinite enumerable (and
+        /// consequently hangs forever). This can be configured with the builder methods
+        /// <see cref="IInfiniteGen{T}.WithIterationLimit(int)"/> or
+        /// <see cref="IInfiniteGen{T}.WithoutIterationLimit"/>.
+        /// </summary>
+        /// <param name="elementGen">The generator used to produce the elements of the list.</param>
+        /// <returns>The new generator.</returns>
         public static IInfiniteGen<T> InfiniteOf<T>(this IGen<T> elementGen) => Infinite(elementGen);
     }
 }
 
 namespace GalaxyCheck.Gens
 {
-    public interface IInfiniteGen<T> : IGen<IEnumerable<T>> { }
+    public interface IInfiniteGen<T> : IGen<IEnumerable<T>>
+    {
+        /// <summary>
+        /// Modifies the iteration limit of the enumerable. Unless you're hitting the limit then it's not recommended
+        /// to customize this. You will know you're hitting the limit because the generator will loudly
+        /// tell you that you are, by crashing.
+        /// </summary>
+        /// <param name="limit"></param>
+        /// <returns>A new generator with the modified iteration limit.</returns>
+        IInfiniteGen<T> WithIterationLimit(int limit);
+
+        /// <summary>
+        /// Completely disables the iteration limit of the enumerable. It's not recommended to customize this, and is
+        /// only useful if you want to generate enumerables that you effectively want to enumerate forever. The
+        /// recommended API for modifying limits is <see cref="WithIterationLimit(int)"/>.
+        /// <returns>A new generator with the modified iteration limit.</returns>
+        IInfiniteGen<T> WithoutIterationLimit();
+    }
+
+    public class InfiniteGenLimitExceededException : Exception
+    {
+        private static string GetMessage()
+        {
+            var interfaceIdentifier = nameof(IInfiniteGen<object>) + "{T}";
+            var withLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IInfiniteGen<object>.WithIterationLimit)}(int)";
+            var withoutLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IInfiniteGen<object>.WithoutIterationLimit)}";
+            return $"Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Use {withLimitMethodIdentifier} or {withoutLimitMethodIdentifier} to modify this limit.";
+        }
+
+        public InfiniteGenLimitExceededException()
+            : base(GetMessage())        {
+        }
+    }
 
     public class InfiniteGen<T> : BaseGen<IEnumerable<T>>, IInfiniteGen<T>
     {
         private readonly IGen<T> _elementGen;
-        private readonly int? _iterationLimit = 100;
+        private readonly int? _iterationLimit;
 
-        public InfiniteGen(IGen<T> elementGen)
+        private InfiniteGen(IGen<T> elementGen, int? iterationLimit)
         {
             _elementGen = elementGen;
+            _iterationLimit = iterationLimit;
         }
+
+        public InfiniteGen(IGen<T> elementGen)
+            : this(elementGen, 1000)
+        {
+        }
+
+        public IInfiniteGen<T> WithIterationLimit(int limit) => new InfiniteGen<T>(_elementGen, limit);
+
+        public IInfiniteGen<T> WithoutIterationLimit() => new InfiniteGen<T>(_elementGen, null);
 
         protected override IEnumerable<GenIteration<IEnumerable<T>>> Run(IRng rng, Size size)
         {
@@ -115,9 +179,10 @@ namespace GalaxyCheck.Gens
             iterationLimit.HasValue
                 ? source.Select((x, i) =>
                 {
-                    if (i > iterationLimit.Value)
+                    var iterationCount = i + 1;
+                    if (iterationCount > iterationLimit.Value)
                     {
-                        throw new System.Exception("Iteration limit: TODO, test and improve message");
+                        throw new InfiniteGenLimitExceededException();
                     }
 
                     return x;
