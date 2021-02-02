@@ -7,6 +7,12 @@ namespace GalaxyCheck
 {
     public static partial class Gen
     {
+        /*
+         * TODO:
+         *  1) Snapshots
+         *  2) Max invocation protection
+         */
+
         public static IGen<Func<TResult>> Function<TResult>(IGen<TResult> returnGen) =>
             from f in VariadicFunction(returnGen)
             select new Func<TResult>(() => f());
