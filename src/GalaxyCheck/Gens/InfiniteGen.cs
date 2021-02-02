@@ -156,6 +156,7 @@ namespace GalaxyCheck.Gens
         {
             var source = elementGen.Advanced
                 .Run(rng, size)
+                .WithDiscardCircuitBreaker(iteration => iteration is GenDiscard<T>)
                 .OfType<GenInstance<T>>()
                 .Select(iteration => iteration.ExampleSpace);
 

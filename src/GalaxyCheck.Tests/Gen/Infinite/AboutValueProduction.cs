@@ -7,19 +7,6 @@ using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
 
-/**
-* Desired behaviours:
-* 
-*  1) It should mostly behave like list, and shrink in a similar way
-*  2) Enumeration is captured, and is shrunk like list, then repeated infinitely
-*  3) It should have some infinite enumeration protection built in by default, with API to configure
-*      e.g. WithLimit(count = 1000), NoLimit()
-*  4) It should be able to handle the enumeration occuring potentially many times. Enumerating in two for
-*     loops should produce the same result. Also, when deciding how to shrink, it should take the MOST
-*     ENUMERATED instance.
-*  5) It should have discard protection, which means that code will need to be extracted from the other runners
-*/
-
 namespace Tests.Gen.Infinite
 {
     [Properties(MaxTest = 10, Arbitrary = new [] { typeof(ArbitraryIterations), typeof(ArbitrarySize) })]

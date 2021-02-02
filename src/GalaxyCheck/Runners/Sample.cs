@@ -84,18 +84,7 @@ namespace GalaxyCheck
 
         private static IEnumerable<GenInstance<T>> Sample<T>(this IGenAdvanced<T> advanced, IRng rng, Size size)
         {
-            var stream = advanced
-                .Run(rng, size)
-                .WithConsecutiveDiscardCount()
-                .Select(x =>
-                {
-                    if (x.consecutiveDiscards > 1000)
-                    {
-                        throw new Exceptions.GenExhaustionException();
-                    }
-
-                    return x.iteration;
-                });
+            var stream = advanced.Run(rng, size).WithDiscardCircuitBreaker(iteration => iteration is GenDiscard<T>);
 
             foreach (var iteration in stream)
             {

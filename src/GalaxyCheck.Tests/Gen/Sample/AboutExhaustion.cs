@@ -17,9 +17,9 @@ namespace Tests.Gen.Sample
 
             TestWithSeed(seed =>
             {
-                Action test = () => gen.Sample(seed: seed);
+                Action throwing = () => gen.Sample(seed: seed);
 
-                Assert.Throws<GC.Exceptions.GenExhaustionException>(test);
+                Assert.Throws<GC.Exceptions.GenExhaustionException>(throwing);
             });
         }
     }

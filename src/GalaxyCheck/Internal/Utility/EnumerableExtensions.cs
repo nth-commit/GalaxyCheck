@@ -136,18 +136,30 @@ namespace GalaxyCheck.Internal.Utility
             }
         }
 
-        public static IEnumerable<(GenIteration<T> iteration, int consecutiveDiscards)> WithConsecutiveDiscardCount<T>(
-            this IEnumerable<GenIteration<T>> source)
+        public static IEnumerable<(T element, int consecutiveDiscardCount)> WithConsecutiveDiscardCount<T>(
+            this IEnumerable<T> source,
+            Func<T, bool> isDiscard)
+        {
+            return source.ScanInParallel(0, (consecutiveDiscardCount, element) => isDiscard(element) ? consecutiveDiscardCount + 1 : 0);
+        }
+
+        public static IEnumerable<T> WithDiscardCircuitBreaker<T>(
+            this IEnumerable<T> source,
+            Func<T, bool> isDiscard)
         {
             return source
-                .Scan(
-                    (iteration: (GenIteration<T>?)null!, consecutiveDiscards: 0),
-                    (acc, curr) =>
+                .WithConsecutiveDiscardCount(isDiscard)
+                .Select((x) =>
+                {
+                    var (element, consecutiveDiscardCount) = x;
+
+                    if (consecutiveDiscardCount > 100)
                     {
-                        var consecutiveDiscards = curr is GenDiscard<T> ? acc.consecutiveDiscards + 1 : 0;
-                        return new (curr, consecutiveDiscards);
-                    })
-                .Skip(1);
+                        throw new Exceptions.GenExhaustionException();
+                    }
+
+                    return element;
+                });
         }
 
         public static void Deconstruct<T>(this IEnumerable<T> source, out T? head, out IEnumerable<T> tail)

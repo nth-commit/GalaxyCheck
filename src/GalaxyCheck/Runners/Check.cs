@@ -99,6 +99,7 @@ namespace GalaxyCheck
                         : new Option.Some<CheckState<T>>(prevState.NextState()));
 
             var checks = states
+                .WithDiscardCircuitBreaker(state => state is CheckState.HandleDiscard<T>)
                 .Select(MapStateToIterationOrIgnore)
                 .OfType<CheckIteration<T>>()
                 .ToImmutableList();
@@ -154,8 +155,6 @@ namespace GalaxyCheck
                 CheckState.HandleDiscard<T> s => FromHandleDiscard(s),
                 CheckState.HandleError<T> s =>
                     throw new Exceptions.GenErrorException(s.Error.GenName, s.Error.Message),
-                CheckState.HandleExhaustion<T> _ => 
-                    throw new Exceptions.GenExhaustionException(),
                 CheckState.Termination<T> s => FromTermination(s),
                 _ => null
             };
@@ -282,15 +281,8 @@ namespace GalaxyCheck
                 internal override CheckState<T> NextState()
                 {
                     var nextContext = Context.IncrementDiscards();
-                    return nextContext.Discards > 100
-                        ? new HandleExhaustion<T>(nextContext)
-                        : new HandleNextIteration<T>(nextContext, NextIterations);
+                    return new HandleNextIteration<T>(nextContext, NextIterations);
                 }
-            }
-
-            public record HandleExhaustion<T>(CheckContext<T> Context) : CheckState<T>(Context)
-            {
-                internal override CheckState<T> NextState() => new Termination<T>(Context);
             }
 
             public record HandleError<T>(

@@ -31,24 +31,27 @@ namespace GalaxyCheck
             GenStreamTransformation<T, T> resizeAndTerminateAfterConsecutiveDiscards = (stream) =>
             {
                 const int MaxConsecutiveDiscards = 10;
+
                 return stream
-                    .WithConsecutiveDiscardCount()
+                    .WithConsecutiveDiscardCount(iteration => iteration is GenDiscard<T>)
                     .Select((x) =>
                     {
-                        if (x.consecutiveDiscards >= MaxConsecutiveDiscards)
+                        var (iteration, consecutiveDiscardCount) = x;
+
+                        if (consecutiveDiscardCount >= MaxConsecutiveDiscards)
                         {
                             var resizedIteration = GenIterationBuilder
-                                .FromIteration(x.iteration)
-                                .WithNextSize(x.iteration.NextSize.BigIncrement())
+                                .FromIteration(iteration)
+                                .WithNextSize(iteration.NextSize.BigIncrement())
                                 .ToDiscard<T>();
-                            return (resizedIteration, x.consecutiveDiscards);
+                            return (resizedIteration, consecutiveDiscardCount);
                         }
                         else
                         {
-                            return (x.iteration, x.consecutiveDiscards);
+                            return (iteration, consecutiveDiscardCount);
                         }
                     })
-                    .TakeWhileInclusive((x) => x.consecutiveDiscards < MaxConsecutiveDiscards)
+                    .TakeWhileInclusive((x) => x.consecutiveDiscardCount < MaxConsecutiveDiscards)
                     .Select(x => x.iteration);
             };
 
