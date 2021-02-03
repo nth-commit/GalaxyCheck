@@ -75,7 +75,7 @@ namespace GalaxyCheck.Gens
 
         public IInt32Gen WithBias(Gen.Bias bias) => WithPartialConfig(bias: bias);
 
-        protected override IEnumerable<GenIteration<int>> Run(IRng rng, Size size) =>
+        protected override IEnumerable<IGenIteration<int>> Run(IRng rng, Size size) =>
             BuildGen(_config).Advanced.Run(rng, size);
 
         private IInt32Gen WithPartialConfig(

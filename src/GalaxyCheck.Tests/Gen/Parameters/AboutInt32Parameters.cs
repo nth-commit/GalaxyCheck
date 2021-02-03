@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Reflection;
+using Xunit;
 using GalaxyCheck;
+using GalaxyCheck.Injection.Int32;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
-using Xunit;
-using System.Reflection;
-using GalaxyCheck.Injection;
 
 namespace Tests.Gen.Parameters
 {

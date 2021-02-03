@@ -1,9 +1,10 @@
-﻿using System;
+﻿using GalaxyCheck.Gens;
+using System;
 
-namespace GalaxyCheck.Injection
+namespace GalaxyCheck.Injection.Int32
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    public class WithBiasAttribute : Attribute
+    public class WithBiasAttribute : BaseInt32Attribute
     {
         public Gen.Bias Bias { get; }
 
@@ -11,5 +12,7 @@ namespace GalaxyCheck.Injection
         {
             Bias = bias;
         }
+
+        public override IInt32Gen Configure(IInt32Gen gen) => gen.WithBias(Bias);
     }
 }

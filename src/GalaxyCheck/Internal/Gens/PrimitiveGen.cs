@@ -28,7 +28,7 @@ namespace GalaxyCheck.Internal.Gens
             _identify = identify;
         }
 
-        protected override IEnumerable<GenIteration<T>> Run(IRng rng, Size size)
+        protected override IEnumerable<IGenIteration<T>> Run(IRng rng, Size size)
         {
             NextIntFunc useNextInt = (min, max) =>
             {

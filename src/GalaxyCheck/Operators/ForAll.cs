@@ -43,7 +43,7 @@ namespace GalaxyCheck
                 _gen = gen;
             }
 
-            protected override IEnumerable<GenIteration<PropertyIteration<T>>> Run(IRng rng, Size size) =>
+            protected override IEnumerable<IGenIteration<PropertyIteration<T>>> Run(IRng rng, Size size) =>
                 _gen.Advanced.Run(rng, size);
         }
     }

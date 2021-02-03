@@ -98,7 +98,7 @@ namespace GalaxyCheck.Gens
 
         public IInfiniteGen<T> WithoutIterationLimit() => new InfiniteGen<T>(_elementGen, null);
 
-        protected override IEnumerable<GenIteration<IEnumerable<T>>> Run(IRng rng, Size size)
+        protected override IEnumerable<IGenIteration<IEnumerable<T>>> Run(IRng rng, Size size)
         {
             do
             {

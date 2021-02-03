@@ -4,7 +4,18 @@ using System;
 
 namespace GalaxyCheck.Internal.GenIterations
 {
-    public abstract record GenIteration<T>
+    public interface IGenIteration<out T>
+    {
+        IRng InitialRng { get; }
+
+        Size InitialSize { get; }
+
+        IRng NextRng { get; }
+
+        Size NextSize { get; }
+    }
+
+    public abstract record GenIteration<T> : IGenIteration<T>
     {
         public IRng InitialRng { get; init; }
 
@@ -50,7 +61,7 @@ namespace GalaxyCheck.Internal.GenIterations
     public static class GenIterationExtensions
     {
         public static TResult Match<T, TResult>(
-            this GenIteration<T> iteration,
+            this IGenIteration<T> iteration,
             Func<GenInstance<T>, TResult> onInstance,
             Func<GenDiscard<T>, TResult> onDiscard,
             Func<GenError<T>, TResult> onError)

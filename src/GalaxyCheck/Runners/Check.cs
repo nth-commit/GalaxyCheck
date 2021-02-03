@@ -250,7 +250,7 @@ namespace GalaxyCheck
 
             public record HandleNextIteration<T>(
                 CheckContext<T> Context,
-                IEnumerable<GenIteration<PropertyIteration<T>>> Iterations) : CheckState<T>(Context)
+                IEnumerable<IGenIteration<PropertyIteration<T>>> Iterations) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()
                 {
@@ -275,7 +275,7 @@ namespace GalaxyCheck
 
             public record HandleDiscard<T>(
                 CheckContext<T> Context,
-                IEnumerable<GenIteration<PropertyIteration<T>>> NextIterations,
+                IEnumerable<IGenIteration<PropertyIteration<T>>> NextIterations,
                 GenDiscard<PropertyIteration<T>> Discard) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()

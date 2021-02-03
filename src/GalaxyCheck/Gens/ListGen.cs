@@ -136,7 +136,7 @@ namespace GalaxyCheck.Gens
             return new ListGen<T>(newConfig, _elementGen);
         }
 
-        protected override IEnumerable<GenIteration<ImmutableList<T>>> Run(IRng rng, Size size) =>
+        protected override IEnumerable<IGenIteration<ImmutableList<T>>> Run(IRng rng, Size size) =>
             BuildGen(_config, _elementGen).Advanced.Run(rng, size);
 
         private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
@@ -231,7 +231,7 @@ namespace GalaxyCheck.Gens
             IGen<T> elementGen,
             ShrinkFunc<List<ExampleSpace<T>>> shrink)
         {
-            IEnumerable<GenIteration<ImmutableList<T>>> Run(IRng rng, Size size)
+            IEnumerable<IGenIteration<ImmutableList<T>>> Run(IRng rng, Size size)
             {
                 var result = ImmutableList<GenInstance<T>>.Empty;
 

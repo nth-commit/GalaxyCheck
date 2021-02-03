@@ -15,7 +15,7 @@ namespace GalaxyCheck.Internal.Gens
                 _gen = gen;
             }
 
-            public IEnumerable<GenIteration<T>> Run(IRng rng, Size size) => _gen.Run(rng, size);
+            public IEnumerable<IGenIteration<T>> Run(IRng rng, Size size) => _gen.Run(rng, size);
         }
 
         public BaseGen()
@@ -25,6 +25,6 @@ namespace GalaxyCheck.Internal.Gens
 
         public IGenAdvanced<T> Advanced { get; }
 
-        protected abstract IEnumerable<GenIteration<T>> Run(IRng rng, Size size);
+        protected abstract IEnumerable<IGenIteration<T>> Run(IRng rng, Size size);
     }
 }

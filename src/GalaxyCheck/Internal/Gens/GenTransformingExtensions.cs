@@ -8,11 +8,11 @@ namespace GalaxyCheck.Internal.Gens
 {
     public delegate IGen<U> GenTransformation<T, U>(IGen<T> gen);
 
-    public delegate IEnumerable<GenIteration<U>> GenStreamTransformation<T, U>(IEnumerable<GenIteration<T>> stream);
+    public delegate IEnumerable<IGenIteration<U>> GenStreamTransformation<T, U>(IEnumerable<IGenIteration<T>> stream);
 
-    public delegate GenIteration<U> GenIterationTransformation<T, U>(GenIteration<T> iteration);
+    public delegate IGenIteration<U> GenIterationTransformation<T, U>(IGenIteration<T> iteration);
 
-    public delegate GenIteration<U> GenInstanceTransformation<T, U>(GenInstance<T> instance);
+    public delegate IGenIteration<U> GenInstanceTransformation<T, U>(GenInstance<T> instance);
 
     public static class GenTransformingExtensions
     {

@@ -59,7 +59,7 @@ namespace GalaxyCheck
                     Enumerable.Concat(boundLeftSubspace, rightExampleSpace.Subspace));
             }
 
-            static IEnumerable<GenIteration<TResult>> BindExampleSpace(
+            static IEnumerable<IGenIteration<TResult>> BindExampleSpace(
                 ExampleSpace<T> exampleSpace,
                 Func<T, IGen<TResult>> selector,
                 IRng rng,
@@ -86,7 +86,7 @@ namespace GalaxyCheck
                     });
             };
 
-            static IEnumerable<GenIteration<TResult>> Run(
+            static IEnumerable<IGenIteration<TResult>> Run(
                 IGen<T> gen,
                 Func<T, IGen<TResult>> selector,
                 IRng rng,

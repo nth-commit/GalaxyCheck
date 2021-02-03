@@ -8,7 +8,7 @@ namespace GalaxyCheck
     /// A random data generator.
     /// </summary>
     /// <typeparam name="T">The type of the generator's values.</typeparam>
-    public interface IGen<T>
+    public interface IGen<out T>
     {
         /// <summary>
         /// A container for the advanced functionality of generators.
@@ -16,7 +16,7 @@ namespace GalaxyCheck
         IGenAdvanced<T> Advanced { get; }
     }
 
-    public interface IGenAdvanced<T>
+    public interface IGenAdvanced<out T>
     {
         /// <summary>
         /// Creates an infinite enumerable for this generator, given some initial generation parameters.
@@ -32,6 +32,6 @@ namespace GalaxyCheck
         /// <param name="size">The initial size to run the generator with. Determines how large the generated values
         /// are.</param>
         /// <returns>An infinite enumerable of generated iterations.</returns>
-        IEnumerable<GenIteration<T>> Run(IRng rng, Size size);
+        IEnumerable<IGenIteration<T>> Run(IRng rng, Size size);
     }
 }

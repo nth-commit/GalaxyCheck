@@ -15,7 +15,7 @@ namespace GalaxyCheck.Internal.Gens
             _message = message;
         }
 
-        protected override IEnumerable<GenIteration<T>> Run(IRng rng, Size size)
+        protected override IEnumerable<IGenIteration<T>> Run(IRng rng, Size size)
         {
             while (true)
             {

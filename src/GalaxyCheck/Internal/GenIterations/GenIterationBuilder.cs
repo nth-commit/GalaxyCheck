@@ -5,7 +5,7 @@ namespace GalaxyCheck.Internal.GenIterations
 {
     public class GenIterationBuilder
     {
-        public static GenIterationBuilder FromIteration<T>(GenIteration<T> iteration) =>
+        public static GenIterationBuilder FromIteration<T>(IGenIteration<T> iteration) =>
             new GenIterationBuilder(new BaseGenIterationParameters(
                 iteration.InitialRng,
                 iteration.InitialSize,
