@@ -99,9 +99,9 @@ namespace GalaxyCheck
                         : new Option.Some<CheckState<T>>(prevState.NextState()));
 
             var checks = states
-                .WithDiscardCircuitBreaker(state => state is CheckState.HandleDiscard<T>)
                 .Select(MapStateToIterationOrIgnore)
                 .OfType<CheckIteration<T>>()
+                .WithDiscardCircuitBreaker(state => state is CheckIteration.Discard<T>)
                 .ToImmutableList();
 
             var finalCheckIteration = checks.Last();
@@ -243,6 +243,11 @@ namespace GalaxyCheck
             {
                 internal override CheckState<T> NextState()
                 {
+                    if (Context.CompletedIterations >= Context.RequestedIterations)
+                    {
+                        return new Termination<T>(Context);
+                    }
+
                     var iterations = Context.Property.Advanced.Run(Context.NextRng, Context.NextSize);
                     return new HandleNextIteration<T>(Context, iterations);
                 }
@@ -358,23 +363,17 @@ namespace GalaxyCheck
                 GenInstance<PropertyIteration<T>> Instance,
                 Counterexample<T>? Counterexample) : CheckState<T>(Context)
             {
-                internal override CheckState<T> NextState()
+                internal override CheckState<T> NextState() => Counterexample == null
+                    ? NextStateWithoutCounterexample(Context, Instance)
+                    : NextStateWithCounterexample(Context, Instance, Counterexample);
+
+                private static CheckState<T> NextStateWithoutCounterexample(
+                    CheckContext<T> context,
+                    GenInstance<PropertyIteration<T>> instance)
                 {
-                    if (Counterexample == null)
-                    {
-                        var nextContext = Context
-                            .IncrementCompletedIterations()
-                            .WithNextRunValues(Instance.NextRng, Instance.NextSize.Increment());
-
-                        if (nextContext.CompletedIterations == nextContext.RequestedIterations)
-                        {
-                            return new Termination<T>(nextContext);
-                        }
-
-                        return new Initial<T>(nextContext);
-                    }
-
-                    return NextStateWithCounterexample(Context, Instance, Counterexample);
+                    return new Initial<T>(context
+                        .IncrementCompletedIterations()
+                        .WithNextRunValues(instance.NextRng, instance.NextSize.Increment()));
                 }
 
                 private static CheckState<T> NextStateWithCounterexample(

@@ -9,7 +9,7 @@ namespace Tests.Property.Check
     [Properties(Arbitrary = new [] { typeof(ArbitraryGen), typeof(ArbitraryIterations) })]
     public class AboutIterations
     {
-        [Property(Skip = "These tests hang")]
+        [Property]
         public void ItCallsTheTestFunctionForEachIteration(IGen<object> gen, Iterations iterations)
         {
             TestWithSeed(seed =>
@@ -27,7 +27,7 @@ namespace Tests.Property.Check
             });
         }
 
-        [Property(Skip = "These tests hang")]
+        [Property]
         public void ItReturnsTheGivenIterations(IGen<object> gen, Iterations iterations)
         {
             TestWithSeed(seed =>

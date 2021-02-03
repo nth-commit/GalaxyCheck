@@ -74,8 +74,8 @@ namespace Tests.Gen.Infinite
             });
         }
 
-        [Property]
-        public void AShrinkOfAGeneratedEnumerableWithoutALimitNeverThrows(Size size)
+        [Fact]
+        public void AShrinkOfAGeneratedEnumerableWithoutALimitNeverThrows()
         {
             TestWithSeed(seed =>
             {
@@ -90,15 +90,16 @@ namespace Tests.Gen.Infinite
                         return source;
                     });
 
-                var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size.Value);
+                var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed);
                 var shrunkEnumerable = exampleSpace.Subspace.First().Current.Value;
 
                 shrunkEnumerable.Take(1_001).ToList();
-            });
+            },
+            0);
         }
 
         [Property]
-        public void AShrinkOfAGeneratedEnumerableHasTheGivenLimit(Size size, IterationLimit limit)
+        public void AShrinkOfAGeneratedEnumerableHasTheGivenLimit(IterationLimit limit)
         {
             TestWithSeed(seed =>
             {
@@ -113,7 +114,7 @@ namespace Tests.Gen.Infinite
                         return source;
                     });
 
-                var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size.Value);
+                var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed);
                 var shrunkEnumerable = exampleSpace.Subspace.First().Current.Value;
 
                 AssertLimit(shrunkEnumerable, limit.Value);
