@@ -2,13 +2,12 @@ name: .NET
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -16,14 +15,23 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+      - name: Pack
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -p:PackageVersion=0.0.0-$GITHUB_RUN_ID src/GalaxyCheck/GalaxyCheck.csproj
+      - name: Publish
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: nupkg
+          path: ./src/GalaxyCheck/bin/Release/*.nupkg
