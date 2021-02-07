@@ -176,10 +176,10 @@ namespace GalaxyCheck.Gens
 
         private static void ThrowGenLimitExceeded()
         {
-            var interfaceIdentifier = "IFunctionGen";
-            var withLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IFunctionGen<object>.WithInvocationLimit)}";
-            var withoutLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IFunctionGen<object>.WithoutInvocationLimit)}";
-            var message = $"Function exceeded invocation limit. This is a built-in safety mechanism to prevent hanging tests. Use {withLimitMethodIdentifier} or {withoutLimitMethodIdentifier} to modify this limit.";
+            var interfaceIdentifier = "IInfiniteGen";
+            var withLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IInfiniteGen<object>.WithIterationLimit)}";
+            var withoutLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IInfiniteGen<object>.WithoutIterationLimit)}";
+            var message = $"Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Use {withLimitMethodIdentifier} or {withoutLimitMethodIdentifier} to modify this limit.";
             throw new Exceptions.GenLimitExceededException(message);
         }
 
