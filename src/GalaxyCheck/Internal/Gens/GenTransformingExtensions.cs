@@ -20,7 +20,7 @@ namespace GalaxyCheck.Internal.Gens
             transformation(gen);
 
         public static IGen<U> TransformStream<T, U>(this IGen<T> gen, GenStreamTransformation<T, U> transformation) =>
-            new FunctionGen<U>((rng, size) => transformation(gen.Advanced.Run(rng, size)));
+            new FunctionalGen<U>((rng, size) => transformation(gen.Advanced.Run(rng, size)));
 
         public static IGen<U> TransformIterations<T, U>(
             this IGen<T> gen,
@@ -44,7 +44,7 @@ namespace GalaxyCheck.Internal.Gens
 
     public static class GenTransformations
     {
-        public static GenTransformation<T, T> Repeat<T>() => (gen) => new FunctionGen<T>((rng, size) =>
+        public static GenTransformation<T, T> Repeat<T>() => (gen) => new FunctionalGen<T>((rng, size) =>
         {
             return EnumerableExtensions
                 .Repeat(() => gen.Advanced.Run(rng, size))

@@ -276,7 +276,7 @@ namespace GalaxyCheck.Gens
                     exampleSpace);
             }
 
-            return new FunctionGen<ImmutableList<T>>(Run).Repeat();
+            return new FunctionalGen<ImmutableList<T>>(Run).Repeat();
         }
 
         private static IGen<ImmutableList<T>> Error(string message) => new ErrorGen<ImmutableList<T>>(nameof(ListGen<T>), message);

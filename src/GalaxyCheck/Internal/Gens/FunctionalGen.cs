@@ -6,11 +6,11 @@ namespace GalaxyCheck.Internal.Gens
 {
     public delegate IEnumerable<IGenIteration<T>> GenFunc<T>(IRng rng, Size size);
 
-    public class FunctionGen<T> : BaseGen<T>, IGen<T>
+    public class FunctionalGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly GenFunc<T> _func;
 
-        public FunctionGen(GenFunc<T> func)
+        public FunctionalGen(GenFunc<T> func)
         {
             _func = func;
         }

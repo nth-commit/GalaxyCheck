@@ -4,7 +4,6 @@ using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.Utility;
-using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -61,21 +60,6 @@ namespace GalaxyCheck.Gens
         /// recommended API for modifying limits is <see cref="WithIterationLimit(int)"/>.
         /// <returns>A new generator with the modified iteration limit.</returns>
         IInfiniteGen<T> WithoutIterationLimit();
-    }
-
-    public class InfiniteGenLimitExceededException : Exception
-    {
-        private static string GetMessage()
-        {
-            var interfaceIdentifier = nameof(IInfiniteGen<object>) + "{T}";
-            var withLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IInfiniteGen<object>.WithIterationLimit)}(int)";
-            var withoutLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IInfiniteGen<object>.WithoutIterationLimit)}";
-            return $"Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Use {withLimitMethodIdentifier} or {withoutLimitMethodIdentifier} to modify this limit.";
-        }
-
-        public InfiniteGenLimitExceededException()
-            : base(GetMessage())        {
-        }
     }
 
     public class InfiniteGen<T> : BaseGen<IEnumerable<T>>, IInfiniteGen<T>
@@ -183,12 +167,21 @@ namespace GalaxyCheck.Gens
                     var iterationCount = i + 1;
                     if (iterationCount > iterationLimit.Value)
                     {
-                        throw new InfiniteGenLimitExceededException();
+                        ThrowGenLimitExceeded();
                     }
 
                     return x;
                 })
                 : source;
+
+        private static void ThrowGenLimitExceeded()
+        {
+            var interfaceIdentifier = "IFunctionGen";
+            var withLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IFunctionGen<object>.WithInvocationLimit)}";
+            var withoutLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IFunctionGen<object>.WithoutInvocationLimit)}";
+            var message = $"Function exceeded invocation limit. This is a built-in safety mechanism to prevent hanging tests. Use {withLimitMethodIdentifier} or {withoutLimitMethodIdentifier} to modify this limit.";
+            throw new Exceptions.GenLimitExceededException(message);
+        }
 
         private class SpyEnumerator<U> : IEnumerator<U>
         {

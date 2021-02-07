@@ -19,5 +19,13 @@ namespace GalaxyCheck
         public class NoMinimalFoundException : Exception
         {
         }
+
+        public class GenLimitExceededException : Exception
+        {
+            public GenLimitExceededException(string message)
+                : base(message)
+            {
+            }
+        }
     }
 }

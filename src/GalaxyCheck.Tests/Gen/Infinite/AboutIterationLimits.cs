@@ -94,8 +94,7 @@ namespace Tests.Gen.Infinite
                 var shrunkEnumerable = exampleSpace.Subspace.First().Current.Value;
 
                 shrunkEnumerable.Take(1_001).ToList();
-            },
-            0);
+            });
         }
 
         [Property]
@@ -123,13 +122,13 @@ namespace Tests.Gen.Infinite
 
         private static void AssertLimit<T>(IEnumerable<T> enumerable, int expectedLimit)
         {
-            // It doesn't thrown when hit
+            // It doesn't thrown when the limit is hit
             enumerable.Take(expectedLimit).ToList();
 
-            // It throws when exceeded
+            // It throws when it exceeds the limit
             Action throwing = () => enumerable.Take(expectedLimit + 1).ToList();
-            var exception = Assert.Throws<GC.Gens.InfiniteGenLimitExceededException>(throwing);
-            Assert.Equal("Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Use IInfiniteGen{T}.WithIterationLimit(int) or IInfiniteGen{T}.WithoutIterationLimit to modify this limit.", exception.Message);
+            var exception = Assert.Throws<GC.Exceptions.GenLimitExceededException>(throwing);
+            Assert.Equal("Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Use IInfiniteGen.WithIterationLimit or IInfiniteGen.WithoutIterationLimit to modify this limit.", exception.Message);
         }
     }
 }

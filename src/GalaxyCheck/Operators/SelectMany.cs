@@ -131,7 +131,7 @@ namespace GalaxyCheck
                 }
             }
 
-            return new FunctionGen<TResult>((rng, size) => Run(gen, selector, rng, size)).Repeat();
+            return new FunctionalGen<TResult>((rng, size) => Run(gen, selector, rng, size)).Repeat();
         }
 
         /// <summary>
