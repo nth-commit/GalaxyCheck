@@ -4,6 +4,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
+
+    <!-- NuGet settings -->
+    <PackageId>GalaxyCheck</PackageId>
+    <PackageTags>GalaxyCheck;Property-Based Testing;Test Framework</PackageTags>
+    <PackageProjectUrl>https://github.com/nth-commit/GalaxyCheck</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/nth-commit/GalaxyCheck</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck", "src\GalaxyCh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Tests", "src\GalaxyCheck.Tests\GalaxyCheck.Tests.csproj", "{9C788168-C5F9-4180-8E7E-C609A4C2A304}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Sandbox", "src\GalaxyCheck.Sandbox\GalaxyCheck.Sandbox.csproj", "{5CB4593A-D9E0-484A-A0AA-EAD7788C71E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Sandbox", "src\GalaxyCheck.Sandbox\GalaxyCheck.Sandbox.csproj", "{5CB4593A-D9E0-484A-A0AA-EAD7788C71E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AF6C5C2C-8D09-4C77-8D8B-4257A18A5E5E}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="FsCheck.Xunit" Version="2.14.3" />
     <PackageReference Include="FSharp.Core" Version="4.7.2" />
+    <PackageReference Include="GalaxyCheck" Version="0.0.0-546827386" Aliases="GalaxyCheckStable" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Snapshooter.Xunit" Version="0.5.8" />
     <PackageReference Include="xunit" Version="2.4.1" />
