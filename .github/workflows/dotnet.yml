@@ -8,8 +8,8 @@ on:
 
 env:
   GITHUB_USER: nth-commit
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  GITHUB_FEED: https://nuget.pkg.github.com/nth-commit/
+  GITHUB_TOKEN: ${{ secrets.MY_GET_API_KEY }}
+  GITHUB_FEED: https://www.myget.org/F/galaxy-check/api/v2/package
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   PACKABLE_PROJECTS: GalaxyCheck NebulaCheck
@@ -31,11 +31,11 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      # - name: Test
-      #   run: dotnet test --no-build --verbosity normal
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
 
   pack:
-    # needs: build
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -43,7 +43,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.x
-      - name: Make
+      - name: Make NebulaCheck
         run: |
           find ./src/GalaxyCheck -type d -print0 | while read -d $'\0' currFilename; do
             newFilename=$(echo "$currFilename" | sed "s/GalaxyCheck/NebulaCheck/g")
@@ -56,8 +56,6 @@ jobs:
           done
 
           sed -i -e "s|https://github.com/nth-commit/NebulaCheck|https://github.com/nth-commit/GalaxyCheck|g" ./src/NebulaCheck/NebulaCheck.csproj
-
-          mkdir ./maintain-directory-structure-hack
       - name: Restore
         run: |
           for project in $PACKABLE_PROJECTS; do
@@ -90,6 +88,10 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
       - name: Download
         uses: actions/download-artifact@v1
         with:
@@ -98,5 +100,5 @@ jobs:
         run: |
           for f in ./nupkg/*.nupkg
           do
-            curl -vX PUT -u "$GITHUB_USER:$GITHUB_TOKEN" -F package=@$f $GITHUB_FEED
+            dotnet nuget push $f --api-key $GITHUB_TOKEN --source $GITHUB_FEED
           done
