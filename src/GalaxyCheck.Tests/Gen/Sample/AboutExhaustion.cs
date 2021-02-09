@@ -1,5 +1,4 @@
-﻿extern alias GalaxyCheckSample;
-using FsCheck.Xunit;
+﻿using FsCheck.Xunit;
 using System;
 using Xunit;
 using GalaxyCheck;

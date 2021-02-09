@@ -12,6 +12,7 @@ env:
   GITHUB_FEED: https://nuget.pkg.github.com/nth-commit/
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  PACKABLE_PROJECTS: GalaxyCheck NebulaCheck
 
 jobs:
   build:
@@ -30,20 +31,62 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
+      # - name: Test
+      #   run: dotnet test --no-build --verbosity normal
+
+  pack:
+    # needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Make
+        run: |
+          find ./src/GalaxyCheck -type d -print0 | while read -d $'\0' currFilename; do
+            newFilename=$(echo "$currFilename" | sed "s/GalaxyCheck/NebulaCheck/g")
+            mkdir $newFilename
+          done
+
+          find ./src/GalaxyCheck -type f -print0 | while read -d $'\0' currFilename; do
+            newFilename=$(echo $currFilename | sed "s/GalaxyCheck/NebulaCheck/g")
+            cat $currFilename | sed "s/GalaxyCheck/NebulaCheck/g" > $newFilename
+          done
+
+          sed -i -e "s|https://github.com/nth-commit/NebulaCheck|https://github.com/nth-commit/GalaxyCheck|g" ./src/NebulaCheck/NebulaCheck.csproj
+
+          mkdir ./maintain-directory-structure-hack
+      - name: Restore
+        run: |
+          for project in $PACKABLE_PROJECTS; do
+            dotnet restore src/$project/$project.csproj
+          done
+      - name: Build
+        run: |
+          for project in $PACKABLE_PROJECTS; do
+            dotnet build --no-restore src/$project/$project.csproj
+          done
       - name: Pack
-        if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -p:PackageVersion=0.0.0-$GITHUB_RUN_ID src/GalaxyCheck/GalaxyCheck.csproj
+        run: |
+          for project in $PACKABLE_PROJECTS; do
+            dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -p:PackageVersion=0.0.0-$GITHUB_RUN_ID src/$project/$project.csproj
+          done
+      - name: Collect
+        run: |
+          mkdir ./nupkg
+          for f in $(find . -name '*.nupkg'); do
+            mv $f ./nupkg
+          done
       - name: Upload
-        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v2
         with:
           name: nupkg
-          path: ./src/GalaxyCheck/bin/Release/*.nupkg
+          path: ./nupkg
 
   prerelease:
-    needs: build
+    needs: pack
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
