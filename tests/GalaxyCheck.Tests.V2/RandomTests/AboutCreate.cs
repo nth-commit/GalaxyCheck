@@ -1,4 +1,5 @@
-﻿using NebulaCheck;
+﻿using FluentAssertions;
+using NebulaCheck;
 using Xunit;
 using Rng = GalaxyCheck.Internal.Random.Rng;
 
@@ -21,7 +22,7 @@ namespace Tests.V2.RandomTests
                 })
                 .Check();
 
-            Assert.False(checkResult.Falsified);
+            checkResult.Counterexample.Should().BeNull();
         }
 
         [Fact]
@@ -38,7 +39,7 @@ namespace Tests.V2.RandomTests
                 })
                 .Check();
 
-            Assert.False(checkResult.Falsified);
+            checkResult.Counterexample.Should().BeNull();
         }
     }
 }
