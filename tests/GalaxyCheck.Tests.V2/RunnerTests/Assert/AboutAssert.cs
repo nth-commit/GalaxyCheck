@@ -1,11 +1,12 @@
-﻿using Xunit;
-using GalaxyCheck;
+﻿using FluentAssertions;
 using NebulaCheck;
 using System;
-using DevGen = GalaxyCheck.Gen;
-using Gen = NebulaCheck.Gen;
-using FluentAssertions;
 using System.Linq;
+using Xunit;
+using Gen = NebulaCheck.Gen;
+
+using GalaxyCheck;
+using DevGen = GalaxyCheck.Gen;
 
 namespace Tests.V2.RunnerTests.Assert
 {
@@ -13,9 +14,8 @@ namespace Tests.V2.RunnerTests.Assert
     public class AboutAssert
     {
         [Fact]
-        public void ItCanPassForAVoidProperty()
-        {
-            var check = Gen.ForAll(
+        public void ItCanPassForAVoidProperty() => Gen
+            .ForAll(
                 DomainGen.Iterations(),
                 DomainGen.Seed(),
                 DomainGen.Size(),
@@ -28,15 +28,11 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action.Should().NotThrow();
                 })
-                .Check();
-
-            check.Counterexample.Should().BeNull();
-        }
+            .Assert();
 
         [Fact]
-        public void ItCanPassForABooleanProperty()
-        {
-            var check = Gen.ForAll(
+        public void ItCanPassForABooleanProperty() => Gen
+            .ForAll(
                 DomainGen.Iterations(),
                 DomainGen.Seed(),
                 DomainGen.Size(),
@@ -45,19 +41,15 @@ namespace Tests.V2.RunnerTests.Assert
                     Action action = () => DevGen
                         .Int32()
                         .ForAll(_ => true)
-                        .Assert(iterations: 0, seed: seed, size: size);
+                        .Assert(iterations: iterations, seed: seed, size: size);
 
                     action.Should().NotThrow();
                 })
-                .Check();
-
-            check.Counterexample.Should().BeNull();
-        }
+            .Assert();
 
         [Fact]
-        public void ItCanFailForAVoidProperty_FirstIteration()
-        {
-            var check = Gen.ForAll(
+        public void ItCanFailForAVoidProperty_FirstIteration() => Gen
+            .ForAll(
                 DomainGen.Iterations(),
                 DomainGen.Seed(),
                 DomainGen.Size(),
@@ -70,8 +62,9 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action
                         .Should()
-                        .Throw<GalaxyCheck.Runners.PropertyFailedException<int>>()
+                        .Throw<GalaxyCheck.Runners.PropertyFailedException>()
                         .WithMessage($@"
+
                             Falsified after 1 test
                             Reproduction: (Seed = {seed}, Size = {size}, Path = new [] {{ }})
                             Counterexample: 0
@@ -80,15 +73,11 @@ namespace Tests.V2.RunnerTests.Assert
                             Expected: True
                             Actual:   False".TrimIndent());
                 })
-                .Check();
-
-            Xunit.Assert.Null(check.Counterexample);
-        }
+            .Assert();
 
         [Fact]
-        public void ItCanFailForAVoidProperty_NthIteration()
-        {
-            var check = Gen.ForAll(
+        public void ItCanFailForAVoidProperty_NthIteration() => Gen
+            .ForAll(
                 DomainGen.Iterations(minIterations: 2),
                 DomainGen.Seed(),
                 DomainGen.Size(),
@@ -112,18 +101,16 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action
                         .Should()
-                        .Throw<GalaxyCheck.Runners.PropertyFailedException<int>>()
-                        .WithMessage($"Falsified after {iterations} tests*");
+                        .Throw<GalaxyCheck.Runners.PropertyFailedException>()
+                        .WithMessage(@$"
+                            
+                            Falsified after {iterations} tests*".TrimIndent());
                 })
-                .Check();
-
-            Xunit.Assert.Null(check.Counterexample);
-        }
+            .Assert();
 
         [Fact]
-        public void ItCanFailForABooleanProperty()
-        {
-            var check = Gen.ForAll(
+        public void ItCanFailForABooleanProperty() => Gen
+            .ForAll(
                 DomainGen.Iterations(),
                 DomainGen.Seed(),
                 DomainGen.Size(),
@@ -136,23 +123,20 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action
                         .Should()
-                        .Throw<GalaxyCheck.Runners.PropertyFailedException<int>>()
+                        .Throw<GalaxyCheck.Runners.PropertyFailedException>()
                         .WithMessage($@"
+
                             Falsified after 1 test
                             Reproduction: (Seed = {seed}, Size = {size}, Path = new [] {{ }})
                             Counterexample: 0
 
                             Property function returned false".TrimIndent());
                 })
-                .Check();
-
-            Xunit.Assert.Null(check.Counterexample);
-        }
+            .Assert();
 
         [Fact]
-        public void WhenIterationsIsZero_ItAlwaysPasses()
-        {
-            var check = Gen.ForAll(
+        public void WhenIterationsIsZero_ItAlwaysPasses() => Gen
+            .ForAll(
                 DomainGen.Seed(),
                 DomainGen.Size(),
                 DomainGen.Boolean(),
@@ -165,9 +149,6 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action.Should().NotThrow();
                 })
-                .Check();
-
-            check.Counterexample.Should().BeNull();
-        }
+            .Assert();
     }
 }
