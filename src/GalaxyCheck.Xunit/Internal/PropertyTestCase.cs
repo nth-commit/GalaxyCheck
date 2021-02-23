@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -20,7 +18,7 @@ namespace GalaxyCheck.Xunit.Internal
             TestMethodDisplay defaultMethodDisplay,
             TestMethodDisplayOptions defaultMethodDisplayOptions,
             ITestMethod testMethod,
-            object[] testMethodArguments = null)
+            object[]? testMethodArguments = null)
             : base(diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod, testMethodArguments)
         {
         }
