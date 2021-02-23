@@ -14,7 +14,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		nuget.config = nuget.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Tests.V2", "tests\GalaxyCheck.Tests.V2\GalaxyCheck.Tests.V2.csproj", "{23BD4F58-8216-4F26-894C-F43289B7BDDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Tests.V2", "tests\GalaxyCheck.Tests.V2\GalaxyCheck.Tests.V2.csproj", "{23BD4F58-8216-4F26-894C-F43289B7BDDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Xunit", "src\GalaxyCheck.Xunit\GalaxyCheck.Xunit.csproj", "{26069D4F-DAE3-4CD5-BB61-AF378FF021C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Xunit.Tests", "tests\GalaxyCheck.Xunit.Tests\GalaxyCheck.Xunit.Tests.csproj", "{E13F7602-3F1E-4F12-A766-ADD11BD3E409}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +42,14 @@ Global
 		{23BD4F58-8216-4F26-894C-F43289B7BDDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23BD4F58-8216-4F26-894C-F43289B7BDDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23BD4F58-8216-4F26-894C-F43289B7BDDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26069D4F-DAE3-4CD5-BB61-AF378FF021C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26069D4F-DAE3-4CD5-BB61-AF378FF021C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26069D4F-DAE3-4CD5-BB61-AF378FF021C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26069D4F-DAE3-4CD5-BB61-AF378FF021C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E13F7602-3F1E-4F12-A766-ADD11BD3E409}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E13F7602-3F1E-4F12-A766-ADD11BD3E409}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E13F7602-3F1E-4F12-A766-ADD11BD3E409}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E13F7602-3F1E-4F12-A766-ADD11BD3E409}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

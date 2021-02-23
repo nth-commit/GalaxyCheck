@@ -12,7 +12,7 @@ env:
   GITHUB_FEED: https://www.myget.org/F/galaxy-check/api/v2/package
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  PACKABLE_PROJECTS: GalaxyCheck NebulaCheck
+  PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit NebulaCheck
 
 jobs:
   build:

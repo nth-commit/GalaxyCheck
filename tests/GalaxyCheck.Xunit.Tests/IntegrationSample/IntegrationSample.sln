@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationSample", "IntegrationSample.csproj", "{055541A6-7C18-4DE2-AD25-F0A35DF5D658}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit", "..\..\..\src\GalaxyCheck.Xunit\GalaxyCheck.Xunit.csproj", "{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{055541A6-7C18-4DE2-AD25-F0A35DF5D658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{055541A6-7C18-4DE2-AD25-F0A35DF5D658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{055541A6-7C18-4DE2-AD25-F0A35DF5D658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{055541A6-7C18-4DE2-AD25-F0A35DF5D658}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9CDA2348-7831-4F31-BD45-B8FE6DD80313}
+	EndGlobalSection
+EndGlobal
