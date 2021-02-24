@@ -17,38 +17,25 @@ namespace GalaxyCheck
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
             if (checkResult.Falsified)
             {
-                throw new PropertyFailedException(BoxCounterexample(checkResult.Counterexample!), checkResult.Iterations);
+                throw new PropertyFailedException<T>(checkResult.Counterexample!, checkResult.Iterations);
             }
-        }
-
-        private static Counterexample<object?> BoxCounterexample<T>(Counterexample<T> counterexample)
-        {
-            var value = (object)counterexample.Value!;
-            return new Counterexample<object?>(
-                counterexample.Id,
-                value,
-                counterexample.Distance,
-                counterexample.RepeatRng,
-                counterexample.RepeatSize,
-                counterexample.RepeatPath,
-                counterexample.Exception);
         }
     }
 }
 
 namespace GalaxyCheck.Runners
 {
-    public class PropertyFailedException : Exception
+    public class PropertyFailedException<T> : Exception
     {
-        public PropertyFailedException(Counterexample<object?> counterexample, int iterations)
+        public PropertyFailedException(Counterexample<T> counterexample, int iterations)
             : base(BuildMessage(counterexample, iterations))
         {
         }
 
-        private static string BuildMessage(Counterexample<object?> counterexample, int iterations) =>
+        private static string BuildMessage(Counterexample<T> counterexample, int iterations) =>
             string.Join(Environment.NewLine, BuildLines(counterexample, iterations));
 
-        private static IEnumerable<string> BuildLines(Counterexample<object?> counterexample, int iterations)
+        private static IEnumerable<string> BuildLines(Counterexample<T> counterexample, int iterations)
         {
             const string LineBreak = "";
 
@@ -71,7 +58,7 @@ namespace GalaxyCheck.Runners
 
         private static string FalsifiedAfterLine(int iterations) => iterations == 1 ? "Falsified after 1 test" : $"Falsified after {iterations} tests";
 
-        private static string ReproductionLine(Counterexample<object?> counterexample)
+        private static string ReproductionLine(Counterexample<T> counterexample)
         {
             var pathFormatted = "new [] { }";
 
@@ -87,7 +74,7 @@ namespace GalaxyCheck.Runners
             return $"Reproduction: ({string.Join(", ", attributes)})";
         }
 
-        private static string CounterexampleValueLine(Counterexample<object?> counterexample) =>
+        private static string CounterexampleValueLine(Counterexample<T> counterexample) =>
             $"Counterexample: {counterexample.Value}";
 
         private static string ExceptionLine(Exception ex) => $"---- {ex.Message}";
