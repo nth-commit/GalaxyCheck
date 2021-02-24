@@ -50,7 +50,7 @@ namespace GalaxyCheck
         /// <returns>The new generator.</returns>
         public static IGen<object[]> Parameters(MethodInfo methodInfo) => new ParametersGen(methodInfo);
 
-        public static class Advanced
+        public static partial class Advanced
         {
             public static IGen<T> Create<T>(
                 StatefulGenFunc<T> generate,

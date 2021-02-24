@@ -6,7 +6,7 @@ namespace Tests
     public static class PropertyAssert
     {
         public static (CheckResult<T>, Counterexample<T>) Falsifies<T>(
-            IProperty<T> property,
+            Property<T> property,
             int seed,
             int? size = null,
             int iterations = 100)
@@ -19,7 +19,7 @@ namespace Tests
         }
 
         public static CheckResult<T> DoesNotFalsify<T>(
-            IProperty<T> property,
+            Property<T> property,
             int seed,
             int? size = null,
             int iterations = 100)

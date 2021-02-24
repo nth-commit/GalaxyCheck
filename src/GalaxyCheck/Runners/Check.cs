@@ -73,7 +73,7 @@ namespace GalaxyCheck
     public static class CheckExtensions
     {
         public static CheckResult<T> Check<T>(
-            this IProperty<T> property,
+            this Property<T> property,
             int? iterations = null,
             int? seed = null,
             int? size = null)
@@ -153,7 +153,7 @@ namespace GalaxyCheck
         }
 
         public record CheckContext<T>(
-            IProperty<T> Property,
+            Property<T> Property,
             int RequestedIterations,
             int CompletedIterations,
             int Discards,
@@ -161,7 +161,7 @@ namespace GalaxyCheck
             GenParameters NextParameters)
         {
             internal static CheckContext<T> Create(
-                IProperty<T> property,
+                Property<T> property,
                 int requestedIterations,
                 GenParameters initialParameters) =>
                     new CheckContext<T>(
@@ -213,7 +213,7 @@ namespace GalaxyCheck
         public static class CheckState
         {
             public static CheckState<T> Begin<T>(
-                IProperty<T> property,
+                Property<T> property,
                 int requestedIterations,
                 GenParameters initialParameters) =>
                     new Initial<T>(CheckContext<T>.Create(property, requestedIterations, initialParameters));
@@ -234,7 +234,7 @@ namespace GalaxyCheck
 
             public record HandleNextIteration<T>(
                 CheckContext<T> Context,
-                IEnumerable<IGenIteration<PropertyIteration<T>>> Iterations) : CheckState<T>(Context)
+                IEnumerable<IGenIteration<IPropertyIteration<T>>> Iterations) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()
                 {
@@ -248,7 +248,7 @@ namespace GalaxyCheck
 
             public record HandleInstanceExploration<T>(
                 CheckContext<T> Context,
-                IGenInstance<PropertyIteration<T>> Instance) : CheckState<T>(Context)
+                IGenInstance<IPropertyIteration<T>> Instance) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()
                 {
@@ -259,8 +259,8 @@ namespace GalaxyCheck
 
             public record HandleDiscard<T>(
                 CheckContext<T> Context,
-                IEnumerable<IGenIteration<PropertyIteration<T>>> NextIterations,
-                IGenDiscard<PropertyIteration<T>> Discard) : CheckState<T>(Context)
+                IEnumerable<IGenIteration<IPropertyIteration<T>>> NextIterations,
+                IGenDiscard<IPropertyIteration<T>> Discard) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()
                 {
@@ -271,15 +271,15 @@ namespace GalaxyCheck
 
             public record HandleError<T>(
                 CheckContext<T> Context,
-                IGenError<PropertyIteration<T>> Error) : CheckState<T>(Context)
+                IGenError<IPropertyIteration<T>> Error) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new Termination<T>(Context);
             }
 
             public record HandleInstanceNextExplorationStage<T>(
                 CheckContext<T> Context,
-                IGenInstance<PropertyIteration<T>> Instance,
-                IEnumerable<ExplorationStage<PropertyIteration<T>>> Explorations,
+                IGenInstance<IPropertyIteration<T>> Instance,
+                IEnumerable<ExplorationStage<IPropertyIteration<T>>> Explorations,
                 Counterexample<T>? Counterexample) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()
@@ -302,9 +302,9 @@ namespace GalaxyCheck
 
             public record HandleCounterexample<T>(
                 CheckContext<T> Context,
-                IGenInstance<PropertyIteration<T>> Instance,
-                IEnumerable<ExplorationStage<PropertyIteration<T>>> NextExplorations,
-                ExplorationStage<PropertyIteration<T>> ExplorationStage,
+                IGenInstance<IPropertyIteration<T>> Instance,
+                IEnumerable<ExplorationStage<IPropertyIteration<T>>> NextExplorations,
+                ExplorationStage<IPropertyIteration<T>> ExplorationStage,
                 CounterexampleDetails CounterexampleDetails) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
@@ -324,9 +324,9 @@ namespace GalaxyCheck
 
             public record HandleNonCounterexample<T>(
                 CheckContext<T> Context,
-                IGenInstance<PropertyIteration<T>> Instance,
-                IEnumerable<ExplorationStage<PropertyIteration<T>>> NextExplorations,
-                ExplorationStage<PropertyIteration<T>> ExplorationStage,
+                IGenInstance<IPropertyIteration<T>> Instance,
+                IEnumerable<ExplorationStage<IPropertyIteration<T>>> NextExplorations,
+                ExplorationStage<IPropertyIteration<T>> ExplorationStage,
                 Counterexample<T>? PreviousCounterexample) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
@@ -338,7 +338,7 @@ namespace GalaxyCheck
 
             public record HandleInstanceComplete<T>(
                 CheckContext<T> Context,
-                IGenInstance<PropertyIteration<T>> Instance,
+                IGenInstance<IPropertyIteration<T>> Instance,
                 Counterexample<T>? Counterexample) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => Counterexample == null
@@ -347,7 +347,7 @@ namespace GalaxyCheck
 
                 private static CheckState<T> NextStateWithoutCounterexample(
                     CheckContext<T> context,
-                    IGenInstance<PropertyIteration<T>> instance)
+                    IGenInstance<IPropertyIteration<T>> instance)
                 {
                     return new Initial<T>(context
                         .IncrementCompletedIterations()
@@ -356,7 +356,7 @@ namespace GalaxyCheck
 
                 private static CheckState<T> NextStateWithCounterexample(
                     CheckContext<T> context,
-                    IGenInstance<PropertyIteration<T>> instance,
+                    IGenInstance<IPropertyIteration<T>> instance,
                     Counterexample<T> counterexample)
                 {
                     var nextRng = instance.NextParameters.Rng;
