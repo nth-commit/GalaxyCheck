@@ -15,11 +15,11 @@ namespace GalaxyCheck.Internal.Gens
             _message = message;
         }
 
-        protected override IEnumerable<IGenIteration<T>> Run(IRng rng, Size size)
+        protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters)
         {
             while (true)
             {
-                yield return new GenError<T>(rng, size, rng, size, _genName, _message);
+                yield return new GenError<T>(parameters.Rng, parameters.Size, parameters.Rng, parameters.Size, _genName, _message);
             }
         }
     }

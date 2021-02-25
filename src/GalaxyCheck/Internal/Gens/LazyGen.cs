@@ -14,9 +14,9 @@ namespace GalaxyCheck.Internal.Gens
             _lazy = new Lazy<IGen<T>>(gen);
         }
 
-        protected override IEnumerable<IGenIteration<T>> Run(IRng rng, Size size)
+        protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters)
         {
-            return _lazy.Value.Advanced.Run(rng, size);
+            return _lazy.Value.Advanced.Run(parameters);
         }
     }
 }

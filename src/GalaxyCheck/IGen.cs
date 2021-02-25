@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck
 {
+    public record GenParameters(IRng Rng, Size Size);
+
     /// <summary>
     /// A random data generator.
     /// </summary>
@@ -32,6 +34,6 @@ namespace GalaxyCheck
         /// <param name="size">The initial size to run the generator with. Determines how large the generated values
         /// are.</param>
         /// <returns>An infinite enumerable of generated iterations.</returns>
-        IEnumerable<IGenIteration<T>> Run(IRng rng, Size size);
+        IEnumerable<IGenIteration<T>> Run(GenParameters parameters);
     }
 }

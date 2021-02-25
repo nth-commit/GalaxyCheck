@@ -66,7 +66,7 @@ namespace GalaxyCheck
                 Size size)
             {
                 return selector(exampleSpace.Current.Value).Advanced
-                    .Run(rng, size)
+                    .Run(new GenParameters(rng, size))
                     .TakeWhileInclusive(iteration => iteration is not GenInstance<TResult>)
                     .Select(iteration =>
                     {
@@ -92,7 +92,7 @@ namespace GalaxyCheck
                 IRng rng,
                 Size size)
             {
-                var stream = gen.Advanced.Run(rng, size);
+                var stream = gen.Advanced.Run(new GenParameters(rng, size));
 
                 foreach (var iteration in stream)
                 {
@@ -131,7 +131,7 @@ namespace GalaxyCheck
                 }
             }
 
-            return new FunctionalGen<TResult>((rng, size) => Run(gen, selector, rng, size)).Repeat();
+            return new FunctionalGen<TResult>((parameters) => Run(gen, selector, parameters.Rng, parameters.Size)).Repeat();
         }
 
         /// <summary>

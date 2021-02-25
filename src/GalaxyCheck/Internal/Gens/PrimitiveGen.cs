@@ -28,8 +28,11 @@ namespace GalaxyCheck.Internal.Gens
             _identify = identify;
         }
 
-        protected override IEnumerable<IGenIteration<T>> Run(IRng rng, Size size)
+        protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters)
         {
+            var rng = parameters.Rng;
+            var size = parameters.Size;
+
             NextIntFunc useNextInt = (min, max) =>
             {
                 var value = rng.Value(min, max);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.Gens
 {
-    public delegate IEnumerable<IGenIteration<T>> GenFunc<T>(IRng rng, Size size);
+    public delegate IEnumerable<IGenIteration<T>> GenFunc<T>(GenParameters parameters);
 
     public class FunctionalGen<T> : BaseGen<T>, IGen<T>
     {
@@ -15,6 +15,6 @@ namespace GalaxyCheck.Internal.Gens
             _func = func;
         }
 
-        protected override IEnumerable<IGenIteration<T>> Run(IRng rng, Size size) => _func(rng, size);
+        protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => _func(parameters);
     }
 }

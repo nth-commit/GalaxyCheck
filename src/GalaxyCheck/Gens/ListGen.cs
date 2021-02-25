@@ -136,8 +136,8 @@ namespace GalaxyCheck.Gens
             return new ListGen<T>(newConfig, _elementGen);
         }
 
-        protected override IEnumerable<IGenIteration<ImmutableList<T>>> Run(IRng rng, Size size) =>
-            BuildGen(_config, _elementGen).Advanced.Run(rng, size);
+        protected override IEnumerable<IGenIteration<ImmutableList<T>>> Run(GenParameters parameters) =>
+            BuildGen(_config, _elementGen).Advanced.Run(parameters);
 
         private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
         {
@@ -231,11 +231,11 @@ namespace GalaxyCheck.Gens
             IGen<T> elementGen,
             ShrinkFunc<List<IExampleSpace<T>>> shrink)
         {
-            IEnumerable<IGenIteration<ImmutableList<T>>> Run(IRng rng, Size size)
+            IEnumerable<IGenIteration<ImmutableList<T>>> Run(GenParameters parameters)
             {
                 var result = ImmutableList<GenInstance<T>>.Empty;
 
-                var elementIterationEnumerator = elementGen.Advanced.Run(rng, size).GetEnumerator();
+                var elementIterationEnumerator = elementGen.Advanced.Run(parameters).GetEnumerator();
 
                 while (result.Count < length)
                 {
@@ -259,8 +259,8 @@ namespace GalaxyCheck.Gens
                     }
                 }
 
-                var nextRng = result.Any() ? result.Last().NextRng : rng;
-                var nextSize = result.Any() ? result.Last().NextSize : size;
+                var nextRng = result.Any() ? result.Last().NextRng : parameters.Rng;
+                var nextSize = result.Any() ? result.Last().NextSize : parameters.Size;
 
                 var exampleSpace = ExampleSpace.Merge(
                     result.Select(instance => instance.ExampleSpace).ToList(),
@@ -269,8 +269,8 @@ namespace GalaxyCheck.Gens
                     exampleSpaces => exampleSpaces.Count());
 
                 yield return new GenInstance<ImmutableList<T>>(
-                    rng,
-                    size,
+                    parameters.Rng,
+                    parameters.Size,
                     nextRng,
                     nextSize,
                     exampleSpace);

@@ -24,8 +24,8 @@ namespace GalaxyCheck.Injection
             _lazyGen = new Lazy<IGen<object[]>>(() => CreateGen(methodInfo));
         }
 
-        protected override IEnumerable<IGenIteration<object[]>> Run(IRng rng, Size size) =>
-            _lazyGen.Value.Advanced.Run(rng, size);
+        protected override IEnumerable<IGenIteration<object[]>> Run(GenParameters parameters) =>
+            _lazyGen.Value.Advanced.Run(parameters);
 
         private static IGen<object[]> CreateGen(MethodInfo methodInfo)
         {
