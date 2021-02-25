@@ -25,7 +25,7 @@ namespace GalaxyCheck
             foreach (var checkIteration in result.Checks.OfType<CheckIteration.Check<T>>())
             {
                 var iterationOutput = $@"
-Testing value: {format(checkIteration.Value)} (seed = {checkIteration.Rng.Seed}, size = {checkIteration.Size.Value})
+Testing value: {format(checkIteration.Value)} (seed = {checkIteration.Parameters.Rng.Seed}, size = {checkIteration.Parameters.Size.Value})
 Result: {(checkIteration.IsCounterexample ? "falsifies property" : "does not falsify property")}
 {string.Join("", Enumerable.Repeat("-", 50))}";
 

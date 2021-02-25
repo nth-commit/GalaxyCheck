@@ -259,8 +259,7 @@ namespace GalaxyCheck.Gens
                     }
                 }
 
-                var nextRng = result.Any() ? result.Last().NextRng : parameters.Rng;
-                var nextSize = result.Any() ? result.Last().NextSize : parameters.Size;
+                var nextParameters = result.Any() ? result.Last().NextParameters : parameters;
 
                 var exampleSpace = ExampleSpace.Merge(
                     result.Select(instance => instance.ExampleSpace).ToList(),
@@ -268,12 +267,7 @@ namespace GalaxyCheck.Gens
                     shrink,
                     exampleSpaces => exampleSpaces.Count());
 
-                yield return new GenInstance<ImmutableList<T>>(
-                    parameters.Rng,
-                    parameters.Size,
-                    nextRng,
-                    nextSize,
-                    exampleSpace);
+                yield return new GenInstance<ImmutableList<T>>(parameters, nextParameters, exampleSpace);
             }
 
             return new FunctionalGen<ImmutableList<T>>(Run).Repeat();

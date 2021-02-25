@@ -110,15 +110,15 @@ namespace GalaxyCheck
                         var innerStream = BindExampleSpace(
                             instance.ExampleSpace,
                             selector,
-                            instance.NextRng,
-                            instance.InitialSize);
+                            instance.NextParameters.Rng,
+                            instance.RepeatParameters.Size);
 
                         foreach (var innerIteration in innerStream)
                         {
                             var innerIterationBuilder = GenIterationBuilder
                                 .FromIteration(iteration)
-                                .WithNextRng(innerIteration.NextRng)
-                                .WithNextSize(innerIteration.NextSize);
+                                .WithNextRng(innerIteration.NextParameters.Rng)
+                                .WithNextSize(innerIteration.NextParameters.Size);
 
                             yield return innerIteration.Match<TResult, GenIteration<TResult>>(
                                 onInstance: instance => innerIterationBuilder.ToInstance(instance.ExampleSpace),

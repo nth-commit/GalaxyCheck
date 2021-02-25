@@ -50,7 +50,7 @@ namespace GalaxyCheck.Internal.Gens
                 .Repeat(() => gen.Advanced.Run(parameters))
                 .Tap((iteration) =>
                 {
-                    parameters = new GenParameters(iteration.NextRng, iteration.NextSize);
+                    parameters = iteration.NextParameters;
                 });
         });
     }

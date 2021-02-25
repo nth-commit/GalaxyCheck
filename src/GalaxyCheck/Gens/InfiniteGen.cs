@@ -93,7 +93,10 @@ namespace GalaxyCheck.Gens
 
                 var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, forkedRng, parameters.Size, _iterationLimit);
 
-                yield return new GenInstance<IEnumerable<T>>(initialRng, parameters.Size, nextRng, parameters.Size, exampleSpace);
+                yield return new GenInstance<IEnumerable<T>>(
+                    new GenParameters(initialRng, parameters.Size),
+                    new GenParameters(nextRng, parameters.Size),
+                    exampleSpace);
 
                 rng = rng.Next();
             } while (true);

@@ -19,7 +19,7 @@ namespace GalaxyCheck.Internal.Gens
         {
             while (true)
             {
-                yield return new GenError<T>(parameters.Rng, parameters.Size, parameters.Rng, parameters.Size, _genName, _message);
+                yield return new GenError<T>(parameters, parameters, _genName, _message);
             }
         }
     }

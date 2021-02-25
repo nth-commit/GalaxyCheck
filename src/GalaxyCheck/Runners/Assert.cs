@@ -65,8 +65,8 @@ namespace GalaxyCheck.Runners
             var attributes =
                 new List<(string name, string value)>
                 {
-                    ("Seed", counterexample.RepeatRng.Seed.ToString(CultureInfo.InvariantCulture)),
-                    ("Size", counterexample.RepeatSize.Value.ToString(CultureInfo.InvariantCulture)),
+                    ("Seed", counterexample.RepeatParameters.Rng.Seed.ToString(CultureInfo.InvariantCulture)),
+                    ("Size", counterexample.RepeatParameters.Size.Value.ToString(CultureInfo.InvariantCulture)),
                     ("Path", pathFormatted)
                 }
                 .Select(x => $"{x.name} = {x.value}");
