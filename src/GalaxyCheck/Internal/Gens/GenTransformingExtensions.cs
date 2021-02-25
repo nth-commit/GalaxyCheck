@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck;
 using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,7 +13,7 @@ namespace GalaxyCheck.Internal.Gens
 
     public delegate IGenIteration<U> GenIterationTransformation<T, U>(IGenIteration<T> iteration);
 
-    public delegate IGenIteration<U> GenInstanceTransformation<T, U>(GenInstance<T> instance);
+    public delegate IGenIteration<U> GenInstanceTransformation<T, U>(IGenInstance<T> instance);
 
     public static class GenTransformingExtensions
     {
@@ -30,14 +31,23 @@ namespace GalaxyCheck.Internal.Gens
         public static IGen<U> TransformInstances<T, U>(
             this IGen<T> gen,
             GenInstanceTransformation<T, U> transformation) =>
-                gen.TransformIterations(iteration =>
+                gen.TransformIterations((GenIterationTransformation<T, U>)((GenIterations.IGenIteration<T> iteration) =>
                 {
-                    var iterationBuilder = GenIterationBuilder.FromIteration(iteration);
-                    return iteration.Match(
-                        onInstance: instance => transformation(instance),
-                        onDiscard: discard => iterationBuilder.ToDiscard<U>(),
-                        onError: error => iterationBuilder.ToError<U>(error.GenName, error.Message));
-                });
+                    var either = GenIterationExtensions.ToEither<T, U>(iteration);
+
+                    if (EitherExtension.IsLeft<IGenInstance<T>, GenIterations.IGenIteration<U>>(either, out IGenInstance<T> instance))
+                    {
+                        return (GenIterations.IGenIteration<U>)transformation(instance);
+                    }
+                    else if (EitherExtension.IsRight<IGenInstance<T>, GenIterations.IGenIteration<U>>(either, out IGenIteration<U> iterationConverted))
+                    {
+                        return (GenIterations.IGenIteration<U>)iterationConverted;
+                    }
+                    else
+                    {
+                        throw new Exception("Fatal: Unhandled branch");
+                    }
+                }));
 
         public static IGen<T> Repeat<T>(this IGen<T> gen) => gen.Transform(GenTransformations.Repeat<T>());
     }

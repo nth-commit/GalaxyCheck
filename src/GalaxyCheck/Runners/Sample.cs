@@ -82,18 +82,18 @@ namespace GalaxyCheck
             return new SampleWithMetricsResult<IExampleSpace<T>>(exampleSpaces, randomnessConsumption);
         }
 
-        private static IEnumerable<GenInstance<T>> Sample<T>(this IGenAdvanced<T> advanced, IRng rng, Size size)
+        private static IEnumerable<IGenInstance<T>> Sample<T>(this IGenAdvanced<T> advanced, IRng rng, Size size)
         {
-            var stream = advanced.Run(new GenParameters(rng, size)).WithDiscardCircuitBreaker(iteration => iteration is GenDiscard<T>);
+            var stream = advanced.Run(new GenParameters(rng, size)).WithDiscardCircuitBreaker(iteration => iteration.IsDiscard());
 
             foreach (var iteration in stream)
             {
-                var valueOption = iteration.Match<T, Option<GenInstance<T>>>(
-                    onInstance: instance => new Option.Some<GenInstance<T>>(instance),
-                    onDiscard: discard => new Option.None<GenInstance<T>>(),
+                var valueOption = iteration.Match<Option<IGenInstance<T>>>(
+                    onInstance: instance => new Option.Some<IGenInstance<T>>(instance),
+                    onDiscard: discard => new Option.None<IGenInstance<T>>(),
                     onError: error => throw new Exceptions.GenErrorException(error.GenName, error.Message));
 
-                if (valueOption is Option.Some<GenInstance<T>> valueSome)
+                if (valueOption is Option.Some<IGenInstance<T>> valueSome)
                 {
                     yield return valueSome.Value;
                 }

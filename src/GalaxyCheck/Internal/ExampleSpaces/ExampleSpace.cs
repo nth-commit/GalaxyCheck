@@ -20,7 +20,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
     }
 
     /// <inheritdoc/>
-    public interface IExampleSpace<T> : IExampleSpace
+    public interface IExampleSpace<out T> : IExampleSpace
     {
         new IExample<T> Current { get; }
 

@@ -1,11 +1,16 @@
 ﻿using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Sizing;
 using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.Gens
 {
     public abstract class BaseGen<T> : IGen<T>
     {
+        public IGenAdvanced<T> Advanced => new GenAdvanced(this);
+
+        IGenAdvanced IGen.Advanced => Advanced;
+
+        protected abstract IEnumerable<IGenIteration<T>> Run(GenParameters parameters);
+
         private class GenAdvanced : IGenAdvanced<T>
         {
             private readonly BaseGen<T> _gen;
@@ -16,15 +21,8 @@ namespace GalaxyCheck.Internal.Gens
             }
 
             public IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => _gen.Run(parameters);
+
+            IEnumerable<IGenIteration> IGenAdvanced.Run(GenParameters parameters) => _gen.Run(parameters);
         }
-
-        public BaseGen()
-        {
-            Advanced = new GenAdvanced(this);
-        }
-
-        public IGenAdvanced<T> Advanced { get; }
-
-        protected abstract IEnumerable<IGenIteration<T>> Run(GenParameters parameters);
     }
 }

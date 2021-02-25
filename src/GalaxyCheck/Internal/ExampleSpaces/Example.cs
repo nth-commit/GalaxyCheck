@@ -24,7 +24,7 @@
     /// An example that lives inside an example space.
     /// </summary>
     /// <typeparam name="T">The type of the example's value.</typeparam>
-    public interface IExample<T> : IExample
+    public interface IExample<out T> : IExample
     {
         /// <summary>
         /// The example value.

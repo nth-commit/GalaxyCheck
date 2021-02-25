@@ -93,7 +93,7 @@ namespace GalaxyCheck.Gens
 
                 var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, forkedRng, parameters.Size, _iterationLimit);
 
-                yield return new GenInstance<IEnumerable<T>>(
+                yield return GenIterationFactory.Instance(
                     new GenParameters(initialRng, parameters.Size),
                     new GenParameters(nextRng, parameters.Size),
                     exampleSpace);
@@ -144,9 +144,13 @@ namespace GalaxyCheck.Gens
         {
             var source = elementGen.Advanced
                 .Run(new GenParameters(rng, size))
-                .WithDiscardCircuitBreaker(iteration => iteration is GenDiscard<T>)
-                .OfType<GenInstance<T>>()
-                .Select(iteration => iteration.ExampleSpace);
+                .WithDiscardCircuitBreaker(iteration => iteration.IsDiscard())
+                .Select(iteration => iteration.Match<IGenInstance<T>?>(
+                    onInstance: instance => instance,
+                    onError: _ => null,
+                    onDiscard: _ => null))
+                .Where(instance => instance != null)
+                .Select(instance => instance!.ExampleSpace);
 
             return new SpyEnumerable<IExampleSpace<T>>(ThrowOnLimit(source, iterationLimit));
         }
