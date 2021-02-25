@@ -30,8 +30,7 @@ namespace GalaxyCheck
         /// 
         /// Instead, it is recommended to use `Sample()` or `Minimal()`.
         /// </summary>
-        /// <param name="rng">The initial RNG to seed the generator with.</param>
-        /// <param name="size">The initial size to run the generator with. Determines how large the generated values
+        /// <param name="parameters">The initial parameters which the generator is seeded with.</param>
         /// are.</param>
         /// <returns>An infinite enumerable of generated iterations.</returns>
         IEnumerable<IGenIteration<T>> Run(GenParameters parameters);

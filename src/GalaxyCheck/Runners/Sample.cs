@@ -76,7 +76,7 @@ namespace GalaxyCheck
             var instances = advanced.Sample(initialRng, initialSize).Take(iterations ?? 100).ToList();
 
             var exampleSpaces = instances.Select(instance => instance.ExampleSpace).ToList();
-            var nextRng = instances.LastOrDefault()?.NextRng ?? initialRng;
+            var nextRng = instances.LastOrDefault()?.NextParameters.Rng ?? initialRng;
             var randomnessConsumption = nextRng.Order - initialRng.Order;
 
             return new SampleWithMetricsResult<IExampleSpace<T>>(exampleSpaces, randomnessConsumption);

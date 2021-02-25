@@ -30,23 +30,20 @@ namespace GalaxyCheck.Internal.Gens
 
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters)
         {
-            var rng = parameters.Rng;
-            var size = parameters.Size;
-
             NextIntFunc useNextInt = (min, max) =>
             {
-                var value = rng.Value(min, max);
-                rng = rng.Next();
+                var value = parameters.Rng.Value(min, max);
+                parameters = new GenParameters(parameters.Rng.Next(), parameters.Size);
                 return value;
             };
 
             do
             {
-                var initialRng = rng;
+                var initialParameters = parameters;
 
-                var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt, size), _shrink, _measure, _identify);
+                var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt, parameters.Size), _shrink, _measure, _identify);
 
-                yield return new GenInstance<T>(initialRng, size, rng, size, exampleSpace);
+                yield return new GenInstance<T>(initialParameters, parameters, exampleSpace);
             } while (true);
         }
     }

@@ -20,36 +20,28 @@ namespace GalaxyCheck
 
         public ImmutableList<CheckIteration<T>> Checks { get; init; }
 
-        public IRng InitialRng { get; init; }
+        public GenParameters InitialParameters { get; set; }
 
-        public Size InitialSize { get; init; }
-
-        public IRng NextRng { get; init; }
-
-        public Size NextSize { get; init; }
+        public GenParameters NextParameters { get; set; }
 
         public bool Falsified => Counterexample != null;
 
-        public int RandomnessConsumption => NextRng.Order - InitialRng.Order;
+        public int RandomnessConsumption => NextParameters.Rng.Order - InitialParameters.Rng.Order;
 
         public CheckResult(
             int iterations,
             int discards,
             Counterexample<T>? counterexample,
             ImmutableList<CheckIteration<T>> checks,
-            IRng initialRng,
-            Size initialSize,
-            IRng nextRng,
-            Size nextSize)
+            GenParameters initialParameters,
+            GenParameters nextParameters)
         {
             Iterations = iterations;
             Discards = discards;
             Checks = checks;
             Counterexample = counterexample;
-            InitialRng = initialRng;
-            InitialSize = initialSize;
-            NextRng = nextRng;
-            NextSize = nextSize;
+            InitialParameters = initialParameters;
+            NextParameters = nextParameters;
         }
     }
 
@@ -57,8 +49,7 @@ namespace GalaxyCheck
         ExampleId Id,
         T Value,
         decimal Distance,
-        IRng RepeatRng,
-        Size RepeatSize,
+        GenParameters RepeatParameters,
         ImmutableList<int> RepeatPath,
         Exception? Exception)
             : Example<T>(Id, Value, Distance);
@@ -69,8 +60,7 @@ namespace GalaxyCheck
     {
         public record Check<T>(
             T Value,
-            IRng Rng,
-            Size Size,
+            GenParameters Parameters,
             ImmutableList<int> Path,
             bool IsCounterexample,
             Exception? Exception) : CheckIteration<T>;
@@ -88,12 +78,13 @@ namespace GalaxyCheck
             int? seed = null,
             int? size = null)
         {
-            var initialRng = seed == null ? Rng.Spawn() : Rng.Create(seed.Value);
-            var initialSize = size == null ? Size.MinValue : new Size(size.Value);
+            var initialParameters = new GenParameters(
+                seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
+                size == null ? Size.MinValue : new Size(size.Value));
 
             var states = EnumerableExtensions
                 .Unfold(
-                    CheckState.Begin<T>(property, iterations ?? 100, initialRng, initialSize),
+                    CheckState.Begin<T>(property, iterations ?? 100, initialParameters),
                     prevState => prevState is CheckState.Termination<T>
                         ? new Option.None<CheckState<T>>()
                         : new Option.Some<CheckState<T>>(prevState.NextState()));
@@ -116,10 +107,8 @@ namespace GalaxyCheck
                 termination.Context.Discards,
                 termination.Context.Counterexample,
                 checks,
-                initialRng,
-                initialSize,
-                termination.Context.NextParameters.Rng,
-                termination.Context.NextParameters.Size);
+                initialParameters,
+                termination.Context.NextParameters);
         }
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
@@ -127,8 +116,7 @@ namespace GalaxyCheck
             CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexample<T> state) =>
                 new CheckIteration.Check<T>(
                     Value: state.ExplorationStage.Example.Value.Input,
-                    Rng: state.Instance.InitialRng,
-                    Size: state.Instance.InitialSize,
+                    Parameters: state.Instance.RepeatParameters,
                     Path: state.ExplorationStage.Path.ToImmutableList(),
                     Exception: state.Counterexample?.Exception,
                     IsCounterexample: true);
@@ -136,8 +124,7 @@ namespace GalaxyCheck
             CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexample<T> state) =>
                 new CheckIteration.Check<T>(
                     Value: state.ExplorationStage.Example.Value.Input,
-                    Rng: state.Instance.InitialRng,
-                    Size: state.Instance.InitialSize,
+                    Parameters: state.Instance.RepeatParameters,
                     Path: state.ExplorationStage.Path.ToImmutableList(),
                     Exception: null,
                     IsCounterexample: false);
@@ -176,19 +163,18 @@ namespace GalaxyCheck
             internal static CheckContext<T> Create(
                 IProperty<T> property,
                 int requestedIterations,
-                IRng initialRng,
-                Size initialSize) =>
+                GenParameters initialParameters) =>
                     new CheckContext<T>(
                         property,
                         requestedIterations,
                         0,
                         0,
                         ImmutableList.Create<Counterexample<T>>(),
-                        new GenParameters(initialRng, initialSize));
+                        initialParameters);
 
             public Counterexample<T>? Counterexample => CounterexampleHistory
                 .OrderBy(c => c.Distance)
-                .ThenByDescending(c => c.RepeatSize.Value) // Bigger sizes are more likely to normalize
+                .ThenByDescending(c => c.RepeatParameters.Size.Value) // Bigger sizes are more likely to normalize
                 .FirstOrDefault();
 
             internal CheckContext<T> IncrementCompletedIterations() => new CheckContext<T>(
@@ -215,13 +201,13 @@ namespace GalaxyCheck
                 Enumerable.Concat(new[] { counterexample }, CounterexampleHistory).ToImmutableList(),
                 NextParameters);
 
-            internal CheckContext<T> WithNextGenParameters(IRng nextRng, Size nextSize) => new CheckContext<T>(
+            internal CheckContext<T> WithNextGenParameters(GenParameters genParameters) => new CheckContext<T>(
                 Property,
                 RequestedIterations,
                 CompletedIterations,
                 Discards,
                 CounterexampleHistory,
-                new GenParameters(nextRng, nextSize));
+                genParameters);
         }
 
         public static class CheckState
@@ -229,9 +215,8 @@ namespace GalaxyCheck
             public static CheckState<T> Begin<T>(
                 IProperty<T> property,
                 int requestedIterations,
-                IRng initialRng,
-                Size initialSize) =>
-                    new Initial<T>(CheckContext<T>.Create(property, requestedIterations, initialRng, initialSize));
+                GenParameters initialParameters) =>
+                    new Initial<T>(CheckContext<T>.Create(property, requestedIterations, initialParameters));
 
             public record Initial<T>(CheckContext<T> Context) : CheckState<T>(Context)
             {
@@ -332,8 +317,7 @@ namespace GalaxyCheck
                     ExplorationStage.Example.Id,
                     ExplorationStage.Example.Value.Input,
                     ExplorationStage.Example.Distance,
-                    Instance.InitialRng,
-                    Instance.InitialSize,
+                    Instance.RepeatParameters,
                     ExplorationStage.Path.ToImmutableList(),
                     CounterexampleDetails.Exception);
             }
@@ -367,7 +351,7 @@ namespace GalaxyCheck
                 {
                     return new Initial<T>(context
                         .IncrementCompletedIterations()
-                        .WithNextGenParameters(instance.NextRng, instance.NextSize.Increment()));
+                        .WithNextGenParameters(new GenParameters(instance.NextParameters.Rng, instance.NextParameters.Size.Increment())));
                 }
 
                 private static CheckState<T> NextStateWithCounterexample(
@@ -375,13 +359,13 @@ namespace GalaxyCheck
                     GenInstance<PropertyIteration<T>> instance,
                     Counterexample<T> counterexample)
                 {
-                    var nextRng = instance.NextRng;
-                    var candidateNextSize = instance.NextSize.BigIncrement();
-                    var nextSize = candidateNextSize.Value < instance.NextSize.Value ? Size.MaxValue : candidateNextSize;
+                    var nextRng = instance.NextParameters.Rng;
+                    var candidateNextSize = instance.NextParameters.Size.BigIncrement();
+                    var nextSize = candidateNextSize.Value < instance.NextParameters.Size.Value ? Size.MaxValue : candidateNextSize;
 
                     var nextContext = context
                         .IncrementCompletedIterations()
-                        .WithNextGenParameters(nextRng, nextSize)
+                        .WithNextGenParameters(new GenParameters(nextRng, nextSize))
                         .AddCounterexample(counterexample);
 
                     if (nextContext.CompletedIterations == nextContext.RequestedIterations)
@@ -395,7 +379,7 @@ namespace GalaxyCheck
                         return new Termination<T>(nextContext);
                     }
 
-                    if (instance.InitialSize == Size.MaxValue)
+                    if (instance.RepeatParameters.Size == Size.MaxValue)
                     {
                         // We're at the max size, don't bother starting again from 0% as the compute time is most
                         // likely not worth it. TODO: Add config to disable this if someone REALLY wants to find a
@@ -412,7 +396,7 @@ namespace GalaxyCheck
                         return new Termination<T>(nextContext);
                     }
 
-                    return new Initial<T>(nextContext.WithNextGenParameters(nextRng, nextSize));
+                    return new Initial<T>(nextContext.WithNextGenParameters(new GenParameters(nextRng, nextSize)));
                 }
             }
 

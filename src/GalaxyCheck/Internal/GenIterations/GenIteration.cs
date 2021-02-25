@@ -6,57 +6,41 @@ namespace GalaxyCheck.Internal.GenIterations
 {
     public interface IGenIteration<out T>
     {
-        IRng InitialRng { get; }
+        GenParameters RepeatParameters { get; }
 
-        Size InitialSize { get; }
-
-        IRng NextRng { get; }
-
-        Size NextSize { get; }
+        GenParameters NextParameters { get; }
     }
 
     public abstract record GenIteration<T> : IGenIteration<T>
     {
-        public IRng InitialRng { get; init; }
+        public GenParameters RepeatParameters { get; init; }
 
-        public Size InitialSize { get; init; }
+        public GenParameters NextParameters { get; init; }
 
-        public IRng NextRng { get; init; }
-
-        public Size NextSize { get; init; }
-
-        internal GenIteration(IRng initialRng, Size initialSize, IRng nextRng, Size nextSize)
+        internal GenIteration(GenParameters RepeatParameters, GenParameters NextParameters)
         {
-            InitialRng = initialRng;
-            InitialSize = initialSize;
-            NextRng = nextRng;
-            NextSize = nextSize;
+            this.RepeatParameters = RepeatParameters;
+            this.NextParameters = NextParameters;
         }
     }
 
     public sealed record GenInstance<T>(
-        IRng InitialRng,
-        Size InitialSize,
-        IRng NextRng,
-        Size NextSize,
+        GenParameters RepeatParameters,
+        GenParameters NextParameters,
         IExampleSpace<T> ExampleSpace)
-            : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
+            : GenIteration<T>(RepeatParameters, NextParameters);
 
     public sealed record GenError<T>(
-        IRng InitialRng,
-        Size InitialSize,
-        IRng NextRng,
-        Size NextSize,
+        GenParameters RepeatParameters,
+        GenParameters NextParameters,
         string GenName,
         string Message)
-            : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
+            : GenIteration<T>(RepeatParameters, NextParameters);
 
     public sealed record GenDiscard<T>(
-        IRng InitialRng,
-        Size InitialSize,
-        IRng NextRng,
-        Size NextSize)
-            : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
+        GenParameters RepeatParameters,
+        GenParameters NextParameters)
+            : GenIteration<T>(RepeatParameters, NextParameters);
 
     public static class GenIterationExtensions
     {
