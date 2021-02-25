@@ -49,7 +49,7 @@ namespace GalaxyCheck.Internal.GenIterations
             _parameters.NextRng,
             size));
 
-        public GenInstance<T> ToInstance<T>(ExampleSpace<T> exampleSpace) => new GenInstance<T>(
+        public GenInstance<T> ToInstance<T>(IExampleSpace<T> exampleSpace) => new GenInstance<T>(
             _parameters.InitialRng,
             _parameters.InitialSize,
             _parameters.NextRng,

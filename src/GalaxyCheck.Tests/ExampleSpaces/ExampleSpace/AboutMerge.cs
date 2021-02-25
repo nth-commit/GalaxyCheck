@@ -13,11 +13,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
 {
     public class AboutMerge
     {
-        private static readonly ES.ShrinkFunc<List<ES.ExampleSpace<int>>> NoShrink =
-            ES.ShrinkFunc.None<List<ES.ExampleSpace<int>>>();
+        private static readonly ES.ShrinkFunc<List<ES.IExampleSpace<int>>> NoShrink =
+            ES.ShrinkFunc.None<List<ES.IExampleSpace<int>>>();
 
-        private static readonly ES.MeasureFunc<List<ES.ExampleSpace<int>>> Unmeasured =
-            ES.MeasureFunc.Unmeasured<List<ES.ExampleSpace<int>>>();
+        private static readonly ES.MeasureFunc<List<ES.IExampleSpace<int>>> Unmeasured =
+            ES.MeasureFunc.Unmeasured<List<ES.IExampleSpace<int>>>();
 
         [Theory]
         [InlineData(new [] { 1, 1 })]
@@ -65,7 +65,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             var mergedExampleSpace = ES.ExampleSpace.Merge(
                 exampleSpaces,
                 (values) => values.ToArray(),
-                ES.ShrinkFunc.TowardsCount<ES.ExampleSpace<int>, decimal>(0, es => es.Current.Distance),
+                ES.ShrinkFunc.TowardsCount<ES.IExampleSpace<int>, decimal>(0, es => es.Current.Distance),
                 Unmeasured);
 
             Snapshot.Match(
@@ -90,7 +90,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<IEnumerable<int>, int> mergeValues,
             int mergeDistance)
         {
-            ES.MeasureFunc<List<ES.ExampleSpace<int>>> measureMerge = _ => mergeDistance;
+            ES.MeasureFunc<List<ES.IExampleSpace<int>>> measureMerge = _ => mergeDistance;
             var exampleSpaces = values.Select(ES.ExampleSpace.Singleton).ToList();
 
             var mergedExampleSpace = ES.ExampleSpace.Merge(exampleSpaces, mergeValues, NoShrink, measureMerge);
@@ -111,8 +111,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
                 var mergedExampleSpace = ES.ExampleSpace.Merge(
                     Enumerable.Repeat(exampleSpace, mergeCount).ToList(),
                     mergeValues,
-                    ES.ShrinkFunc.None<List<ES.ExampleSpace<object>>>(),
-                    ES.MeasureFunc.Unmeasured<List<ES.ExampleSpace<object>>>());
+                    ES.ShrinkFunc.None<List<ES.IExampleSpace<object>>>(),
+                    ES.MeasureFunc.Unmeasured<List<ES.IExampleSpace<object>>>());
 
                 Assert.NotEqual(exampleSpace.Current.Id, mergedExampleSpace.Current.Id);
             };

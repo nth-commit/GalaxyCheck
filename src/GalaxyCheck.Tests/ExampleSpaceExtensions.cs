@@ -7,11 +7,11 @@ namespace Tests
 {
     public static class ExampleSpaceExtensions
     {
-        public static List<Example<T>> Sample<T>(
-            this ExampleSpace<T> exampleSpace,
+        public static List<IExample<T>> Sample<T>(
+            this IExampleSpace<T> exampleSpace,
             int maxExamples = 10)
         {
-            static IEnumerable<Example<T>> SampleRec(ExampleSpace<T> exampleSpace)
+            static IEnumerable<IExample<T>> SampleRec(IExampleSpace<T> exampleSpace)
             {
                 yield return exampleSpace.Current;
 
@@ -25,19 +25,19 @@ namespace Tests
         }
 
         public static string Render<T>(
-            this ExampleSpace<T> exampleSpace,
+            this IExampleSpace<T> exampleSpace,
             Func<T, string> renderValue,
             int indentation = 2,
             int maxExamples = 500)
         {
-            string RenderExample(Example<T> example, int level)
+            string RenderExample(IExample<T> example, int level)
             {
                 var renderedValue = renderValue(example.Value);
                 var padding = Enumerable.Range(0, indentation * level).Aggregate("", (acc, _) => acc + ".");
                 return $"{padding}{renderedValue}";
             }
 
-            IEnumerable<string> RenderExampleSpace(ExampleSpace<T> exampleSpace, int level)
+            IEnumerable<string> RenderExampleSpace(IExampleSpace<T> exampleSpace, int level)
             {
                 yield return RenderExample(exampleSpace.Current, level);
 

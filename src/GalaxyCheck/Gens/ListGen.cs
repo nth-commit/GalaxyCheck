@@ -150,14 +150,14 @@ namespace GalaxyCheck.Gens
                 select list;
         }
 
-        private static ShrinkFunc<List<ExampleSpace<T>>> ShrinkTowardsLength(int length)
+        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsLength(int length)
         {
             // If the value type is a collection, that is, this generator is building a "collection of collections",
             // it is "less complex" to order the inner collections by descending length. It also lets us find the
             // minimal shrink a lot more efficiently in some examples,
             // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
 
-            return ShrinkFunc.TowardsCount2<ExampleSpace<T>, decimal>(length, exampleSpace =>
+            return ShrinkFunc.TowardsCount2<IExampleSpace<T>, decimal>(length, exampleSpace =>
             {
                 return -exampleSpace.Current.Distance;
             });
@@ -229,7 +229,7 @@ namespace GalaxyCheck.Gens
         private static IGen<ImmutableList<T>> GenOfLength(
             int length,
             IGen<T> elementGen,
-            ShrinkFunc<List<ExampleSpace<T>>> shrink)
+            ShrinkFunc<List<IExampleSpace<T>>> shrink)
         {
             IEnumerable<IGenIteration<ImmutableList<T>>> Run(IRng rng, Size size)
             {
