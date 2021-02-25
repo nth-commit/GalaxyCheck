@@ -25,11 +25,11 @@ namespace Tests.V2
                 });
         }
 
-        public static List<Example<T>> Sample<T>(
-            this ExampleSpace<T> exampleSpace,
+        public static List<IExample<T>> Sample<T>(
+            this IExampleSpace<T> exampleSpace,
             int maxExamples = 10)
         {
-            static IEnumerable<Example<T>> SampleRec(ExampleSpace<T> exampleSpace)
+            static IEnumerable<IExample<T>> SampleRec(IExampleSpace<T> exampleSpace)
             {
                 yield return exampleSpace.Current;
 

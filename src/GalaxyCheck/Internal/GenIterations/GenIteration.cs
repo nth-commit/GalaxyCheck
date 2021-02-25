@@ -39,7 +39,7 @@ namespace GalaxyCheck.Internal.GenIterations
         Size InitialSize,
         IRng NextRng,
         Size NextSize,
-        ExampleSpace<T> ExampleSpace)
+        IExampleSpace<T> ExampleSpace)
             : GenIteration<T>(InitialRng, InitialSize, NextRng, NextSize);
 
     public sealed record GenError<T>(

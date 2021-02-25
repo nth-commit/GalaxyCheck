@@ -22,8 +22,8 @@ namespace GalaxyCheck
         /// <returns>A new generator with the projection applied.</returns>
         public static IGen<TResult> SelectMany<T, TResult>(this IGen<T> gen, Func<T, IGen<TResult>> selector)
         {
-            static IEnumerable<ExampleSpace<TResult>> BindSubspace(
-                ExampleSpace<T> leftExampleSpace,
+            static IEnumerable<IExampleSpace<TResult>> BindSubspace(
+                IExampleSpace<T> leftExampleSpace,
                 Func<T, IGen<TResult>> selector,
                 IRng rng,
                 Size size)
@@ -39,9 +39,9 @@ namespace GalaxyCheck
                 }
             }
 
-            static ExampleSpace<TResult> JoinExampleSpaces(
-                ExampleSpace<T> leftExampleSpace,
-                ExampleSpace<TResult> rightExampleSpace,
+            static IExampleSpace<TResult> JoinExampleSpaces(
+                IExampleSpace<T> leftExampleSpace,
+                IExampleSpace<TResult> rightExampleSpace,
                 Func<T, IGen<TResult>> selector,
                 IRng rng,
                 Size size)
@@ -60,7 +60,7 @@ namespace GalaxyCheck
             }
 
             static IEnumerable<IGenIteration<TResult>> BindExampleSpace(
-                ExampleSpace<T> exampleSpace,
+                IExampleSpace<T> exampleSpace,
                 Func<T, IGen<TResult>> selector,
                 IRng rng,
                 Size size)

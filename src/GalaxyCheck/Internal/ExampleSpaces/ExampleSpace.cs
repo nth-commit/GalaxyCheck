@@ -12,25 +12,43 @@ namespace GalaxyCheck.Internal.ExampleSpaces
     /// explored recursively, and the space itself is a tree-like structure to enable efficient exploration of the
     /// example space.
     /// </summary>
-    /// <typeparam name="T">The type of an example's value</typeparam>
-    public record ExampleSpace<T>
+    public interface IExampleSpace
     {
-        public Example<T> Current { get; init; }
+        IExample Current { get; }
 
-        public IEnumerable<ExampleSpace<T>> Subspace { get; init; }
+        IEnumerable<IExampleSpace> Subspace { get; }
+    }
 
-        public ExampleSpace(Example<T> current, IEnumerable<ExampleSpace<T>> subspace)
+    /// <inheritdoc/>
+    public interface IExampleSpace<T> : IExampleSpace
+    {
+        new IExample<T> Current { get; }
+
+        new IEnumerable<IExampleSpace<T>> Subspace { get; }
+    }
+    
+    public record ExampleSpace<T> : IExampleSpace<T>
+    {
+        public IExample<T> Current { get; init; }
+
+        public IEnumerable<IExampleSpace<T>> Subspace { get; init; }
+
+        public ExampleSpace(IExample<T> current, IEnumerable<IExampleSpace<T>> subspace)
         {
             Current = current;
             Subspace = subspace;
         }
+
+        IExample IExampleSpace.Current => Current;
+
+        IEnumerable<IExampleSpace> IExampleSpace.Subspace => Subspace;
     }
 
     public record CounterexampleDetails(Exception? Exception);
 
     public record ExplorationStage<T>(
         IEnumerable<int> Path,
-        Example<T> Example,
+        IExample<T> Example,
         CounterexampleDetails? CounterexampleDetails)
     {
         public bool IsCounterexample => CounterexampleDetails != null;
@@ -48,8 +66,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="exampleSpace">The example space to operate on.</param>
         /// <param name="selector">A function to apply to each value in the example space.</param>
         /// <returns>A new example space with the mapping function applied.</returns>
-        public static ExampleSpace<TResult> Map<T, TResult>(
-            this ExampleSpace<T> exampleSpace,
+        public static IExampleSpace<TResult> Map<T, TResult>(
+            this IExampleSpace<T> exampleSpace,
             Func<T, TResult> f)
         {
             return exampleSpace.MapExamples(example => new Example<TResult>(
@@ -66,9 +84,9 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="exampleSpace">The example space to operate on.</param>
         /// <param name="selector">A function to apply to each example in the example space.</param>
         /// <returns>A new example space with the mapping  function applied.</returns>
-        public static ExampleSpace<TResult> MapExamples<T, TResult>(
-            this ExampleSpace<T> exampleSpace,
-            Func<Example<T>, Example<TResult>> f)
+        public static IExampleSpace<TResult> MapExamples<T, TResult>(
+            this IExampleSpace<T> exampleSpace,
+            Func<IExample<T>, IExample<TResult>> f)
         {
             return new ExampleSpace<TResult>(
                 f(exampleSpace.Current),
@@ -82,8 +100,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="exampleSpace">The example space to operate on.</param>
         /// <param name="pred">The predicate used to test each value in the example space.</param>
         /// <returns>A new example space, containing only the examples whose values passed the predicate.</returns>
-        public static ExampleSpace<T>? Filter<T>(
-            this ExampleSpace<T> exampleSpace,
+        public static IExampleSpace<T>? Filter<T>(
+            this IExampleSpace<T> exampleSpace,
             Func<T, bool> pred)
         {
             if (pred(exampleSpace.Current.Value) == false) return null;
@@ -93,12 +111,12 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 exampleSpace.Subspace
                     .Select(es => es.Filter(pred))
                     .Where(es => es != null)
-                    .Cast<ExampleSpace<T>>());
+                    .Cast<IExampleSpace<T>>());
         }
 
         // TODO: Deprecate Counterexamples() in favour of this function, which should be tested with unit tests and documented.
         public static IEnumerable<ExplorationStage<T>> Explore<T>(
-            this ExampleSpace<T> exampleSpace,
+            this IExampleSpace<T> exampleSpace,
             Func<T, bool> pred)
         {
             static CounterexampleDetails? TestPredicate(Func<T, bool> pred, T value)
@@ -114,7 +132,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 }
             }
 
-            static IEnumerable<ExplorationStage<T>> ExploreSubspace(Func<T, bool> pred, ExampleSpace<T> exampleSpace)
+            static IEnumerable<ExplorationStage<T>> ExploreSubspace(Func<T, bool> pred, IExampleSpace<T> exampleSpace)
             {
                 var (counterexampleSpaceAndIndex, explorations) = exampleSpace.Subspace
                     .Select((exampleSpace, i) => (
@@ -125,7 +143,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                         exampleSpace))
                     .TakeWhileInclusive(x => !x.exploration.IsCounterexample)
                     .Aggregate(
-                        (counterexampleSpaceAndIndex: ((ExampleSpace<T>, int)?)null, explorations: new List<ExplorationStage<T>>()),
+                        (counterexampleSpaceAndIndex: ((IExampleSpace<T>, int)?)null, explorations: new List<ExplorationStage<T>>()),
                         (acc, curr) =>
                         {
                             acc.explorations.Add(curr.exploration);
@@ -172,7 +190,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// indicates that example is a counterexample.</param>
         /// <returns>An enumerable of counterexamples.</returns>
         public static IEnumerable<Counterexample<T>> Counterexamples<T>(
-            this ExampleSpace<T> exampleSpace,
+            this IExampleSpace<T> exampleSpace,
             Func<T, bool> pred)
         {
             (bool success, Exception? exception) Invoke(T value) {
@@ -187,7 +205,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 }
             }
 
-            IEnumerable<Counterexample<T>> CounterexamplesRec(IEnumerable<ExampleSpace<T>> exampleSpaces)
+            IEnumerable<Counterexample<T>> CounterexamplesRec(IEnumerable<IExampleSpace<T>> exampleSpaces)
             {
                 var failure = exampleSpaces
                     .Select((exampleSpace, index) =>
@@ -223,9 +241,9 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             return CounterexamplesRec(new[] { exampleSpace });
         }
 
-        public static Example<T>? Navigate<T>(this ExampleSpace<T> exampleSpace, List<int> path)
+        public static IExample<T>? Navigate<T>(this IExampleSpace<T> exampleSpace, List<int> path)
         {
-            static Example<T>? NavigateRec(ExampleSpace<T> exampleSpace, List<int> path)
+            static IExample<T>? NavigateRec(IExampleSpace<T> exampleSpace, List<int> path)
             {
                 if (path.Any() == false) return exampleSpace.Current;
 
@@ -267,9 +285,11 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <typeparam name="T">The type of the example's value.</typeparam>
         /// <param name="value">The example value.</param>
         /// <returns>The example space.</returns>
-        public static ExampleSpace<T> Singleton<T>(T value) => new ExampleSpace<T>(
-            new Example<T>(ExampleId.Empty, value, 0),
-            Enumerable.Empty<ExampleSpace<T>>());
+        public static IExampleSpace<T> Singleton<T>(T value) => Singleton(ExampleId.Empty, value);
+
+        public static IExampleSpace<T> Singleton<T>(ExampleId id, T value) => new ExampleSpace<T>(
+            new Example<T>(id, value, 0),
+            Enumerable.Empty<IExampleSpace<T>>());
 
         /// <summary>
         /// Creates an example space by recursively applying a shrinking function to the root value.
@@ -279,7 +299,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="shrink"></param>
         /// <param name="measure"></param>
         /// <returns></returns>
-        public static ExampleSpace<T> Unfold<T>(
+        public static IExampleSpace<T> Unfold<T>(
             T rootValue,
             ShrinkFunc<T> shrink,
             MeasureFunc<T> measure,
@@ -295,9 +315,9 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 ImmutableHashSet.Create(id));
         }
 
-        public static ExampleSpace<T> Delay<T>(
-            Example<T> rootExample,
-            Func<IEnumerable<ExampleSpace<T>>> delayedSubspace)
+        public static IExampleSpace<T> Delay<T>(
+            IExample<T> rootExample,
+            Func<IEnumerable<IExampleSpace<T>>> delayedSubspace)
         {
             IEnumerable<U> DelayEnumeration<U>(Func<IEnumerable<U>> source)
             {
@@ -326,7 +346,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 UnfoldSubspaceInternal(shrink(accumulator), shrink, measure, identify, projection, encountered));
         }
 
-        private static IEnumerable<ExampleSpace<TProjection>> UnfoldSubspaceInternal<TAccumulator, TProjection>(
+        private static IEnumerable<IExampleSpace<TProjection>> UnfoldSubspaceInternal<TAccumulator, TProjection>(
             IEnumerable<TAccumulator> accumulators,
             ShrinkFunc<TAccumulator> shrink,
             MeasureFunc<TAccumulator> measure,
@@ -341,11 +361,11 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 encountered);
         }
 
-        public static ExampleSpace<TResult> Merge<T, TResult>(
-            List<ExampleSpace<T>> exampleSpaces,
+        public static IExampleSpace<TResult> Merge<T, TResult>(
+            List<IExampleSpace<T>> exampleSpaces,
             Func<List<T>, TResult> mergeValues,
-            ShrinkFunc<List<ExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<List<ExampleSpace<T>>> measureMerge) =>
+            ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
+            MeasureFunc<List<IExampleSpace<T>>> measureMerge) =>
                 MergeInternal(
                     exampleSpaces,
                     mergeValues,
@@ -353,11 +373,11 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     measureMerge,
                     ImmutableHashSet.Create<ExampleId>());
 
-        private static ExampleSpace<TResult> MergeInternal<T, TResult>(
-            List<ExampleSpace<T>> exampleSpaces,
+        private static IExampleSpace<TResult> MergeInternal<T, TResult>(
+            List<IExampleSpace<T>> exampleSpaces,
             Func<List<T>, TResult> mergeValues,
-            ShrinkFunc<List<ExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<List<ExampleSpace<T>>> measureMerge,
+            ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
+            MeasureFunc<List<IExampleSpace<T>>> measureMerge,
             ImmutableHashSet<ExampleId> encountered)
         {
             var mergedId = exampleSpaces.Aggregate(
@@ -388,9 +408,9 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             return new ExampleSpace<TResult>(current, shrinks);
         }
 
-        private static IEnumerable<IEnumerable<ExampleSpace<T>>> LiftAndInsertSubspace<T>(
-            IEnumerable<ExampleSpace<T>> exampleSpaces,
-            IEnumerable<ExampleSpace<T>> subspace,
+        private static IEnumerable<IEnumerable<IExampleSpace<T>>> LiftAndInsertSubspace<T>(
+            IEnumerable<IExampleSpace<T>> exampleSpaces,
+            IEnumerable<IExampleSpace<T>> subspace,
             int index)
         {
             var leftExampleSpaces = exampleSpaces.Take(index);
@@ -402,15 +422,15 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     Enumerable.Concat(new[] { exampleSpace }, rightExampleSpaces)));
         }
 
-        private static IEnumerable<ExampleSpace<T>> TraverseUnencountered<TAccumulator, T>(
+        private static IEnumerable<IExampleSpace<T>> TraverseUnencountered<TAccumulator, T>(
             IEnumerable<TAccumulator> accumulators,
-            Func<TAccumulator, ImmutableHashSet<ExampleId>, ExampleSpace<T>> generateNextExampleSpace,
+            Func<TAccumulator, ImmutableHashSet<ExampleId>, IExampleSpace<T>> generateNextExampleSpace,
             ImmutableHashSet<ExampleId> encountered)
         {
             return accumulators
                 .Scan(
-                    new UnfoldSubspaceState<ExampleSpace<T>>(
-                        new Option.None<ExampleSpace<T>>(),
+                    new UnfoldSubspaceState<IExampleSpace<T>>(
+                        new Option.None<IExampleSpace<T>>(),
                         encountered),
                     (acc, curr) =>
                     {
@@ -419,24 +439,24 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                         var hasBeenEncountered = acc.Encountered.Contains(exampleSpace.Current.Id);
                         if (hasBeenEncountered)
                         {
-                            return new UnfoldSubspaceState<ExampleSpace<T>>(
-                                new Option.None<ExampleSpace<T>>(),
+                            return new UnfoldSubspaceState<IExampleSpace<T>>(
+                                new Option.None<IExampleSpace<T>>(),
                                 acc.Encountered);
                         }
 
-                        return new UnfoldSubspaceState<ExampleSpace<T>>(
-                                new Option.Some<ExampleSpace<T>>(exampleSpace),
+                        return new UnfoldSubspaceState<IExampleSpace<T>>(
+                                new Option.Some<IExampleSpace<T>>(exampleSpace),
                                 acc.Encountered.Add(exampleSpace.Current.Id));
                     }
                 )
                 .Select(x => x.UnencounteredValue switch
                 {
-                    Option.None<ExampleSpace<T>> _ => null,
-                    Option.Some<ExampleSpace<T>> some => some.Value,
+                    Option.None<IExampleSpace<T>> _ => null,
+                    Option.Some<IExampleSpace<T>> some => some.Value,
                     _ => null
                 })
                 .Where(exampleSpace => exampleSpace != null)
-                .Cast<ExampleSpace<T>>();
+                .Cast<IExampleSpace<T>>();
         }
 
         private class UnfoldSubspaceState<T>

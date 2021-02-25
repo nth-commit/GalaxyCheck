@@ -98,7 +98,7 @@ namespace GalaxyCheck.Gens
             } while (true);
         }
 
-        private static ExampleSpace<IEnumerable<T>> CreateInfiniteEnumerableSpace(
+        private static IExampleSpace<IEnumerable<T>> CreateInfiniteEnumerableSpace(
             IGen<T> elementGen,
             IRng rng,
             Size size,
@@ -106,7 +106,7 @@ namespace GalaxyCheck.Gens
         {
             var enumerable = CreateInfiniteEnumerable(elementGen, rng, size, iterationLimit);
 
-            var rootExample = new Example<IEnumerable<T>>(
+            IExample<IEnumerable<T>> rootExample = new Example<IEnumerable<T>>(
                 ExampleId.Primitive(rng.Seed),
                 enumerable.Select(x => x.Current.Value),
                 100);
@@ -117,7 +117,7 @@ namespace GalaxyCheck.Gens
                 {
                     if (enumerable.MaxIterations == 0)
                     {
-                        return Enumerable.Empty<ExampleSpace<IEnumerable<T>>>();
+                        return Enumerable.Empty<IExampleSpace<IEnumerable<T>>>();
                     }
 
                     var exampleSpaces = enumerable.Take(enumerable.MaxIterations).ToList();
@@ -132,7 +132,7 @@ namespace GalaxyCheck.Gens
                 });
         }
 
-        private static SpyEnumerable<ExampleSpace<T>> CreateInfiniteEnumerable(
+        private static SpyEnumerable<IExampleSpace<T>> CreateInfiniteEnumerable(
             IGen<T> elementGen,
             IRng rng,
             Size size,
@@ -144,17 +144,17 @@ namespace GalaxyCheck.Gens
                 .OfType<GenInstance<T>>()
                 .Select(iteration => iteration.ExampleSpace);
 
-            return new SpyEnumerable<ExampleSpace<T>>(ThrowOnLimit(source, iterationLimit));
+            return new SpyEnumerable<IExampleSpace<T>>(ThrowOnLimit(source, iterationLimit));
         }
 
-        private static ShrinkFunc<List<ExampleSpace<T>>> ShrinkTowardsLength(int length)
+        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsLength(int length)
         {
             // If the value type is a collection, that is, this generator is building a "collection of collections",
             // it is "less complex" to order the inner collections by descending length. It also lets us find the
             // minimal shrink a lot more efficiently in some examples,
             // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
 
-            return ShrinkFunc.TowardsCount2<ExampleSpace<T>, decimal>(length, exampleSpace =>
+            return ShrinkFunc.TowardsCount2<IExampleSpace<T>, decimal>(length, exampleSpace =>
             {
                 return -exampleSpace.Current.Distance;
             });
