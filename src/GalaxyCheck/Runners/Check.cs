@@ -118,8 +118,8 @@ namespace GalaxyCheck
                 checks,
                 initialRng,
                 initialSize,
-                termination.Context.NextRng,
-                termination.Context.NextSize);
+                termination.Context.NextParameters.Rng,
+                termination.Context.NextParameters.Size);
         }
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
@@ -171,8 +171,7 @@ namespace GalaxyCheck
             int CompletedIterations,
             int Discards,
             ImmutableList<Counterexample<T>> CounterexampleHistory,
-            IRng NextRng,
-            Size NextSize)
+            GenParameters NextParameters)
         {
             internal static CheckContext<T> Create(
                 IProperty<T> property,
@@ -185,8 +184,7 @@ namespace GalaxyCheck
                         0,
                         0,
                         ImmutableList.Create<Counterexample<T>>(),
-                        initialRng,
-                        initialSize);
+                        new GenParameters(initialRng, initialSize));
 
             public Counterexample<T>? Counterexample => CounterexampleHistory
                 .OrderBy(c => c.Distance)
@@ -199,8 +197,7 @@ namespace GalaxyCheck
                 CompletedIterations + 1,
                 Discards,
                 CounterexampleHistory,
-                NextRng,
-                NextSize);
+                NextParameters);
 
             internal CheckContext<T> IncrementDiscards() => new CheckContext<T>(
                 Property,
@@ -208,8 +205,7 @@ namespace GalaxyCheck
                 CompletedIterations,
                 Discards + 1,
                 CounterexampleHistory,
-                NextRng,
-                NextSize);
+                NextParameters);
 
             internal CheckContext<T> AddCounterexample(Counterexample<T> counterexample) => new CheckContext<T>(
                 Property,
@@ -217,17 +213,15 @@ namespace GalaxyCheck
                 CompletedIterations,
                 Discards,
                 Enumerable.Concat(new[] { counterexample }, CounterexampleHistory).ToImmutableList(),
-                NextRng,
-                NextSize);
+                NextParameters);
 
-            internal CheckContext<T> WithNextRunValues(IRng nextRng, Size nextSize) => new CheckContext<T>(
+            internal CheckContext<T> WithNextGenParameters(IRng nextRng, Size nextSize) => new CheckContext<T>(
                 Property,
                 RequestedIterations,
                 CompletedIterations,
                 Discards,
                 CounterexampleHistory,
-                nextRng,
-                nextSize);
+                new GenParameters(nextRng, nextSize));
         }
 
         public static class CheckState
@@ -248,7 +242,7 @@ namespace GalaxyCheck
                         return new Termination<T>(Context);
                     }
 
-                    var iterations = Context.Property.Advanced.Run(Context.NextRng, Context.NextSize);
+                    var iterations = Context.Property.Advanced.Run(Context.NextParameters);
                     return new HandleNextIteration<T>(Context, iterations);
                 }
             }
@@ -373,7 +367,7 @@ namespace GalaxyCheck
                 {
                     return new Initial<T>(context
                         .IncrementCompletedIterations()
-                        .WithNextRunValues(instance.NextRng, instance.NextSize.Increment()));
+                        .WithNextGenParameters(instance.NextRng, instance.NextSize.Increment()));
                 }
 
                 private static CheckState<T> NextStateWithCounterexample(
@@ -387,7 +381,7 @@ namespace GalaxyCheck
 
                     var nextContext = context
                         .IncrementCompletedIterations()
-                        .WithNextRunValues(nextRng, nextSize)
+                        .WithNextGenParameters(nextRng, nextSize)
                         .AddCounterexample(counterexample);
 
                     if (nextContext.CompletedIterations == nextContext.RequestedIterations)
@@ -418,7 +412,7 @@ namespace GalaxyCheck
                         return new Termination<T>(nextContext);
                     }
 
-                    return new Initial<T>(nextContext.WithNextRunValues(nextRng, nextSize));
+                    return new Initial<T>(nextContext.WithNextGenParameters(nextRng, nextSize));
                 }
             }
 

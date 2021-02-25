@@ -84,7 +84,7 @@ namespace GalaxyCheck
 
         private static IEnumerable<GenInstance<T>> Sample<T>(this IGenAdvanced<T> advanced, IRng rng, Size size)
         {
-            var stream = advanced.Run(rng, size).WithDiscardCircuitBreaker(iteration => iteration is GenDiscard<T>);
+            var stream = advanced.Run(new GenParameters(rng, size)).WithDiscardCircuitBreaker(iteration => iteration is GenDiscard<T>);
 
             foreach (var iteration in stream)
             {

@@ -8,6 +8,6 @@ namespace GalaxyCheck.Internal.Gens
     {
         protected abstract IGen<T> Gen { get; }
 
-        protected override IEnumerable<IGenIteration<T>> Run(IRng rng, Size size) => Gen.Advanced.Run(rng, size);
+        protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => Gen.Advanced.Run(parameters);
     }
 }

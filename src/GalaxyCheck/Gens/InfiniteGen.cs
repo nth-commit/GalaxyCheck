@@ -82,17 +82,18 @@ namespace GalaxyCheck.Gens
 
         public IInfiniteGen<T> WithoutIterationLimit() => new InfiniteGen<T>(_elementGen, null);
 
-        protected override IEnumerable<IGenIteration<IEnumerable<T>>> Run(IRng rng, Size size)
+        protected override IEnumerable<IGenIteration<IEnumerable<T>>> Run(GenParameters parameters)
         {
+            var rng = parameters.Rng;
             do
             {
                 var initialRng = rng;
                 var nextRng = initialRng.Next();
                 var forkedRng = initialRng.Fork();
 
-                var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, forkedRng, size, _iterationLimit);
+                var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, forkedRng, parameters.Size, _iterationLimit);
 
-                yield return new GenInstance<IEnumerable<T>>(initialRng, size, nextRng, size, exampleSpace);
+                yield return new GenInstance<IEnumerable<T>>(initialRng, parameters.Size, nextRng, parameters.Size, exampleSpace);
 
                 rng = rng.Next();
             } while (true);
@@ -139,7 +140,7 @@ namespace GalaxyCheck.Gens
             int? iterationLimit)
         {
             var source = elementGen.Advanced
-                .Run(rng, size)
+                .Run(new GenParameters(rng, size))
                 .WithDiscardCircuitBreaker(iteration => iteration is GenDiscard<T>)
                 .OfType<GenInstance<T>>()
                 .Select(iteration => iteration.ExampleSpace);
