@@ -1,11 +1,11 @@
-﻿using GalaxyCheck.Internal.Utility;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Internal.Utility;
 
 namespace GalaxyCheck
 {
@@ -32,7 +32,7 @@ namespace GalaxyCheck
 
                 foreach (var iteration in stream)
                 {
-                    if (iteration is GenInstance<TResult> instance)
+                    if (iteration.ToEither<TResult, TResult>().IsLeft(out IGenInstance<TResult> instance))
                     {
                         yield return instance.ExampleSpace;
                     }
@@ -67,22 +67,26 @@ namespace GalaxyCheck
             {
                 return selector(exampleSpace.Current.Value).Advanced
                     .Run(new GenParameters(rng, size))
-                    .TakeWhileInclusive(iteration => iteration is not GenInstance<TResult>)
+                    .TakeWhileInclusive(iteration => !iteration.IsInstance())
                     .Select(iteration =>
                     {
-                        if (iteration is not GenInstance<TResult> instance)
-                        {
-                            return iteration;
-                        }
+                        return iteration.Match(
+                            onInstance: instance =>
+                            {
+                                var jointExampleSpace = JoinExampleSpaces(
+                                    exampleSpace,
+                                    instance.ExampleSpace,
+                                    selector,
+                                    rng,
+                                    size);
 
-                        var jointExampleSpace = JoinExampleSpaces(
-                            exampleSpace,
-                            instance.ExampleSpace,
-                            selector,
-                            rng,
-                            size);
-
-                        return GenIterationBuilder.FromIteration(instance).ToInstance(jointExampleSpace);
+                                return GenIterationFactory.Instance(
+                                    iteration.RepeatParameters,
+                                    iteration.NextParameters,
+                                    jointExampleSpace);
+                            },
+                            onError: error => error,
+                            onDiscard: discard => discard);
                     });
             };
 
@@ -96,16 +100,9 @@ namespace GalaxyCheck
 
                 foreach (var iteration in stream)
                 {
-                    var iterationBuilder = GenIterationBuilder.FromIteration(iteration);
+                    var either = iteration.ToEither<T, TResult>();
 
-                    if (iteration is not GenInstance<T> instance)
-                    {
-                        yield return iteration.Match<T, GenIteration<TResult>>(
-                            onInstance: _ => throw new NotSupportedException(),
-                            onDiscard: discard => iterationBuilder.ToDiscard<TResult>(),
-                            onError: error => iterationBuilder.ToError<TResult>(error.GenName, error.Message));
-                    }
-                    else
+                    if (either.IsLeft(out IGenInstance<T> instance))
                     {
                         var innerStream = BindExampleSpace(
                             instance.ExampleSpace,
@@ -115,18 +112,30 @@ namespace GalaxyCheck
 
                         foreach (var innerIteration in innerStream)
                         {
-                            var innerIterationBuilder = GenIterationBuilder
-                                .FromIteration(iteration)
-                                .WithNextRng(innerIteration.NextParameters.Rng)
-                                .WithNextSize(innerIteration.NextParameters.Size);
-
-                            yield return innerIteration.Match<TResult, GenIteration<TResult>>(
-                                onInstance: instance => innerIterationBuilder.ToInstance(instance.ExampleSpace),
-                                onDiscard: discard => innerIterationBuilder.ToDiscard<TResult>(),
-                                onError: error => innerIterationBuilder.ToError<TResult>(error.GenName, error.Message));
+                            yield return innerIteration.Match(
+                                onInstance: innerInstance => GenIterationFactory.Instance(
+                                    iteration.RepeatParameters,
+                                    innerIteration.NextParameters,
+                                    innerInstance.ExampleSpace),
+                                onError: innerError => GenIterationFactory.Error<TResult>(
+                                    iteration.RepeatParameters,
+                                    innerIteration.NextParameters,
+                                    innerError.GenName,
+                                    innerError.Message),
+                                onDiscard: innerDiscard => GenIterationFactory.Discard<TResult>(
+                                    iteration.RepeatParameters,
+                                    innerIteration.NextParameters));
                         }
 
                         break;
+                    }
+                    else if (either.IsRight(out IGenIteration<TResult> nonInstance))
+                    {
+                        yield return nonInstance;
+                    }
+                    else
+                    {
+                        throw new Exception("Fatal: Unhandled branch");
                     }
                 }
             }

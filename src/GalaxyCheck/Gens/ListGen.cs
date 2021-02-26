@@ -1,8 +1,10 @@
 ﻿using GalaxyCheck.Gens;
 using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Internal.GenIterations.Data.Generic;
 using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.Sizing;
+using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -233,41 +235,42 @@ namespace GalaxyCheck.Gens
         {
             IEnumerable<IGenIteration<ImmutableList<T>>> Run(GenParameters parameters)
             {
-                var result = ImmutableList<GenInstance<T>>.Empty;
+                var instances = ImmutableList<IGenInstance<T>>.Empty;
 
                 var elementIterationEnumerator = elementGen.Advanced.Run(parameters).GetEnumerator();
 
-                while (result.Count < length)
+                while (instances.Count < length)
                 {
                     if (!elementIterationEnumerator.MoveNext())
                     {
                         throw new Exception("Fatal: Element generator exhausted");
                     }
 
-                    var elementIteration = elementIterationEnumerator.Current;
-                    if (elementIteration is GenInstance<T> elementInstance)
+                    var either = elementIterationEnumerator.Current.ToEither<T, ImmutableList<T>>();
+
+                    if (either.IsLeft(out IGenInstance<T> instance))
                     {
-                        result = result.Add(elementInstance);
+                        instances = instances.Add(instance);
+                    }
+                    else if (either.IsRight(out IGenIteration<ImmutableList<T>> right))
+                    {
+                        yield return right;
                     }
                     else
                     {
-                        var elementIterationBuilder = GenIterationBuilder.FromIteration(elementIteration);
-                        yield return elementIteration.Match<T, GenIteration<ImmutableList<T>>>(
-                            onInstance: _ => throw new NotSupportedException(),
-                            onDiscard: discard => elementIterationBuilder.ToDiscard<ImmutableList<T>>(),
-                            onError: error => elementIterationBuilder.ToError<ImmutableList<T>>(error.GenName, error.Message));
+                        throw new Exception("Fatal: Unhandled branch");
                     }
                 }
 
-                var nextParameters = result.Any() ? result.Last().NextParameters : parameters;
+                var nextParameters = instances.Any() ? instances.Last().NextParameters : parameters;
 
                 var exampleSpace = ExampleSpace.Merge(
-                    result.Select(instance => instance.ExampleSpace).ToList(),
+                    instances.Select(instance => instance.ExampleSpace).ToList(),
                     values => values.ToImmutableList(),
                     shrink,
                     exampleSpaces => exampleSpaces.Count());
 
-                yield return new GenInstance<ImmutableList<T>>(parameters, nextParameters, exampleSpace);
+                yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
             }
 
             return new FunctionalGen<ImmutableList<T>>(Run).Repeat();

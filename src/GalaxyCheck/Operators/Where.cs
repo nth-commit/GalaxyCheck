@@ -20,11 +20,13 @@ namespace GalaxyCheck
         {
             GenInstanceTransformation<T, T> applyPredicateToInstance = (instance) =>
             {
-                var iterationBuilder = GenIterationBuilder.FromIteration(instance);
                 var filteredExampleSpace = instance.ExampleSpace.Filter(pred);
-                return filteredExampleSpace == null
-                    ? iterationBuilder.ToDiscard<T>()
-                    : iterationBuilder.ToInstance(filteredExampleSpace);
+                if (filteredExampleSpace == null)
+                {
+                    return GenIterationFactory.Discard<T>(instance.RepeatParameters, instance.NextParameters);
+                }
+
+                return GenIterationFactory.Instance(instance.RepeatParameters, instance.NextParameters, filteredExampleSpace);
             };
 
             GenStreamTransformation<T, T> resizeAndTerminateAfterConsecutiveDiscards = (stream) =>
@@ -32,18 +34,18 @@ namespace GalaxyCheck
                 const int MaxConsecutiveDiscards = 10;
 
                 return stream
-                    .WithConsecutiveDiscardCount(iteration => iteration is GenDiscard<T>)
+                    .WithConsecutiveDiscardCount(iteration => iteration.IsDiscard())
                     .Select((x) =>
                     {
                         var (iteration, consecutiveDiscardCount) = x;
 
                         if (consecutiveDiscardCount >= MaxConsecutiveDiscards)
                         {
-                            var resizedIteration = GenIterationBuilder
-                                .FromIteration(iteration)
-                                .WithNextSize(iteration.NextParameters.Size.BigIncrement())
-                                .ToDiscard<T>();
-                            return (resizedIteration, consecutiveDiscardCount);
+                            var resizedIteration = GenIterationFactory.Discard<T>(
+                                iteration.RepeatParameters,
+                                new GenParameters(iteration.NextParameters.Rng, iteration.NextParameters.Size.BigIncrement()));
+
+                            return (iteration: resizedIteration, consecutiveDiscardCount);
                         }
                         else
                         {
