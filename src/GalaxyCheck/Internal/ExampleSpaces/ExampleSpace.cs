@@ -58,6 +58,18 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
     public static class ExampleSpaceExtensions
     {
+        public static IExampleSpace<T> Cast<T>(this IExampleSpace exampleSpace)
+        {
+            var example = new Example<T>(
+                exampleSpace.Current.Id,
+                (T)exampleSpace.Current.Value,
+                exampleSpace.Current.Distance);
+
+            var subspace = exampleSpace.Subspace.Select(child => Cast<T>(child));
+
+            return new ExampleSpace<T>(example, subspace);
+        }
+
         /// <summary>
         /// Maps all of the example values in an example space by the given selector function.
         /// </summary>
