@@ -61,11 +61,14 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
         }
 
         private Property AnInfallibleNestedPropertyFunction(int x) => Gen.Constant<object?>(null).ForAll(_ => true);
+        private Property AnInfallibleNestedPropertyFunctionWithVaryingTypes(int x) => Gen.Constant(true).ForAll(_ => true);
 
-        [Fact]
-        public void ANestedPropertyMethodInfoCanBeUnfalsifiable()
+        [Theory]
+        [InlineData(nameof(AnInfallibleNestedPropertyFunction))]
+        [InlineData(nameof(AnInfallibleNestedPropertyFunctionWithVaryingTypes))]
+        public void ANestedPropertyMethodInfoCanBeUnfalsifiable(string methodName)
         {
-            var property = GetMethod(nameof(AnInfallibleNestedPropertyFunction)).ToProperty(this);
+            var property = GetMethod(methodName).ToProperty(this);
 
             var checkResult = property.Check();
 

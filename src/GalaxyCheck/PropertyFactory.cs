@@ -59,7 +59,7 @@ namespace GalaxyCheck
                 let property = (Property)methodInfo.Invoke(target, parameters)
                 from propertyIteration in property
                 select new Property<object[]>.Iteration(
-                    (x) => propertyIteration.Func(x[0]),
+                    (x) => propertyIteration.Func(x.Last()),
                     parameters.Append(propertyIteration.Input).ToArray());
 
             return new Property<object[]>(gen);
