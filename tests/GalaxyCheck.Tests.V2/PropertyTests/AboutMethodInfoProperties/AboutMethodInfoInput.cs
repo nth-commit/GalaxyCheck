@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Xunit;
-
 using GalaxyCheck;
 using DevGen = GalaxyCheck.Gen;
+using System.Reflection;
 
 namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
 {
@@ -21,6 +21,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
             var gen1 = DevGen.Int32();
 
             var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => { });
+            DevGen.Select(forAllProperty, x => new object[] { x.Input.Item1, x.Input.Item2 });
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             Action<int, int> f = (x, y) => { };
@@ -46,7 +47,12 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
         }
 
-        [Fact(Skip = "TODO")]
+        private Property ARecursiveProperty(int x)
+        {
+            return DevGen.Int32().ForAll(y => true);
+        }
+
+        [Fact]
         public void APropertyReturningMethodInfoReceivesAConcatenationOfInput()
         {
             var gen0 = DevGen.Int32();
@@ -55,11 +61,42 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
             var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
-            Func<int, IProperty<int>> f = (x) => gen1.ForAll(y => true);
-            var methodInfoProperty = f.Method.ToProperty(null);
+            var methodInfoProperty = GetMethod(nameof(ARecursiveProperty)).ToProperty(this);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
-            GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
+            GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);
+        }
+
+        private Property<int> AGenericRecursiveProperty(int x)
+        {
+            return DevGen.Int32().ForAll(y => true);
+        }
+
+        [Fact(Skip = "Not yet supported")]
+        public void AGenericPropertyReturningMethodInfoReceivesAConcatenationOfInput()
+        {
+            var gen0 = DevGen.Int32();
+            var gen1 = DevGen.Int32();
+
+            var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => true);
+            var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
+
+            var methodInfoProperty = GetMethod(nameof(AGenericRecursiveProperty)).ToProperty(this);
+            var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
+
+            GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);
+        }
+
+        private static MethodInfo GetMethod(string name)
+        {
+            var methodInfo = typeof(AboutMethodInfoInput).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (methodInfo == null)
+            {
+                throw new Exception("Unable to locate method");
+            }
+
+            return methodInfo;
         }
     }
 }

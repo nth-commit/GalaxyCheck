@@ -10,7 +10,7 @@ namespace GalaxyCheck
         private static string FormatDefault<T>(T value) => System.Text.Json.JsonSerializer.Serialize(value);
 
         public static void Print<T>(
-            this IProperty<T> property,
+            this Property<T> property,
             int? iterations = null,
             int? seed = null,
             int? size = null)

@@ -9,7 +9,7 @@ namespace GalaxyCheck
     public static partial class Gen
     {
         public static void Assert<T>(
-            this IProperty<T> property,
+            this Property<T> property,
             int? iterations = null,
             int? seed = null,
             int? size = null)
