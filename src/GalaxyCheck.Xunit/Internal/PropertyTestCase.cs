@@ -69,8 +69,19 @@ namespace GalaxyCheck.Xunit.Internal
                 return Fail(methodInfoValidationException);
             }
 
-            var propertyFailedException = RunProperty(TestMethod.TestClass.Class.ToRuntimeType(), methodInfo, constructorArguments);
-            return propertyFailedException == null ? Pass() : Fail(propertyFailedException);
+            var testClass = TestMethod.TestClass.Class.ToRuntimeType();
+            var testInstance = Activator.CreateInstance(testClass, constructorArguments);
+            var property = methodInfo.ToProperty(testInstance);
+
+            try
+            {
+                RunProperty(property, testOutputHelper);
+                return Pass();
+            }
+            catch (Exception propertyFailedException)
+            {
+                return Fail(propertyFailedException);
+            }
         }
 
         private static Exception? ValidateMethod(MethodInfo methodInfo)
@@ -92,43 +103,22 @@ namespace GalaxyCheck.Xunit.Internal
             return null;
         }
 
-        private static Exception? RunProperty(
-            Type testClass,
-            MethodInfo testMethod,
-            object[] constructorArguments)
+        protected virtual void RunProperty(Property<object[]> property, ITestOutputHelper testOutputHelper)
         {
-            var testInstance = Activator.CreateInstance(testClass, constructorArguments);
-            var property = testMethod.ToProperty(testInstance);
-
-            try
-            {
-                property.Assert(
-                    formatValue: x => JsonSerializer.Serialize(x),
-                    formatReproduction: (x) =>
-                    {
-                        var attributes =
-                            new List<(string name, string value)>
-                            {
-                                ("Seed", x.seed.ToString(CultureInfo.InvariantCulture)),
-                                ("Size", x.size.ToString(CultureInfo.InvariantCulture)),
-                            }
-                            .Select(x => $"{x.name} = {x.value}");
-
-                        return $"({ string.Join(", ", attributes) })";
-                    });
-                return null;
-            }
-            catch (Exception ex)
-            {
-                return ex;
-            }
-            finally
-            {
-                if (testInstance is IDisposable disposable)
+            property.Assert(
+                formatValue: x => JsonSerializer.Serialize(x),
+                formatReproduction: (x) =>
                 {
-                    disposable.Dispose();
-                }
-            }
+                    var attributes =
+                        new List<(string name, string value)>
+                        {
+                            ("Seed", x.seed.ToString(CultureInfo.InvariantCulture)),
+                            ("Size", x.size.ToString(CultureInfo.InvariantCulture)),
+                        }
+                        .Select(x => $"{x.name} = {x.value}");
+
+                    return $"({ string.Join(", ", attributes) })";
+                });
         }
     }
 }
