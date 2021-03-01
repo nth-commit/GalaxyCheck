@@ -35,13 +35,13 @@ namespace GalaxyCheck.Internal.Gens
                 {
                     var either = GenIterationExtensions.ToEither<T, U>(iteration);
 
-                    if (EitherExtension.IsLeft<IGenInstance<T>, GenIterations.IGenIteration<U>>(either, out IGenInstance<T> instance))
+                    if (EitherExtension.IsLeft(either, out IGenInstance<T> instance))
                     {
-                        return (GenIterations.IGenIteration<U>)transformation(instance);
+                        return transformation(instance);
                     }
-                    else if (EitherExtension.IsRight<IGenInstance<T>, GenIterations.IGenIteration<U>>(either, out IGenIteration<U> iterationConverted))
+                    else if (EitherExtension.IsRight(either, out IGenIteration<U> iterationConverted))
                     {
-                        return (GenIterations.IGenIteration<U>)iterationConverted;
+                        return iterationConverted;
                     }
                     else
                     {

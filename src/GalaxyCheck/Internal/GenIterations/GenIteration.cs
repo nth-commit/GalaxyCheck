@@ -171,11 +171,6 @@ namespace GalaxyCheck.Internal.GenIterations
         IGenData Data { get; }
     }
 
-    public record GenIteration2(
-        GenParameters RepeatParameters,
-        GenParameters NextParameters,
-        IGenData Data) : IGenIteration;
-
     public interface IGenIteration<out T> : IGenIteration
     {
         new IGenData<T> Data { get; }
