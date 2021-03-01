@@ -1,0 +1,137 @@
+﻿using FluentAssertions;
+using NebulaCheck;
+using NebulaCheck.Xunit;
+using System;
+using System.Linq;
+using Xunit;
+using GalaxyCheck;
+using DevGen = GalaxyCheck.Gen;
+using static Tests.V2.DomainGen;
+
+namespace Tests.V2.RunnerTests.AssertTests
+{
+    public class AboutAssert
+    {
+        [Property]
+        public void ItCanPassForAVoidProperty(
+            [Iterations] int iterations,
+            [Seed] int seed,
+            [Size] int size)
+        {
+            Action action = () => DevGen
+                .Int32()
+                .ForAll(_ => { })
+                .Assert(iterations: iterations, seed: seed, size: size);
+
+            action.Should().NotThrow();
+        }
+
+        [Property]
+        public void ItCanFailForAVoidProperty_FirstIteration(
+            [Iterations] int iterations,
+            [Seed] int seed,
+            [Size] int size)
+        {
+            Action action = () => DevGen
+                .Int32()
+                .ForAll(_ => Assert.True(false))
+                .Assert(iterations: iterations, seed: seed, size: size);
+
+            action
+                .Should()
+                .Throw<GalaxyCheck.Runners.PropertyFailedException>()
+                .WithMessage($@"
+                    Falsified after 1 test
+                    Reproduction: (Seed = {seed}, Size = {size})
+                    Counterexample: 0
+
+                    ---- Assert.True() Failure
+                    Expected: True
+                    Actual:   False".TrimIndent());
+        }
+
+        [Property]
+        public void ItCanFailForAVoidProperty_NthIteration(
+            [Iterations(minIterations: 2)] int iterations,
+            [Seed] int seed,
+            [Size] int size)
+        {
+            var iterationCounter = 0;
+            var hasFailed = false;
+
+            Action action = () => DevGen
+                .Int32()
+                .ForAll(_ =>
+                {
+                    iterationCounter++;
+                    if (iterationCounter >= iterations && !hasFailed)
+                    {
+                        hasFailed = true;
+                        Assert.True(false);
+                    }
+                })
+                .Assert(iterations: iterations, seed: seed, size: size);
+
+            action
+                .Should()
+                .Throw<GalaxyCheck.Runners.PropertyFailedException>()
+                .WithMessage(@$"
+
+                    Falsified after {iterations} tests*".TrimIndent());
+        }
+
+        [Property]
+        public void ItCanPassForABooleanProperty(
+            [Iterations] int iterations,
+            [Seed] int seed,
+            [Size] int size)
+        {
+            Action action = () => DevGen
+                .Int32()
+                .ForAll(_ => true)
+                .Assert(iterations: iterations, seed: seed, size: size);
+
+            action.Should().NotThrow();
+        }
+
+        [Property]
+        public void ItCanFailForABooleanProperty(
+            [Iterations] int iterations,
+            [Seed] int seed,
+            [Size] int size)
+        {
+            Action action = () => DevGen
+                .Int32()
+                .ForAll(_ => false)
+                .Assert(iterations: iterations, seed: seed, size: size);
+
+            action
+                .Should()
+                .Throw<GalaxyCheck.Runners.PropertyFailedException>()
+                .WithMessage($@"
+
+                    Falsified after 1 test
+                    Reproduction: (Seed = {seed}, Size = {size})
+                    Counterexample: 0
+
+                    Property function returned false".TrimIndent());
+        }
+
+        [Property]
+        public void WhenIterationsIsZero_ItPasses(
+            [Seed] int seed,
+            [Size] int size,
+            int isPropertyFallibleIndicator)
+        {
+            // TODO: Boolean gens not working
+            var isPropertyFallible = isPropertyFallibleIndicator % 2 == 1;
+
+            Action action = () => DevGen
+                .Int32()
+                .ForAll(_ => isPropertyFallible)
+                .Assert(iterations: 0, seed: seed, size: size);
+
+            action.Should().NotThrow();
+        }
+    }
+}
