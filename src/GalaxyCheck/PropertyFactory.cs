@@ -6,7 +6,7 @@ namespace GalaxyCheck
 {
     public static class PropertyFactory
     {
-        public static Property ToProperty(this MethodInfo methodInfo, object? target)
+        public static Property<object[]> ToProperty(this MethodInfo methodInfo, object? target)
         {
             return methodInfo.ReturnType == typeof(void)
                 ? ToVoidProperty(methodInfo, target)
@@ -52,7 +52,7 @@ namespace GalaxyCheck
             return type == typeof(Property);
         }
 
-        private static Property ToNestedProperty(MethodInfo methodInfo, object? target)
+        private static Property<object[]> ToNestedProperty(MethodInfo methodInfo, object? target)
         {
             var gen =
                 from parameters in Gen.Parameters(methodInfo)

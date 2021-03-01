@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using Xunit;
 using Gen = NebulaCheck.Gen;
-
 using GalaxyCheck;
 using DevGen = GalaxyCheck.Gen;
 
@@ -62,7 +61,7 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action
                         .Should()
-                        .Throw<GalaxyCheck.Runners.PropertyFailedException<int>>()
+                        .Throw<GalaxyCheck.Runners.PropertyFailedException>()
                         .WithMessage($@"
 
                             Falsified after 1 test
@@ -101,7 +100,7 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action
                         .Should()
-                        .Throw<GalaxyCheck.Runners.PropertyFailedException<int>>()
+                        .Throw<GalaxyCheck.Runners.PropertyFailedException>()
                         .WithMessage(@$"
                             
                             Falsified after {iterations} tests*".TrimIndent());
@@ -123,7 +122,7 @@ namespace Tests.V2.RunnerTests.Assert
 
                     action
                         .Should()
-                        .Throw<GalaxyCheck.Runners.PropertyFailedException<int>>()
+                        .Throw<GalaxyCheck.Runners.PropertyFailedException>()
                         .WithMessage($@"
 
                             Falsified after 1 test

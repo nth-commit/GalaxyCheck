@@ -36,6 +36,38 @@ namespace Tests
             testResult.Outcome.Should().Be("Failed");
         }
 
+        [Fact]
+        public void InfallibleBooleanProperty()
+        {
+            var testResult = _fixture.FindTestResult(nameof(InfallibleBooleanProperty));
+
+            testResult.Outcome.Should().Be("Passed");
+        }
+
+        [Fact]
+        public void FallibleBooleanProperty()
+        {
+            var testResult = _fixture.FindTestResult(nameof(FallibleBooleanProperty));
+
+            testResult.Outcome.Should().Be("Failed");
+        }
+
+        [Fact]
+        public void InfallibleNestedProperty()
+        {
+            var testResult = _fixture.FindTestResult(nameof(InfallibleNestedProperty));
+
+            testResult.Outcome.Should().Be("Passed");
+        }
+
+        [Fact]
+        public void FallibleNestedProperty()
+        {
+            var testResult = _fixture.FindTestResult(nameof(FallibleNestedProperty));
+
+            testResult.Outcome.Should().Be("Failed");
+        }
+
         public record Invocation(object[] InjectedParameters);
 
         public record TestResult(string TestName, string Outcome, ImmutableList<Invocation> Invocations);
