@@ -1,3 +1,4 @@
+using GalaxyCheck;
 using GalaxyCheck.Xunit;
 using Newtonsoft.Json;
 using System;
@@ -15,16 +16,43 @@ namespace IntegrationSample
         }
 
         [Property]
-        public void InfallibleVoidProperty()
+        public void InfallibleVoidProperty(int x)
         {
             AnnounceTestInvocation(nameof(InfallibleVoidProperty));
         }
 
         [Property]
-        public void FallibleVoidProperty()
+        public void FallibleVoidProperty(int x)
         {
             AnnounceTestInvocation(nameof(FallibleVoidProperty));
             throw new Exception("Failed!");
+        }
+
+        [Property]
+        public void InfallibleBooleanProperty(int x)
+        {
+            AnnounceTestInvocation(nameof(InfallibleBooleanProperty));
+        }
+
+        [Property]
+        public void FallibleBooleanProperty(int x)
+        {
+            AnnounceTestInvocation(nameof(FallibleBooleanProperty));
+            throw new Exception("Failed!");
+        }
+
+        [Property]
+        public Property InfallibleNestedProperty(int x)
+        {
+            AnnounceTestInvocation(nameof(InfallibleNestedProperty));
+            return Gen.Int32().ForAll(y => { });
+        }
+
+        [Property]
+        public Property FallibleNestedProperty(int x)
+        {
+            AnnounceTestInvocation(nameof(FallibleNestedProperty));
+            return Gen.Int32().ForAll(y => { throw new Exception("Failed!"); });
         }
 
         private void AnnounceTestInvocation(string testName, params object[] injectedValues)

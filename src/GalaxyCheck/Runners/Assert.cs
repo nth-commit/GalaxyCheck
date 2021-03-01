@@ -12,38 +12,69 @@ namespace GalaxyCheck
             this Property<T> property,
             int? iterations = null,
             int? seed = null,
-            int? size = null)
+            int? size = null,
+            Func<object?, string>? formatValue = null,
+            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction = null)
         {
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
+
             if (checkResult.Falsified)
             {
-                throw new PropertyFailedException<T>(checkResult.Counterexample!, checkResult.Iterations);
+                throw new PropertyFailedException(
+                    BoxCounterexample(checkResult.Counterexample!),
+                    checkResult.Iterations,
+                    formatValue,
+                    formatReproduction);
             }
+        }
+
+        private static Counterexample<object?> BoxCounterexample<T>(Counterexample<T> counterexample)
+        {
+            var value = (object)counterexample.Value!;
+            return new Counterexample<object?>(
+                counterexample.Id,
+                value,
+                counterexample.Distance,
+                counterexample.RepeatParameters,
+                counterexample.RepeatPath,
+                counterexample.Exception);
         }
     }
 }
 
 namespace GalaxyCheck.Runners
 {
-    public class PropertyFailedException<T> : Exception
+    public class PropertyFailedException : Exception
     {
-        public PropertyFailedException(Counterexample<T> counterexample, int iterations)
-            : base(BuildMessage(counterexample, iterations))
+        public PropertyFailedException(
+            Counterexample<object?> counterexample,
+            int iterations,
+            Func<object?, string>? formatValue,
+            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
+            : base(BuildMessage(counterexample, iterations, formatValue, formatReproduction))
         {
         }
 
-        private static string BuildMessage(Counterexample<T> counterexample, int iterations) =>
-            string.Join(Environment.NewLine, BuildLines(counterexample, iterations));
+        private static string BuildMessage(
+            Counterexample<object?> counterexample,
+            int iterations,
+            Func<object?, string>? formatValue,
+            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction) =>
+                string.Join(Environment.NewLine, BuildLines(counterexample, iterations, formatValue, formatReproduction));
 
-        private static IEnumerable<string> BuildLines(Counterexample<T> counterexample, int iterations)
+        private static IEnumerable<string> BuildLines(
+            Counterexample<object?> counterexample,
+            int iterations,
+            Func<object?, string>? formatValue,
+            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
         {
             const string LineBreak = "";
 
             yield return LineBreak;
 
             yield return FalsifiedAfterLine(iterations);
-            yield return ReproductionLine(counterexample);
-            yield return CounterexampleValueLine(counterexample);
+            yield return ReproductionLine(counterexample, formatReproduction);
+            yield return CounterexampleValueLine(counterexample, formatValue);
 
             yield return LineBreak;
             if (counterexample.Exception == null)
@@ -58,24 +89,41 @@ namespace GalaxyCheck.Runners
 
         private static string FalsifiedAfterLine(int iterations) => iterations == 1 ? "Falsified after 1 test" : $"Falsified after {iterations} tests";
 
-        private static string ReproductionLine(Counterexample<T> counterexample)
+        private static string ReproductionLine(
+            Counterexample<object?> counterexample,
+            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
         {
-            var pathFormatted = "new [] { }";
+            static string PrefixLine(string reproductionFormatted) => $"Reproduction: {reproductionFormatted}";
 
-            var attributes =
-                new List<(string name, string value)>
-                {
-                    ("Seed", counterexample.RepeatParameters.Rng.Seed.ToString(CultureInfo.InvariantCulture)),
-                    ("Size", counterexample.RepeatParameters.Size.Value.ToString(CultureInfo.InvariantCulture)),
-                    ("Path", pathFormatted)
-                }
-                .Select(x => $"{x.name} = {x.value}");
+            var seed = counterexample.RepeatParameters.Rng.Seed;
+            var size = counterexample.RepeatParameters.Size.Value;
 
-            return $"Reproduction: ({string.Join(", ", attributes)})";
+            if (formatReproduction == null)
+            {
+                var attributes =
+                    new List<(string name, string value)>
+                    {
+                        ("Seed", seed.ToString(CultureInfo.InvariantCulture)),
+                        ("Size", size.ToString(CultureInfo.InvariantCulture)),
+                    }
+                    .Select(x => $"{x.name} = {x.value}");
+
+                return PrefixLine($"({string.Join(", ", attributes)})");
+            }
+            else
+            {
+                var reproduction = (seed, size, counterexample.RepeatPath);
+                return PrefixLine(formatReproduction(reproduction));
+            }
         }
 
-        private static string CounterexampleValueLine(Counterexample<T> counterexample) =>
-            $"Counterexample: {counterexample.Value}";
+        private static string CounterexampleValueLine(
+            Counterexample<object?> counterexample,
+            Func<object?, string>? formatValue)
+        {
+            var formattedValue = formatValue?.Invoke(counterexample.Value) ?? counterexample.Value?.ToString();
+            return $"Counterexample: {formattedValue}";
+        }
 
         private static string ExceptionLine(Exception ex) => $"---- {ex.Message}";
     }
