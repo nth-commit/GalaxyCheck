@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NebulaCheck;
 using NebulaCheck.Xunit;
+using Property = NebulaCheck.Property;
 using System;
 using System.Linq;
 using Xunit;
@@ -118,20 +119,21 @@ namespace Tests.V2.RunnerTests.AssertTests
         }
 
         [Property]
-        public void WhenIterationsIsZero_ItPasses(
+        public Property WhenIterationsIsZero_ItPasses(
             [Seed] int seed,
-            [Size] int size,
-            int isPropertyFallibleIndicator)
+            [Size] int size)
         {
-            // TODO: Boolean gens not working
-            var isPropertyFallible = isPropertyFallibleIndicator % 2 == 1;
+            // TODO: Inject bool when it is supported natively
 
-            Action action = () => DevGen
-                .Int32()
-                .ForAll(_ => isPropertyFallible)
-                .Assert(iterations: 0, seed: seed, size: size);
+            return Boolean().ForAll(isPropertyFallible =>
+            {
+                Action action = () => DevGen
+                    .Int32()
+                    .ForAll(_ => isPropertyFallible)
+                    .Assert(iterations: 0, seed: seed, size: size);
 
-            action.Should().NotThrow();
+                action.Should().NotThrow();
+            });
         }
     }
 }
