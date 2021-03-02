@@ -82,9 +82,11 @@ namespace GalaxyCheck
                 seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
                 size == null ? Size.MinValue : new Size(size.Value));
 
+            ResizeStrategy<T> resizeStrategy = size == null ? SuperStrategicResize<T> : NoopResize<T>;
+
             var states = EnumerableExtensions
                 .Unfold(
-                    CheckState.Begin<T>(property, iterations ?? 100, initialParameters),
+                    CheckState.Begin(property, iterations ?? 100, initialParameters, resizeStrategy),
                     prevState => prevState is CheckState.Termination<T>
                         ? new Option.None<CheckState<T>>()
                         : new Option.Some<CheckState<T>>(prevState.NextState()));
@@ -110,6 +112,41 @@ namespace GalaxyCheck
                 initialParameters,
                 termination.Context.NextParameters);
         }
+
+        /// <summary>
+        /// When a resize is called for, do a small increment if the iteration wasn't a counterexample. This increment
+        /// may loop back to zero. If it was a counterexample, no time to screw around. Activate turbo-mode and
+        /// accelerate towards max size, and never loop back to zero. Because we know this is a fallible property, we 
+        /// should generate bigger values, because bigger values are more likely to be able to normalize.
+        /// </summary>
+        /// <returns></returns>
+        private static Size SuperStrategicResize<T>(IGenIteration<IPropertyIteration<T>> lastIteration, bool wasCounterexample)
+        {
+            return lastIteration.Match(
+                onInstance: instance =>
+                {
+                    if (wasCounterexample == false)
+                    {
+                        return instance.NextParameters.Size.Increment();
+                    }
+
+                    var nextSize = instance.NextParameters.Size.BigIncrement();
+
+                    var incrementWrappedToZero = nextSize.Value < instance.NextParameters.Size.Value;
+                    if (incrementWrappedToZero)
+                    {
+                        // Clamp to MaxValue
+                        return Size.MaxValue;
+                    }
+
+                    return nextSize;
+                },
+                onError: error => error.NextParameters.Size,
+                onDiscard: discard => discard.NextParameters.Size);
+        }
+
+        private static Size NoopResize<T>(IGenIteration<IPropertyIteration<T>> lastIteration, bool wasCounterexample) =>
+            lastIteration.NextParameters.Size;
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {
@@ -152,25 +189,30 @@ namespace GalaxyCheck
             internal abstract CheckState<T> NextState();
         }
 
+        public delegate Size ResizeStrategy<T>(IGenIteration<IPropertyIteration<T>> lastIteration, bool wasCounterexample);
+
         public record CheckContext<T>(
             Property<T> Property,
             int RequestedIterations,
             int CompletedIterations,
             int Discards,
             ImmutableList<Counterexample<T>> CounterexampleHistory,
-            GenParameters NextParameters)
+            GenParameters NextParameters,
+            ResizeStrategy<T> ResizeStrategy)
         {
             internal static CheckContext<T> Create(
                 Property<T> property,
                 int requestedIterations,
-                GenParameters initialParameters) =>
+                GenParameters initialParameters,
+                ResizeStrategy<T> resizeStrategy) =>
                     new CheckContext<T>(
                         property,
                         requestedIterations,
                         0,
                         0,
                         ImmutableList.Create<Counterexample<T>>(),
-                        initialParameters);
+                        initialParameters,
+                        resizeStrategy);
 
             public Counterexample<T>? Counterexample => CounterexampleHistory
                 .OrderBy(c => c.Distance)
@@ -183,7 +225,8 @@ namespace GalaxyCheck
                 CompletedIterations + 1,
                 Discards,
                 CounterexampleHistory,
-                NextParameters);
+                NextParameters,
+                ResizeStrategy);
 
             internal CheckContext<T> IncrementDiscards() => new CheckContext<T>(
                 Property,
@@ -191,7 +234,8 @@ namespace GalaxyCheck
                 CompletedIterations,
                 Discards + 1,
                 CounterexampleHistory,
-                NextParameters);
+                NextParameters,
+                ResizeStrategy);
 
             internal CheckContext<T> AddCounterexample(Counterexample<T> counterexample) => new CheckContext<T>(
                 Property,
@@ -199,7 +243,8 @@ namespace GalaxyCheck
                 CompletedIterations,
                 Discards,
                 Enumerable.Concat(new[] { counterexample }, CounterexampleHistory).ToImmutableList(),
-                NextParameters);
+                NextParameters,
+                ResizeStrategy);
 
             internal CheckContext<T> WithNextGenParameters(GenParameters genParameters) => new CheckContext<T>(
                 Property,
@@ -207,7 +252,8 @@ namespace GalaxyCheck
                 CompletedIterations,
                 Discards,
                 CounterexampleHistory,
-                genParameters);
+                genParameters,
+                ResizeStrategy);
         }
 
         public static class CheckState
@@ -215,8 +261,9 @@ namespace GalaxyCheck
             public static CheckState<T> Begin<T>(
                 Property<T> property,
                 int requestedIterations,
-                GenParameters initialParameters) =>
-                    new Initial<T>(CheckContext<T>.Create(property, requestedIterations, initialParameters));
+                GenParameters initialParameters,
+                ResizeStrategy<T> resizeStrategy) =>
+                    new Initial<T>(CheckContext<T>.Create(property, requestedIterations, initialParameters, resizeStrategy));
 
             public record Initial<T>(CheckContext<T> Context) : CheckState<T>(Context)
             {
@@ -349,9 +396,11 @@ namespace GalaxyCheck
                     CheckContext<T> context,
                     IGenInstance<IPropertyIteration<T>> instance)
                 {
+                    var nextRng = instance.NextParameters.Rng;
+                    var nextSize = context.ResizeStrategy(instance, wasCounterexample: false);
                     return new Initial<T>(context
                         .IncrementCompletedIterations()
-                        .WithNextGenParameters(new GenParameters(instance.NextParameters.Rng, instance.NextParameters.Size.Increment())));
+                        .WithNextGenParameters(new GenParameters(instance.NextParameters.Rng, nextSize)));
                 }
 
                 private static CheckState<T> NextStateWithCounterexample(
@@ -360,9 +409,7 @@ namespace GalaxyCheck
                     Counterexample<T> counterexample)
                 {
                     var nextRng = instance.NextParameters.Rng;
-                    var candidateNextSize = instance.NextParameters.Size.BigIncrement();
-                    var nextSize = candidateNextSize.Value < instance.NextParameters.Size.Value ? Size.MaxValue : candidateNextSize;
-
+                    var nextSize = context.ResizeStrategy(instance, wasCounterexample: true);
                     var nextContext = context
                         .IncrementCompletedIterations()
                         .WithNextGenParameters(new GenParameters(nextRng, nextSize))
