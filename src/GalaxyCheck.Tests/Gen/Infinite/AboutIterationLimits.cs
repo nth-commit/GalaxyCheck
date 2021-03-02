@@ -83,12 +83,7 @@ namespace Tests.Gen.Infinite
                     .Int32()
                     .InfiniteOf()
                     .WithoutIterationLimit()
-                    .Select(source =>
-                    {
-                        // Ensure the enumerable has a shrink by enumerating at least one element.
-                        source.Take(1).ToList();
-                        return source;
-                    });
+                    .Select(EnsureSourceCanShrink);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed);
                 var shrunkEnumerable = exampleSpace.Subspace.First().Current.Value;
@@ -98,26 +93,23 @@ namespace Tests.Gen.Infinite
         }
 
         [Property]
-        public void AShrinkOfAGeneratedEnumerableHasTheGivenLimit(IterationLimit limit)
+        public FsCheck.Property AShrinkOfAGeneratedEnumerableHasTheGivenLimit(IterationLimit limit)
         {
-            TestWithSeed(seed =>
+            Action test = () => TestWithSeed(seed =>
             {
                 var gen = GC.Gen
                     .Int32()
                     .InfiniteOf()
                     .WithIterationLimit(limit.Value)
-                    .Select(source =>
-                    {
-                        // Ensure the enumerable has a shrink by enumerating at least one element.
-                        source.Take(1).ToList();
-                        return source;
-                    });
+                    .Select(EnsureSourceCanShrink);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed);
                 var shrunkEnumerable = exampleSpace.Subspace.First().Current.Value;
 
                 AssertLimit(shrunkEnumerable, limit.Value);
             });
+
+            return test.When(limit.Value > 1);
         }
 
         private static void AssertLimit<T>(IEnumerable<T> enumerable, int expectedLimit)
@@ -129,6 +121,14 @@ namespace Tests.Gen.Infinite
             Action throwing = () => enumerable.Take(expectedLimit + 1).ToList();
             var exception = Assert.Throws<GC.Exceptions.GenLimitExceededException>(throwing);
             Assert.Equal("Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Use IInfiniteGen.WithIterationLimit or IInfiniteGen.WithoutIterationLimit to modify this limit.", exception.Message);
+        }
+
+        private static IEnumerable<T> EnsureSourceCanShrink<T>(IEnumerable<T> source)
+        {
+            // Ensure the enumerable has a shrink by enumerating at least two elements. Then it will be able to at
+            // least shrink to the enumerable that repeats a single element.
+            source.Take(2).ToList();
+            return source;
         }
     }
 }

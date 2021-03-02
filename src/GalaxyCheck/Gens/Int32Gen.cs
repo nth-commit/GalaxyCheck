@@ -176,7 +176,7 @@ namespace GalaxyCheck.Gens
 
             // If both are extremes then we will pick from both. If only one is an extreme then we will double that
             // extreme's frequency.
-            var sampler = new WeightedSamplerBuilder<BoundsOrExtremeSource>()
+            var weightedSampler = new WeightedSamplerBuilder<BoundsOrExtremeSource>()
                 .WithSample(inextremeFrequency * 2, BoundsOrExtremeSource.Bounds)
                 .WithSample(
                     extremeFrequency,
@@ -188,7 +188,7 @@ namespace GalaxyCheck.Gens
 
             return (useNextInt, size) =>
             {
-                var source = sampler.Sample(useNextInt(0, sampler.MaxIndex));
+                var source = weightedSampler.Sample(useNextInt(0, weightedSampler.MaxIndex));
                 return source switch
                 {
                     BoundsOrExtremeSource.Bounds => inextremeGenerator(useNextInt, size),

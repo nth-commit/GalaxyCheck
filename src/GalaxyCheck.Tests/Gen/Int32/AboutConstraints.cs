@@ -8,6 +8,10 @@ using static Tests.TestUtils;
 
 namespace Tests.Gen.Int32
 {
+    /// <summary>
+    /// TODO: When porting these tests to the V2 suite using NebulaCheck, we should also be testing that the shrinks
+    /// are constrained in the same way the root values are.
+    /// </summary>
     public class AboutConstraints
     {
         [Property]

@@ -60,6 +60,7 @@ namespace GalaxyCheck
     {
         public record Check<T>(
             T Value,
+            IExampleSpace<T> ExampleSpace,
             GenParameters Parameters,
             ImmutableList<int> Path,
             bool IsCounterexample,
@@ -152,7 +153,8 @@ namespace GalaxyCheck
         {
             CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexample<T> state) =>
                 new CheckIteration.Check<T>(
-                    Value: state.ExplorationStage.Example.Value.Input,
+                    Value: state.ExplorationStage.ExampleSpace.Current.Value.Input,
+                    ExampleSpace: state.ExplorationStage.ExampleSpace.Map(ex => ex.Input),
                     Parameters: state.Instance.RepeatParameters,
                     Path: state.ExplorationStage.Path.ToImmutableList(),
                     Exception: state.Counterexample?.Exception,
@@ -160,7 +162,8 @@ namespace GalaxyCheck
 
             CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexample<T> state) =>
                 new CheckIteration.Check<T>(
-                    Value: state.ExplorationStage.Example.Value.Input,
+                    Value: state.ExplorationStage.ExampleSpace.Current.Value.Input,
+                    ExampleSpace: state.ExplorationStage.ExampleSpace.Map(ex => ex.Input),
                     Parameters: state.Instance.RepeatParameters,
                     Path: state.ExplorationStage.Path.ToImmutableList(),
                     Exception: null,
@@ -360,13 +363,20 @@ namespace GalaxyCheck
                     NextExplorations,
                     Counterexample);
 
-                public Counterexample<T> Counterexample => new Counterexample<T>(
-                    ExplorationStage.Example.Id,
-                    ExplorationStage.Example.Value.Input,
-                    ExplorationStage.Example.Distance,
-                    Instance.RepeatParameters,
-                    ExplorationStage.Path.ToImmutableList(),
-                    CounterexampleDetails.Exception);
+                public Counterexample<T> Counterexample
+                {
+                    get
+                    {
+                        var example = ExplorationStage.ExampleSpace.Current;
+                        return new Counterexample<T>(
+                            example.Id,
+                            example.Value.Input,
+                            example.Distance,
+                            Instance.RepeatParameters,
+                            ExplorationStage.Path.ToImmutableList(),
+                            CounterexampleDetails.Exception);
+                    }
+                }
             }
 
             public record HandleNonCounterexample<T>(

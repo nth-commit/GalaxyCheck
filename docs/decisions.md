@@ -95,3 +95,19 @@ However, it's facets, some input values and a function, should be stored on the 
 This allows a property to leverage operators that are present on generators, such as `Where()` in useful ways, as they can operate on the inputs.
 
 2021-01-10
+
+## Convention: Size > 50 = Chaos mode
+
+We want to get a really good variance of data from a generator, to use in our properties.
+
+An example of how we do this when generating integers, if below a certain size, we just simply size the bounds (1.), and generate a random int within that bounds. When the generation exceeds a certain size, we bias towards the extremes. We do this by first pulling a random int, which drives whether we generate an int from the sized bounds, or if we just return an extreme (2.). Generating an int from the sized bounds will consume randomness again, but return an extreme won't. As the size increases thereafter, it becomes more likely that we'll just return an extreme.
+
+You might have noted, that the amount of randomness consumed could become chaotic over that certain size. That is, over the "chaos size", to generate integer we may consume the randomness either once or twice. This makes tests that leverage the integer generator incidentally more complicated, if they want to make other assertions about how randomness is consumed (3.).
+
+Therefore, we should establish a convention that when size > 50, generators are allowed to behave "chaotically". This means it's OK to test other things at a size <= 50, if those tests would become to complex to manage with chaos mode activated.
+
+1. For example, if the bounds are [-10, 10], and size is 20, we might size the bounds to be [-2, 2].
+2. An extreme is one of the edges of the bounds. For example, if the bounds are [-10, 10], the extremes are -10 and 10.
+3. For example, the list generation tests use the integer generator for it's elements, and check that randomness is consumed for generating the length of the list, and for generating the elements.
+
+2021-03-03

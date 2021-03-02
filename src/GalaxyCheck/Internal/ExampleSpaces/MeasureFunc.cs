@@ -37,8 +37,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 if (value > max)
                 {
                     throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    "'value' cannot be greater than 'max'");
+                        nameof(value),
+                        "'value' cannot be greater than 'max'");
                 }
 
                 if (value == origin) return 0;

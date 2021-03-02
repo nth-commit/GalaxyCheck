@@ -1,5 +1,7 @@
 ﻿using FsCheck;
 using FsCheck.Xunit;
+using Snapshooter;
+using Snapshooter.Xunit;
 using System;
 using System.Linq;
 using Xunit;
@@ -12,6 +14,9 @@ namespace Tests.ExampleSpaces.ShrinkFunc
         [Property]
         public FsCheck.Property ItProducesTheTargetValueFirst(int value, int target)
         {
+            // Interesting observation, this test (at one point) would have failed if int.MinValue and/or int.MaxValue
+            // were injected. FsCheck let me down here.
+
             Action test = () =>
             {
                 var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
@@ -67,6 +72,21 @@ namespace Tests.ExampleSpaces.ShrinkFunc
             var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
 
             ShrinkFuncAssert.ShrinksTo(shrink, value, expected);
+        }
+
+        [Theory]
+        [InlineData(int.MinValue, 0)]
+        [InlineData(int.MinValue, 1)]
+        [InlineData(int.MaxValue, 0)]
+        [InlineData(int.MaxValue, -1)]
+        [InlineData(int.MinValue, int.MaxValue)]
+        [InlineData(int.MinValue, int.MaxValue / 2)]
+        [InlineData(int.MaxValue, int.MinValue / 2)]
+        public void Snapshots(int value, int target)
+        {
+            var shrink = GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target);
+
+            Snapshot.Match(shrink(value).ToArray(), SnapshotNameExtension.Create($"value={value}", $"target={target}"));
         }
     }
 }
