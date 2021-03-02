@@ -2,10 +2,12 @@
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
 using FsCheck.Xunit;
+using System;
+using Xunit;
 
 namespace Tests.Property.Check
 {
-    [Properties(Arbitrary = new [] { typeof(ArbitrarySize) })]
+    [Properties(MaxTest = 10, Arbitrary = new [] { typeof(ArbitrarySize) })]
     public class AboutSizing
     {
         [Property]
@@ -17,11 +19,21 @@ namespace Tests.Property.Check
         });
 
         [Property]
-        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtLargerSizes(Size size) => TestWithSeed(seed =>
+        public void ItFalsifiesAPropertyThatOnlyFalsifiesAtLargerSizes() => TestWithSeed(seed =>
         {
             var property = GC.Gen.Int32().Between(0, 100).ForAll(x => x < 50);
 
-            PropertyAssert.Falsifies(property, seed, size.Value);
+            PropertyAssert.Falsifies(property, seed);
+        });
+
+        [Property]
+        public void WhenGivenASize_AndTheGenIsNotSelfResizing_ThePropertyIsNotResized(Size size) => TestWithSeed(seed =>
+        {
+            var property = GC.Gen.Int32().ForAll(_ => true);
+
+            var result = property.Check(seed: seed, size: size.Value);
+
+            Assert.Equal(size.Value, result.NextParameters.Size.Value);
         });
     }
 }
