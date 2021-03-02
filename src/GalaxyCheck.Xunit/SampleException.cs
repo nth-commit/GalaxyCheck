@@ -1,7 +1,7 @@
-﻿using System;
+﻿using GalaxyCheck.Runners.Sample;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using static GalaxyCheck.SampleExtensions;
 
 namespace GalaxyCheck.Xunit
 {
@@ -19,7 +19,7 @@ namespace GalaxyCheck.Xunit
 
             yield return LineBreak;
 
-            yield return $"Sampled {sample.Values.Count} values:";
+            yield return $"Sampled {sample.Values.Count} values ({sample.Discards} discarded):";
 
             yield return LineBreak;
 

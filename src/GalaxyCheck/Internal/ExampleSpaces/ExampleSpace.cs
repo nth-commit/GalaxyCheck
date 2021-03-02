@@ -26,7 +26,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
         new IEnumerable<IExampleSpace<T>> Subspace { get; }
     }
-    
+
     public record ExampleSpace<T> : IExampleSpace<T>
     {
         public IExample<T> Current { get; init; }
@@ -48,7 +48,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
     public record ExplorationStage<T>(
         IEnumerable<int> Path,
-        IExample<T> Example,
+        IExampleSpace<T> ExampleSpace,
         CounterexampleDetails? CounterexampleDetails)
     {
         public bool IsCounterexample => CounterexampleDetails != null;
@@ -150,7 +150,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     .Select((exampleSpace, i) => (
                         exploration: new ExplorationStage<T>(
                             new[] { i },
-                            exampleSpace.Current,
+                            exampleSpace,
                             TestPredicate(pred, exampleSpace.Current.Value)),
                         exampleSpace))
                     .TakeWhileInclusive(x => !x.exploration.IsCounterexample)
@@ -175,8 +175,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     foreach (var childExploration in ExploreSubspace(pred, counterexampleSpace))
                     {
                         yield return new ExplorationStage<T>(
-                            Enumerable.Concat(new [] { index }, childExploration.Path),
-                            childExploration.Example,
+                            Enumerable.Concat(new[] { index }, childExploration.Path),
+                            childExploration.ExampleSpace,
                             childExploration.CounterexampleDetails);
                     }
                 }
@@ -184,11 +184,11 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
             var rootExplorationStage = new ExplorationStage<T>(
                 Enumerable.Empty<int>(),
-                exampleSpace.Current,
+                exampleSpace,
                 TestPredicate(pred, exampleSpace.Current.Value));
 
             return rootExplorationStage.IsCounterexample
-                ? Enumerable.Concat(new [] { rootExplorationStage }, ExploreSubspace(pred, exampleSpace))
+                ? Enumerable.Concat(new[] { rootExplorationStage }, ExploreSubspace(pred, exampleSpace))
                 : new[] { rootExplorationStage };
         }
 
@@ -205,7 +205,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             this IExampleSpace<T> exampleSpace,
             Func<T, bool> pred)
         {
-            (bool success, Exception? exception) Invoke(T value) {
+            (bool success, Exception? exception) Invoke(T value)
+            {
                 try
                 {
                     var success = pred(value);
@@ -484,4 +485,4 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             }
         }
     }
-} 
+}

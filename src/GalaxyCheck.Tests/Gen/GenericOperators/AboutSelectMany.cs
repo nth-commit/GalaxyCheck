@@ -4,7 +4,6 @@ using System;
 using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
-using GalaxyCheck.Internal.Random;
 using System.Linq;
 
 namespace Tests.Gen.GenericOperators
@@ -29,11 +28,11 @@ namespace Tests.Gen.GenericOperators
             {
                 var gen = leftGen.SelectMany((_) => rightGen);
 
-                var leftRandomness = leftGen.Advanced.SampleWithMetrics(seed: seed).RandomnessConsumption;
-                var rightRandomness = rightGen.Advanced.SampleWithMetrics(seed: seed).RandomnessConsumption;
+                var leftRandomness = leftGen.Advanced.SampleWithMetrics(seed: seed, size: 50).RandomnessConsumption;
+                var rightRandomness = rightGen.Advanced.SampleWithMetrics(seed: seed, size: 50).RandomnessConsumption;
 
                 var randomness = gen.Advanced
-                    .SampleExampleSpacesWithMetrics(seed: seed)
+                    .SampleExampleSpacesWithMetrics(seed: seed, size: 50)
                     .RandomnessConsumption;
 
                 Assert.Equal(leftRandomness + rightRandomness, randomness);

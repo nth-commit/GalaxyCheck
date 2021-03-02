@@ -9,10 +9,17 @@ namespace Tests
 {
     public static class GenAssert
     {
-        public static void Equal<T>(IGen<T> expected, IGen<T> actual, int seed, int? iterations = null)
+        public static void Equal<T>(IGen<T> expected, IGen<T> actual, int seed, int? iterations = null, int? size = null)
         {
-            var expectedSample = expected.Select(x => JsonConvert.SerializeObject(x)).Advanced.SampleExampleSpaces(seed: seed, iterations: iterations);
-            var actualSample = actual.Select(x => JsonConvert.SerializeObject(x)).Advanced.SampleExampleSpaces(seed: seed, iterations: iterations);
+            var expectedSample = expected
+                .Select(x => JsonConvert.SerializeObject(x))
+                .Advanced
+                .SampleExampleSpaces(seed: seed, iterations: iterations, size: size);
+
+            var actualSample = actual
+                .Select(x => JsonConvert.SerializeObject(x))
+                .Advanced
+                .SampleExampleSpaces(seed: seed, iterations: iterations, size: size);
 
             Assert.All(
                 Enumerable.Zip(expectedSample, actualSample),

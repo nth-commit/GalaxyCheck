@@ -43,9 +43,12 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         {
             if (value == target) return Enumerable.Empty<int>();
 
-            var difference = value - target;
-            var safeDifference = difference == int.MinValue ? difference + 1 : difference;
-            return Halves(safeDifference).Select(smallerDifference => value - smallerDifference);
+            // To represent the distance between two signed ints, we need to use something bigger than an int32,
+            // because the difference between int.MinValue and int.MaxValue is (approx) int.MaxValue * 2 (which is not
+            // representable). We'll need to come up with a better strategy when generating longs.
+            var difference = (long)value - target;
+
+            return Halves(difference).Select(smallerDifference => value - smallerDifference).Select(x => (int)x);
         };
 
         /// <summary>
@@ -246,12 +249,12 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     .ToList());
         };
 
-        private static IEnumerable<int> Halves(int value) =>
+        private static IEnumerable<long> Halves(long value) =>
             EnumerableExtensions
                 .Unfold(Math.Abs(value), x =>
                 {
                     var x0 = x / 2;
-                    return x0 > 0 ? new Option.Some<int>(x0) : new Option.None<int>();
+                    return x0 > 0 ? new Option.Some<long>(x0) : new Option.None<long>();
                 })
                 .Select(x => Math.Sign(value) == -1 ? -x : x);
     }
