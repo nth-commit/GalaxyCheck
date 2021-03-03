@@ -151,7 +151,7 @@ namespace GalaxyCheck
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {
-            CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexample<T> state) =>
+            CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexampleExploration<T> state) =>
                 new CheckIteration.Check<T>(
                     Value: state.CounterexampleExploration.ExampleSpace.Current.Value.Input,
                     ExampleSpace: state.CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
@@ -160,7 +160,7 @@ namespace GalaxyCheck
                     Exception: state.Counterexample?.Exception,
                     IsCounterexample: true);
 
-            CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexample<T> state) =>
+            CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexampleExploration<T> state) =>
                 new CheckIteration.Check<T>(
                     Value: state.NonCounterexampleExploration.ExampleSpace.Current.Value.Input,
                     ExampleSpace: state.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
@@ -172,14 +172,15 @@ namespace GalaxyCheck
             CheckIteration<T>? FromTermination(CheckState.Termination<T> state) =>
                 new CheckIteration.Termination<T>(state.Context);
 
-            CheckIteration<T>? FromHandleDiscard(CheckState.HandleDiscard<T> state) =>
+            CheckIteration<T>? ToDiscard() =>
                 new CheckIteration.Discard<T>();
 
             return state switch
             {
-                CheckState.HandleCounterexample<T> s => FromHandleCounterexample(s),
-                CheckState.HandleNonCounterexample<T> s => FromHandleNonCounterexample(s),
-                CheckState.HandleDiscard<T> s => FromHandleDiscard(s),
+                CheckState.HandleCounterexampleExploration<T> s => FromHandleCounterexample(s),
+                CheckState.HandleNonCounterexampleExploration<T> s => FromHandleNonCounterexample(s),
+                CheckState.HandleDiscardExploration<T> s => ToDiscard(),
+                CheckState.HandleDiscard<T> s => ToDiscard(),
                 CheckState.HandleError<T> s =>
                     throw new Exceptions.GenErrorException(s.Error.GenName, s.Error.Message),
                 CheckState.Termination<T> s => FromTermination(s),
@@ -309,6 +310,10 @@ namespace GalaxyCheck
                             var success = example.Value.Func(example.Value.Input);
                             return success ? ExplorationOutcome.Success() : ExplorationOutcome.Fail(null);
                         }
+                        catch (Property.PropertyPreconditionException)
+                        {
+                            return ExplorationOutcome.Discard();
+                        }
                         catch (Exception ex)
                         {
                             return ExplorationOutcome.Fail(ex);
@@ -316,7 +321,7 @@ namespace GalaxyCheck
                     };
 
                     var explorations = Instance.ExampleSpace.Explore(analyze);
-                    return new HandleInstanceNextExplorationStage<T>(Context, Instance, explorations, null);
+                    return new HandleInstanceNextExplorationStage<T>(Context, Instance, explorations, null, true);
                 }
             }
 
@@ -343,7 +348,8 @@ namespace GalaxyCheck
                 CheckContext<T> Context,
                 IGenInstance<IPropertyIteration<T>> Instance,
                 IEnumerable<ExplorationStage<IPropertyIteration<T>>> Explorations,
-                Counterexample<T>? Counterexample) : CheckState<T>(Context)
+                Counterexample<T>? Counterexample,
+                bool IsFirstExplorationStage) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()
                 {
@@ -354,28 +360,31 @@ namespace GalaxyCheck
                         return new HandleInstanceComplete<T>(
                             Context,
                             Instance,
-                            Counterexample);
+                            Counterexample,
+                            WasDiscard: false);
                     }
 
                     return head.Match<CheckState<T>>(
                         onCounterexampleExploration: (counterexampleExploration) =>
-                            new HandleCounterexample<T>(
+                            new HandleCounterexampleExploration<T>(
                                 Context,
                                 Instance,
                                 tail,
                                 counterexampleExploration),
                         onNonCounterexampleExploration: (nonCounterexampleExploration) =>
-                            new HandleNonCounterexample<T>(
+                            new HandleNonCounterexampleExploration<T>(
                                 Context,
                                 Instance,
                                 tail,
                                 nonCounterexampleExploration,
                                 Counterexample),
-                        onDiscardExploration: () => throw new NotSupportedException());
+                        onDiscardExploration: () => IsFirstExplorationStage
+                            ? new HandleInstanceComplete<T>(Context, Instance, Counterexample: null, WasDiscard: true)
+                            : new HandleDiscardExploration<T>(Context, Instance, tail, Counterexample));
                 }
             }
 
-            public record HandleCounterexample<T>(
+            public record HandleCounterexampleExploration<T>(
                 CheckContext<T> Context,
                 IGenInstance<IPropertyIteration<T>> Instance,
                 IEnumerable<ExplorationStage<IPropertyIteration<T>>> NextExplorations,
@@ -385,7 +394,8 @@ namespace GalaxyCheck
                     Context,
                     Instance,
                     NextExplorations,
-                    Counterexample);
+                    Counterexample,
+                    false);
 
                 public Counterexample<T> Counterexample
                 {
@@ -403,7 +413,7 @@ namespace GalaxyCheck
                 }
             }
 
-            public record HandleNonCounterexample<T>(
+            public record HandleNonCounterexampleExploration<T>(
                 CheckContext<T> Context,
                 IGenInstance<IPropertyIteration<T>> Instance,
                 IEnumerable<ExplorationStage<IPropertyIteration<T>>> NextExplorations,
@@ -414,17 +424,48 @@ namespace GalaxyCheck
                     Context,
                     Instance,
                     NextExplorations,
-                    PreviousCounterexample);
+                    PreviousCounterexample,
+                    false);
+            }
+
+            public record HandleDiscardExploration<T>(
+                CheckContext<T> Context,
+                IGenInstance<IPropertyIteration<T>> Instance,
+                IEnumerable<ExplorationStage<IPropertyIteration<T>>> NextExplorations,
+                Counterexample<T>? PreviousCounterexample) : CheckState<T>(Context)
+            {
+                internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
+                    Context,
+                    Instance,
+                    NextExplorations,
+                    PreviousCounterexample,
+                    false);
             }
 
             public record HandleInstanceComplete<T>(
                 CheckContext<T> Context,
                 IGenInstance<IPropertyIteration<T>> Instance,
-                Counterexample<T>? Counterexample) : CheckState<T>(Context)
+                Counterexample<T>? Counterexample,
+                bool WasDiscard) : CheckState<T>(Context)
             {
-                internal override CheckState<T> NextState() => Counterexample == null
-                    ? NextStateWithoutCounterexample(Context, Instance)
-                    : NextStateWithCounterexample(Context, Instance, Counterexample);
+                internal override CheckState<T> NextState() => WasDiscard == true
+                    ? NextStateOnDiscard(Context, Instance)
+                    : Counterexample == null
+                        ? NextStateWithoutCounterexample(Context, Instance)
+                        : NextStateWithCounterexample(Context, Instance, Counterexample);
+
+                private static CheckState<T> NextStateOnDiscard(
+                    CheckContext<T> context,
+                    IGenInstance<IPropertyIteration<T>> instance)
+                {
+                    // TODO: Resize on discards more like Gen.Where does
+                    // TODO: Exhaustion protection
+                    var nextRng = instance.NextParameters.Rng;
+                    var nextSize = context.ResizeStrategy(instance, wasCounterexample: false);
+                    return new Initial<T>(context
+                        .IncrementDiscards()
+                        .WithNextGenParameters(new GenParameters(instance.NextParameters.Rng, nextSize)));
+                }
 
                 private static CheckState<T> NextStateWithoutCounterexample(
                     CheckContext<T> context,

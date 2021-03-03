@@ -17,43 +17,43 @@ namespace IntegrationSample
         }
 
         [Property]
-        public void InfallibleVoidProperty([Between(-100, 100)] int x)
+        public void InfallibleVoidProperty([Between(0, 100)] int x)
         {
             AnnounceTestInvocation(nameof(InfallibleVoidProperty));
         }
 
         [Property]
-        public void FallibleVoidProperty([Between(-100, 100)] int x)
+        public void FallibleVoidProperty([Between(0, 100)] int x)
         {
             AnnounceTestInvocation(nameof(FallibleVoidProperty));
             throw new Exception("Failed!");
         }
 
         [Property]
-        public void InfallibleBooleanProperty([Between(-100, 100)] int x)
+        public void InfallibleBooleanProperty([Between(0, 100)] int x)
         {
             AnnounceTestInvocation(nameof(InfallibleBooleanProperty));
         }
 
         [Property]
-        public void FallibleBooleanProperty([Between(-100, 100)] int x)
+        public void FallibleBooleanProperty([Between(0, 100)] int x)
         {
             AnnounceTestInvocation(nameof(FallibleBooleanProperty));
             throw new Exception("Failed!");
         }
 
         [Property]
-        public Property InfallibleNestedProperty([Between(-100, 100)] int x)
+        public Property InfallibleNestedProperty([Between(0, 100)] int x)
         {
             AnnounceTestInvocation(nameof(InfallibleNestedProperty));
-            return Gen.Int32().Between(-100, 100).ForAll(y => { });
+            return Gen.Int32().Between(0, 100).ForAll(y => { });
         }
 
         [Property]
-        public Property FallibleNestedProperty([Between(-100, 100)] int x)
+        public Property FallibleNestedProperty([Between(0, 100)] int x)
         {
             AnnounceTestInvocation(nameof(FallibleNestedProperty));
-            return Gen.Int32().Between(-100, 100).ForAll(y => { throw new Exception("Failed!"); });
+            return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
         }
 
         private void AnnounceTestInvocation(string testName, params object[] injectedValues)

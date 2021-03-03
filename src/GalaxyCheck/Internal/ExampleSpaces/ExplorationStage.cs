@@ -9,16 +9,16 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
         public record Counterexample(IExampleSpace<T> ExampleSpace, IEnumerable<int> Path, Exception? Exception);
 
-        private record DiscardData();
+        public record Discard();
 
         private readonly NonCounterexample? _nonCounterexample;
         private readonly Counterexample? _counterexample;
-        private readonly DiscardData? _discard;
+        private readonly Discard? _discard;
 
         private ExplorationStage(
             NonCounterexample? nonCounterexample,
             Counterexample? counterexample,
-            DiscardData? discard)
+            Discard? discard)
         {
             _nonCounterexample = nonCounterexample;
             _counterexample = counterexample;
@@ -45,7 +45,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             public static ExplorationStage<T> Discard() => new ExplorationStage<T>(
                 nonCounterexample: null,
                 counterexample: null,
-                discard: new DiscardData());
+                discard: new Discard());
         }
 
         public TResult Match<TResult>(

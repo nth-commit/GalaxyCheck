@@ -7,7 +7,7 @@ using System.Linq;
 using Xunit;
 using GalaxyCheck;
 using DevGen = GalaxyCheck.Gen;
-using static Tests.V2.DomainGen;
+using static Tests.V2.DomainGenAttributes;
 
 namespace Tests.V2.RunnerTests.AssertTests
 {
@@ -125,7 +125,7 @@ namespace Tests.V2.RunnerTests.AssertTests
         {
             // TODO: Inject bool when it is supported natively
 
-            return Boolean().ForAll(isPropertyFallible =>
+            return DomainGen.Boolean().ForAll(isPropertyFallible =>
             {
                 Action action = () => DevGen
                     .Int32()

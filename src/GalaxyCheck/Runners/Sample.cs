@@ -67,9 +67,20 @@ namespace GalaxyCheck.Runners.Sample
     {
         public static SampleWithMetricsResult<IExampleSpace<T>> RunSample<T>(IGenAdvanced<T> advanced, int? iterations, int? seed, int? size)
         {
-            var checkResult = new AdvancedToGen<T>(advanced)
-                .ForAll(_ => true)
-                .Check(iterations: iterations, seed: seed, size: size);
+            var checkResult = new AdvancedToGen<T>(advanced).ForAll(x =>
+            {
+                if (x is IPropertyIteration propertyIteration)
+                {
+                    try
+                    {
+                        propertyIteration.Func(propertyIteration.Input);
+                    }
+                    catch (Exception ex) when (ex is not Property.PropertyPreconditionException)
+                    {
+                    }
+                }
+            })
+            .Check(iterations: iterations, seed: seed, size: size);
 
             var exampleSpaces = checkResult.Checks.OfType<CheckIteration.Check<T>>().Select(i => i.ExampleSpace).ToList();
 

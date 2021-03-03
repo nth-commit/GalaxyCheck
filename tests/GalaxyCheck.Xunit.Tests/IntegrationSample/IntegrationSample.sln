@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationSample", "Integr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit", "..\..\..\src\GalaxyCheck.Xunit\GalaxyCheck.Xunit.csproj", "{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck", "..\..\..\src\GalaxyCheck\GalaxyCheck.csproj", "{D688A425-1F1F-45E4-AAB3-4C00096B403A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A20D447D-C4FA-4834-BDA5-DD585FA94AC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D688A425-1F1F-45E4-AAB3-4C00096B403A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D688A425-1F1F-45E4-AAB3-4C00096B403A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D688A425-1F1F-45E4-AAB3-4C00096B403A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D688A425-1F1F-45E4-AAB3-4C00096B403A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

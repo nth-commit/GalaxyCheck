@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.Internal.Gens;
+using System;
 
 namespace GalaxyCheck
 {
@@ -38,6 +39,18 @@ namespace GalaxyCheck
                 select new Property<object>.Iteration(x => i.Func(x), i.Input);
 
             return new Property<object>(gen);
+        }
+
+        public class PropertyPreconditionException : Exception
+        {
+        }
+
+        public static void Precondition(bool condition)
+        {
+            if (!condition)
+            {
+                throw new PropertyPreconditionException();
+            }
         }
     }
 
