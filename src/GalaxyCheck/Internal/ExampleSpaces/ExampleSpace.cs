@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck;
+using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;
@@ -126,41 +127,37 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     .Cast<IExampleSpace<T>>());
         }
 
-        // TODO: Deprecate Counterexamples() in favour of this function, which should be tested with unit tests and documented.
         public static IEnumerable<ExplorationStage<T>> Explore<T>(
             this IExampleSpace<T> exampleSpace,
-            Func<T, bool> pred)
+            AnalyzeExploration<T> analyze)
         {
-            static CounterexampleDetails? TestPredicate(Func<T, bool> pred, T value)
+            static ExplorationStage<T> AnalyzeExampleSpace(IExampleSpace<T> exampleSpace, IEnumerable<int> path, AnalyzeExploration<T> analyze)
             {
-                try
-                {
-                    var success = pred(value);
-                    return success ? null : new CounterexampleDetails(null);
-                }
-                catch (Exception ex)
-                {
-                    return new CounterexampleDetails(ex);
-                }
+                var counterexampleDetails = analyze(exampleSpace.Current).Match<CounterexampleDetails?>(
+                    onSuccess: () => null,
+                    onDiscard: () => null,
+                    onFail: exception => new CounterexampleDetails(exception));
+
+                return new ExplorationStage<T>(path, exampleSpace, counterexampleDetails);
             }
 
-            static IEnumerable<ExplorationStage<T>> ExploreSubspace(Func<T, bool> pred, IExampleSpace<T> exampleSpace)
+            static IEnumerable<ExplorationStage<T>> ExploreSubspace(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace)
             {
                 var (counterexampleSpaceAndIndex, explorations) = exampleSpace.Subspace
-                    .Select((exampleSpace, i) => (
-                        exploration: new ExplorationStage<T>(
-                            new[] { i },
-                            exampleSpace,
-                            TestPredicate(pred, exampleSpace.Current.Value)),
-                        exampleSpace))
-                    .TakeWhileInclusive(x => !x.exploration.IsCounterexample)
+                    .Select((exampleSpace, subspaceIndex) =>
+                    {
+                        var path = new[] { subspaceIndex };
+                        var explorationStage = AnalyzeExampleSpace(exampleSpace, path, analyze);
+                        return (explorationStage, exampleSpace);
+                    })
+                    .TakeWhileInclusive(x => !x.explorationStage.IsCounterexample)
                     .Aggregate(
                         (counterexampleSpaceAndIndex: ((IExampleSpace<T>, int)?)null, explorations: new List<ExplorationStage<T>>()),
                         (acc, curr) =>
                         {
-                            acc.explorations.Add(curr.exploration);
+                            acc.explorations.Add(curr.explorationStage);
                             return (
-                                curr.exploration.IsCounterexample ? (curr.exampleSpace, curr.exploration.Path.First()) : null,
+                                curr.explorationStage.IsCounterexample ? (curr.exampleSpace, curr.explorationStage.Path.First()) : null,
                                 acc.explorations);
                         });
 
@@ -172,7 +169,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 if (counterexampleSpaceAndIndex != null)
                 {
                     var (counterexampleSpace, index) = counterexampleSpaceAndIndex.Value;
-                    foreach (var childExploration in ExploreSubspace(pred, counterexampleSpace))
+                    foreach (var childExploration in ExploreSubspace(analyze, counterexampleSpace))
                     {
                         yield return new ExplorationStage<T>(
                             Enumerable.Concat(new[] { index }, childExploration.Path),
@@ -182,76 +179,14 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 }
             }
 
-            var rootExplorationStage = new ExplorationStage<T>(
-                Enumerable.Empty<int>(),
+            var rootExplorationStage = AnalyzeExampleSpace(
                 exampleSpace,
-                TestPredicate(pred, exampleSpace.Current.Value));
+                Enumerable.Empty<int>(),
+                analyze);
 
             return rootExplorationStage.IsCounterexample
-                ? Enumerable.Concat(new[] { rootExplorationStage }, ExploreSubspace(pred, exampleSpace))
+                ? Enumerable.Concat(new[] { rootExplorationStage }, ExploreSubspace(analyze, exampleSpace))
                 : new[] { rootExplorationStage };
-        }
-
-        /// <summary>
-        /// Returns an enumerable of increasingly smaller counterexamples to the given predicate. An empty enumerable
-        /// indicates that no counterexamples exist in this example space.
-        /// </summary>
-        /// <typeparam name="T">The type of the target example space's values.</typeparam>
-        /// <param name="exampleSpace">The example space to operate on.</param>
-        /// <param name="pred">The predicate used to test an example. If the predicate returns `false` for an example, it
-        /// indicates that example is a counterexample.</param>
-        /// <returns>An enumerable of counterexamples.</returns>
-        public static IEnumerable<Counterexample<T>> Counterexamples<T>(
-            this IExampleSpace<T> exampleSpace,
-            Func<T, bool> pred)
-        {
-            (bool success, Exception? exception) Invoke(T value)
-            {
-                try
-                {
-                    var success = pred(value);
-                    return (success, null);
-                }
-                catch (Exception ex)
-                {
-                    return (false, ex);
-                }
-            }
-
-            IEnumerable<Counterexample<T>> CounterexamplesRec(IEnumerable<IExampleSpace<T>> exampleSpaces)
-            {
-                var failure = exampleSpaces
-                    .Select((exampleSpace, index) =>
-                    {
-                        var (success, exception) = Invoke(exampleSpace.Current.Value);
-                        return new { exampleSpace, index, success, exception };
-                    })
-                    .Where(x => x.success == false)
-                    .FirstOrDefault();
-
-                if (failure == null) yield break;
-
-                var counterexample = new Counterexample<T>(
-                    failure.exampleSpace.Current.Id,
-                    failure.exampleSpace.Current.Value,
-                    failure.exampleSpace.Current.Distance,
-                    failure.exception,
-                    new[] { failure.index });
-
-                yield return counterexample;
-
-                foreach (var smallerCounterexample in CounterexamplesRec(failure.exampleSpace.Subspace))
-                {
-                    yield return new Counterexample<T>(
-                        smallerCounterexample.Id,
-                        smallerCounterexample.Value,
-                        smallerCounterexample.Distance,
-                        smallerCounterexample.Exception,
-                        counterexample.Path.Concat(smallerCounterexample.Path));
-                }
-            }
-
-            return CounterexamplesRec(new[] { exampleSpace });
         }
 
         public static IExample<T>? Navigate<T>(this IExampleSpace<T> exampleSpace, List<int> path)

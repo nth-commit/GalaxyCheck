@@ -302,7 +302,20 @@ namespace GalaxyCheck
             {
                 internal override CheckState<T> NextState()
                 {
-                    var explorations = Instance.ExampleSpace.Explore(x => x.Func(x.Input));
+                    AnalyzeExploration<IPropertyIteration<T>> analyze = (example) =>
+                    {
+                        try
+                        {
+                            var success = example.Value.Func(example.Value.Input);
+                            return success ? ExplorationOutcome.Success() : ExplorationOutcome.Fail(null);
+                        }
+                        catch (Exception ex)
+                        {
+                            return ExplorationOutcome.Fail(ex);
+                        }
+                    };
+
+                    var explorations = Instance.ExampleSpace.Explore(analyze);
                     return new HandleInstanceNextExplorationStage<T>(Context, Instance, explorations, null);
                 }
             }
