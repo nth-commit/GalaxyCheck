@@ -9,7 +9,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         [Property]
         public void ItContainsOneExample(object value)
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(value);
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Singleton(value);
 
             var example = Assert.Single(exampleSpace.Sample());
             Assert.Equal(value, example.Value);
@@ -19,8 +19,8 @@ namespace Tests.ExampleSpaces.ExampleSpace
         [Property]
         public void ItBehavesLikeUnfoldWithPrimitiveFunctions(object value)
         {
-            var singletonExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(value);
-            var unfoldedExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+            var singletonExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Singleton(value);
+            var unfoldedExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
                 value,
                 GC.Internal.ExampleSpaces.ShrinkFunc.None<object>(),
                 GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<object>(),

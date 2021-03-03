@@ -28,14 +28,14 @@ namespace Tests.ExampleSpaces.ExampleSpace
         public void Snapshots_ArrayConcat_NoMergeShrink(int[] values)
         {
             var exampleSpaces = values
-                .Select(value => ES.ExampleSpace.Unfold(
+                .Select(value => ES.ExampleSpaceFactory.Unfold(
                     value,
                     ES.ShrinkFunc.Towards(0),
                     ES.MeasureFunc.Unmeasured<int>(),
                     ES.IdentifyFuncs.Default<int>()))
                 .ToList();
 
-            var mergedExampleSpace = ES.ExampleSpace.Merge(
+            var mergedExampleSpace = ES.ExampleSpaceFactory.Merge(
                 exampleSpaces,
                 (values) => values.ToArray(),
                 NoShrink,
@@ -55,14 +55,14 @@ namespace Tests.ExampleSpaces.ExampleSpace
         public void Snapshots_ArrayConcat_TowardsCountShrink(int[] values)
         {
             var exampleSpaces = values
-                .Select(value => ES.ExampleSpace.Unfold(
+                .Select(value => ES.ExampleSpaceFactory.Unfold(
                     value,
                     ES.ShrinkFunc.Towards(0),
                     ES.MeasureFunc.Unmeasured<int>(),
                     ES.IdentifyFuncs.Default<int>()))
                 .ToList();
 
-            var mergedExampleSpace = ES.ExampleSpace.Merge(
+            var mergedExampleSpace = ES.ExampleSpaceFactory.Merge(
                 exampleSpaces,
                 (values) => values.ToArray(),
                 ES.ShrinkFunc.TowardsCount<ES.IExampleSpace<int>, decimal>(0, es => es.Current.Distance),
@@ -77,9 +77,9 @@ namespace Tests.ExampleSpaces.ExampleSpace
         public void ItMergesValuesUsingTheGivenFunction(List<int> values)
         {
             Func<IEnumerable<int>, int> mergeValues = xs => xs.Sum();
-            var exampleSpaces = values.Select(ES.ExampleSpace.Singleton).ToList();
+            var exampleSpaces = values.Select(ES.ExampleSpaceFactory.Singleton).ToList();
 
-            var mergedExampleSpace = ES.ExampleSpace.Merge(exampleSpaces, mergeValues, NoShrink, Unmeasured);
+            var mergedExampleSpace = ES.ExampleSpaceFactory.Merge(exampleSpaces, mergeValues, NoShrink, Unmeasured);
 
             Assert.Equal(mergeValues(exampleSpaces.Select(x => x.Current.Value)), mergedExampleSpace.Current.Value);
         }
@@ -91,9 +91,9 @@ namespace Tests.ExampleSpaces.ExampleSpace
             int mergeDistance)
         {
             ES.MeasureFunc<List<ES.IExampleSpace<int>>> measureMerge = _ => mergeDistance;
-            var exampleSpaces = values.Select(ES.ExampleSpace.Singleton).ToList();
+            var exampleSpaces = values.Select(ES.ExampleSpaceFactory.Singleton).ToList();
 
-            var mergedExampleSpace = ES.ExampleSpace.Merge(exampleSpaces, mergeValues, NoShrink, measureMerge);
+            var mergedExampleSpace = ES.ExampleSpaceFactory.Merge(exampleSpaces, mergeValues, NoShrink, measureMerge);
 
             Assert.Equal(mergeDistance, mergedExampleSpace.Current.Distance);
         }
@@ -106,9 +106,9 @@ namespace Tests.ExampleSpaces.ExampleSpace
         {
             Action test = () =>
             {
-                var exampleSpace = ES.ExampleSpace.Singleton(value);
+                var exampleSpace = ES.ExampleSpaceFactory.Singleton(value);
 
-                var mergedExampleSpace = ES.ExampleSpace.Merge(
+                var mergedExampleSpace = ES.ExampleSpaceFactory.Merge(
                     Enumerable.Repeat(exampleSpace, mergeCount).ToList(),
                     mergeValues,
                     ES.ShrinkFunc.None<List<ES.IExampleSpace<object>>>(),

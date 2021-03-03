@@ -54,7 +54,7 @@ namespace GalaxyCheck
                 var boundLeftSubspace = leftExampleSpace.Subspace.SelectMany(leftExampleSubspace =>
                     BindSubspace(leftExampleSubspace, selector, rng, size));
 
-                return new ExampleSpace<TResult>(
+                return ExampleSpaceFactory.Create(
                     jointExampleSpace.Current,
                     Enumerable.Concat(boundLeftSubspace, rightExampleSpace.Subspace));
             }

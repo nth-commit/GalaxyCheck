@@ -153,19 +153,19 @@ namespace GalaxyCheck
         {
             CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexample<T> state) =>
                 new CheckIteration.Check<T>(
-                    Value: state.ExplorationStage.ExampleSpace.Current.Value.Input,
-                    ExampleSpace: state.ExplorationStage.ExampleSpace.Map(ex => ex.Input),
+                    Value: state.CounterexampleExploration.ExampleSpace.Current.Value.Input,
+                    ExampleSpace: state.CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
                     Parameters: state.Instance.RepeatParameters,
-                    Path: state.ExplorationStage.Path.ToImmutableList(),
+                    Path: state.CounterexampleExploration.Path.ToImmutableList(),
                     Exception: state.Counterexample?.Exception,
                     IsCounterexample: true);
 
             CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexample<T> state) =>
                 new CheckIteration.Check<T>(
-                    Value: state.ExplorationStage.ExampleSpace.Current.Value.Input,
-                    ExampleSpace: state.ExplorationStage.ExampleSpace.Map(ex => ex.Input),
+                    Value: state.NonCounterexampleExploration.ExampleSpace.Current.Value.Input,
+                    ExampleSpace: state.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
                     Parameters: state.Instance.RepeatParameters,
-                    Path: state.ExplorationStage.Path.ToImmutableList(),
+                    Path: state.NonCounterexampleExploration.Path.ToImmutableList(),
                     Exception: null,
                     IsCounterexample: false);
 
@@ -357,9 +357,21 @@ namespace GalaxyCheck
                             Counterexample);
                     }
 
-                    return head.IsCounterexample
-                        ? new HandleCounterexample<T>(Context, Instance, tail, head, head.CounterexampleDetails!)
-                        : new HandleNonCounterexample<T>(Context, Instance, tail, head, Counterexample);
+                    return head.Match<CheckState<T>>(
+                        onCounterexampleExploration: (counterexampleExploration) =>
+                            new HandleCounterexample<T>(
+                                Context,
+                                Instance,
+                                tail,
+                                counterexampleExploration),
+                        onNonCounterexampleExploration: (nonCounterexampleExploration) =>
+                            new HandleNonCounterexample<T>(
+                                Context,
+                                Instance,
+                                tail,
+                                nonCounterexampleExploration,
+                                Counterexample),
+                        onDiscardExploration: () => throw new NotSupportedException());
                 }
             }
 
@@ -367,8 +379,7 @@ namespace GalaxyCheck
                 CheckContext<T> Context,
                 IGenInstance<IPropertyIteration<T>> Instance,
                 IEnumerable<ExplorationStage<IPropertyIteration<T>>> NextExplorations,
-                ExplorationStage<IPropertyIteration<T>> ExplorationStage,
-                CounterexampleDetails CounterexampleDetails) : CheckState<T>(Context)
+                ExplorationStage<IPropertyIteration<T>>.Counterexample CounterexampleExploration) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
                     Context,
@@ -380,14 +391,14 @@ namespace GalaxyCheck
                 {
                     get
                     {
-                        var example = ExplorationStage.ExampleSpace.Current;
+                        var example = CounterexampleExploration.ExampleSpace.Current;
                         return new Counterexample<T>(
                             example.Id,
                             example.Value.Input,
                             example.Distance,
                             Instance.RepeatParameters,
-                            ExplorationStage.Path.ToImmutableList(),
-                            CounterexampleDetails.Exception);
+                            CounterexampleExploration.Path.ToImmutableList(),
+                            CounterexampleExploration.Exception);
                     }
                 }
             }
@@ -396,7 +407,7 @@ namespace GalaxyCheck
                 CheckContext<T> Context,
                 IGenInstance<IPropertyIteration<T>> Instance,
                 IEnumerable<ExplorationStage<IPropertyIteration<T>>> NextExplorations,
-                ExplorationStage<IPropertyIteration<T>> ExplorationStage,
+                ExplorationStage<IPropertyIteration<T>>.NonCounterexample NonCounterexampleExploration,
                 Counterexample<T>? PreviousCounterexample) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
