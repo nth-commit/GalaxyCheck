@@ -264,7 +264,7 @@ namespace GalaxyCheck.Gens
 
                 var nextParameters = instances.Any() ? instances.Last().NextParameters : parameters;
 
-                var exampleSpace = ExampleSpace.Merge(
+                var exampleSpace = ExampleSpaceFactory.Merge(
                     instances.Select(instance => instance.ExampleSpace).ToList(),
                     values => values.ToImmutableList(),
                     shrink,

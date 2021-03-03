@@ -13,7 +13,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         {
             static IEnumerable<int> shrink(int x) => new[] { x };
 
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
                 value,
                 shrink,
                 GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>(),
@@ -27,7 +27,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         {
             static IEnumerable<int> shrink(int x) => x <= 1 ? Enumerable.Empty<int>() : new[] { x - 1 };
 
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
                 10,
                 shrink,
                 GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>(),

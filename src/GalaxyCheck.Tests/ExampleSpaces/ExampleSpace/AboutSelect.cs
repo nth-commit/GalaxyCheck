@@ -17,7 +17,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
                 value,
                 shrink.Invoke,
                 measure.Invoke,
@@ -35,7 +35,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
                 value,
                 shrink.Invoke,
                 measure.Invoke,
@@ -53,7 +53,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
                 value,
                 shrink.Invoke,
                 measure.Invoke,

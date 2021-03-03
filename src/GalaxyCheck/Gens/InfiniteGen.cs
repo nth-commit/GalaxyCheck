@@ -115,7 +115,7 @@ namespace GalaxyCheck.Gens
                 enumerable.Select(x => x.Current.Value),
                 100);
 
-            return ExampleSpace.Delay(
+            return ExampleSpaceFactory.Delay(
                 rootExample,
                 () =>
                 {
@@ -126,7 +126,7 @@ namespace GalaxyCheck.Gens
 
                     var exampleSpaces = enumerable.Take(enumerable.MaxIterations).ToList();
 
-                    var rootExampleExplored = ExampleSpace.Merge(
+                    var rootExampleExplored = ExampleSpaceFactory.Merge(
                         exampleSpaces,
                         xs => xs,
                         ShrinkTowardsLength(1),

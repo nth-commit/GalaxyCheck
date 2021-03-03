@@ -10,6 +10,6 @@ namespace GalaxyCheck
             gen.TransformInstances(instance => GenIterationFactory.Instance<T>(
                 instance.RepeatParameters,
                 instance.NextParameters,
-                ExampleSpace.Singleton(instance.ExampleSpace.Current.Id, instance.ExampleSpace.Current.Value)));
+                ExampleSpaceFactory.Singleton(instance.ExampleSpace.Current.Id, instance.ExampleSpace.Current.Value)));
     }
 }

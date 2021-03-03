@@ -15,7 +15,7 @@ namespace Tests.ExampleSpaces
         [InlineData(10, 0)]
         public void IntegerExampleSpace(int value, int target)
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Unfold(
+            var exampleSpace = ExampleSpaceFactory.Unfold(
                 value,
                 GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target),
                 x => x,
@@ -27,7 +27,7 @@ namespace Tests.ExampleSpaces
         [Fact]
         public void IntegerExampleSpaceFiltered()
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpace
+            var exampleSpace = ExampleSpaceFactory
                 .Unfold(
                     10,
                     GC.Internal.ExampleSpaces.ShrinkFunc.Towards(0),

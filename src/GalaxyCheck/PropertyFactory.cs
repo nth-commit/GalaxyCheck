@@ -56,13 +56,31 @@ namespace GalaxyCheck
         {
             var gen =
                 from parameters in Gen.Parameters(methodInfo)
-                let property = (Property)methodInfo.Invoke(target, parameters)
+                let property = InvokeNestedProperty(methodInfo, target, parameters)
+                where property != null
                 from propertyIteration in property
                 select new Property<object[]>.Iteration(
                     (x) => propertyIteration.Func(x.Last()),
                     parameters.Append(propertyIteration.Input).ToArray());
 
             return new Property<object[]>(gen);
+        }
+
+        private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)
+        {
+            try
+            {
+                return (Property)methodInfo.Invoke(target, parameters);
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException.GetType() == typeof(Property.PropertyPreconditionException))
+                {
+                    return null;
+                }
+
+                throw ex.InnerException;
+            }
         }
     }
 }

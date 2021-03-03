@@ -73,8 +73,7 @@ namespace Tests
             SnapshotWithSeed(
                 fromSeed: seed => gen
                     .Advanced
-                    .SampleExampleSpaces(iterations: 1, seed: seed, size: size)
-                    .Single()
+                    .SampleOneExampleSpace(seed: seed, size: size)
                     .Render(x => format(x)),
                 repeatSeed: repeatSeed,
                 snapshotNameExtensions: new object[] { size });

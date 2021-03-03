@@ -21,7 +21,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
 
             Action test = () =>
             {
-                var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
+                var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Singleton(value).Filter(pred);
 
                 Assert.NotNull(sourceExampleSpace);
             };
@@ -36,7 +36,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
 
             Action test = () =>
             {
-                var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpace.Singleton(value).Filter(pred);
+                var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Singleton(value).Filter(pred);
 
                 Assert.Null(sourceExampleSpace);
             };

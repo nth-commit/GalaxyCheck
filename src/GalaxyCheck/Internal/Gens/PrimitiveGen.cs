@@ -41,7 +41,7 @@ namespace GalaxyCheck.Internal.Gens
             {
                 var initialParameters = parameters;
 
-                var exampleSpace = ExampleSpace.Unfold(_generate(useNextInt, parameters.Size), _shrink, _measure, _identify);
+                var exampleSpace = ExampleSpaceFactory.Unfold(_generate(useNextInt, parameters.Size), _shrink, _measure, _identify);
 
                 yield return GenIterationFactory.Instance(initialParameters, parameters, exampleSpace);
             } while (true);
