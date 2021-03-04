@@ -25,7 +25,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             Action<int, int> f = (x, y) => { };
-            var methodInfoProperty = f.Method.ToProperty(null);
+            var methodInfoProperty = MethodProperty.Create(f.Method, null);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
@@ -41,7 +41,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             Func<int, int, bool> f = (x, y) => true;
-            var methodInfoProperty = f.Method.ToProperty(null);
+            var methodInfoProperty = MethodProperty.Create(f.Method, null);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
@@ -61,7 +61,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
             var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
-            var methodInfoProperty = GetMethod(nameof(ARecursiveProperty)).ToProperty(this);
+            var methodInfoProperty = MethodProperty.Create(GetMethod(nameof(ARecursiveProperty)), this);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);
@@ -81,7 +81,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
             var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
-            var methodInfoProperty = GetMethod(nameof(AGenericRecursiveProperty)).ToProperty(this);
+            var methodInfoProperty = MethodProperty.Create(GetMethod(nameof(AGenericRecursiveProperty)), this);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);

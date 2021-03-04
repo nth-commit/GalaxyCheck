@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace GalaxyCheck
 {
@@ -50,9 +51,9 @@ namespace GalaxyCheck
         T Value,
         decimal Distance,
         GenParameters RepeatParameters,
-        ImmutableList<int> RepeatPath,
-        Exception? Exception)
-            : Example<T>(Id, Value, Distance);
+        IEnumerable<int> RepeatPath,
+        Exception? Exception,
+        object? PresentationalValue);
 
     public abstract record CheckIteration<T>;
 
@@ -60,9 +61,11 @@ namespace GalaxyCheck
     {
         public record Check<T>(
             T Value,
+            object? PresentationalValue,
             IExampleSpace<T> ExampleSpace,
+            IExampleSpace? PresentationalExampleSpace,
             GenParameters Parameters,
-            ImmutableList<int> Path,
+            IEnumerable<int> Path,
             bool IsCounterexample,
             Exception? Exception) : CheckIteration<T>;
 
@@ -74,10 +77,10 @@ namespace GalaxyCheck
     public static class CheckExtensions
     {
         public static CheckResult<T> Check<T>(
-            this Property<T> property,
-            int? iterations = null,
-            int? seed = null,
-            int? size = null)
+             this Property<T> property,
+             int? iterations = null,
+             int? seed = null,
+             int? size = null)
         {
             var initialParameters = new GenParameters(
                 seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
@@ -108,10 +111,24 @@ namespace GalaxyCheck
             return new CheckResult<T>(
                 termination.Context.CompletedIterations,
                 termination.Context.Discards,
-                termination.Context.Counterexample,
+                termination.Context.Counterexample == null
+                    ? null
+                    : FromCounterexampleState(termination.Context.Counterexample),
                 checks,
                 initialParameters,
                 termination.Context.NextParameters);
+        }
+
+        private static Counterexample<T> FromCounterexampleState<T>(CounterexampleState<T> counterexampleState)
+        {
+            return new Counterexample<T>(
+                counterexampleState.ExampleSpace.Current.Id,
+                counterexampleState.ExampleSpace.Current.Value,
+                counterexampleState.ExampleSpace.Current.Distance,
+                counterexampleState.RepeatParameters,
+                counterexampleState.RepeatPath,
+                counterexampleState.Exception,
+                NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.RepeatPath));
         }
 
         /// <summary>
@@ -151,23 +168,52 @@ namespace GalaxyCheck
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {
-            CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexampleExploration<T> state) =>
-                new CheckIteration.Check<T>(
-                    Value: state.CounterexampleExploration.ExampleSpace.Current.Value.Input,
-                    ExampleSpace: state.CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
-                    Parameters: state.Instance.RepeatParameters,
-                    Path: state.CounterexampleExploration.Path.ToImmutableList(),
-                    Exception: state.Counterexample?.Exception,
-                    IsCounterexample: true);
+            CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexampleExploration<T> state)
+            {
+                if (state.CounterexampleState == null)
+                {
+                    throw new Exception("Fatal: Expected not null");
+                }
 
-            CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexampleExploration<T> state) =>
-                new CheckIteration.Check<T>(
-                    Value: state.NonCounterexampleExploration.ExampleSpace.Current.Value.Input,
-                    ExampleSpace: state.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
+                var exampleSpace = state.CounterexampleState.ExampleSpace;
+
+                var presentationalExampleSpace =
+                    NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.CounterexampleExploration.Path)
+                    ?.Cast<object>()
+                    ?.Map(x => x == null ? null : UnwrapBoundTuple(x));
+
+                return new CheckIteration.Check<T>(
+                    Value: exampleSpace.Current.Value,
+                    PresentationalValue: presentationalExampleSpace?.Current.Value,
+                    ExampleSpace: exampleSpace,
+                    PresentationalExampleSpace: presentationalExampleSpace,
+                    Parameters: state.CounterexampleState.RepeatParameters,
+                    Path: state.CounterexampleState.RepeatPath,
+                    Exception: state.CounterexampleState.Exception,
+                    IsCounterexample: true);
+            }
+
+            CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexampleExploration<T> state)
+            {
+                var inputExampleSpace = state.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
+
+                var exampleSpace = state.NonCounterexampleExploration.ExampleSpace;
+
+                var presentationalExampleSpace =
+                    NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.NonCounterexampleExploration.Path)
+                    ?.Cast<object>()
+                    ?.Map(x => x == null ? null : UnwrapBoundTuple(x));
+
+                return new CheckIteration.Check<T>(
+                    Value: exampleSpace.Current.Value.Input,
+                    PresentationalValue: presentationalExampleSpace?.Current.Value,
+                    ExampleSpace: inputExampleSpace,
+                    PresentationalExampleSpace: presentationalExampleSpace,
                     Parameters: state.Instance.RepeatParameters,
-                    Path: state.NonCounterexampleExploration.Path.ToImmutableList(),
+                    Path: state.NonCounterexampleExploration.Path,
                     Exception: null,
                     IsCounterexample: false);
+            }
 
             CheckIteration<T>? FromTermination(CheckState.Termination<T> state) =>
                 new CheckIteration.Termination<T>(state.Context);
@@ -188,6 +234,77 @@ namespace GalaxyCheck
             };
         }
 
+        private static object? NavigateToPresentationalExample(
+            IEnumerable<IExampleSpace> exampleSpaceHistory,
+            IEnumerable<int> navigationPath)
+        {
+            var value = NavigateToPresentationalExampleSpace(exampleSpaceHistory, navigationPath)?.Current.Value;
+            if (value == null)
+            {
+                return null;
+            }
+
+            return UnwrapBoundTuple(value);
+        }
+
+        private static IExampleSpace? NavigateToPresentationalExampleSpace(
+            IEnumerable<IExampleSpace> exampleSpaceHistory,
+            IEnumerable<int> navigationPath)
+        {
+            var rootExampleSpace = FindPresentationalExampleSpace(exampleSpaceHistory);
+            if (rootExampleSpace == null)
+            {
+                return null;
+            }
+
+            return rootExampleSpace.Cast<object>().Navigate(navigationPath);
+        }
+
+        private static IExampleSpace? FindPresentationalExampleSpace(IEnumerable<IExampleSpace> exampleSpaceHistory)
+        {
+            var (head, tail) = exampleSpaceHistory.Reverse();
+
+            var presentationalExampleSpaces =
+                from exs in tail
+                where exs.Current.Id.HashCode == head!.Current.Id.HashCode
+                where
+                    exs.Current.Value is not Test test ||
+                    test.Input is not Symbols.NoInput
+                select exs;
+
+            return presentationalExampleSpaces.FirstOrDefault();
+        }
+
+        private static object[] UnwrapBoundTuple(object obj)
+        {
+            var type = obj.GetType();
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Symbols.BoundTuple<,>))
+            {
+                var leftValue = type.GetProperty(nameof(Symbols.BoundTuple<object,object>.Left)).GetValue(obj);
+                var rightValue = type.GetProperty(nameof(Symbols.BoundTuple<object,object>.Right)).GetValue(obj);
+                return Enumerable
+                    .Concat(UnwrapBoundTuple(leftValue), new[] { rightValue })
+                    .ToArray();
+            }
+
+            if (IsAnonymousType(type))
+            {
+                return type.GetProperties().SelectMany(p => UnwrapBoundTuple(p.GetValue(obj))).ToArray();
+            }
+
+            return new[] { obj };
+        }
+
+        public static bool IsAnonymousType(Type type)
+        {
+            bool hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Count() > 0;
+            bool nameContainsAnonymousType = type.FullName.Contains("AnonymousType");
+            bool isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
+
+            return isAnonymousType;
+        }
+
         public abstract record CheckState<T>(CheckContext<T> Context)
         {
             internal abstract CheckState<T> NextState();
@@ -195,12 +312,19 @@ namespace GalaxyCheck
 
         public delegate Size ResizeStrategy<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample);
 
+        public record CounterexampleState<T>(
+            IExampleSpace<T> ExampleSpace,
+            IEnumerable<IExampleSpace> ExampleSpaceHistory,
+            GenParameters RepeatParameters,
+            IEnumerable<int> RepeatPath,
+            Exception? Exception);
+
         public record CheckContext<T>(
             Property<T> Property,
             int RequestedIterations,
             int CompletedIterations,
             int Discards,
-            ImmutableList<Counterexample<T>> CounterexampleHistory,
+            ImmutableList<CounterexampleState<T>> CounterexampleStateHistory,
             GenParameters NextParameters,
             ResizeStrategy<T> ResizeStrategy)
         {
@@ -214,12 +338,12 @@ namespace GalaxyCheck
                         requestedIterations,
                         0,
                         0,
-                        ImmutableList.Create<Counterexample<T>>(),
+                        ImmutableList.Create<CounterexampleState<T>>(),
                         initialParameters,
                         resizeStrategy);
 
-            public Counterexample<T>? Counterexample => CounterexampleHistory
-                .OrderBy(c => c.Distance)
+            public CounterexampleState<T>? Counterexample => CounterexampleStateHistory
+                .OrderBy(c => c.ExampleSpace.Current.Distance)
                 .ThenByDescending(c => c.RepeatParameters.Size.Value) // Bigger sizes are more likely to normalize
                 .FirstOrDefault();
 
@@ -228,7 +352,7 @@ namespace GalaxyCheck
                 RequestedIterations,
                 CompletedIterations + 1,
                 Discards,
-                CounterexampleHistory,
+                CounterexampleStateHistory,
                 NextParameters,
                 ResizeStrategy);
 
@@ -237,16 +361,16 @@ namespace GalaxyCheck
                 RequestedIterations,
                 CompletedIterations,
                 Discards + 1,
-                CounterexampleHistory,
+                CounterexampleStateHistory,
                 NextParameters,
                 ResizeStrategy);
 
-            internal CheckContext<T> AddCounterexample(Counterexample<T> counterexample) => new CheckContext<T>(
+            internal CheckContext<T> AddCounterexample(CounterexampleState<T> counterexampleState) => new CheckContext<T>(
                 Property,
                 RequestedIterations,
                 CompletedIterations,
                 Discards,
-                Enumerable.Concat(new[] { counterexample }, CounterexampleHistory).ToImmutableList(),
+                Enumerable.Concat(new[] { counterexampleState }, CounterexampleStateHistory).ToImmutableList(),
                 NextParameters,
                 ResizeStrategy);
 
@@ -255,7 +379,7 @@ namespace GalaxyCheck
                 RequestedIterations,
                 CompletedIterations,
                 Discards,
-                CounterexampleHistory,
+                CounterexampleStateHistory,
                 genParameters,
                 ResizeStrategy);
         }
@@ -348,7 +472,7 @@ namespace GalaxyCheck
                 CheckContext<T> Context,
                 IGenInstance<Test<T>> Instance,
                 IEnumerable<ExplorationStage<Test<T>>> Explorations,
-                Counterexample<T>? Counterexample,
+                CounterexampleState<T>? CounterexampleState,
                 bool IsFirstExplorationStage) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState()
@@ -360,7 +484,7 @@ namespace GalaxyCheck
                         return new HandleInstanceComplete<T>(
                             Context,
                             Instance,
-                            Counterexample,
+                            CounterexampleState,
                             WasDiscard: false);
                     }
 
@@ -377,10 +501,10 @@ namespace GalaxyCheck
                                 Instance,
                                 tail,
                                 nonCounterexampleExploration,
-                                Counterexample),
+                                CounterexampleState),
                         onDiscardExploration: () => IsFirstExplorationStage
-                            ? new HandleInstanceComplete<T>(Context, Instance, Counterexample: null, WasDiscard: true)
-                            : new HandleDiscardExploration<T>(Context, Instance, tail, Counterexample));
+                            ? new HandleInstanceComplete<T>(Context, Instance, CounterexampleState: null, WasDiscard: true)
+                            : new HandleDiscardExploration<T>(Context, Instance, tail, CounterexampleState));
                 }
             }
 
@@ -394,23 +518,15 @@ namespace GalaxyCheck
                     Context,
                     Instance,
                     NextExplorations,
-                    Counterexample,
+                    CounterexampleState,
                     false);
 
-                public Counterexample<T> Counterexample
-                {
-                    get
-                    {
-                        var example = CounterexampleExploration.ExampleSpace.Current;
-                        return new Counterexample<T>(
-                            example.Id,
-                            example.Value.Input,
-                            example.Distance,
-                            Instance.RepeatParameters,
-                            CounterexampleExploration.Path.ToImmutableList(),
-                            CounterexampleExploration.Exception);
-                    }
-                }
+                public CounterexampleState<T> CounterexampleState => new CounterexampleState<T>(
+                    CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
+                    Instance.ExampleSpaceHistory,
+                    Instance.RepeatParameters,
+                    CounterexampleExploration.Path,
+                    CounterexampleExploration.Exception);
             }
 
             public record HandleNonCounterexampleExploration<T>(
@@ -418,13 +534,13 @@ namespace GalaxyCheck
                 IGenInstance<Test<T>> Instance,
                 IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
                 ExplorationStage<Test<T>>.NonCounterexample NonCounterexampleExploration,
-                Counterexample<T>? PreviousCounterexample) : CheckState<T>(Context)
+                CounterexampleState<T>? PreviousCounterexampleState) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
                     Context,
                     Instance,
                     NextExplorations,
-                    PreviousCounterexample,
+                    PreviousCounterexampleState,
                     false);
             }
 
@@ -432,7 +548,7 @@ namespace GalaxyCheck
                 CheckContext<T> Context,
                 IGenInstance<Test<T>> Instance,
                 IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
-                Counterexample<T>? PreviousCounterexample) : CheckState<T>(Context)
+                CounterexampleState<T>? PreviousCounterexample) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
                     Context,
@@ -445,14 +561,14 @@ namespace GalaxyCheck
             public record HandleInstanceComplete<T>(
                 CheckContext<T> Context,
                 IGenInstance<Test<T>> Instance,
-                Counterexample<T>? Counterexample,
+                CounterexampleState<T>? CounterexampleState,
                 bool WasDiscard) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => WasDiscard == true
                     ? NextStateOnDiscard(Context, Instance)
-                    : Counterexample == null
+                    : CounterexampleState == null
                         ? NextStateWithoutCounterexample(Context, Instance)
-                        : NextStateWithCounterexample(Context, Instance, Counterexample);
+                        : NextStateWithCounterexample(Context, Instance, CounterexampleState);
 
                 private static CheckState<T> NextStateOnDiscard(
                     CheckContext<T> context,
@@ -481,21 +597,21 @@ namespace GalaxyCheck
                 private static CheckState<T> NextStateWithCounterexample(
                     CheckContext<T> context,
                     IGenInstance<Test<T>> instance,
-                    Counterexample<T> counterexample)
+                    CounterexampleState<T> counterexampleState)
                 {
                     var nextRng = instance.NextParameters.Rng;
                     var nextSize = context.ResizeStrategy(instance, wasCounterexample: true);
                     var nextContext = context
                         .IncrementCompletedIterations()
                         .WithNextGenParameters(new GenParameters(nextRng, nextSize))
-                        .AddCounterexample(counterexample);
+                        .AddCounterexample(counterexampleState);
 
                     if (nextContext.CompletedIterations == nextContext.RequestedIterations)
                     {
                         return new Termination<T>(nextContext);
                     }
 
-                    if (counterexample.Distance == 0)
+                    if (counterexampleState.ExampleSpace.Current.Distance == 0)
                     {
                         // The counterexample is literally the smallest possible example. Can't get smaller than that.
                         return new Termination<T>(nextContext);
@@ -510,9 +626,9 @@ namespace GalaxyCheck
                     }
 
                     const int RecentCounterexampleThreshold = 3;
-                    var recentCounterexamples = nextContext.CounterexampleHistory.Take(RecentCounterexampleThreshold).ToList();
+                    var recentCounterexamples = nextContext.CounterexampleStateHistory.Take(RecentCounterexampleThreshold).ToList();
                     if (recentCounterexamples.Count() == RecentCounterexampleThreshold &&
-                        recentCounterexamples.GroupBy(x => x.Id).Count() == 1)
+                        recentCounterexamples.GroupBy(x => x.ExampleSpace.Current.Id).Count() == 1)
                     {
                         // The recent counterexamples have settled somewhat, short-circuit the remaining iterations
                         return new Termination<T>(nextContext);
@@ -529,7 +645,6 @@ namespace GalaxyCheck
                     throw new Exception("Fatal: Cannot transition from termination state");
                 }
             }
-
         }
     }
 }

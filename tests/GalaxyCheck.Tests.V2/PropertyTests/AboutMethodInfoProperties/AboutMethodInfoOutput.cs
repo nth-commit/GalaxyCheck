@@ -14,7 +14,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
         [Fact]
         public void AVoidMethodInfoCanBeUnfalsifiable()
         {
-            var property = GetMethod(nameof(AnInfallibleVoidPropertyFunction)).ToProperty(this);
+            Property<object> property = MethodProperty.Create(GetMethod(nameof(AnInfallibleVoidPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -29,7 +29,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
         [Fact]
         public void AVoidMethodInfoCanBeFalsified()
         {
-            var property = GetMethod(nameof(AFallibleVoidPropertyFunction)).ToProperty(this);
+            Property<object> property = MethodProperty.Create(GetMethod(nameof(AFallibleVoidPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -41,7 +41,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
         [Fact]
         public void ABooleanMethodInfoCanBeUnfalsifiable()
         {
-            var property = GetMethod(nameof(AnInfallibleBooleanPropertyFunction)).ToProperty(this);
+            Property<object> property = MethodProperty.Create(GetMethod(nameof(AnInfallibleBooleanPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -53,7 +53,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
         [Fact]
         public void ABooleanMethodInfoCanBeFalsified()
         {
-            var property = GetMethod(nameof(AFallibleBooleanPropertyFunction)).ToProperty(this);
+            Property<object> property = MethodProperty.Create(GetMethod(nameof(AFallibleBooleanPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -68,7 +68,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
         [InlineData(nameof(AnInfallibleNestedPropertyFunctionWithVaryingTypes))]
         public void ANestedPropertyMethodInfoCanBeUnfalsifiable(string methodName)
         {
-            var property = GetMethod(methodName).ToProperty(this);
+            Property<object> property = MethodProperty.Create(GetMethod(methodName), this);
 
             var checkResult = property.Check();
 
@@ -80,7 +80,7 @@ namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
         [Fact]
         public void ANestedPropertyMethodInfoCanBeFalsified()
         {
-            var property = GetMethod(nameof(AFallibleNestedPropertyFunction)).ToProperty(this);
+            Property<object> property = MethodProperty.Create(GetMethod(nameof(AFallibleNestedPropertyFunction)), this);
 
             var checkResult = property.Check();
 

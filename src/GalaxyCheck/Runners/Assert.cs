@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 
 namespace GalaxyCheck
 {
@@ -37,7 +38,8 @@ namespace GalaxyCheck
                 counterexample.Distance,
                 counterexample.RepeatParameters,
                 counterexample.RepeatPath,
-                counterexample.Exception);
+                counterexample.Exception,
+                counterexample.PresentationalValue);
         }
     }
 }
@@ -121,7 +123,8 @@ namespace GalaxyCheck.Runners
             Counterexample<object?> counterexample,
             Func<object?, string>? formatValue)
         {
-            var formattedValue = formatValue?.Invoke(counterexample.Value) ?? counterexample.Value?.ToString();
+            var value = counterexample.PresentationalValue ?? counterexample.Value;
+            var formattedValue = formatValue?.Invoke(value) ?? JsonSerializer.Serialize(value);
             return $"Counterexample: {formattedValue}";
         }
 

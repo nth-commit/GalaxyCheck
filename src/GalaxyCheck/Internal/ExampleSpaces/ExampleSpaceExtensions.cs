@@ -156,11 +156,11 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 : new[] { rootExplorationStage };
         }
 
-        public static IExample<T>? Navigate<T>(this IExampleSpace<T> exampleSpace, List<int> path)
+        public static IExampleSpace<T>? Navigate<T>(this IExampleSpace<T> exampleSpace, IEnumerable<int> path)
         {
-            static IExample<T>? NavigateRec(IExampleSpace<T> exampleSpace, List<int> path)
+            static IExampleSpace<T>? NavigateRec(IExampleSpace<T> exampleSpace, IEnumerable<int> path)
             {
-                if (path.Any() == false) return exampleSpace.Current;
+                if (path.Any() == false) return exampleSpace;
 
                 var nextExampleSpace = exampleSpace.Subspace.Skip(path.First()).FirstOrDefault();
 
@@ -169,7 +169,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 return NavigateRec(nextExampleSpace, path.Skip(1).ToList());
             }
 
-            return NavigateRec(exampleSpace, path.Skip(1).ToList());
+            return NavigateRec(exampleSpace, path);
         }
     }
 }

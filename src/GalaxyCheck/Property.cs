@@ -52,6 +52,16 @@ namespace GalaxyCheck
                 throw new PropertyPreconditionException();
             }
         }
+
+        public static Test ForThese(Action func) => ForThese(() =>
+        {
+            func();
+            return true;
+        });
+
+        public static Test ForThese(Func<bool> func) => new TestImpl(
+            (_) => func(),
+            new Symbols.NoInput());
     }
 
     public class Property<T> : GenProvider<Test<T>>, IGen<Test<T>>

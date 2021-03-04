@@ -26,7 +26,11 @@ namespace GalaxyCheck
                     return GenIterationFactory.Discard<T>(instance.RepeatParameters, instance.NextParameters);
                 }
 
-                return GenIterationFactory.Instance(instance.RepeatParameters, instance.NextParameters, filteredExampleSpace);
+                return GenIterationFactory.Instance(
+                    instance.RepeatParameters,
+                    instance.NextParameters,
+                    filteredExampleSpace,
+                    instance.ExampleSpaceHistory);
             };
 
             GenStreamTransformation<T, T> resizeAndTerminateAfterConsecutiveDiscards = (stream) =>

@@ -62,16 +62,18 @@ namespace GalaxyCheck.Xunit.Internal
             }
 
             var methodInfo = TestMethod.Method.ToRuntimeMethod();
-
-            var methodInfoValidationException = ValidateMethod(methodInfo);
-            if (methodInfoValidationException != null)
-            {
-                return Fail(methodInfoValidationException);
-            }
-
             var testClass = TestMethod.TestClass.Class.ToRuntimeType();
             var testInstance = Activator.CreateInstance(testClass, constructorArguments);
-            var property = methodInfo.ToProperty(testInstance);
+
+            Property? property;
+            try
+            {
+                property = MethodProperty.Create(methodInfo, testInstance);
+            }
+            catch (Exception exception)
+            {
+                return Fail(exception);
+            }
 
             try
             {
@@ -84,26 +86,7 @@ namespace GalaxyCheck.Xunit.Internal
             }
         }
 
-        private static Exception? ValidateMethod(MethodInfo methodInfo)
-        {
-            var supportedReturnTypes = new List<Type>
-            {
-                typeof(void),
-                typeof(bool),
-                typeof(Property)
-            };
-
-            if (!supportedReturnTypes.Contains(methodInfo.ReturnType))
-            {
-                var supportedReturnTypesFormatted = string.Join(", ", supportedReturnTypes);
-                return new Exception(
-                    $"Return type {methodInfo.ReturnType} is not supported by GalaxyCheck.Xunit. Please use one of: {supportedReturnTypesFormatted}");
-            }
-
-            return null;
-        }
-
-        protected virtual void RunProperty(Property<object[]> property, ITestOutputHelper testOutputHelper)
+        protected virtual void RunProperty(Property<object> property, ITestOutputHelper testOutputHelper)
         {
             property.Assert(
                 formatValue: x => JsonSerializer.Serialize(x),
