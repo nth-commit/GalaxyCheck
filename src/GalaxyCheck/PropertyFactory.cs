@@ -59,7 +59,7 @@ namespace GalaxyCheck
                 let property = InvokeNestedProperty(methodInfo, target, parameters)
                 where property != null
                 from propertyIteration in property
-                select new Property<object[]>.Iteration(
+                select new Property<object[]>.TestImpl(
                     (x) => propertyIteration.Func(x.Last()),
                     parameters.Append(propertyIteration.Input).ToArray());
 
