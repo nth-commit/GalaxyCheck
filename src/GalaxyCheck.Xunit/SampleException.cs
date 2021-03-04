@@ -7,11 +7,11 @@ namespace GalaxyCheck.Xunit
 {
     public class SampleException : Exception
     {
-        public SampleException(SampleWithMetricsResult<IPropertyIteration<object[]>> sample) : base(BuildMessage(sample)) { }
+        public SampleException(SampleWithMetricsResult<Test<object[]>> sample) : base(BuildMessage(sample)) { }
 
-        private static string BuildMessage(SampleWithMetricsResult<IPropertyIteration<object[]>> sample) => string.Join(Environment.NewLine, BuildLines(sample));
+        private static string BuildMessage(SampleWithMetricsResult<Test<object[]>> sample) => string.Join(Environment.NewLine, BuildLines(sample));
 
-        private static IEnumerable<string> BuildLines(SampleWithMetricsResult<IPropertyIteration<object[]>> sample)
+        private static IEnumerable<string> BuildLines(SampleWithMetricsResult<Test<object[]>> sample)
         {
             const string LineBreak = "";
 

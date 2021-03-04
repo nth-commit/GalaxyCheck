@@ -69,11 +69,11 @@ namespace GalaxyCheck.Runners.Sample
         {
             var checkResult = new AdvancedToGen<T>(advanced).ForAll(x =>
             {
-                if (x is IPropertyIteration propertyIteration)
+                if (x is Test test)
                 {
                     try
                     {
-                        propertyIteration.Func(propertyIteration.Input);
+                        test.Func(test.Input);
                     }
                     catch (Exception ex) when (ex is not Property.PropertyPreconditionException)
                     {
