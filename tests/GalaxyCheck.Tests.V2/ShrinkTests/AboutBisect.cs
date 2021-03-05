@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using FluentAssertions.Execution;
 using GalaxyCheck.Internal.ExampleSpaces;
 using NebulaCheck;
 using NebulaCheck.Xunit;
