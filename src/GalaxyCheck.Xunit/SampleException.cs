@@ -7,11 +7,11 @@ namespace GalaxyCheck.Xunit
 {
     public class SampleException : Exception
     {
-        public SampleException(SampleWithMetricsResult<Test<object[]>> sample) : base(BuildMessage(sample)) { }
+        public SampleException(SampleWithMetricsResult<PresentableExampleSpace<Test<object>>> sample) : base(BuildMessage(sample)) { }
 
-        private static string BuildMessage(SampleWithMetricsResult<Test<object[]>> sample) => string.Join(Environment.NewLine, BuildLines(sample));
+        private static string BuildMessage(SampleWithMetricsResult<PresentableExampleSpace<Test<object>>> sample) => string.Join(Environment.NewLine, BuildLines(sample));
 
-        private static IEnumerable<string> BuildLines(SampleWithMetricsResult<Test<object[]>> sample)
+        private static IEnumerable<string> BuildLines(SampleWithMetricsResult<PresentableExampleSpace<Test<object>>> sample)
         {
             const string LineBreak = "";
 
@@ -25,7 +25,9 @@ namespace GalaxyCheck.Xunit
 
             foreach (var value in sample.Values)
             {
-                yield return JsonSerializer.Serialize(value.Input);
+                yield return JsonSerializer.Serialize(
+                    value.Presentational?.Current.Value ??
+                    value.Actual.Current.Value.Input);
             }
         }
     }

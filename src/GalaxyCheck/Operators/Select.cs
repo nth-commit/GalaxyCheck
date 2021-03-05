@@ -17,11 +17,16 @@ namespace GalaxyCheck
         /// <returns>A new generator with the projection applied.</returns>
         public static IGen<TResult> Select<T, TResult>(this IGen<T> gen, Func<T, TResult> selector)
         {
-            GenInstanceTransformation<T, TResult> transformation = (instance) =>
-                GenIterationFactory.Instance(
+            GenInstanceTransformation<T, TResult> transformation = (instance) => {
+                var sourceExampleSpace = instance.ExampleSpace;
+                var projectedExampleSpace = instance.ExampleSpace.Map(selector);
+
+                return GenIterationFactory.Instance(
                     instance.RepeatParameters,
                     instance.NextParameters,
-                    instance.ExampleSpace.Map(selector));
+                    projectedExampleSpace,
+                    instance.ExampleSpaceHistory);
+            };
 
             return gen.TransformInstances(transformation);
         }

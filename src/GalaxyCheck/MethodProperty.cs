@@ -1,23 +1,37 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
 namespace GalaxyCheck
 {
-    public static class PropertyFactory
+    public static class MethodProperty
     {
-        public static Property<object[]> ToProperty(this MethodInfo methodInfo, object? target)
+        public static ImmutableList<Type> SupportedReturnTypes => MethodPropertyHandlers.Keys.ToImmutableList();
+
+        public static Property Create(MethodInfo methodInfo, object? target)
         {
-            return methodInfo.ReturnType == typeof(void)
-                ? ToVoidProperty(methodInfo, target)
-                : methodInfo.ReturnType == typeof(bool)
-                ? ToBooleanProperty(methodInfo, target)
-                : IsProperty(methodInfo.ReturnType)
-                ? ToNestedProperty(methodInfo, target)
-                : throw new Exception("Fatal: Unhandled return type");
+            if (!SupportedReturnTypes.Contains(methodInfo.ReturnType))
+            {
+                var supportedReturnTypesFormatted = string.Join(", ", SupportedReturnTypes);
+                var message = $"Return type {methodInfo.ReturnType} is not supported by GalaxyCheck.Xunit. Please use one of: {supportedReturnTypesFormatted}";
+                throw new Exception(message);
+            }
+
+            return MethodPropertyHandlers[methodInfo.ReturnType](methodInfo, target);
         }
 
-        private static Property<object[]> ToVoidProperty(MethodInfo methodInfo, object? target)
+        private readonly static ImmutableDictionary<Type, Func<MethodInfo, object?, Property>> MethodPropertyHandlers =
+            new Dictionary<Type, Func<MethodInfo, object?, Property>>
+            {
+                { typeof(void), ToVoidProperty },
+                { typeof(bool), ToBooleanProperty },
+                { typeof(Property), ToNestedProperty },
+                { typeof(IGen<Test>), ToPureProperty }
+            }.ToImmutableDictionary();
+
+        private static Property ToVoidProperty(MethodInfo methodInfo, object? target)
         {
             return Gen.Parameters(methodInfo).ForAll(parameters =>
             {
@@ -32,7 +46,7 @@ namespace GalaxyCheck
             });
         }
 
-        private static Property<object[]> ToBooleanProperty(MethodInfo methodInfo, object? target)
+        private static Property ToBooleanProperty(MethodInfo methodInfo, object? target)
         {
             return Gen.Parameters(methodInfo).ForAll(parameters =>
             {
@@ -47,12 +61,7 @@ namespace GalaxyCheck
             });
         }
 
-        private static bool IsProperty(Type type)
-        {
-            return type == typeof(Property);
-        }
-
-        private static Property<object[]> ToNestedProperty(MethodInfo methodInfo, object? target)
+        private static Property ToNestedProperty(MethodInfo methodInfo, object? target)
         {
             var gen =
                 from parameters in Gen.Parameters(methodInfo)
@@ -79,6 +88,19 @@ namespace GalaxyCheck
                     return null;
                 }
 
+                throw ex.InnerException;
+            }
+        }
+
+        private static Property ToPureProperty(MethodInfo methodInfo, object? target)
+        {
+            try
+            {
+                var pureProperty = (IGen<Test>)methodInfo.Invoke(target, new object [] { });
+                return new Property(pureProperty);
+            }
+            catch (TargetInvocationException ex)
+            {
                 throw ex.InnerException;
             }
         }

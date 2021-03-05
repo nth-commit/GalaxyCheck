@@ -41,12 +41,22 @@ namespace GalaxyCheck
             this IGenAdvanced<T> advanced,
             int? iterations = null,
             int? seed = null,
+            int? size = null) => advanced.SamplePresentableExampleSpaceWithMetrics(iterations: iterations, seed: seed, size: size).Select(x => x.Actual);
+
+        public static SampleWithMetricsResult<PresentableExampleSpace<T>> SamplePresentableExampleSpaceWithMetrics<T>(
+            this IGenAdvanced<T> advanced,
+            int? iterations = null,
+            int? seed = null,
             int? size = null) => SampleHelpers.RunSample(advanced, iterations: iterations, seed: seed, size: size);
     }
 }
 
 namespace GalaxyCheck.Runners.Sample
 {
+    public record PresentableExampleSpace<T>(
+        IExampleSpace<T> Actual,
+        IExampleSpace? Presentational);
+
     public record SampleWithMetricsResult<T>(
         List<T> Values,
         int Discards,
@@ -65,7 +75,7 @@ namespace GalaxyCheck.Runners.Sample
 
     internal static class SampleHelpers
     {
-        public static SampleWithMetricsResult<IExampleSpace<T>> RunSample<T>(IGenAdvanced<T> advanced, int? iterations, int? seed, int? size)
+        public static SampleWithMetricsResult<PresentableExampleSpace<T>> RunSample<T>(IGenAdvanced<T> advanced, int? iterations, int? seed, int? size)
         {
             var checkResult = new AdvancedToGen<T>(advanced).ForAll(x =>
             {
@@ -82,10 +92,13 @@ namespace GalaxyCheck.Runners.Sample
             })
             .Check(iterations: iterations, seed: seed, size: size);
 
-            var exampleSpaces = checkResult.Checks.OfType<CheckIteration.Check<T>>().Select(i => i.ExampleSpace).ToList();
+            var values = checkResult.Checks
+                .OfType<CheckIteration.Check<T>>()
+                .Select(check => new PresentableExampleSpace<T>(check.ExampleSpace, check.PresentationalExampleSpace))
+                .ToList();
 
-            return new SampleWithMetricsResult<IExampleSpace<T>>(
-                exampleSpaces,
+            return new SampleWithMetricsResult<PresentableExampleSpace<T>>(
+                values,
                 checkResult.Discards,
                 checkResult.RandomnessConsumption);
         }

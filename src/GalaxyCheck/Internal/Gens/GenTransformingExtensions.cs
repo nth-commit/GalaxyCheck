@@ -31,7 +31,7 @@ namespace GalaxyCheck.Internal.Gens
         public static IGen<U> TransformInstances<T, U>(
             this IGen<T> gen,
             GenInstanceTransformation<T, U> transformation) =>
-                gen.TransformIterations((GenIterationTransformation<T, U>)((GenIterations.IGenIteration<T> iteration) =>
+                gen.TransformIterations((IGenIteration<T> iteration) =>
                 {
                     var either = GenIterationExtensions.ToEither<T, U>(iteration);
 
@@ -47,7 +47,7 @@ namespace GalaxyCheck.Internal.Gens
                     {
                         throw new Exception("Fatal: Unhandled branch");
                     }
-                }));
+                });
 
         public static IGen<T> Repeat<T>(this IGen<T> gen) => gen.Transform(GenTransformations.Repeat<T>());
     }

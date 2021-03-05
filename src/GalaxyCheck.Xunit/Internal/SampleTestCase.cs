@@ -23,9 +23,10 @@ namespace GalaxyCheck.Xunit.Internal
         {
         }
 
-        protected override void RunProperty(Property<object[]> property, ITestOutputHelper testOutputHelper)
+        protected override void RunProperty(Property<object> property, ITestOutputHelper testOutputHelper)
         {
-            throw new SampleException(property.Advanced.SampleWithMetrics());
+            var sample = property.Advanced.SamplePresentableExampleSpaceWithMetrics();
+            throw new SampleException(sample);
         }
     }
 }

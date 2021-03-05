@@ -2,9 +2,9 @@
 using GalaxyCheck;
 using System;
 using System.Linq;
+using System.Reflection;
 using FluentAssertions;
 using Xunit;
-using System.Reflection;
 
 namespace Tests.V2.PropertyTests.AboutPreconditions
 {
@@ -58,7 +58,9 @@ namespace Tests.V2.PropertyTests.AboutPreconditions
         [Fact]
         public void ForNestedProperties_IfThePreconditionPasses_ThenTheEquivalentAssertPasses()
         {
-            var result = GalaxyCheck.PropertyFactory.ToProperty(GetMethod(nameof(NestedPrecondition)), this).Check(seed: 0);
+            GalaxyCheck.Property<object> property = GalaxyCheck.MethodProperty.Create(GetMethod(nameof(NestedPrecondition)), this);
+
+            var result = property.Check(seed: 0);
 
             result.Counterexample.Should().BeNull();
         }

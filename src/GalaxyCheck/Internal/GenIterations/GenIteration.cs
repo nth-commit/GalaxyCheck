@@ -1,11 +1,14 @@
 ﻿using GalaxyCheck.Internal.ExampleSpaces;
 using System;
+using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.GenIterations.Data
 {
     public interface IGenInstanceData
     {
         IExampleSpace ExampleSpace { get; }
+
+        IEnumerable<IExampleSpace> ExampleSpaceHistory { get; }
     }
 
     public interface IGenErrorData
@@ -33,7 +36,9 @@ namespace GalaxyCheck.Internal.GenIterations.Data
             Func<IGenDiscardData, T> onDiscard);
     }
 
-    public record GenInstanceData(IExampleSpace ExampleSpace) : IGenInstanceData;
+    public record GenInstanceData(
+        IExampleSpace ExampleSpace,
+        IEnumerable<IExampleSpace> ExampleSpaceHistory) : IGenInstanceData;
 
     public record GenErrorData(string GenName, string Message) : IGenErrorData;
 
@@ -41,12 +46,14 @@ namespace GalaxyCheck.Internal.GenIterations.Data
 
     public record GenData : IGenData
     {
-        public static GenData InstanceData(IExampleSpace exampleSpace) => new GenData
-        {
-            Instance = new GenInstanceData(exampleSpace),
-            Error = null,
-            Discard = null
-        };
+        public static GenData InstanceData(
+            IExampleSpace exampleSpace,
+            IEnumerable<IExampleSpace> exampleSpaceHistory) => new GenData
+            {
+                Instance = new GenInstanceData(exampleSpace, exampleSpaceHistory),
+                Error = null,
+                Discard = null
+            };
 
         public static GenData ErrorData(string genName, string message) => new GenData
         {
@@ -102,12 +109,17 @@ namespace GalaxyCheck.Internal.GenIterations.Data.Generic
 
     public record GenInstanceData<T> : IGenInstanceData<T>
     {
-        public GenInstanceData(IExampleSpace<T> exampleSpace)
+        public GenInstanceData(
+            IExampleSpace<T> exampleSpace,
+            IEnumerable<IExampleSpace> exampleSpaceHistory)
         {
             ExampleSpace = exampleSpace;
+            ExampleSpaceHistory = exampleSpaceHistory;
         }
 
         public IExampleSpace<T> ExampleSpace { get; init; }
+
+        public IEnumerable<IExampleSpace> ExampleSpaceHistory { get; init; }
 
         IExampleSpace IGenInstanceData.ExampleSpace => ExampleSpace;
     }
@@ -118,12 +130,14 @@ namespace GalaxyCheck.Internal.GenIterations.Data.Generic
 
     public record GenData<T> : IGenData<T>
     {
-        public static GenData<T> InstanceData(IExampleSpace<T> exampleSpace) => new GenData<T>
-        {
-            Instance = new GenInstanceData<T>(exampleSpace),
-            Error = null,
-            Discard = null
-        };
+        public static GenData<T> InstanceData(
+            IExampleSpace<T> exampleSpace,
+            IEnumerable<IExampleSpace> exampleSpaceHistory) => new GenData<T>
+            {
+                Instance = new GenInstanceData<T>(exampleSpace, exampleSpaceHistory),
+                Error = null,
+                Discard = null
+            };
 
         public static GenData<T> ErrorData(string genName, string message) => new GenData<T>
         {
@@ -161,6 +175,7 @@ namespace GalaxyCheck.Internal.GenIterations
     using GalaxyCheck.Internal.GenIterations.Data;
     using GalaxyCheck.Internal.GenIterations.Data.Generic;
     using GalaxyCheck.Internal.Utility;
+    using System.Linq;
 
     public interface IGenIteration
     {
@@ -214,7 +229,7 @@ namespace GalaxyCheck.Internal.GenIterations
             public IGenData<T> Data { get; init; }
 
             IGenData IGenIteration.Data => Data.Match<IGenData>(
-                onInstance: instanceData => GenData.InstanceData(instanceData.ExampleSpace),
+                onInstance: instanceData => GenData.InstanceData(instanceData.ExampleSpace, instanceData.ExampleSpaceHistory),
                 onError: errorData => GenData.ErrorData(errorData.GenName, errorData.Message),
                 onDiscard: discardData => GenData.DiscardData());
 
@@ -237,6 +252,8 @@ namespace GalaxyCheck.Internal.GenIterations
                 }
 
                 public IExampleSpace<U> ExampleSpace => Data.Instance!.ExampleSpace;
+
+                public IEnumerable<IExampleSpace> ExampleSpaceHistory => Data.Instance!.ExampleSpaceHistory;
 
                 IExampleSpace IGenInstanceData.ExampleSpace => ExampleSpace;
             }
@@ -271,8 +288,27 @@ namespace GalaxyCheck.Internal.GenIterations
         public static IGenIteration<T> Instance<T>(
             GenParameters repeatParameters,
             GenParameters nextParameters,
-            IExampleSpace<T> exampleSpace) =>
-                new GenIteration<T>(repeatParameters, nextParameters, GenData<T>.InstanceData(exampleSpace));
+            IExampleSpace<T> exampleSpace)
+        {
+            var instanceData = GenData<T>.InstanceData(
+                exampleSpace,
+                new[] { exampleSpace });
+
+            return new GenIteration<T>(repeatParameters, nextParameters, instanceData);
+        }
+
+        public static IGenIteration<T> Instance<T>(
+            GenParameters repeatParameters,
+            GenParameters nextParameters,
+            IExampleSpace<T> exampleSpace,
+            IEnumerable<IExampleSpace> lastExampleSpaceHistory)
+        {
+            var instanceData = GenData<T>.InstanceData(
+                exampleSpace,
+                Enumerable.Concat(lastExampleSpaceHistory, new[] { exampleSpace }));
+
+            return new GenIteration<T>(repeatParameters, nextParameters, instanceData);
+        }
 
         public static IGenIteration<T> Error<T>(
             GenParameters repeatParameters,

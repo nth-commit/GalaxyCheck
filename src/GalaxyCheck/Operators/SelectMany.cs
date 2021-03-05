@@ -116,7 +116,8 @@ namespace GalaxyCheck
                                 onInstance: innerInstance => GenIterationFactory.Instance(
                                     iteration.RepeatParameters,
                                     innerIteration.NextParameters,
-                                    innerInstance.ExampleSpace),
+                                    innerInstance.ExampleSpace,
+                                    instance.ExampleSpaceHistory),
                                 onError: innerError => GenIterationFactory.Error<TResult>(
                                     iteration.RepeatParameters,
                                     innerIteration.NextParameters,
@@ -156,8 +157,15 @@ namespace GalaxyCheck
         public static IGen<TResult> SelectMany<T, TResultGen, TResult>(
             this IGen<T> gen,
             Func<T, IGen<TResultGen>> genSelector,
-            Func<T, TResultGen, TResult> valueSelector) =>
-                gen.SelectMany(x => genSelector(x).Select(y => valueSelector(x, y)));
+            Func<T, TResultGen, TResult> valueSelector) => gen
+                .SelectMany(x => genSelector(x).Select(y =>
+                {
+                    // Intentionally wrap the left and right values with a symbol, so that we are able to observe the
+                    // two values when we need to check the history. You could directly invoke the valueSelector here,
+                    // but that would mean that x only appears in scope, and is not written to history.
+                    return new Symbols.BoundTuple<T, TResultGen>(x, y);
+                }))
+                .Select(boundTuple => valueSelector(boundTuple.Left, boundTuple.Right));
     }
 
     public static partial class Gen
