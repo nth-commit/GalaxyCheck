@@ -183,7 +183,7 @@ namespace GalaxyCheck.Gens
             static (int minLength, IGen<int> gen) RangedLengthGen(int? minLength, int? maxLength, Gen.Bias? bias)
             {
                 var resolvedMinLength = minLength ?? 0;
-                var resolvedMaxLength = maxLength ?? 20;
+                var resolvedMaxLength = maxLength ?? resolvedMinLength + 20;
                 var resolvedBias = bias ?? Gen.Bias.WithSize;
 
                 if (resolvedMinLength < 0)
@@ -205,9 +205,9 @@ namespace GalaxyCheck.Gens
 
                 var gen = Gen
                     .Int32()
-                    .GreaterThanEqual(minLength ?? 0)
-                    .LessThanEqual(maxLength ?? 20)
-                    .WithBias(bias ?? Gen.Bias.WithSize)
+                    .GreaterThanEqual(resolvedMinLength)
+                    .LessThanEqual(resolvedMaxLength)
+                    .WithBias(resolvedBias)
                     .NoShrink();
 
                 return (resolvedMinLength, gen);
