@@ -3,7 +3,6 @@ using GalaxyCheck.Internal.ExampleSpaces;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace Tests.V2.ShrinkTests
@@ -65,7 +64,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProduceTwoShrinksOfSimilarLengths() =>
             from minLength in TestGen.MinLength()
-            from list in TestGen.ShrinkableList(minLength)
+            from list in DomainGen.AnyList().OfMinimumLength(Math.Max(1, minLength) * 2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -81,7 +80,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillNotProduceShrinksLessThanMinimumLength() =>
             from minLength in TestGen.MinLength()
-            from list in TestGen.ShrinkableList(minLength)
+            from list in DomainGen.AnyList().OfMinimumLength(Math.Max(1, minLength) * 2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -96,7 +95,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProducesShrinksThatCanRecreateTheOriginalList() =>
             from minLength in TestGen.MinLength()
-            from list in TestGen.ShrinkableList(minLength)
+            from list in DomainGen.AnyList().OfMinimumLength(Math.Max(1, minLength) * 2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -110,12 +109,6 @@ namespace Tests.V2.ShrinkTests
         {
             public static IGen<int> MinLength(int? minMinLength = null) =>
                 Gen.Int32().Between(minMinLength ?? 0, 25);
-
-            public static IGen<ImmutableList<object>> ShrinkableList(int minShrunkLength)
-            {
-                var minLength = Math.Max(2, minShrunkLength * 2);
-                return DomainGen.AnyList().BetweenLengths(minLength, minLength + 10);
-            }
         }
     }
 }

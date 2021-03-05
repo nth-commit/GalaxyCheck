@@ -39,7 +39,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillNotProduceShrinksLessThanMinimumLength() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().BetweenLengths(minLength + 1, Math.Max(minLength + 10, 25))
+            from list in DomainGen.AnyList().OfMinimumLength(minLength + 1)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);
@@ -54,7 +54,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProduceAShrinkForEachElementInTheList() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().BetweenLengths(minLength + 1, Math.Max(minLength + 10, 25))
+            from list in DomainGen.AnyList().OfMinimumLength(minLength + 1)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);
@@ -69,7 +69,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProduceDistinctShrinks() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().BetweenLengths(minLength + 1, Math.Max(minLength + 10, 25))
+            from list in DomainGen.AnyList().OfMinimumLength(minLength + 1)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);
