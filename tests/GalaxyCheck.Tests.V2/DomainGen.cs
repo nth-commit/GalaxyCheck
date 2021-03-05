@@ -1,7 +1,6 @@
 ﻿using GalaxyCheck;
 using NebulaCheck;
 using System.Linq;
-using NebulaCheck.Injection.Int32;
 
 namespace Tests.V2
 {
@@ -30,6 +29,10 @@ namespace Tests.V2
             from x in NebulaCheck.Gen.Int32().Between(0, 1).WithBias(NebulaCheck.Gen.Bias.None)
             select (x == 1);
 
-        
+        public static NebulaCheck.IGen<object> Any() => Choose(
+            NebulaCheck.Gen.Int32().Cast<object>(),
+            Boolean().Cast<object>());
+
+        public static NebulaCheck.Gens.IListGen<object> AnyList() => Any().ListOf();
     }
 }
