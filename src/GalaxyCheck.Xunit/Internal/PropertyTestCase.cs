@@ -89,7 +89,6 @@ namespace GalaxyCheck.Xunit.Internal
         protected virtual void RunProperty(Property<object> property, ITestOutputHelper testOutputHelper)
         {
             property.Assert(
-                formatValue: x => JsonSerializer.Serialize(x),
                 formatReproduction: (x) =>
                 {
                     var attributes =

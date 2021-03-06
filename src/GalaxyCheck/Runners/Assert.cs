@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GalaxyCheck
 {
@@ -14,7 +15,6 @@ namespace GalaxyCheck
             int? iterations = null,
             int? seed = null,
             int? size = null,
-            Func<object?, string>? formatValue = null,
             Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction = null)
         {
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
@@ -24,7 +24,6 @@ namespace GalaxyCheck
                 throw new PropertyFailedException(
                     BoxCounterexample(checkResult.Counterexample!),
                     checkResult.Iterations,
-                    formatValue,
                     formatReproduction);
             }
         }
@@ -51,23 +50,20 @@ namespace GalaxyCheck.Runners
         public PropertyFailedException(
             Counterexample<object?> counterexample,
             int iterations,
-            Func<object?, string>? formatValue,
             Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
-            : base(BuildMessage(counterexample, iterations, formatValue, formatReproduction))
+            : base(BuildMessage(counterexample, iterations, formatReproduction))
         {
         }
 
         private static string BuildMessage(
             Counterexample<object?> counterexample,
             int iterations,
-            Func<object?, string>? formatValue,
             Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction) =>
-                string.Join(Environment.NewLine, BuildLines(counterexample, iterations, formatValue, formatReproduction));
+                string.Join(Environment.NewLine, BuildLines(counterexample, iterations, formatReproduction));
 
         private static IEnumerable<string> BuildLines(
             Counterexample<object?> counterexample,
             int iterations,
-            Func<object?, string>? formatValue,
             Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
         {
             const string LineBreak = "";
@@ -76,7 +72,7 @@ namespace GalaxyCheck.Runners
 
             yield return FalsifiedAfterLine(iterations);
             yield return ReproductionLine(counterexample, formatReproduction);
-            yield return CounterexampleValueLine(counterexample, formatValue);
+            yield return CounterexampleValueLine(counterexample);
 
             yield return LineBreak;
             if (counterexample.Exception == null)
@@ -119,13 +115,10 @@ namespace GalaxyCheck.Runners
             }
         }
 
-        private static string CounterexampleValueLine(
-            Counterexample<object?> counterexample,
-            Func<object?, string>? formatValue)
+        private static string CounterexampleValueLine(Counterexample<object?> counterexample)
         {
             var value = counterexample.PresentationalValue ?? counterexample.Value;
-            var formattedValue = formatValue?.Invoke(value) ?? JsonSerializer.Serialize(value);
-            return $"Counterexample: {formattedValue}";
+            return $"Counterexample: {ValueFormatter.FormatValue(value)}";
         }
 
         private static string ExceptionLine(Exception ex) => $"---- {ex.Message}";

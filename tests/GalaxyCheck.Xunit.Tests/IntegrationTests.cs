@@ -34,6 +34,7 @@ namespace Tests
             var testResult = _fixture.FindTestResult(nameof(FallibleVoidProperty));
 
             testResult.Outcome.Should().Be("Failed");
+            testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
         }
 
         [Fact]
@@ -50,6 +51,7 @@ namespace Tests
             var testResult = _fixture.FindTestResult(nameof(FallibleBooleanProperty));
 
             testResult.Outcome.Should().Be("Failed");
+            testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
         }
 
         [Fact]
@@ -66,11 +68,12 @@ namespace Tests
             var testResult = _fixture.FindTestResult(nameof(FallibleNestedProperty));
 
             testResult.Outcome.Should().Be("Failed");
+            testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
         }
 
         public record Invocation(object[] InjectedParameters);
 
-        public record TestResult(string TestName, string Outcome, ImmutableList<Invocation> Invocations);
+        public record TestResult(string TestName, string Outcome, string? Message, ImmutableList<Invocation> Invocations);
 
         public class TestSuiteFixture : IAsyncLifetime
         {
@@ -114,9 +117,16 @@ namespace Tests
             private static TestResult ElementToTestResult(XElement element)
             {
                 var attributes = element.Attributes();
+
+                var message = (
+                    from desc in element.Descendants()
+                    where desc.Name.LocalName.Contains("Message")
+                    select desc.Value).SingleOrDefault();
+
                 return new TestResult(
                     attributes.Single(a => a.Name.LocalName.Contains("testName")).Value.Split('.').Last(),
                     attributes.Single(a => a.Name.LocalName.Contains("outcome")).Value,
+                    message,
                     new List<Invocation>().ToImmutableList());
             }
         }
