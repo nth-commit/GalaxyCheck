@@ -1,7 +1,7 @@
-﻿using GalaxyCheck.Runners.Sample;
+﻿using GalaxyCheck.Runners;
+using GalaxyCheck.Runners.Sample;
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 
 namespace GalaxyCheck.Xunit
 {
@@ -25,7 +25,7 @@ namespace GalaxyCheck.Xunit
 
             foreach (var value in sample.Values)
             {
-                yield return JsonSerializer.Serialize(
+                yield return ValueFormatter.FormatValue(
                     value.Presentational?.Current.Value ??
                     value.Actual.Current.Value.Input);
             }
