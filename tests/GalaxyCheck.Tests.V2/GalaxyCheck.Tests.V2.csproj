@@ -11,8 +11,8 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
-    <PackageReference Include="NebulaCheck" Version="0.0.0-625367500" />
-    <PackageReference Include="NebulaCheck.Xunit" Version="0.0.0-625367500" />
+    <PackageReference Include="NebulaCheck" Version="0.0.0-626278508" />
+    <PackageReference Include="NebulaCheck.Xunit" Version="0.0.0-626278508" />
     <PackageReference Include="Snapshooter.Xunit" Version="0.5.8" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
