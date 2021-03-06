@@ -72,9 +72,7 @@ namespace Tests.V2.ShrinkTests
                 var shrinks = func(list.ToList());
 
                 shrinks.Should().HaveCount(2);
-                var shrink1Count = shrinks.First().Count;
-                var shrink2Count = shrinks.Skip(1).Single().Count;
-                Math.Abs(shrink1Count - shrink2Count).Should().BeLessOrEqualTo(1);
+                shrinks.First().Count.Should().BeCloseTo(shrinks.Skip(1).Single().Count, 1);
             });
 
         [Property]
