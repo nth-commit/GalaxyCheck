@@ -159,7 +159,7 @@ namespace GalaxyCheck.Gens
             // minimal shrink a lot more efficiently in some examples,
             // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
 
-            return ShrinkFunc.TowardsCount2<IExampleSpace<T>, decimal>(length, exampleSpace =>
+            return ShrinkFunc.TowardsCountOptimized<IExampleSpace<T>, decimal>(length, exampleSpace =>
             {
                 return -exampleSpace.Current.Distance;
             });

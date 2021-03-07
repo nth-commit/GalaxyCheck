@@ -87,7 +87,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         }
 
         /// <summary>
-        /// A second implementation of <see cref="TowardsCount{T, TKey}(int, Func{T, TKey})"/>. Optimised for lists of
+        /// A second implementation of <see cref="TowardsCount{T, TKey}(int, Func{T, TKey})"/>. Optimized for lists of
         /// greater length than the original, as it will generate shrinks in O(n) fashion, rather than O(n!). The
         /// original implementation would edge the length close to the original value, whilst generating all possible
         /// combinations at that length. This has been replaced by a bisecting phase, which cuts the list in half.
@@ -98,7 +98,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="orderKeySelector">A function to order the list by, in an attempt to generate the first
         /// shrink</param>
         /// <returns></returns>
-        public static ShrinkFunc<List<T>> TowardsCount2<T, TKey>(int target, Func<T, TKey> orderKeySelector)
+        public static ShrinkFunc<List<T>> TowardsCountOptimized<T, TKey>(int target, Func<T, TKey> orderKeySelector)
         {
             var order = Order(orderKeySelector);
             var towardsCount = Towards(target);
