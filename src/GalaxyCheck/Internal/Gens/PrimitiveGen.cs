@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Sizing;
+using System;
 using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.Gens
@@ -12,20 +13,14 @@ namespace GalaxyCheck.Internal.Gens
     public class PrimitiveGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly StatefulGenFunc<T> _generate;
-        private readonly ShrinkFunc<T> _shrink;
-        private readonly MeasureFunc<T> _measure;
-        private readonly IdentifyFunc<T> _identify;
+        private readonly Func<T, IExampleSpace<T>> _unfold;
 
         public PrimitiveGen(
             StatefulGenFunc<T> generate,
-            ShrinkFunc<T> shrink,
-            MeasureFunc<T> measure,
-            IdentifyFunc<T> identify)
+            Func<T, IExampleSpace<T>> unfold)
         {
             _generate = generate;
-            _shrink = shrink;
-            _measure = measure;
-            _identify = identify;
+            _unfold = unfold;
         }
 
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters)
@@ -41,7 +36,7 @@ namespace GalaxyCheck.Internal.Gens
             {
                 var initialParameters = parameters;
 
-                var exampleSpace = ExampleSpaceFactory.Unfold(_generate(useNextInt, parameters.Size), _shrink, _measure, _identify);
+                var exampleSpace = _unfold(_generate(useNextInt, parameters.Size));
 
                 yield return GenIterationFactory.Instance(initialParameters, parameters, exampleSpace);
             } while (true);

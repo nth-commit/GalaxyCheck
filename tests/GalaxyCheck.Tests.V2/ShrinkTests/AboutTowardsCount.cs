@@ -45,15 +45,15 @@ namespace Tests.V2.ShrinkTests
         {
             var result = _fixture
                 .Scenarios
-                .Select(input =>
+                .Select(scenario =>
                 {
-                    var func = ShrinkFunc.TowardsCountOptimized<int, int>(input.MinLength, x => x);
+                    var func = ShrinkFunc.TowardsCountOptimized<int, int>(scenario.MinLength, x => x);
 
-                    var shrinks = func(input.List);
+                    var shrinks = func(scenario.List);
 
                     return new
                     {
-                        Input = input,
+                        Input = scenario,
                         Output = shrinks
                     };
                 })
@@ -74,8 +74,8 @@ namespace Tests.V2.ShrinkTests
                 var json = File.ReadAllText(path);
                 Scenarios = JsonSerializer.Deserialize<List<ListShrinkingScenario>>(json)!;
             }
-        }
 
-        private static string GetTestDirectory([CallerFilePath] string path = null) => Path.GetDirectoryName(path)!;
+            private static string GetTestDirectory([CallerFilePath] string path = null) => Path.GetDirectoryName(path)!;
+        }
     }
 }

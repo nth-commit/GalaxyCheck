@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 
 namespace GalaxyCheck.Internal.ExampleSpaces
 {
@@ -221,5 +220,11 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 Encountered = encountered;
             }
         }
+
+        public static IExampleSpace<int> Int32(int value, int origin, int min, int max) => Unfold(
+            value,
+            ShrinkFunc.Towards(origin),
+            MeasureFunc.DistanceFromOrigin(origin, min, max),
+            IdentifyFuncs.Default<int>());
     }
 }

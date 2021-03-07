@@ -112,8 +112,7 @@ namespace GalaxyCheck.Gens
 
             return Gen.Advanced.Create(
                 statefulGen,
-                ShrinkFunc.Towards(origin),
-                MeasureFunc.DistanceFromOrigin(origin, min, max));
+                value => ExampleSpaceFactory.Int32(value: value, origin: origin, min: min, max: max));
         }
 
         private static StatefulGenFunc<int> CreateUnbiasedStatefulGen(int min, int max) =>
