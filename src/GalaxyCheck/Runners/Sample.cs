@@ -47,7 +47,8 @@ namespace GalaxyCheck
             this IGenAdvanced<T> advanced,
             int? iterations = null,
             int? seed = null,
-            int? size = null) => SampleHelpers.RunSample(advanced, iterations: iterations, seed: seed, size: size);
+            int? size = null,
+            bool? enableLinqInference = null) => SampleHelpers.RunSample(advanced, iterations: iterations, seed: seed, size: size, enableLinqInference: enableLinqInference);
     }
 }
 
@@ -75,9 +76,14 @@ namespace GalaxyCheck.Runners.Sample
 
     internal static class SampleHelpers
     {
-        public static SampleWithMetricsResult<PresentableExampleSpace<T>> RunSample<T>(IGenAdvanced<T> advanced, int? iterations, int? seed, int? size)
+        public static SampleWithMetricsResult<PresentableExampleSpace<T>> RunSample<T>(
+            IGenAdvanced<T> advanced,
+            int? iterations,
+            int? seed,
+            int? size,
+            bool? enableLinqInference)
         {
-            var checkResult = new AdvancedToGen<T>(advanced).ForAll(x =>
+            var gen = new AdvancedToGen<T>(advanced).ForAll(x =>
             {
                 if (x is Test test)
                 {
@@ -89,8 +95,11 @@ namespace GalaxyCheck.Runners.Sample
                     {
                     }
                 }
-            })
-            .Check(iterations: iterations, seed: seed, size: size);
+            });
+
+            var property = new Property<T>(gen, new PropertyOptions { EnableLinqInference = enableLinqInference ?? false });
+
+            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
 
             var values = checkResult.Checks
                 .OfType<CheckIteration.Check<T>>()

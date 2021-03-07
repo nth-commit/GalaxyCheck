@@ -97,7 +97,7 @@ namespace GalaxyCheck
                         : new Option.Some<CheckState<T>>(prevState.NextState()));
 
             var checks = states
-                .Select(MapStateToIterationOrIgnore)
+                .Select(check => MapStateToIterationOrIgnore(check, property.Options.EnableLinqInference))
                 .OfType<CheckIteration<T>>()
                 .WithDiscardCircuitBreaker(state => state is CheckIteration.Discard<T>)
                 .ToImmutableList();
@@ -171,9 +171,9 @@ namespace GalaxyCheck
         private static Size NoopResize<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample) =>
             lastIteration.NextParameters.Size;
 
-        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
+        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state, bool enablePresentationalInference)
         {
-            CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexampleExploration<T> state)
+            CheckIteration<T>? FromHandleCounterexample(CheckState.HandleCounterexampleExploration<T> state, bool enablePresentationalInference)
             {
                 if (state.CounterexampleState == null)
                 {
@@ -182,10 +182,11 @@ namespace GalaxyCheck
 
                 var exampleSpace = state.CounterexampleState.ExampleSpace;
 
-                var presentationalExampleSpace =
-                    NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.CounterexampleExploration.Path)
+                var presentationalExampleSpace = enablePresentationalInference
+                    ? NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.CounterexampleExploration.Path)
                         ?.Cast<object>()
-                        ?.Map(x => x == null ? null : UnwrapBinding(x));
+                        ?.Map(x => x == null ? null : UnwrapBinding(x))
+                    : null;
 
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value,
@@ -198,16 +199,17 @@ namespace GalaxyCheck
                     IsCounterexample: true);
             }
 
-            CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexampleExploration<T> state)
+            CheckIteration<T>? FromHandleNonCounterexample(CheckState.HandleNonCounterexampleExploration<T> state, bool enablePresentationalInference)
             {
                 var inputExampleSpace = state.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
                 var exampleSpace = state.NonCounterexampleExploration.ExampleSpace;
 
-                var presentationalExampleSpace =
-                    NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.NonCounterexampleExploration.Path)
-                    ?.Cast<object>()
-                    ?.Map(x => x == null ? null : UnwrapBinding(x));
+                var presentationalExampleSpace = enablePresentationalInference
+                    ? NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.NonCounterexampleExploration.Path)
+                        ?.Cast<object>()
+                        ?.Map(x => x == null ? null : UnwrapBinding(x))
+                    : null;
 
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value.Input,
@@ -228,8 +230,8 @@ namespace GalaxyCheck
 
             return state switch
             {
-                CheckState.HandleCounterexampleExploration<T> s => FromHandleCounterexample(s),
-                CheckState.HandleNonCounterexampleExploration<T> s => FromHandleNonCounterexample(s),
+                CheckState.HandleCounterexampleExploration<T> s => FromHandleCounterexample(s, enablePresentationalInference),
+                CheckState.HandleNonCounterexampleExploration<T> s => FromHandleNonCounterexample(s, enablePresentationalInference),
                 CheckState.HandleDiscardExploration<T> s => ToDiscard(),
                 CheckState.HandleDiscard<T> s => ToDiscard(),
                 CheckState.HandleError<T> s =>

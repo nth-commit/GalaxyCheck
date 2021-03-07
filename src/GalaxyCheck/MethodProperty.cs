@@ -97,7 +97,7 @@ namespace GalaxyCheck
             try
             {
                 var pureProperty = (IGen<Test>)methodInfo.Invoke(target, new object [] { });
-                return new Property(pureProperty);
+                return new Property(pureProperty, new PropertyOptions { EnableLinqInference = true });
             }
             catch (TargetInvocationException ex)
             {

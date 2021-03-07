@@ -25,7 +25,7 @@ namespace GalaxyCheck.Xunit.Internal
 
         protected override void RunProperty(Property<object> property, ITestOutputHelper testOutputHelper)
         {
-            var sample = property.Advanced.SamplePresentableExampleSpaceWithMetrics();
+            var sample = property.Advanced.SamplePresentableExampleSpaceWithMetrics(enableLinqInference: property.Options.EnableLinqInference);
             throw new SampleException(sample);
         }
     }
