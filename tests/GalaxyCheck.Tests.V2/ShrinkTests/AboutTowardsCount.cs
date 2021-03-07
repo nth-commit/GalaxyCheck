@@ -75,7 +75,7 @@ namespace Tests.V2.ShrinkTests
                 Scenarios = JsonSerializer.Deserialize<List<ListShrinkingScenario>>(json)!;
             }
 
-            private static string GetTestDirectory([CallerFilePath] string path = null) => Path.GetDirectoryName(path)!;
+            private static string GetTestDirectory([CallerFilePath] string path = null!) => Path.GetDirectoryName(path)!;
         }
     }
 }
