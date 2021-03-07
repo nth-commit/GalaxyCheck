@@ -5,7 +5,7 @@ using Xunit;
 
 using GalaxyCheck;
 
-namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
+namespace Tests.V2.PropertyTests.MethodPropertyTests
 {
     public class AboutMethodInfoOutput
     {

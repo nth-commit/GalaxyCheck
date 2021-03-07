@@ -91,11 +91,11 @@ namespace GalaxyCheck.Gens
                 var nextRng = initialRng.Next();
                 var forkedRng = initialRng.Fork();
 
-                var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, forkedRng, parameters.Size, _iterationLimit);
+                var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, parameters.With(rng: forkedRng), _iterationLimit);
 
                 yield return GenIterationFactory.Instance(
-                    new GenParameters(initialRng, parameters.Size),
-                    new GenParameters(nextRng, parameters.Size),
+                    parameters.With(rng: initialRng),
+                    parameters.With(rng: nextRng),
                     exampleSpace);
 
                 rng = rng.Next();
@@ -104,14 +104,13 @@ namespace GalaxyCheck.Gens
 
         private static IExampleSpace<IEnumerable<T>> CreateInfiniteEnumerableSpace(
             IGen<T> elementGen,
-            IRng rng,
-            Size size,
+            GenParameters parameters,
             int? iterationLimit)
         {
-            var enumerable = CreateInfiniteEnumerable(elementGen, rng, size, iterationLimit);
+            var enumerable = CreateInfiniteEnumerable(elementGen, parameters, iterationLimit);
 
             IExample<IEnumerable<T>> rootExample = new Example<IEnumerable<T>>(
-                ExampleId.Primitive(rng.Seed),
+                ExampleId.Primitive(parameters.Rng.Seed),
                 enumerable.Select(x => x.Current.Value),
                 100);
 
@@ -138,12 +137,11 @@ namespace GalaxyCheck.Gens
 
         private static SpyEnumerable<IExampleSpace<T>> CreateInfiniteEnumerable(
             IGen<T> elementGen,
-            IRng rng,
-            Size size,
+            GenParameters parameters,
             int? iterationLimit)
         {
             var source = elementGen.Advanced
-                .Run(new GenParameters(rng, size))
+                .Run(parameters)
                 .WithDiscardCircuitBreaker(iteration => iteration.IsDiscard())
                 .Select(iteration => iteration.Match<IGenInstance<T>?>(
                     onInstance: instance => instance,

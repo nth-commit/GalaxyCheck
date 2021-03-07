@@ -83,8 +83,9 @@ namespace GalaxyCheck
              int? size = null)
         {
             var initialParameters = new GenParameters(
-                seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
-                size == null ? Size.MinValue : new Size(size.Value));
+                Rng: seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
+                Size: size == null ? Size.MinValue : new Size(size.Value),
+                ForbidAnonymousProjections: property.Options.EnableLinqInference);
 
             ResizeStrategy<T> resizeStrategy = size == null ? SuperStrategicResize<T> : NoopResize<T>;
 
@@ -113,13 +114,15 @@ namespace GalaxyCheck
                 termination.Context.Discards,
                 termination.Context.Counterexample == null
                     ? null
-                    : FromCounterexampleState(termination.Context.Counterexample),
+                    : FromCounterexampleState(termination.Context.Counterexample, property.Options.EnableLinqInference),
                 checks,
                 initialParameters,
                 termination.Context.NextParameters);
         }
 
-        private static Counterexample<T> FromCounterexampleState<T>(CounterexampleState<T> counterexampleState)
+        private static Counterexample<T> FromCounterexampleState<T>(
+            CounterexampleState<T> counterexampleState,
+            bool enablePresentationalInference)
         {
             return new Counterexample<T>(
                 counterexampleState.ExampleSpace.Current.Id,
@@ -128,7 +131,9 @@ namespace GalaxyCheck
                 counterexampleState.RepeatParameters,
                 counterexampleState.RepeatPath,
                 counterexampleState.Exception,
-                NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.RepeatPath));
+                enablePresentationalInference
+                    ? NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.RepeatPath)
+                    : null);
         }
 
         /// <summary>
@@ -179,8 +184,8 @@ namespace GalaxyCheck
 
                 var presentationalExampleSpace =
                     NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.CounterexampleExploration.Path)
-                    ?.Cast<object>()
-                    ?.Map(x => x == null ? null : UnwrapBoundTuple(x));
+                        ?.Cast<object>()
+                        ?.Map(x => x == null ? null : UnwrapBinding(x));
 
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value,
@@ -202,7 +207,7 @@ namespace GalaxyCheck
                 var presentationalExampleSpace =
                     NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.NonCounterexampleExploration.Path)
                     ?.Cast<object>()
-                    ?.Map(x => x == null ? null : UnwrapBoundTuple(x));
+                    ?.Map(x => x == null ? null : UnwrapBinding(x));
 
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value.Input,
@@ -244,7 +249,7 @@ namespace GalaxyCheck
                 return null;
             }
 
-            return UnwrapBoundTuple(value);
+            return UnwrapBinding(value);
         }
 
         private static IExampleSpace? NavigateToPresentationalExampleSpace(
@@ -275,34 +280,26 @@ namespace GalaxyCheck
             return presentationalExampleSpaces.FirstOrDefault();
         }
 
-        private static object[] UnwrapBoundTuple(object obj)
+        private static object? UnwrapBinding(object obj)
         {
-            var type = obj.GetType();
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Symbols.BoundTuple<,>))
+            static object?[] UnwrapBindingRec(object? obj)
             {
-                var leftValue = type.GetProperty(nameof(Symbols.BoundTuple<object,object>.Left)).GetValue(obj);
-                var rightValue = type.GetProperty(nameof(Symbols.BoundTuple<object,object>.Right)).GetValue(obj);
-                return Enumerable
-                    .Concat(UnwrapBoundTuple(leftValue), new[] { rightValue })
-                    .ToArray();
+                var type = obj?.GetType();
+
+                if (type != null && type.IsAnonymousType())
+                {
+                    return type.GetProperties().SelectMany(p => UnwrapBindingRec(p.GetValue(obj))).ToArray();
+                }
+
+                return new[] { obj };
             }
 
-            if (IsAnonymousType(type))
+            if (obj?.GetType().IsAnonymousType() == true)
             {
-                return type.GetProperties().SelectMany(p => UnwrapBoundTuple(p.GetValue(obj))).ToArray();
+                return UnwrapBindingRec(obj);
             }
 
-            return new[] { obj };
-        }
-
-        public static bool IsAnonymousType(Type type)
-        {
-            bool hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Count() > 0;
-            bool nameContainsAnonymousType = type.FullName.Contains("AnonymousType");
-            bool isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
-
-            return isAnonymousType;
+            return obj;
         }
 
         public abstract record CheckState<T>(CheckContext<T> Context)
@@ -576,22 +573,20 @@ namespace GalaxyCheck
                 {
                     // TODO: Resize on discards more like Gen.Where does
                     // TODO: Exhaustion protection
-                    var nextRng = instance.NextParameters.Rng;
                     var nextSize = context.ResizeStrategy(instance, wasCounterexample: false);
                     return new Initial<T>(context
                         .IncrementDiscards()
-                        .WithNextGenParameters(new GenParameters(instance.NextParameters.Rng, nextSize)));
+                        .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
                 }
 
                 private static CheckState<T> NextStateWithoutCounterexample(
                     CheckContext<T> context,
                     IGenInstance<Test<T>> instance)
                 {
-                    var nextRng = instance.NextParameters.Rng;
                     var nextSize = context.ResizeStrategy(instance, wasCounterexample: false);
                     return new Initial<T>(context
                         .IncrementCompletedIterations()
-                        .WithNextGenParameters(new GenParameters(instance.NextParameters.Rng, nextSize)));
+                        .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
                 }
 
                 private static CheckState<T> NextStateWithCounterexample(
@@ -599,11 +594,10 @@ namespace GalaxyCheck
                     IGenInstance<Test<T>> instance,
                     CounterexampleState<T> counterexampleState)
                 {
-                    var nextRng = instance.NextParameters.Rng;
                     var nextSize = context.ResizeStrategy(instance, wasCounterexample: true);
                     var nextContext = context
                         .IncrementCompletedIterations()
-                        .WithNextGenParameters(new GenParameters(nextRng, nextSize))
+                        .WithNextGenParameters(instance.NextParameters.With(size: nextSize))
                         .AddCounterexample(counterexampleState);
 
                     if (nextContext.CompletedIterations == nextContext.RequestedIterations)
@@ -634,7 +628,7 @@ namespace GalaxyCheck
                         return new Termination<T>(nextContext);
                     }
 
-                    return new Initial<T>(nextContext.WithNextGenParameters(new GenParameters(nextRng, nextSize)));
+                    return new Initial<T>(nextContext.WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
                 }
             }
 

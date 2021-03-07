@@ -28,7 +28,7 @@ namespace GalaxyCheck.Internal.Gens
             NextIntFunc useNextInt = (min, max) =>
             {
                 var value = parameters.Rng.Value(min, max);
-                parameters = new GenParameters(parameters.Rng.Next(), parameters.Size);
+                parameters = parameters.With(rng: parameters.Rng.Next());
                 return value;
             };
 

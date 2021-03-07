@@ -5,7 +5,7 @@ using GalaxyCheck;
 using DevGen = GalaxyCheck.Gen;
 using System.Reflection;
 
-namespace Tests.V2.PropertyTests.AboutMethodInfoProperties
+namespace Tests.V2.PropertyTests.MethodPropertyTests
 {
     /// <summary>
     /// TODO:
