@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Gens;
+using GalaxyCheck.Internal.Utility;
 using System;
 
 namespace GalaxyCheck
@@ -15,21 +16,35 @@ namespace GalaxyCheck
         /// <param name="gen">The generator to apply the projection to.</param>
         /// <param name="selector">A projection function to apply to each value.</param>
         /// <returns>A new generator with the projection applied.</returns>
-        public static IGen<TResult> Select<T, TResult>(this IGen<T> gen, Func<T, TResult> selector)
-        {
-            GenInstanceTransformation<T, TResult> transformation = (instance) => {
-                var sourceExampleSpace = instance.ExampleSpace;
-                var projectedExampleSpace = instance.ExampleSpace.Map(selector);
+        public static IGen<TResult> Select<T, TResult>(this IGen<T> gen, Func<T, TResult> selector) =>
+            gen.Select(selector, disabledForbidAnonymousTypeCheck: false);
 
-                return GenIterationFactory.Instance(
-                    instance.RepeatParameters,
-                    instance.NextParameters,
-                    projectedExampleSpace,
-                    instance.ExampleSpaceHistory);
-            };
+        internal static IGen<TResult> Select<T, TResult>(
+            this IGen<T> gen,
+            Func<T, TResult> selector,
+            bool disabledForbidAnonymousTypeCheck) => new FunctionalGen<TResult>(parameters =>
+            {
+                var isForbiddenAnonymousType =
+                    parameters.ForbidAnonymousProjections &&
+                    !disabledForbidAnonymousTypeCheck &&
+                    typeof(TResult).IsAnonymousType();
 
-            return gen.TransformInstances(transformation);
-        }
+                var innerGen = isForbiddenAnonymousType
+                    ? new ErrorGen<TResult>("Select", "Anonymous types are forbidden")
+                    : gen.TransformInstances(instance =>
+                    {
+                        var sourceExampleSpace = instance.ExampleSpace;
+                        var projectedExampleSpace = instance.ExampleSpace.Map(selector);
+
+                        return GenIterationFactory.Instance(
+                            instance.RepeatParameters,
+                            instance.NextParameters,
+                            projectedExampleSpace,
+                            instance.ExampleSpaceHistory);
+                    });
+
+                return innerGen.Advanced.Run(parameters);
+            });
     }
 
     public static partial class Gen

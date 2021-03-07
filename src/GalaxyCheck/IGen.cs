@@ -4,7 +4,14 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck
 {
-    public record GenParameters(IRng Rng, Size Size);
+    public record GenParameters(IRng Rng, Size Size, bool ForbidAnonymousProjections)
+    {
+        public GenParameters With(
+            IRng? rng = null,
+            Size? size = null,
+            bool? forbidAnonymousProjections = null) =>
+                new GenParameters(rng ?? Rng, size ?? Size, forbidAnonymousProjections ?? ForbidAnonymousProjections);
+    }
 
     public interface IGenAdvanced
     {

@@ -44,7 +44,7 @@ namespace Tests.V2.RunnerTests.AssertTests
                 .WithMessage($@"
                     Falsified after 1 test
                     Reproduction: (Seed = {seed}, Size = {size})
-                    Counterexample: [0]
+                    Counterexample: 0
 
                     ---- Assert.True() Failure
                     Expected: True
@@ -113,7 +113,7 @@ namespace Tests.V2.RunnerTests.AssertTests
 
                     Falsified after 1 test
                     Reproduction: (Seed = {seed}, Size = {size})
-                    Counterexample: [0]
+                    Counterexample: 0
 
                     Property function returned false".TrimIndent());
         }

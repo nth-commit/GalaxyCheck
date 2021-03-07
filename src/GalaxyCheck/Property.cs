@@ -19,18 +19,26 @@ namespace GalaxyCheck
         new T Input { get; }
     }
 
+    public class PropertyOptions
+    {
+        public bool EnableLinqInference { get; init; }
+    }
+
     public class Property : GenProvider<Test>, IGen<Test>
     {
         public record TestImpl(TestFunc<object> Func, object Input) : Test;
 
-        private readonly IGen<Test> gen;
+        private readonly IGen<Test> _gen;
 
-        public Property(IGen<Test> gen)
+        public Property(IGen<Test> gen, PropertyOptions? options = null)
         {
-            this.gen = gen;
+            _gen = gen;
+            Options = options ?? new PropertyOptions { EnableLinqInference = false };
         }
 
-        protected override IGen<Test> Gen => gen;
+        public PropertyOptions Options { get; }
+
+        protected override IGen<Test> Gen => _gen;
 
         public static implicit operator Property<object>(Property p)
         {
@@ -38,7 +46,7 @@ namespace GalaxyCheck
                 from i in p
                 select new Property<object>.TestImpl(x => i.Func(x), i.Input);
 
-            return new Property<object>(gen);
+            return new Property<object>(gen, p.Options);
         }
 
         public class PropertyPreconditionException : Exception
@@ -73,12 +81,15 @@ namespace GalaxyCheck
             object Test.Input => Input!;
         }
 
-        private readonly IGen<Test<T>> gen;
+        private readonly IGen<Test<T>> _gen;
 
-        public Property(IGen<Test<T>> gen)
+        public Property(IGen<Test<T>> gen, PropertyOptions? options = null)
         {
-            this.gen = gen;
+            _gen = gen;
+            Options = options ?? new PropertyOptions { EnableLinqInference = false };
         }
+
+        public PropertyOptions Options { get; }
 
         public Property(TestFunc<T> f, IGen<T> inputGen)
             : this(from x in inputGen
@@ -86,7 +97,7 @@ namespace GalaxyCheck
         {
         }
 
-        protected override IGen<Test<T>> Gen => gen;
+        protected override IGen<Test<T>> Gen => _gen;
 
         public static implicit operator Property(Property<T> p)
         {
@@ -94,7 +105,7 @@ namespace GalaxyCheck
                 from i in p
                 select new Property.TestImpl(x => i.Func((T)x), i.Input);
 
-            return new Property(gen);
+            return new Property(gen, p.Options);
         }
     }
 }

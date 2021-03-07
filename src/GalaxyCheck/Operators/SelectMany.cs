@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.GenIterations;
@@ -20,15 +19,46 @@ namespace GalaxyCheck
         /// <param name="gen">The generator to apply the projection to.</param>
         /// <param name="selector">A projection function to apply to each value.</param>
         /// <returns>A new generator with the projection applied.</returns>
-        public static IGen<TResult> SelectMany<T, TResult>(this IGen<T> gen, Func<T, IGen<TResult>> selector)
+        public static IGen<TResult> SelectMany<T, TResult>(this IGen<T> gen, Func<T, IGen<TResult>> selector) =>
+            gen.SelectMany(selector, disabledForbidAnonymousTypeCheck: false);
+
+        /// <summary>
+        /// Projects each value of a generator to a new generator by the given selector. Subspaces of the source
+        /// generator and the projected generator are combined through a cross-product.
+        /// </summary>
+        /// <typeparam name="T">The type of the generator's value.</typeparam>
+        /// <typeparam name="TResult">The type of the projected generator's value.</typeparam>
+        /// <param name="gen">The generator to apply the projection to.</param>
+        /// <param name="genSelector">A projection function to apply to each value.</param>
+        /// <param name="valueSelector">A second projection function to apply.</param>
+        /// <returns>A new generator with the projection applied.</returns>
+        public static IGen<TResult> SelectMany<T, TResultGen, TResult>(
+            this IGen<T> gen,
+            Func<T, IGen<TResultGen>> genSelector,
+            Func<T, TResultGen, TResult> valueSelector) => gen
+                .SelectMany(
+                    x => genSelector(x).Select(y =>
+                        {
+                            // Intentionally wrap the left and right values with a symbol, so that we are able to observe the
+                            // two values when we need to check the history. You could directly invoke the valueSelector here,
+                            // but that would mean that x only appears in scope, and is not written to history.
+                            return new { left = x, right = y };
+                        },
+                        disabledForbidAnonymousTypeCheck: true),
+                    disabledForbidAnonymousTypeCheck: true)
+                .Select(x => valueSelector(x.left, x.right), disabledForbidAnonymousTypeCheck: true);
+
+        internal static IGen<TResult> SelectMany<T, TResult>(
+            this IGen<T> gen,
+            Func<T, IGen<TResult>> selector,
+            bool disabledForbidAnonymousTypeCheck)
         {
             static IEnumerable<IExampleSpace<TResult>> BindSubspace(
                 IExampleSpace<T> leftExampleSpace,
                 Func<T, IGen<TResult>> selector,
-                IRng rng,
-                Size size)
+                GenParameters parameters)
             {
-                var stream = BindExampleSpace(leftExampleSpace, selector, rng, size);
+                var stream = BindExampleSpace(leftExampleSpace, selector, parameters);
 
                 foreach (var iteration in stream)
                 {
@@ -43,8 +73,7 @@ namespace GalaxyCheck
                 IExampleSpace<T> leftExampleSpace,
                 IExampleSpace<TResult> rightExampleSpace,
                 Func<T, IGen<TResult>> selector,
-                IRng rng,
-                Size size)
+                GenParameters parameters)
             {
                 var jointExampleSpace = rightExampleSpace.MapExamples(example => new Example<TResult>(
                     ExampleId.Combine(leftExampleSpace.Current.Id, example.Id),
@@ -52,7 +81,7 @@ namespace GalaxyCheck
                     leftExampleSpace.Current.Distance + example.Distance));
 
                 var boundLeftSubspace = leftExampleSpace.Subspace.SelectMany(leftExampleSubspace =>
-                    BindSubspace(leftExampleSubspace, selector, rng, size));
+                    BindSubspace(leftExampleSubspace, selector, parameters));
 
                 return ExampleSpaceFactory.Create(
                     jointExampleSpace.Current,
@@ -62,11 +91,10 @@ namespace GalaxyCheck
             static IEnumerable<IGenIteration<TResult>> BindExampleSpace(
                 IExampleSpace<T> exampleSpace,
                 Func<T, IGen<TResult>> selector,
-                IRng rng,
-                Size size)
+                GenParameters parameters)
             {
                 return selector(exampleSpace.Current.Value).Advanced
-                    .Run(new GenParameters(rng, size))
+                    .Run(parameters)
                     .TakeWhileInclusive(iteration => !iteration.IsInstance())
                     .Select(iteration =>
                     {
@@ -77,8 +105,7 @@ namespace GalaxyCheck
                                     exampleSpace,
                                     instance.ExampleSpace,
                                     selector,
-                                    rng,
-                                    size);
+                                    parameters);
 
                                 return GenIterationFactory.Instance(
                                     iteration.RepeatParameters,
@@ -93,10 +120,9 @@ namespace GalaxyCheck
             static IEnumerable<IGenIteration<TResult>> Run(
                 IGen<T> gen,
                 Func<T, IGen<TResult>> selector,
-                IRng rng,
-                Size size)
+                GenParameters parameters)
             {
-                var stream = gen.Advanced.Run(new GenParameters(rng, size));
+                var stream = gen.Advanced.Run(parameters);
 
                 foreach (var iteration in stream)
                 {
@@ -107,8 +133,7 @@ namespace GalaxyCheck
                         var innerStream = BindExampleSpace(
                             instance.ExampleSpace,
                             selector,
-                            instance.NextParameters.Rng,
-                            instance.RepeatParameters.Size);
+                            instance.RepeatParameters.With(rng: instance.NextParameters.Rng));
 
                         foreach (var innerIteration in innerStream)
                         {
@@ -141,31 +166,21 @@ namespace GalaxyCheck
                 }
             }
 
-            return new FunctionalGen<TResult>((parameters) => Run(gen, selector, parameters.Rng, parameters.Size)).Repeat();
-        }
+            return new FunctionalGen<TResult>((parameters) =>
+            {
+                var isForbiddenAnonymousType =
+                    parameters.ForbidAnonymousProjections &&
+                    !disabledForbidAnonymousTypeCheck &&
+                    typeof(TResult).IsAnonymousType();
 
-        /// <summary>
-        /// Projects each value of a generator to a new generator by the given selector. Subspaces of the source
-        /// generator and the projected generator are combined through a cross-product.
-        /// </summary>
-        /// <typeparam name="T">The type of the generator's value.</typeparam>
-        /// <typeparam name="TResult">The type of the projected generator's value.</typeparam>
-        /// <param name="gen">The generator to apply the projection to.</param>
-        /// <param name="genSelector">A projection function to apply to each value.</param>
-        /// <param name="valueSelector">A second projection function to apply.</param>
-        /// <returns>A new generator with the projection applied.</returns>
-        public static IGen<TResult> SelectMany<T, TResultGen, TResult>(
-            this IGen<T> gen,
-            Func<T, IGen<TResultGen>> genSelector,
-            Func<T, TResultGen, TResult> valueSelector) => gen
-                .SelectMany(x => genSelector(x).Select(y =>
+                if (isForbiddenAnonymousType)
                 {
-                    // Intentionally wrap the left and right values with a symbol, so that we are able to observe the
-                    // two values when we need to check the history. You could directly invoke the valueSelector here,
-                    // but that would mean that x only appears in scope, and is not written to history.
-                    return new Symbols.BoundTuple<T, TResultGen>(x, y);
-                }))
-                .Select(boundTuple => valueSelector(boundTuple.Left, boundTuple.Right));
+                    return new ErrorGen<TResult>("SelectMany", "Anonymous types are forbidden").Advanced.Run(parameters);
+                }
+
+                return Run(gen, selector, parameters);
+            }).Repeat();
+        }
     }
 
     public static partial class Gen
