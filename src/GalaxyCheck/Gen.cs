@@ -2,6 +2,7 @@
 using GalaxyCheck.Injection;
 using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Gens;
+using System;
 using System.Reflection;
 
 namespace GalaxyCheck
@@ -56,11 +57,17 @@ namespace GalaxyCheck
                 StatefulGenFunc<T> generate,
                 ShrinkFunc<T>? shrink = null,
                 MeasureFunc<T>? measure = null,
-                IdentifyFunc<T>? identify = null) => new PrimitiveGen<T>(
+                IdentifyFunc<T>? identify = null) => Create(
                     generate,
-                    shrink ?? ShrinkFunc.None<T>(),
-                    measure ?? MeasureFunc.Unmeasured<T>(),
-                    identify ?? IdentifyFuncs.Default<T>());
+                    value => ExampleSpaceFactory.Unfold(
+                        value,
+                        shrink ?? ShrinkFunc.None<T>(),
+                        measure ?? MeasureFunc.Unmeasured<T>(),
+                        identify ?? IdentifyFuncs.Default<T>()));
+
+            public static IGen<T> Create<T>(
+                StatefulGenFunc<T> generate,
+                Func<T, IExampleSpace<T>> unfold) => new PrimitiveGen<T>(generate, unfold);
         }
     }
 }

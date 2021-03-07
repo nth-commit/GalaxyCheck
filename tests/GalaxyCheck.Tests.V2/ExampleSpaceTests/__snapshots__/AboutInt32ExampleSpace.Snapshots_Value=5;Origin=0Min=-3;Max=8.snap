@@ -1,0 +1,8 @@
+﻿5 (Id = 5, Distance = 62.500)
+├> 0 (Id = 0, Distance = 0)
+├> 3 (Id = 3, Distance = 37.500)
+|  └> 2 (Id = 2, Distance = 25.00)
+|     └> 1 (Id = 1, Distance = 12.500)
+└> 4 (Id = 4, Distance = 50.0)
+   └> 2 (Id = 2, Distance = 25.00)
+      └> 1 (Id = 1, Distance = 12.500)

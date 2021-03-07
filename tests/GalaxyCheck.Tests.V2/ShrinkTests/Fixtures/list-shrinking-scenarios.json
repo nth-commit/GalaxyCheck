@@ -1,0 +1,804 @@
+[
+  {
+    "List": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      0,
+      0,
+      0,
+      -1
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      -1,
+      1
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      1,
+      1,
+      -1,
+      1
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      0,
+      -1,
+      1
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      0,
+      -1,
+      1,
+      -1
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      0,
+      -1,
+      -1
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      1,
+      1
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -1,
+      0,
+      -1
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      2,
+      2,
+      -2
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -2
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      0,
+      2,
+      -2,
+      2
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      1,
+      -2,
+      0,
+      0
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -1,
+      2,
+      0
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      0
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      2,
+      -2,
+      1
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      1
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      1,
+      1
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      2,
+      -1
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      0,
+      2,
+      0,
+      2,
+      2
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      3,
+      0,
+      -2,
+      -2
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -1,
+      -3,
+      -2
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      1,
+      -2,
+      -2,
+      0,
+      3
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      2
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -1,
+      -3
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      2,
+      2,
+      2,
+      -1
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      2,
+      2,
+      -3,
+      -1,
+      2
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      1,
+      -2,
+      -4,
+      1,
+      -4
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -3
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      3,
+      3
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      1,
+      -4,
+      -1
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -1,
+      4
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -3,
+      -4,
+      5
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -1,
+      -3,
+      -2,
+      3,
+      4
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -4,
+      1,
+      -3,
+      -1
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      -2,
+      1,
+      -2
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      5,
+      0,
+      4,
+      5,
+      -1,
+      -4
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      3,
+      1,
+      1,
+      -2,
+      -5
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      5,
+      5,
+      4
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      1,
+      -3,
+      0
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -2,
+      5,
+      4
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      5,
+      -2,
+      1
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -5,
+      -3
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      1,
+      -4,
+      5,
+      4
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      5,
+      -1,
+      -7,
+      -4
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      8,
+      -1
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -8
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -3,
+      6,
+      -7
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -4,
+      -2,
+      -1,
+      3,
+      1
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      3,
+      -1
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      7,
+      -2,
+      -3
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      8,
+      100,
+      1,
+      -8,
+      11,
+      -5
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -11,
+      -5,
+      10,
+      0
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      -11,
+      -2,
+      -7
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -6,
+      0,
+      -12,
+      8
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      8,
+      5,
+      4,
+      -9
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      2,
+      15,
+      -100
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      2,
+      -9,
+      3
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -9,
+      -100
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      100,
+      -13,
+      3,
+      2,
+      1,
+      9
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      14,
+      7,
+      -11,
+      18
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      15,
+      -7,
+      -12
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      8,
+      1,
+      -16,
+      -5
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      3
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      2,
+      7,
+      -16,
+      0
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      -3,
+      -17,
+      2
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -100,
+      -100
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      -100,
+      0,
+      19
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -100,
+      100,
+      15,
+      6
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -24
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      100,
+      25,
+      -12
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      2,
+      100,
+      20,
+      -28
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      26,
+      28,
+      2,
+      -1,
+      0,
+      16
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      7,
+      7
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      3,
+      -100,
+      -28,
+      -100
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      32
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      27,
+      100,
+      26,
+      16
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -24,
+      -28
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      100,
+      -22,
+      -100
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -100
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -43
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      15,
+      14
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      30,
+      25,
+      -16
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      11,
+      -11,
+      -4,
+      -100
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      13
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -16,
+      -100,
+      -43
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      51,
+      -100
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      -46,
+      -54
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -33,
+      -55
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      15,
+      -100
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      65,
+      100,
+      -100
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      100,
+      -2,
+      72,
+      10,
+      61
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      -68,
+      100,
+      -100,
+      -55,
+      -34,
+      100
+    ],
+    "MinLength": 3
+  },
+  {
+    "List": [
+      -72
+    ],
+    "MinLength": 0
+  },
+  {
+    "List": [
+      100,
+      100,
+      28,
+      -100,
+      -100
+    ],
+    "MinLength": 2
+  },
+  {
+    "List": [
+      100,
+      60,
+      -30
+    ],
+    "MinLength": 1
+  },
+  {
+    "List": [
+      -100,
+      -41,
+      100,
+      -39,
+      100,
+      62
+    ],
+    "MinLength": 3
+  }
+]
