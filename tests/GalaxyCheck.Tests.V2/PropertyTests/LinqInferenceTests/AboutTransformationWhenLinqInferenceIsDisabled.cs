@@ -3,9 +3,9 @@ using GalaxyCheck;
 using System.Linq;
 using Xunit;
 
-namespace Tests.V2.PropertyTests.RenderingTests
+namespace Tests.V2.PropertyTests.LinqInferenceTests
 {
-    public class AboutRenderingWhenLinqInferenceIsDisabled
+    public class AboutTransformationWhenLinqInferenceIsDisabled
     {
         private static Property<object> ToProperty(IGen<Test> gen) =>
             new Property(gen, new PropertyOptions { EnableLinqInference = false });

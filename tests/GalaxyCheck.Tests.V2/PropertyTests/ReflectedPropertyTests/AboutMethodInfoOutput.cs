@@ -5,7 +5,7 @@ using Xunit;
 
 using GalaxyCheck;
 
-namespace Tests.V2.PropertyTests.MethodPropertyTests
+namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 {
     public class AboutMethodInfoOutput
     {
@@ -14,7 +14,7 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
         [Fact]
         public void AVoidMethodInfoCanBeUnfalsifiable()
         {
-            Property<object> property = MethodProperty.Create(GetMethod(nameof(AnInfallibleVoidPropertyFunction)), this);
+            Property<object> property = Property.Reflect(GetMethod(nameof(AnInfallibleVoidPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -29,7 +29,7 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
         [Fact]
         public void AVoidMethodInfoCanBeFalsified()
         {
-            Property<object> property = MethodProperty.Create(GetMethod(nameof(AFallibleVoidPropertyFunction)), this);
+            Property<object> property = Property.Reflect(GetMethod(nameof(AFallibleVoidPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -41,7 +41,7 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
         [Fact]
         public void ABooleanMethodInfoCanBeUnfalsifiable()
         {
-            Property<object> property = MethodProperty.Create(GetMethod(nameof(AnInfallibleBooleanPropertyFunction)), this);
+            Property<object> property = Property.Reflect(GetMethod(nameof(AnInfallibleBooleanPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -53,7 +53,7 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
         [Fact]
         public void ABooleanMethodInfoCanBeFalsified()
         {
-            Property<object> property = MethodProperty.Create(GetMethod(nameof(AFallibleBooleanPropertyFunction)), this);
+            Property<object> property = Property.Reflect(GetMethod(nameof(AFallibleBooleanPropertyFunction)), this);
 
             var checkResult = property.Check();
 
@@ -68,7 +68,7 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
         [InlineData(nameof(AnInfallibleNestedPropertyFunctionWithVaryingTypes))]
         public void ANestedPropertyMethodInfoCanBeUnfalsifiable(string methodName)
         {
-            Property<object> property = MethodProperty.Create(GetMethod(methodName), this);
+            Property<object> property = Property.Reflect(GetMethod(methodName), this);
 
             var checkResult = property.Check();
 
@@ -80,7 +80,7 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
         [Fact]
         public void ANestedPropertyMethodInfoCanBeFalsified()
         {
-            Property<object> property = MethodProperty.Create(GetMethod(nameof(AFallibleNestedPropertyFunction)), this);
+            Property<object> property = Property.Reflect(GetMethod(nameof(AFallibleNestedPropertyFunction)), this);
 
             var checkResult = property.Check();
 

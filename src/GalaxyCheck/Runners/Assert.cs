@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace GalaxyCheck
 {
@@ -117,8 +115,22 @@ namespace GalaxyCheck.Runners
 
         private static string CounterexampleValueLine(Counterexample<object?> counterexample)
         {
-            var value = counterexample.PresentationalValue ?? counterexample.Value;
-            return $"Counterexample: {ValueFormatter.FormatValue(value)}";
+            var example = ExampleViewModel.Infer(
+                counterexample.PresentationalValue ??
+                counterexample.Value);
+
+            var lines = ExampleRenderer.Render(example).ToList();
+
+            return lines.Count switch
+            {
+                0 => throw new Exception("Fatal: Expected at least one line to be rendered in counterexample"),
+                1 => $"Counterexample: {lines.Single()}",
+                _ => string.Join(
+                    Environment.NewLine,
+                    Enumerable.Concat(
+                        new[] { "Counterexample:" },
+                        lines.Select(l => $"    {l}")))
+            };
         }
 
         private static string ExceptionLine(Exception ex) => $"---- {ex.Message}";

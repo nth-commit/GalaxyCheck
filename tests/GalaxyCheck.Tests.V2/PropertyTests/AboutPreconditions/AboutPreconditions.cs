@@ -58,7 +58,7 @@ namespace Tests.V2.PropertyTests.AboutPreconditions
         [Fact]
         public void ForNestedProperties_IfThePreconditionPasses_ThenTheEquivalentAssertPasses()
         {
-            GalaxyCheck.Property<object> property = GalaxyCheck.MethodProperty.Create(GetMethod(nameof(NestedPrecondition)), this);
+            GalaxyCheck.Property<object> property = GalaxyCheck.Property.Reflect(GetMethod(nameof(NestedPrecondition)), this);
 
             var result = property.Check(seed: 0);
 

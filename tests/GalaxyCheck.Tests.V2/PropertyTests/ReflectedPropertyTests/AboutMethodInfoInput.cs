@@ -3,9 +3,10 @@ using System.Linq;
 using Xunit;
 using GalaxyCheck;
 using DevGen = GalaxyCheck.Gen;
+using DevProperty = GalaxyCheck.Property;
 using System.Reflection;
 
-namespace Tests.V2.PropertyTests.MethodPropertyTests
+namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 {
     /// <summary>
     /// TODO:
@@ -20,12 +21,12 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
             var gen0 = DevGen.Int32();
             var gen1 = DevGen.Int32();
 
-            var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => { });
+            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => { });
             DevGen.Select(forAllProperty, x => new object[] { x.Input.Item1, x.Input.Item2 });
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             Action<int, int> f = (x, y) => { };
-            var methodInfoProperty = MethodProperty.Create(f.Method, null);
+            var methodInfoProperty = Property.Reflect(f.Method, null);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
@@ -37,11 +38,11 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
             var gen0 = DevGen.Int32();
             var gen1 = DevGen.Int32();
 
-            var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => true);
+            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             Func<int, int, bool> f = (x, y) => true;
-            var methodInfoProperty = MethodProperty.Create(f.Method, null);
+            var methodInfoProperty = Property.Reflect(f.Method, null);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
@@ -58,10 +59,10 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
             var gen0 = DevGen.Int32();
             var gen1 = DevGen.Int32();
 
-            var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => true);
+            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
-            var methodInfoProperty = MethodProperty.Create(GetMethod(nameof(ARecursiveProperty)), this);
+            var methodInfoProperty = Property.Reflect(GetMethod(nameof(ARecursiveProperty)), this);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);
@@ -78,10 +79,10 @@ namespace Tests.V2.PropertyTests.MethodPropertyTests
             var gen0 = DevGen.Int32();
             var gen1 = DevGen.Int32();
 
-            var forAllProperty = DevGen.ForAll(gen0, gen1, (x, y) => true);
+            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
-            var methodInfoProperty = MethodProperty.Create(GetMethod(nameof(AGenericRecursiveProperty)), this);
+            var methodInfoProperty = Property.Reflect(GetMethod(nameof(AGenericRecursiveProperty)), this);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);

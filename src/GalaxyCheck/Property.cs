@@ -10,6 +10,8 @@ namespace GalaxyCheck
         TestFunc<object> Func { get; }
 
         object Input { get; }
+
+        int Arity { get; }
     }
 
     public interface Test<T> : Test
@@ -24,9 +26,9 @@ namespace GalaxyCheck
         public bool EnableLinqInference { get; init; }
     }
 
-    public class Property : GenProvider<Test>, IGen<Test>
+    public partial class Property : GenProvider<Test>, IGen<Test>
     {
-        public record TestImpl(TestFunc<object> Func, object Input) : Test;
+        public record TestImpl(TestFunc<object> Func, object Input, int Arity) : Test;
 
         private readonly IGen<Test> _gen;
 
@@ -38,13 +40,14 @@ namespace GalaxyCheck
 
         public PropertyOptions Options { get; }
 
+
         protected override IGen<Test> Gen => _gen;
 
         public static implicit operator Property<object>(Property p)
         {
             var gen =
                 from i in p
-                select new Property<object>.TestImpl(x => i.Func(x), i.Input);
+                select new Property<object>.TestImpl(x => i.Func(x), i.Input, i.Arity);
 
             return new Property<object>(gen, p.Options);
         }
@@ -60,21 +63,11 @@ namespace GalaxyCheck
                 throw new PropertyPreconditionException();
             }
         }
-
-        public static Test ForThese(Action func) => ForThese(() =>
-        {
-            func();
-            return true;
-        });
-
-        public static Test ForThese(Func<bool> func) => new TestImpl(
-            (_) => func(),
-            new Symbols.NoInput());
     }
 
     public class Property<T> : GenProvider<Test<T>>, IGen<Test<T>>
     {
-        public record TestImpl(TestFunc<T> Func, T Input) : Test<T>
+        public record TestImpl(TestFunc<T> Func, T Input, int Arity) : Test<T>
         {
             TestFunc<object> Test.Func => x => Func((T)x);
 
@@ -89,13 +82,14 @@ namespace GalaxyCheck
             Options = options ?? new PropertyOptions { EnableLinqInference = false };
         }
 
-        public PropertyOptions Options { get; }
-
-        public Property(TestFunc<T> f, IGen<T> inputGen)
-            : this(from x in inputGen
-                   select new TestImpl(f, x))
+        public Property(IGen<T> inputGen, TestFunc<T> f, int arity)
+            : this(
+                from x in inputGen
+                select new TestImpl(f, x, arity))
         {
         }
+
+        public PropertyOptions Options { get; }
 
         protected override IGen<Test<T>> Gen => _gen;
 
@@ -103,7 +97,7 @@ namespace GalaxyCheck
         {
             var gen =
                 from i in p
-                select new Property.TestImpl(x => i.Func((T)x), i.Input);
+                select new Property.TestImpl(x => i.Func((T)x), i.Input, i.Arity);
 
             return new Property(gen, p.Options);
         }

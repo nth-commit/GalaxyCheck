@@ -68,7 +68,7 @@ namespace GalaxyCheck.Xunit.Internal
             Property? property;
             try
             {
-                property = MethodProperty.Create(methodInfo, testInstance);
+                property = Property.Reflect(methodInfo, testInstance);
             }
             catch (Exception exception)
             {
