@@ -2,6 +2,7 @@
 using GalaxyCheck.Runners.Sample;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GalaxyCheck.Xunit
 {
@@ -21,13 +22,26 @@ namespace GalaxyCheck.Xunit
 
             yield return $"Sampled {sample.Values.Count} values ({sample.Discards} discarded):";
 
-            yield return LineBreak;
-
-            foreach (var value in sample.Values)
+            for (var i = 0; i < sample.Values.Count; i++)
             {
-                yield return ValueFormatter.FormatValue(
+                var value = sample.Values[i];
+
+                var example = ExampleViewModel.Infer(
                     value.Presentational?.Current.Value ??
                     value.Actual.Current.Value.Input);
+
+                var lines = ExampleRenderer.Render(example).ToList();
+
+                yield return lines.Count switch
+                {
+                    0 => throw new Exception("Fatal: Expected at least one line to be rendered in counterexample"),
+                    1 => $"Sample[{i}]: {lines.Single()}",
+                    _ => string.Join(
+                        Environment.NewLine,
+                        Enumerable.Concat(
+                            new[] { LineBreak, $"Sample[{i}]:" },
+                            lines.Select(l => $"    {l}")))
+                };
             }
         }
     }

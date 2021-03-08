@@ -276,7 +276,7 @@ namespace GalaxyCheck
                 where exs.Current.Id.HashCode == head!.Current.Id.HashCode
                 where
                     exs.Current.Value is not Test test ||
-                    test.Input is not Symbols.NoInput
+                    test.Arity != 0
                 select exs;
 
             return presentationalExampleSpaces.FirstOrDefault();
