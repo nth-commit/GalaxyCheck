@@ -4,12 +4,10 @@ using System;
 using System.Linq;
 using Xunit;
 
-namespace Tests.V2.PropertyTests.RenderingTests
+namespace Tests.V2.PropertyTests.LinqInferenceTests
 {
-    public class AboutRenderingWhenLinqInferenceIsEnabled
+    public class AboutTransformationWhenLinqInferenceIsEnabled
     {
-        // TODO: Explicitly encode the arity of the property into the test
-
         private static Property<object> ToProperty(IGen<Test> gen) =>
             new Property(gen, new PropertyOptions { EnableLinqInference = true });
 

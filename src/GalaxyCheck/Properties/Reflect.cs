@@ -6,11 +6,11 @@ using System.Reflection;
 
 namespace GalaxyCheck
 {
-    public static class MethodProperty
+    public partial class Property
     {
         public static ImmutableList<Type> SupportedReturnTypes => MethodPropertyHandlers.Keys.ToImmutableList();
 
-        public static Property Create(MethodInfo methodInfo, object? target)
+        public static Property Reflect(MethodInfo methodInfo, object? target)
         {
             if (!SupportedReturnTypes.Contains(methodInfo.ReturnType))
             {
@@ -33,44 +33,51 @@ namespace GalaxyCheck
 
         private static Property ToVoidProperty(MethodInfo methodInfo, object? target)
         {
-            return Gen.Parameters(methodInfo).ForAll(parameters =>
-            {
-                try
+            var arity = methodInfo.GetParameters().Count();
+            return GalaxyCheck.Gen
+                .Parameters(methodInfo)
+                .ForAll(parameters =>
                 {
-                    methodInfo.Invoke(target, parameters);
-                }
-                catch (TargetInvocationException ex)
-                {
-                    throw ex.InnerException;
-                }
-            });
+                    try
+                    {
+                        methodInfo.Invoke(target, parameters);
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        throw ex.InnerException;
+                    }
+                }, arity);
         }
 
         private static Property ToBooleanProperty(MethodInfo methodInfo, object? target)
         {
-            return Gen.Parameters(methodInfo).ForAll(parameters =>
-            {
-                try
+            var arity = methodInfo.GetParameters().Count();
+            return GalaxyCheck.Gen
+                .Parameters(methodInfo)
+                .ForAll(parameters =>
                 {
-                    return (bool)methodInfo.Invoke(target, parameters);
-                }
-                catch (TargetInvocationException ex)
-                {
-                    throw ex.InnerException;
-                }
-            });
+                    try
+                    {
+                        return (bool)methodInfo.Invoke(target, parameters);
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        throw ex.InnerException;
+                    }
+                }, arity);
         }
 
         private static Property ToNestedProperty(MethodInfo methodInfo, object? target)
         {
             var gen =
-                from parameters in Gen.Parameters(methodInfo)
+                from parameters in GalaxyCheck.Gen.Parameters(methodInfo)
                 let property = InvokeNestedProperty(methodInfo, target, parameters)
                 where property != null
                 from propertyIteration in property
                 select new Property<object[]>.TestImpl(
                     (x) => propertyIteration.Func(x.Last()),
-                    parameters.Append(propertyIteration.Input).ToArray());
+                    parameters.Append(propertyIteration.Input).ToArray(),
+                    parameters.Count() + propertyIteration.Arity);
 
             return new Property<object[]>(gen);
         }

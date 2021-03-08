@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
+    <AppDesignerFolder>(none)</AppDesignerFolder>
 
     <!-- NuGet settings -->
     <PackageId>GalaxyCheck</PackageId>
