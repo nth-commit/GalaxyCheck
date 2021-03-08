@@ -31,7 +31,10 @@ namespace Tests.V2.RendererTests
             { new RecordObj(1, 2, 3), "RecordObject" },
             { new ClassObj(1, 2, 3), "ClassObject" },
             { new { a = 1, b = 2, c = 3 }, "AnonymousObject" },
-            { new Func<int, bool>((_) => true), "FuncOfInt32ToBoolean" }
+            { new Func<int, bool>((_) => true), "FuncOfInt32ToBoolean" },
+            { new Tuple<int, int, int>(1, 2, 3), "TupleOfInt" },
+            { (1, 2, 3), "ValueTupleOfInt" },
+            { (1, new List<int> { 1, 2, 3 }, new Func<int, bool>((_) => true)), "ValueTupleOfVariation" }
         };
 
         [Theory]

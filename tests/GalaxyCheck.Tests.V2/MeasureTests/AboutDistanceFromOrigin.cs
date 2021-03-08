@@ -12,9 +12,9 @@ namespace Tests.V2.MeasureTests
     {
         [Property]
         public IGen<Test> IfMinIsGreaterThanMax_ItThrows() =>
-            from origin in Gen.Int32()
             from min in Gen.Int32().GreaterThan(int.MinValue)
             from max in Gen.Int32().LessThan(min)
+            from origin in Gen.Int32()
             select Property.ForThese(() =>
             {
                 Action action = () => MeasureFunc.DistanceFromOrigin(origin, min, max);
