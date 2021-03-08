@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
-using System;
 using System.Linq;
 using Xunit;
 
@@ -22,8 +21,7 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
             var result = property.Check();
 
-            result.Counterexample!.PresentationalValue
-                .Should().BeEquivalentTo(value);
+            result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(value);
         }
 
         [Fact]
@@ -39,8 +37,7 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
             var result = property.Check();
 
-            result.Counterexample!.PresentationalValue
-                .Should().BeEquivalentTo(new [] { value0, value1 });
+            result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(new [] { value0, value1 });
         }
 
         [Fact]
@@ -58,8 +55,7 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
             var result = property.Check();
 
-            result.Counterexample!.PresentationalValue
-                .Should().BeEquivalentTo(new[] { value0, value1, value2 });
+            result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(new[] { value0, value1, value2 });
         }
 
         [Fact]
@@ -74,8 +70,7 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
             var result = property.Check();
 
-            result.Counterexample!.PresentationalValue
-                .Should().BeEquivalentTo(value);
+            result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(value);
         }
 
         [Fact]
@@ -90,42 +85,84 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
             var result = property.Check();
 
-            result.Counterexample!.PresentationalValue
-                .Should().BeEquivalentTo(value);
+            result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(value);
         }
 
         [Fact]
-        public void ItErrorsWhenInnerSelectExplicitlyReturnsAnAnonymousType()
+        public void ItPopulatesThePresentationalValueWithAScopedVariableFromTheLetKeyword()
         {
-            var value_ignored = 0;
-            var value = new { a = 0, b = 1 };
+            var value0 = 0;
+            var value1 = 1;
 
             var property = ToProperty(
-                from a in Gen.Constant(value_ignored).Select(_ => value)
+                from a in Gen.Constant(value0)
+                let b = a
+                let c = value1
                 select Property.ForThese(() => false));
 
-            Action action = () => property.Check();
+            var result = property.Check();
 
-            action.Should()
-                .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator Select: Anonymous types are forbidden");
+            result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(new[] { value0, value0, value1 });
         }
 
-        [Fact]
-        public void ItErrorsWhenInnerSelectManyExplicitlyReturnsAnAnonymousType()
+        /// <summary>
+        /// The LINQ inference works by unwrapping anonymous types, to reverse engineer what LINQ expressions do. This
+        /// means if you explicitly return anonymous types inside a LINQ statement, those values will get erroneously
+        /// unrolled. This is not ideal, but it's not possible (or really tricky + hacky) to disambiguate at the
+        /// moment.
+        /// </summary>
+        public class AboutSuboptimalRendering
         {
-            var value_ignored = 0;
-            var value = new { a = 0, b = 1 };
+            [Fact]
+            public void ItAllowsAnonymousObjectsToBeExplicitlyReturnedBySelect()
+            {
+                // Ideally: { a = value }
+                // Actual:  [value]
 
-            var property = ToProperty(
-                from a in Gen.Constant(value_ignored).SelectMany(_ => Gen.Constant(value))
-                select Property.ForThese(() => false));
+                var value = 0;
 
-            Action action = () => property.Check();
+                var property = ToProperty(
+                    from obj in Gen.Constant(value).Select(a => new { a })
+                    select Property.ForThese(() => false));
 
-            action.Should()
-                .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator SelectMany: Anonymous types are forbidden");
+                var result = property.Check(seed: 0);
+
+                result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(new[] { value });
+            }
+
+            [Fact]
+            public void ItAllowsAnonymousObjectsToBeExplicitlyReturnedBySelectMany()
+            {
+                // Ideally: { a = value }
+                // Actual:  [value]
+
+                var value = 0;
+
+                var property = ToProperty(
+                    from obj in Gen.Constant(value).SelectMany(a => Gen.Constant(new { a }))
+                    select Property.ForThese(() => false));
+
+                var result = property.Check(seed: 0);
+
+                result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(new [] { value });
+            }
+
+            [Fact]
+            public void ItAllowsAnonymousObjectsToBeExplicitlyReturnedBySelectManyWithProjection()
+            {
+                // Ideally: { a = value, b = value }
+                // Actual:  [value, value]
+
+                var value = 0;
+
+                var property = ToProperty(
+                    from obj in Gen.Constant(value).SelectMany(a => Gen.Constant(new { a }), (x, y) => new { x, y })
+                    select Property.ForThese(() => false));
+
+                var result = property.Check(seed: 0);
+
+                result.Counterexample!.PresentationalValue.Should().BeEquivalentTo(new[] { value, value });
+            }
         }
     }
 }

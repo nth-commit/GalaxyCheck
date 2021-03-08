@@ -16,35 +16,29 @@ namespace GalaxyCheck
         /// <param name="gen">The generator to apply the projection to.</param>
         /// <param name="selector">A projection function to apply to each value.</param>
         /// <returns>A new generator with the projection applied.</returns>
-        public static IGen<TResult> Select<T, TResult>(this IGen<T> gen, Func<T, TResult> selector) =>
-            gen.Select(selector, disabledForbidAnonymousTypeCheck: false);
+        /// <summary>
+        /// Projects each element in a generator to a new form.
+        /// </summary>
+        /// <typeparam name="T">The type of the generator's value.</typeparam>
+        /// <typeparam name="TResult">The type of the resultant generator's value.</typeparam>
+        /// <param name="gen">The generator to apply the projection to.</param>
+        /// <param name="selector">A projection function to apply to each value.</param>
+        /// <returns>A new generator with the projection applied.</returns>
+        public static IGen<TResult> Select<T, TResult>(this IGen<T> gen, Func<T, TResult> selector)
+        {
+            GenInstanceTransformation<T, TResult> transformation = (instance) => {
+                var sourceExampleSpace = instance.ExampleSpace;
+                var projectedExampleSpace = instance.ExampleSpace.Map(selector);
 
-        internal static IGen<TResult> Select<T, TResult>(
-            this IGen<T> gen,
-            Func<T, TResult> selector,
-            bool disabledForbidAnonymousTypeCheck) => new FunctionalGen<TResult>(parameters =>
-            {
-                var isForbiddenAnonymousType =
-                    parameters.ForbidAnonymousProjections &&
-                    !disabledForbidAnonymousTypeCheck &&
-                    typeof(TResult).IsAnonymousType();
+                return GenIterationFactory.Instance(
+                    instance.RepeatParameters,
+                    instance.NextParameters,
+                    projectedExampleSpace,
+                    instance.ExampleSpaceHistory);
+            };
 
-                var innerGen = isForbiddenAnonymousType
-                    ? new ErrorGen<TResult>("Select", "Anonymous types are forbidden")
-                    : gen.TransformInstances(instance =>
-                    {
-                        var sourceExampleSpace = instance.ExampleSpace;
-                        var projectedExampleSpace = instance.ExampleSpace.Map(selector);
-
-                        return GenIterationFactory.Instance(
-                            instance.RepeatParameters,
-                            instance.NextParameters,
-                            projectedExampleSpace,
-                            instance.ExampleSpaceHistory);
-                    });
-
-                return innerGen.Advanced.Run(parameters);
-            });
+            return gen.TransformInstances(transformation);
+        }
     }
 
     public static partial class Gen

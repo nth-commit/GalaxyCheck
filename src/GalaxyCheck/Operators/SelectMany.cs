@@ -19,39 +19,7 @@ namespace GalaxyCheck
         /// <param name="gen">The generator to apply the projection to.</param>
         /// <param name="selector">A projection function to apply to each value.</param>
         /// <returns>A new generator with the projection applied.</returns>
-        public static IGen<TResult> SelectMany<T, TResult>(this IGen<T> gen, Func<T, IGen<TResult>> selector) =>
-            gen.SelectMany(selector, disabledForbidAnonymousTypeCheck: false);
-
-        /// <summary>
-        /// Projects each value of a generator to a new generator by the given selector. Subspaces of the source
-        /// generator and the projected generator are combined through a cross-product.
-        /// </summary>
-        /// <typeparam name="T">The type of the generator's value.</typeparam>
-        /// <typeparam name="TResult">The type of the projected generator's value.</typeparam>
-        /// <param name="gen">The generator to apply the projection to.</param>
-        /// <param name="genSelector">A projection function to apply to each value.</param>
-        /// <param name="valueSelector">A second projection function to apply.</param>
-        /// <returns>A new generator with the projection applied.</returns>
-        public static IGen<TResult> SelectMany<T, TResultGen, TResult>(
-            this IGen<T> gen,
-            Func<T, IGen<TResultGen>> genSelector,
-            Func<T, TResultGen, TResult> valueSelector) => gen
-                .SelectMany(
-                    x => genSelector(x).Select(y =>
-                        {
-                            // Intentionally wrap the left and right values with a symbol, so that we are able to observe the
-                            // two values when we need to check the history. You could directly invoke the valueSelector here,
-                            // but that would mean that x only appears in scope, and is not written to history.
-                            return new { left = x, right = y };
-                        },
-                        disabledForbidAnonymousTypeCheck: true),
-                    disabledForbidAnonymousTypeCheck: true)
-                .Select(x => valueSelector(x.left, x.right), disabledForbidAnonymousTypeCheck: true);
-
-        internal static IGen<TResult> SelectMany<T, TResult>(
-            this IGen<T> gen,
-            Func<T, IGen<TResult>> selector,
-            bool disabledForbidAnonymousTypeCheck)
+        public static IGen<TResult> SelectMany<T, TResult>(this IGen<T> gen, Func<T, IGen<TResult>> selector)
         {
             static IEnumerable<IExampleSpace<TResult>> BindSubspace(
                 IExampleSpace<T> leftExampleSpace,
@@ -166,21 +134,31 @@ namespace GalaxyCheck
                 }
             }
 
-            return new FunctionalGen<TResult>((parameters) =>
-            {
-                var isForbiddenAnonymousType =
-                    parameters.ForbidAnonymousProjections &&
-                    !disabledForbidAnonymousTypeCheck &&
-                    typeof(TResult).IsAnonymousType();
-
-                if (isForbiddenAnonymousType)
-                {
-                    return new ErrorGen<TResult>("SelectMany", "Anonymous types are forbidden").Advanced.Run(parameters);
-                }
-
-                return Run(gen, selector, parameters);
-            }).Repeat();
+            return new FunctionalGen<TResult>((parameters) => Run(gen, selector, parameters)).Repeat();
         }
+
+        /// <summary>
+        /// Projects each value of a generator to a new generator by the given selector. Subspaces of the source
+        /// generator and the projected generator are combined through a cross-product.
+        /// </summary>
+        /// <typeparam name="T">The type of the generator's value.</typeparam>
+        /// <typeparam name="TResult">The type of the projected generator's value.</typeparam>
+        /// <param name="gen">The generator to apply the projection to.</param>
+        /// <param name="genSelector">A projection function to apply to each value.</param>
+        /// <param name="valueSelector">A second projection function to apply.</param>
+        /// <returns>A new generator with the projection applied.</returns>
+        public static IGen<TResult> SelectMany<T, TResultGen, TResult>(
+            this IGen<T> gen,
+            Func<T, IGen<TResultGen>> genSelector,
+            Func<T, TResultGen, TResult> valueSelector) => gen
+                .SelectMany(x => genSelector(x).Select(y =>
+                {
+                    // Intentionally wrap the left and right values with a symbol, so that we are able to observe the
+                    // two values when we need to check the history. You could directly invoke the valueSelector here,
+                    // but that would mean that x only appears in scope, and is not written to history.
+                    return new { left = x, right = y };
+                }))
+                .Select(x => valueSelector(x.left, x.right));
     }
 
     public static partial class Gen
