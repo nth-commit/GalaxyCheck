@@ -41,28 +41,21 @@ namespace GalaxyCheck.Runners
             {
                 Converters =
                 {
-                    new DelegateConverterFactory()
+                    new DelegateConverterFactory(),
+                    new TupleConverterFactory()
                 }
             }));
 
         private class DelegateConverterFactory : JsonConverterFactory
         {
-            public override bool CanConvert(Type typeToConvert)
-            {
-                return typeof(Delegate).IsAssignableFrom(typeToConvert);
-            }
+            public override bool CanConvert(Type typeToConvert) => typeof(Delegate).IsAssignableFrom(typeToConvert);
 
-            public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
-            {
-                return new DelegateConverter();
-            }
+            public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options) => new DelegateConverter();
 
             private class DelegateConverter : JsonConverter<Delegate>
             {
-                public override Delegate? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-                {
+                public override Delegate? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
                     throw new InvalidOperationException();
-                }
 
                 public override void Write(Utf8JsonWriter writer, Delegate value, JsonSerializerOptions options)
                 {
@@ -72,6 +65,39 @@ namespace GalaxyCheck.Runners
                     var stringRepresentation = $"Function ({string.Join(",", parameterTypes)}) => {returnType}";
 
                     writer.WriteStringValue(stringRepresentation);
+                }
+            }
+        }
+
+        public class TupleConverterFactory : JsonConverterFactory
+        {
+            public override bool CanConvert(Type typeToConvert) =>
+                typeToConvert.GetInterface("System.Runtime.CompilerServices.ITuple") != null;
+
+            public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options) => new ValueTupleConverter();
+
+            private class ValueTupleConverter : JsonConverter<object>
+            {
+                public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+                    throw new InvalidOperationException();
+
+                public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+                {
+                    writer.WriteStartObject();
+
+                    foreach (var field in value.GetType().GetFields())
+                    {
+                        writer.WritePropertyName(field.Name);
+                        JsonSerializer.Serialize(writer, field.GetValue(value), options);
+                    }
+
+                    foreach (var property in value.GetType().GetProperties())
+                    {
+                        writer.WritePropertyName(property.Name);
+                        JsonSerializer.Serialize(writer, property.GetValue(value), options);
+                    }
+
+                    writer.WriteEndObject();
                 }
             }
         }
