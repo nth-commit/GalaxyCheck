@@ -21,6 +21,7 @@ namespace Tests.V2
         {
             // TODO: Would be more efficient if an example exposed that it was terminal (the last one of a shrink)
             // TODO: Measure the max space of a value, pad all the renderings by that
+            // TODO: Fucking grinds to a halt on big spaces
 
             var example = exampleSpace.Current;
 
@@ -51,6 +52,19 @@ namespace Tests.V2
                     {
                         yield return $"{otherPrefix}{subLines[subIndex]}";
                     }
+                }
+            }
+        }
+
+        public static IEnumerable<T> Traverse<T>(this IExampleSpace<T> exampleSpace)
+        {
+            yield return exampleSpace.Current.Value;
+
+            foreach (var exampleSubSpace in exampleSpace.Subspace)
+            {
+                foreach (var subExample in Traverse(exampleSubSpace))
+                {
+                    yield return subExample;
                 }
             }
         }
