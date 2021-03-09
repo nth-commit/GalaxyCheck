@@ -69,28 +69,5 @@ namespace Tests.Gen.Int32
 
             return test.When(min <= origin && origin <= max);
         }
-
-        [Property]
-        public void BetweenIsResilientToParameterOrdering(int x, int y) => TestWithSeed(seed =>
-        {
-            var gen0 = GC.Gen.Int32().Between(x, y);
-            var gen1 = GC.Gen.Int32().Between(y, x);
-
-            GenAssert.Equal(gen0, gen1, seed);
-        });
-
-        [Property]
-        public FsCheck.Property BetweenIsEquivalentToGreaterThanEqualAndLessThenEqual(int min, int max)
-        {
-            Action test = () => TestWithSeed(seed =>
-            {
-                var gen0 = GC.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max);
-                var gen1 = GC.Gen.Int32().Between(min, max);
-
-                GenAssert.Equal(gen0, gen1, seed);
-            });
-
-            return test.When(min <= max);
-        }
     }
 }
