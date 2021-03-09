@@ -1,5 +1,6 @@
 ﻿using Xunit;
 using GC = GalaxyCheck;
+using GalaxyCheck;
 using static Tests.TestUtils;
 
 namespace Tests.Gen.Int32

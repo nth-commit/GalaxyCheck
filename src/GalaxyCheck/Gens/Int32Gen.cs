@@ -25,14 +25,6 @@ namespace GalaxyCheck.Gens
         IInt32Gen GreaterThanEqual(int min);
 
         /// <summary>
-        /// Constrains the generator so that it only produces values between the supplied range (inclusive).
-        /// </summary>
-        /// <param name="x">The first bound of the range.</param>
-        /// <param name="y">The second bound of the range.</param>
-        /// <returns>A new generator with the constraint applied.</returns>
-        IInt32Gen Between(int x, int y);
-
-        /// <summary>
         /// Modifies the generator so that values will ultimately shrink to the supplied origin. The origin is the
         /// "smallest" value that all values should shrink towards. By default, the origin will be 0. The origin must
         /// be within the the bounds of the generator. If the bounds have been modified so that they don't contain 0,
@@ -48,7 +40,54 @@ namespace GalaxyCheck.Gens
         /// <returns>A new generator with the biasing effect applied.</returns>
         IInt32Gen WithBias(Gen.Bias bias);
     }
+}
 
+namespace GalaxyCheck
+{
+    using GalaxyCheck.Gens;
+    using GalaxyCheck.Gens.Int32;
+
+    public static partial class Gen
+    {
+        /// <summary>
+        /// Creates a generator that produces 32-bit integers. By default, it will generate integers in the full range
+        /// (-2,147,483,648 to 2,147,483,647), but the generator returned contains configuration methods to constrain
+        /// the produced integers further.
+        /// </summary>
+        /// <returns>The new generator.</returns>
+        public static IInt32Gen Int32() => new Int32Gen();
+
+        /// <summary>
+        /// Constrains the generator so that it only produces values between the supplied range (inclusive).
+        /// </summary>
+        /// <param name="x">The first bound of the range.</param>
+        /// <param name="y">The second bound of the range.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IInt32Gen Between(this IInt32Gen gen, int x, int y)
+        {
+            var min = x > y ? y : x;
+            var max = x > y ? x : y;
+            return gen.GreaterThanEqual(min).LessThanEqual(max);
+        }
+
+        /// <summary>
+        /// Constrains the generator so that it only produces values less than the supplied maximum. 
+        /// </summary>
+        /// <param name="max">The maximum integer to generate.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IInt32Gen LessThan(this IInt32Gen gen, int max) => gen.LessThanEqual(max - 1);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces values greater than the supplied minimum.
+        /// </summary>
+        /// <param name="min">The minimum integer to generate.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IInt32Gen GreaterThan(this IInt32Gen gen, int min) => gen.GreaterThanEqual(min + 1);
+    }
+}
+
+namespace GalaxyCheck.Gens.Int32
+{
     public class Int32Gen : BaseGen<int>, IInt32Gen
     {
         private record IntegerGenConfig(int? Min, int? Max, int? Origin, Gen.Bias? Bias);

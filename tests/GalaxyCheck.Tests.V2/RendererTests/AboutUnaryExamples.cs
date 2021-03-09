@@ -2,8 +2,6 @@
 using GalaxyCheck.Runners;
 using NebulaCheck;
 using NebulaCheck.Xunit;
-using Snapshooter;
-using Snapshooter.Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;

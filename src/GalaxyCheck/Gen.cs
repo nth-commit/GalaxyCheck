@@ -36,14 +36,6 @@ namespace GalaxyCheck
             identify: IdentifyFuncs.Constant<T>());
 
         /// <summary>
-        /// Creates a generator that produces 32-bit integers. By default, it will generate integers in the full range
-        /// (-2,147,483,648 to 2,147,483,647), but the generator returned contains configuration methods to constrain
-        /// the produced integers further.
-        /// </summary>
-        /// <returns>The new generator.</returns>
-        public static IInt32Gen Int32() => new Int32Gen();
-
-        /// <summary>
         /// Creates a generator that produces parameters to the given method. Can be used to dynamically invoke a
         /// method or a delegate.
         /// </summary>
