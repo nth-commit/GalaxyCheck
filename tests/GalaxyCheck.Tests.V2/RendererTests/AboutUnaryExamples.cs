@@ -23,27 +23,30 @@ namespace Tests.V2.RendererTests
                 rendering.Should().ContainSingle();
             });
 
-        public static TheoryData<object, string> Values => new TheoryData<object, string>
+        public static TheoryData<object?, string> Values => new TheoryData<object?, string>
         {
-            { 1, "Int32" },
-            { new List<int> { 1, 2, 3 }, "ListInt32" },
-            { new List<string> { "a", "b", "c" }, "ListString" },
-            { new RecordObj(1, 2, 3), "RecordObject" },
-            { new ClassObj(1, 2, 3), "ClassObject" },
-            { new { a = 1, b = 2, c = 3 }, "AnonymousObject" },
-            { new Func<int, bool>((_) => true), "FuncOfInt32ToBoolean" },
-            { new Tuple<int, int, int>(1, 2, 3), "TupleOfInt" },
-            { (1, 2, 3), "ValueTupleOfInt" },
-            { (1, new List<int> { 1, 2, 3 }, new Func<int, bool>((_) => true)), "ValueTupleOfVariation" }
+            { null, "null" },
+            { 1, "1" },
+            { new List<int> { 1, 2, 3 }, "[1,2,3]" },
+            { new List<string> { "a", "b", "c" }, @"[""a"",""b"",""c""]" },
+            { new RecordObj(1, 2, 3), @"{""A"":1,""B"":2,""C"":3}" },
+            { new ClassObj(1, 2, 3), @"{""A"":1,""B"":2,""C"":3}" },
+            { new { a = 1, b = 2, c = 3 }, @"{""a"":1,""b"":2,""c"":3}" },
+            { new Func<int, bool>((_) => true), "Func`2[Int32,Boolean]" },
+            { new Func<Func<int, bool>>(() => (_) => true), "Func`1[Func`2[Int32,Boolean]]" },
+            { new Action(() => { }), "Action" },
+            { new Tuple<int, int, int>(1, 2, 3), @"{""Item1"":1,""Item2"":2,""Item3"":3}" },
+            { (1, 2, 3), @"{""Item1"":1,""Item2"":2,""Item3"":3}" },
+            { (1, new List<int> { 1, 2, 3 }, new Func<int, bool>((_) => true)), @"{""Item1"":1,""Item2"":[1,2,3],""Item3"":""Delegate""/*Func`2[Int32,Boolean]*/}" }
         };
 
         [Theory]
         [MemberData(nameof(Values))]
-        public void Snapshots(object value, string description)
+        public void Examples(object value, string expectedRendering)
         {
-            var rendering = ExampleRenderer.Render(new ExampleViewModel.Unary(value));
+            var rendering = ExampleRenderer.Render(new ExampleViewModel.Unary(value)).Single();
 
-            Snapshot.Match(string.Join(Environment.NewLine, rendering), SnapshotNameExtension.Create(description));
+            rendering.Should().Be(expectedRendering);
         }
 
         public record RecordObj(int A, int B, int C);
