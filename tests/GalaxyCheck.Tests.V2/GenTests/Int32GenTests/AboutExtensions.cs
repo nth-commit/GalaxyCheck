@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using GalaxyCheck;
+﻿using GalaxyCheck;
 using GalaxyCheck.Gens;
 using Moq;
 using NebulaCheck;

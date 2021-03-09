@@ -1,38 +1,11 @@
-﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Internal.ExampleSpaces;
+﻿using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.GenIterations.Data.Generic;
 using GalaxyCheck.Internal.Gens;
-using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-
-namespace GalaxyCheck
-{
-    public static partial class Gen
-    {
-        /// <summary>
-        /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
-        /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the
-        /// builder methods on <see cref="IListGen{T}"/>.
-        /// </summary>
-        /// <param name="elementGen">The generator used to produce the elements of the list.</param>
-        /// <returns>The new generator.</returns>
-        public static IListGen<T> List<T>(IGen<T> elementGen) => elementGen.ListOf();
-
-        /// <summary>
-        /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
-        /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the
-        /// builder methods on <see cref="IListGen{T}"/>.
-        /// </summary>
-        /// <param name="elementGen">The generator used to produce the elements of the list.</param>
-        /// <returns>The new generator.</returns>
-        public static IListGen<T> ListOf<T>(this IGen<T> gen) => new ListGen<T>(gen);
-    }
-}
 
 namespace GalaxyCheck.Gens
 {
@@ -60,20 +33,55 @@ namespace GalaxyCheck.Gens
         IListGen<T> OfMaximumLength(int maxLength);
 
         /// <summary>
-        /// Constrains the generator so that it only produces lists with lengths within the supplied range (inclusive).
-        /// </summary>
-        /// <param name="x">The first bound of the range.</param>
-        /// <param name="y">The second bound of the range.</param>
-        /// <returns>A new generator with the constraint applied.</returns>
-        IListGen<T> BetweenLengths(int x, int y);
-
-        /// <summary>
         /// Modifies how the generator biases lengths of produced lists with respect to the size parameter.
         /// </summary>
         /// <returns>A new generator with the biasing effect applied.</returns>
         IListGen<T> WithLengthBias(Gen.Bias bias);
     }
+}
 
+namespace GalaxyCheck
+{
+    using GalaxyCheck.Gens;
+    using GalaxyCheck.Gens.Lists;
+
+    public static partial class Gen
+    {
+        /// <summary>
+        /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
+        /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the
+        /// builder methods on <see cref="IListGen{T}"/>.
+        /// </summary>
+        /// <param name="elementGen">The generator used to produce the elements of the list.</param>
+        /// <returns>The new generator.</returns>
+        public static IListGen<T> List<T>(IGen<T> elementGen) => elementGen.ListOf();
+
+        /// <summary>
+        /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
+        /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the
+        /// builder methods on <see cref="IListGen{T}"/>.
+        /// </summary>
+        /// <param name="elementGen">The generator used to produce the elements of the list.</param>
+        /// <returns>The new generator.</returns>
+        public static IListGen<T> ListOf<T>(this IGen<T> gen) => new ListGen<T>(gen);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces lists with lengths within the supplied range (inclusive).
+        /// </summary>
+        /// <param name="x">The first bound of the range.</param>
+        /// <param name="y">The second bound of the range.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IListGen<T> BetweenLengths<T>(this IListGen<T> gen, int x, int y)
+        {
+            var minLength = x > y ? y : x;
+            var maxLength = x > y ? x : y;
+            return gen.OfMinimumLength(minLength).OfMaximumLength(maxLength);
+        }
+    }
+}
+
+namespace GalaxyCheck.Gens.Lists
+{
     public class ListGen<T> : BaseGen<ImmutableList<T>>, IListGen<T>
     {
         private abstract record ListGenLengthConfig
