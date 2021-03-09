@@ -20,7 +20,25 @@ namespace Tests.V2
                 .SelectMany(i => gens[i]);
         }
 
-        public static NebulaCheck.IGen<int> Seed() => NebulaCheck.Gen.Int32().WithBias(NebulaCheck.Gen.Bias.None);
+        public static NebulaCheck.IGen<T> Element<T>(params T[] elements)
+        {
+            if (elements.Any() == false)
+            {
+                return new NebulaCheck.Internal.Gens.ErrorGen<T>("DomainGen.Choose", "Input gens was empty");
+            }
+
+            return NebulaCheck.Gen.Int32()
+                .Between(0, elements.Length - 1)
+                .Select(i => elements[i]);
+        }
+
+        public static NebulaCheck.IGen<int> Seed() => NebulaCheck.Gen.Int32().WithBias(NebulaCheck.Gen.Bias.None).NoShrink();
+
+        public static NebulaCheck.IGen<int> Size(bool allowChaos = true) => allowChaos
+            ? NebulaCheck.Gen.Int32().Between(0, 100)
+            : NebulaCheck.Gen.Int32().Between(0, 50);
+
+        public static NebulaCheck.IGen<int> Iterations() => NebulaCheck.Gen.Int32().Between(0, 200);
 
         public static NebulaCheck.IGen<GalaxyCheck.IGen<object>> Gen() =>
             Choose<GalaxyCheck.IGen>(
