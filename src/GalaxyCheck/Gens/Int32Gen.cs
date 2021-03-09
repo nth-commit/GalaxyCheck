@@ -2,9 +2,10 @@
 using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.Sizing;
-using GalaxyCheck.Internal.WeightedSampling;
+using GalaxyCheck.Internal.WeightedLists;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GalaxyCheck.Gens
 {
@@ -214,19 +215,22 @@ namespace GalaxyCheck.Gens.Int32
 
             // If both are extremes then we will pick from both. If only one is an extreme then we will double that
             // extreme's frequency.
-            var weightedSampler = new WeightedSamplerBuilder<BoundsOrExtremeSource>()
-                .WithSample(inextremeFrequency * 2, BoundsOrExtremeSource.Bounds)
-                .WithSample(
+            var weightedElements = new[]
+            {
+                new WeightedElement<BoundsOrExtremeSource>(inextremeFrequency * 2, BoundsOrExtremeSource.Bounds),
+                new WeightedElement<BoundsOrExtremeSource>(
                     extremeFrequency,
-                    extremeMinimum.HasValue ? BoundsOrExtremeSource.ExtremeMinimum : BoundsOrExtremeSource.ExtremeMaximum)
-                .WithSample(
+                    extremeMinimum.HasValue ? BoundsOrExtremeSource.ExtremeMinimum : BoundsOrExtremeSource.ExtremeMaximum),
+                new WeightedElement<BoundsOrExtremeSource>(
                     extremeFrequency,
-                    extremeMaximum.HasValue ? BoundsOrExtremeSource.ExtremeMaximum : BoundsOrExtremeSource.ExtremeMinimum)
-                .Build();
+                    extremeMaximum.HasValue ? BoundsOrExtremeSource.ExtremeMaximum : BoundsOrExtremeSource.ExtremeMinimum),
+            };
+
+            var weightedList = new WeightedList<BoundsOrExtremeSource>(weightedElements);
 
             return (useNextInt, size) =>
             {
-                var source = weightedSampler.Sample(useNextInt(0, weightedSampler.MaxIndex));
+                var source = weightedList[useNextInt(0, weightedList.Count - 1)];
                 return source switch
                 {
                     BoundsOrExtremeSource.Bounds => inextremeGenerator(useNextInt, size),
