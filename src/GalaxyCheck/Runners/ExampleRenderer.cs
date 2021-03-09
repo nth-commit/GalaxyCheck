@@ -35,20 +35,43 @@ namespace GalaxyCheck.Runners
             _ => throw new NotSupportedException("Unhandled switch")
         };
 
-        private static string RenderValue(object? value) => JsonSerializer.Serialize(
-            value,
-            new JsonSerializerOptions(new JsonSerializerOptions()
+        private static string RenderValue(object? value)
+        {
+            if (value is Delegate del)
             {
-                Converters =
-                {
-                    new DelegateConverterFactory(),
-                    new TupleConverterFactory()
-                }
-            }));
+                return RenderType(del.GetType());
+            }
+
+            return JsonSerializer.Serialize(
+                value,
+                    new JsonSerializerOptions(new JsonSerializerOptions()
+                    {
+                        Converters =
+                        {
+                            new DelegateConverterFactory(),
+                            new TupleConverterFactory()
+                        }
+                    }));
+        }
+
+        private static bool IsDelegateType(Type type) => typeof(Delegate).IsAssignableFrom(type);
+
+        private static string RenderType(Type type) => type.IsGenericType ? RenderGenericType(type) : type.Name;
+
+        private static string RenderGenericType(Type type)
+        {
+            var genericTypeName = type.GetGenericTypeDefinition().Name;
+
+            var genericParameters = type
+                .GetGenericArguments()
+                .Select(t => RenderType(t));
+
+            return $"{genericTypeName}[{string.Join(",", genericParameters)}]";
+        }
 
         private class DelegateConverterFactory : JsonConverterFactory
         {
-            public override bool CanConvert(Type typeToConvert) => typeof(Delegate).IsAssignableFrom(typeToConvert);
+            public override bool CanConvert(Type typeToConvert) => IsDelegateType(typeToConvert);
 
             public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options) => new DelegateConverter();
 
@@ -59,17 +82,13 @@ namespace GalaxyCheck.Runners
 
                 public override void Write(Utf8JsonWriter writer, Delegate value, JsonSerializerOptions options)
                 {
-                    var parameterTypes = value.Method.GetParameters().Select(pi => pi.ParameterType.Name);
-                    var returnType = value.Method.ReturnType.Name;
-
-                    var stringRepresentation = $"Function ({string.Join(",", parameterTypes)}) => {returnType}";
-
-                    writer.WriteStringValue(stringRepresentation);
+                    writer.WriteStringValue("Delegate");
+                    writer.WriteCommentValue(RenderType(value.GetType()));
                 }
             }
         }
 
-        public class TupleConverterFactory : JsonConverterFactory
+        private class TupleConverterFactory : JsonConverterFactory
         {
             public override bool CanConvert(Type typeToConvert) =>
                 typeToConvert.GetInterface("System.Runtime.CompilerServices.ITuple") != null;
