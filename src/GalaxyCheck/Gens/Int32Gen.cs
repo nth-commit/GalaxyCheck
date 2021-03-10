@@ -5,7 +5,6 @@ using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.WeightedLists;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace GalaxyCheck.Gens
 {

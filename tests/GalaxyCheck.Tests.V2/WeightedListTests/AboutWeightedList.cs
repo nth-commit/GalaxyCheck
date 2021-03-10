@@ -15,14 +15,14 @@ namespace Tests.V2.WeightedListTests
             new TheoryData<List<WeightedElement<string>>, List<string>>
             {
                 {
-                    new List<WeightedElement<string>>()
+                    new List<WeightedElement<string>>
                     {
                         new WeightedElement<string>(0, "a")
                     },
-                    new List<string>()
+                    new List<string> { }
                 },
                 {
-                    new List<WeightedElement<string>>()
+                    new List<WeightedElement<string>>
                     {
                         new WeightedElement<string>(1, "a"),
                         new WeightedElement<string>(0, "b")

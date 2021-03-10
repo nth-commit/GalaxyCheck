@@ -42,7 +42,7 @@ namespace Tests.V2
 
         public static NebulaCheck.IGen<GalaxyCheck.IGen<object>> Gen() =>
             Choose<GalaxyCheck.IGen>(
-                NebulaCheck.Gen.Constant(GalaxyCheck.Gen.Int32()),
+                NebulaCheck.Gen.Constant(GalaxyCheck.Gen.Int32().Between(-1000, 1000)),
                 NebulaCheck.Gen.Constant(GalaxyCheck.Gen.Int32().Between(0, 1).WithBias(GalaxyCheck.Gen.Bias.None))
             ).Select(gen => gen.Cast<object>());
 
