@@ -12,7 +12,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListIsEmpty_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfLength(0)
+            from list in DomainGen.AnyList().OfCount(0)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);
@@ -25,7 +25,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListLengthIsLessThanOrEqualMinLength_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfMaximumLength(minLength)
+            from list in DomainGen.AnyList().WithCountLessThanEqual(minLength)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);
@@ -39,7 +39,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillNotProduceShrinksLessThanMinimumLength() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfMinimumLength(minLength + 1)
+            from list in DomainGen.AnyList().WithCountGreaterThan(minLength)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);
@@ -54,7 +54,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProduceAShrinkForEachElementInTheList() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfMinimumLength(minLength + 1)
+            from list in DomainGen.AnyList().WithCountGreaterThan(minLength)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);
@@ -69,7 +69,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProduceDistinctShrinks() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfMinimumLength(minLength + 1)
+            from list in DomainGen.AnyList().WithCountGreaterThan(minLength)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);

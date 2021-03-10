@@ -168,7 +168,7 @@ namespace Tests.V2.WeightedListTests
 
         [Property]
         public IGen<Test> IfAllWeightsAreOne_ItIsEquivalentToSource() =>
-            from values in DomainGen.AnyList().OfMinimumLength(1)
+            from values in DomainGen.AnyList().WithCountGreaterThanEqual(1)
             select Property.ForThese(() =>
             {
                 var list = new WeightedList<object>(values.Select(value => new WeightedElement<object>(1, value)));

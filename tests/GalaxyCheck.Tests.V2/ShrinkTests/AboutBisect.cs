@@ -12,7 +12,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListIsEmpty_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfLength(0)
+            from list in DomainGen.AnyList().OfCount(0)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -25,7 +25,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListHasOneElement_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfLength(1)
+            from list in DomainGen.AnyList().OfCount(1)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -38,7 +38,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListLengthIsEqualToMinLength_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfLength(minLength)
+            from list in DomainGen.AnyList().OfCount(minLength)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -51,7 +51,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListLengthIsLessThanDoubleMinLength_ItWillNotShrink() =>
             from minLength in TestGen.MinLength(minMinLength: 1)
-            from list in DomainGen.AnyList().OfMaximumLength(minLength * 2 - 1)
+            from list in DomainGen.AnyList().WithCountLessThan(minLength * 2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -64,7 +64,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProduceTwoShrinksOfSimilarLengths() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfMinimumLength(Math.Max(1, minLength) * 2)
+            from list in DomainGen.AnyList().WithCountGreaterThanEqual((minLength + 1) * 2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -78,7 +78,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillNotProduceShrinksLessThanMinimumLength() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfMinimumLength(Math.Max(1, minLength) * 2)
+            from list in DomainGen.AnyList().WithCountGreaterThanEqual((minLength + 1) * 2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -93,7 +93,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> ItWillProducesShrinksThatCanRecreateTheOriginalList() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfMinimumLength(Math.Max(1, minLength) * 2)
+            from list in DomainGen.AnyList().WithCountGreaterThanEqual((minLength + 1) * 2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
