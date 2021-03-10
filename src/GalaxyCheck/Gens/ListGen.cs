@@ -71,12 +71,28 @@ namespace GalaxyCheck
         /// <param name="x">The first bound of the range.</param>
         /// <param name="y">The second bound of the range.</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IListGen<T> BetweenCounts<T>(this IListGen<T> gen, int x, int y)
+        public static IListGen<T> WithCountBetween<T>(this IListGen<T> gen, int x, int y)
         {
             var minCount = x > y ? y : x;
             var maxCount = x > y ? x : y;
             return gen.WithCountGreaterThanEqual(minCount).WithCountLessThanEqual(maxCount);
         }
+
+        /// <summary>
+        /// Constrains the generator so that it only produces lists with greater than the given count.
+        /// </summary>
+        /// <param name="exclusiveMinCount">The minimum count that generated lists should be constrained to.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IListGen<T> WithCountGreaterThan<T>(this IListGen<T> gen, int exclusiveMinCount) =>
+            gen.WithCountGreaterThanEqual(exclusiveMinCount + 1);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces lists less than the given count.
+        /// </summary>
+        /// <param name="exclusiveMaxCount">The maximum count that generated lists should be constrained to.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IListGen<T> WithCountLessThan<T>(this IListGen<T> gen, int exclusiveMaxCount) =>
+            gen.WithCountLessThanEqual(exclusiveMaxCount - 1);
     }
 }
 

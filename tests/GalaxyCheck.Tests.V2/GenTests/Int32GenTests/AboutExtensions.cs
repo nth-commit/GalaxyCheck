@@ -39,26 +39,26 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> GreaterThanDefersToUnderlyingMethod() =>
-            from min in Gen.Int32()
+            from minExclusive in Gen.Int32()
             select Property.ForThese(() =>
             {
                 var mockGen = SetupMock();
 
-                mockGen.Object.GreaterThan(min);
+                mockGen.Object.GreaterThan(minExclusive);
 
-                mockGen.Verify(gen => gen.GreaterThanEqual(min + 1), Times.Once);
+                mockGen.Verify(gen => gen.GreaterThanEqual(minExclusive + 1), Times.Once);
             });
 
         [Property]
         public NebulaCheck.IGen<Test> LessThanDefersToUnderlyingMethod() =>
-            from max in Gen.Int32()
+            from maxExclusive in Gen.Int32()
             select Property.ForThese(() =>
             {
                 var mockGen = SetupMock();
 
-                mockGen.Object.LessThan(max);
+                mockGen.Object.LessThan(maxExclusive);
 
-                mockGen.Verify(gen => gen.LessThanEqual(max - 1), Times.Once);
+                mockGen.Verify(gen => gen.LessThanEqual(maxExclusive - 1), Times.Once);
             });
 
         private static Mock<IInt32Gen> SetupMock()

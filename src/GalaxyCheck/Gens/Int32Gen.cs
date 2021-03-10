@@ -73,16 +73,16 @@ namespace GalaxyCheck
         /// <summary>
         /// Constrains the generator so that it only produces values less than the supplied maximum. 
         /// </summary>
-        /// <param name="max">The maximum integer to generate.</param>
+        /// <param name="maxExclusive">The maximum integer to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IInt32Gen LessThan(this IInt32Gen gen, int max) => gen.LessThanEqual(max - 1);
+        public static IInt32Gen LessThan(this IInt32Gen gen, int maxExclusive) => gen.LessThanEqual(maxExclusive - 1);
 
         /// <summary>
         /// Constrains the generator so that it only produces values greater than the supplied minimum.
         /// </summary>
-        /// <param name="min">The minimum integer to generate.</param>
+        /// <param name="minExclusive">The minimum integer to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IInt32Gen GreaterThan(this IInt32Gen gen, int min) => gen.GreaterThanEqual(min + 1);
+        public static IInt32Gen GreaterThan(this IInt32Gen gen, int minExclusive) => gen.GreaterThanEqual(minExclusive + 1);
     }
 }
 

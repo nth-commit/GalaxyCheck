@@ -18,7 +18,7 @@ namespace Tests.V2.GenTests.ListGenTests
             from elementGen in DomainGen.Gen()
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().BetweenCounts(0, 20);
+                var gen = elementGen.ListOf().WithCountBetween(0, 20);
 
                 var listSample = gen.Advanced.SampleOneWithMetrics(seed: seed, size: size);
                 var elementSample = elementGen.Advanced.SampleWithMetrics(iterations: listSample.Value.Count, seed: seed, size: size);

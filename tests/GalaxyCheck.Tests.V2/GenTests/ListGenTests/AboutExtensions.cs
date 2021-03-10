@@ -13,7 +13,7 @@ namespace Tests.V2.GenTests.ListGenTests
     public class AboutExtensions
     {
         [Property]
-        public NebulaCheck.IGen<Test> BetweenCountsDefersToUnderlyingMethods() =>
+        public NebulaCheck.IGen<Test> WithCountBetweenDefersToUnderlyingMethods() =>
             from minCount in Gen.Int32().LessThanEqual(20)
             from maxCount in Gen.Int32().GreaterThanEqual(minCount)
             select Property.ForThese(() =>
@@ -21,7 +21,7 @@ namespace Tests.V2.GenTests.ListGenTests
                 {
                     var mockGen = SetupMock();
 
-                    mockGen.Object.BetweenCounts(minCount, maxCount);
+                    mockGen.Object.WithCountBetween(minCount, maxCount);
 
                     mockGen.Verify(gen => gen.WithCountGreaterThanEqual(minCount), Times.Once);
                     mockGen.Verify(gen => gen.WithCountLessThanEqual(maxCount), Times.Once);
@@ -30,11 +30,35 @@ namespace Tests.V2.GenTests.ListGenTests
                 {
                     var mockGen = SetupMock();
 
-                    mockGen.Object.BetweenCounts(maxCount, minCount);
+                    mockGen.Object.WithCountBetween(maxCount, minCount);
 
                     mockGen.Verify(gen => gen.WithCountGreaterThanEqual(minCount), Times.Once);
                     mockGen.Verify(gen => gen.WithCountLessThanEqual(maxCount), Times.Once);
                 }
+            });
+
+        [Property]
+        public NebulaCheck.IGen<Test> GreaterThanCountDefersToUnderlyingMethod() =>
+            from minCountExclusive in Gen.Int32()
+            select Property.ForThese(() =>
+            {
+                var mockGen = SetupMock();
+
+                mockGen.Object.WithCountGreaterThan(minCountExclusive);
+
+                mockGen.Verify(gen => gen.WithCountGreaterThanEqual(minCountExclusive + 1), Times.Once);
+            });
+
+        [Property]
+        public NebulaCheck.IGen<Test> LessThanCountDefersToUnderlyingMethod() =>
+            from maxCountExclusive in Gen.Int32()
+            select Property.ForThese(() =>
+            {
+                var mockGen = SetupMock();
+
+                mockGen.Object.WithCountLessThan(maxCountExclusive);
+
+                mockGen.Verify(gen => gen.WithCountLessThanEqual(maxCountExclusive - 1), Times.Once);
             });
 
         private static Mock<IListGen<object>> SetupMock()
