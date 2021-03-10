@@ -9,10 +9,9 @@ namespace Tests.V2
     {
         public static string Render<T>(
             this IExampleSpace<T> exampleSpace,
-            Func<T, string> renderValue,
-            int maxExamples = 500)
+            Func<T, string> renderValue)
         {
-            var lines = RenderLines(exampleSpace, renderValue).Take(maxExamples).ToList();
+            var lines = RenderLines(exampleSpace, renderValue).ToList();
 
             return string.Join(Environment.NewLine, lines);
         }
@@ -67,6 +66,43 @@ namespace Tests.V2
                     yield return subExample;
                 }
             }
+        }
+
+        public static IExampleSpace<T> Take<T>(this IExampleSpace<T> exampleSpace, int count)
+        {
+            static (IExampleSpace<T>? exampleSpace, int countTaken) TakeRec(IExampleSpace<T> exampleSpace, int count)
+            {
+                if (count <= 0)
+                {
+                    return (null, 0);
+                }
+
+                var takenSubspace = new List<IExampleSpace<T>>();
+                var countTaken = 1;
+
+                foreach (var subExampleSpace in exampleSpace.Subspace)
+                {
+                    if (countTaken >= count)
+                    {
+                        break;
+                    }
+
+                    var (takenSubExampleSpace, subCountTaken) = TakeRec(subExampleSpace, count - countTaken);
+                    
+                    if (takenSubExampleSpace != null)
+                    {
+                        takenSubspace.Add(takenSubExampleSpace);
+                    }
+
+                    countTaken += subCountTaken;
+                }
+
+                var takenExampleSpace = ExampleSpaceFactory.Create<T>(exampleSpace.Current, takenSubspace);
+
+                return (takenExampleSpace, countTaken);
+            }
+
+            return TakeRec(exampleSpace, count).exampleSpace!;
         }
     }
 }

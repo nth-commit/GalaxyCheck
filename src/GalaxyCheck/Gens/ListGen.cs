@@ -151,12 +151,12 @@ namespace GalaxyCheck.Gens.Lists
 
         private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
         {
-            var (minLength, lengthGen) = LengthGen(config);
+            var (minLength, maxLength, lengthGen) = LengthGen(config);
             var shrink = ShrinkTowardsLength(minLength);
 
             return
                 from length in lengthGen
-                from list in GenOfLength(length, elementGen, shrink)
+                from list in GenOfLength(length, minLength, maxLength, elementGen, shrink)
                 select list;
         }
 
@@ -173,22 +173,22 @@ namespace GalaxyCheck.Gens.Lists
             });
         }
 
-        private static (int minLength, IGen<int> gen) LengthGen(ListGenConfig config)
+        private static (int minLength, int maxLength, IGen<int> gen) LengthGen(ListGenConfig config)
         {
-            static (int minLength, IGen<int> gen) LengthError(string message) =>
-                (-1, new ErrorGen<int>(nameof(ListGen<T>), message));
+            static (int minLength, int maxLength, IGen<int> gen) LengthError(string message) =>
+                (-1, -1, new ErrorGen<int>(nameof(ListGen<T>), message));
 
-            static (int minLength, IGen<int> gen) SpecificLengthGen(int length)
+            static (int minLength, int maxLength, IGen<int> gen) SpecificLengthGen(int length)
             {
                 if (length < 0)
                 {
                     return LengthError("'length' cannot be negative");
                 }
 
-                return (length, Gen.Constant(length));
+                return (length, length, Gen.Constant(length));
             }
 
-            static (int minLength, IGen<int> gen) RangedLengthGen(int? minLength, int? maxLength, Gen.Bias? bias)
+            static (int minLength, int maxLength, IGen<int> gen) RangedLengthGen(int? minLength, int? maxLength, Gen.Bias? bias)
             {
                 var resolvedMinLength = minLength ?? 0;
                 var resolvedMaxLength = maxLength ?? resolvedMinLength + 20;
@@ -218,7 +218,7 @@ namespace GalaxyCheck.Gens.Lists
                     .WithBias(resolvedBias)
                     .NoShrink();
 
-                return (resolvedMinLength, gen);
+                return (resolvedMinLength, resolvedMaxLength, gen);
             }
 
             return config.LengthConfig switch
@@ -238,6 +238,8 @@ namespace GalaxyCheck.Gens.Lists
 
         private static IGen<ImmutableList<T>> GenOfLength(
             int length,
+            int minLength,
+            int maxLength,
             IGen<T> elementGen,
             ShrinkFunc<List<IExampleSpace<T>>> shrink)
         {
@@ -272,11 +274,13 @@ namespace GalaxyCheck.Gens.Lists
 
                 var nextParameters = instances.Any() ? instances.Last().NextParameters : parameters;
 
+                var measureListLength = MeasureFunc.DistanceFromOrigin(minLength, minLength, maxLength);
+
                 var exampleSpace = ExampleSpaceFactory.Merge(
                     instances.Select(instance => instance.ExampleSpace).ToList(),
                     values => values.ToImmutableList(),
                     shrink,
-                    exampleSpaces => exampleSpaces.Count());
+                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureListLength(exampleSpaces.Count));
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
             }
