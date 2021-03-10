@@ -20,6 +20,18 @@ namespace GalaxyCheck
             int? seed = null,
             int? size = null) => gen.Advanced.SampleWithMetrics(iterations: iterations, seed: seed, size: size).Values;
 
+        public static SampleOneWithMetricsResult<T> SampleOneWithMetrics<T>(
+            this IGenAdvanced<T> advanced,
+            int? seed = null,
+            int? size = null)
+        {
+            var sample = advanced.SampleExampleSpacesWithMetrics(iterations: 1, seed: seed, size: size);
+            return new SampleOneWithMetricsResult<T>(
+                sample.Values.Single().Current.Value,
+                sample.Discards,
+                sample.RandomnessConsumption);
+        }
+
         public static SampleWithMetricsResult<T> SampleWithMetrics<T>(
             this IGenAdvanced<T> advanced,
             int? iterations = null,
@@ -57,6 +69,11 @@ namespace GalaxyCheck.Runners.Sample
     public record PresentableExampleSpace<T>(
         IExampleSpace<T> Actual,
         IExampleSpace? Presentational);
+
+    public record SampleOneWithMetricsResult<T>(
+        T Value,
+        int Discards,
+        int RandomnessConsumption);
 
     public record SampleWithMetricsResult<T>(
         List<T> Values,
