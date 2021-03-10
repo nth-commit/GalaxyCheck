@@ -44,7 +44,7 @@ namespace Tests.Gen.Infinite
 
                 var listSample = elementGen
                     .ListOf()
-                    .OfLength(length)
+                    .OfCount(length)
                     .SampleOne(seed: ForkSeed(seed), size: size.Value);
 
                 var infiniteSample = elementGen

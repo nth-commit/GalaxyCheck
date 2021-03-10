@@ -13,7 +13,7 @@ namespace Tests.V2.GenTests.ListGenTests
     public class AboutDefaults
     {
         [Property]
-        public NebulaCheck.IGen<Test> TheDefaultMinimumLengthIsZero() =>
+        public NebulaCheck.IGen<Test> TheDefaultMinimumCountIsZero() =>
             from elementGen in DomainGen.Gen()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
@@ -23,13 +23,13 @@ namespace Tests.V2.GenTests.ListGenTests
                     AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
 
                 var gen0 = elementGen.ListOf();
-                var gen1 = elementGen.ListOf().OfMinimumLength(0);
+                var gen1 = elementGen.ListOf().WithCountGreaterThanEqual(0);
 
                 SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
             });
 
         [Property]
-        public NebulaCheck.IGen<Test> TheDefaultMaximumLengthIsTwenty() =>
+        public NebulaCheck.IGen<Test> TheDefaultMaximumCountIsTwenty() =>
             from elementGen in DomainGen.Gen()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
@@ -39,13 +39,13 @@ namespace Tests.V2.GenTests.ListGenTests
                     AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
 
                 var gen0 = elementGen.ListOf();
-                var gen1 = elementGen.ListOf().OfMaximumLength(20);
+                var gen1 = elementGen.ListOf().WithCountLessThanEqual(20);
 
                 SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
             });
 
         [Property]
-        public NebulaCheck.IGen<Test> TheDefaultLengthBiasIsWithSize() =>
+        public NebulaCheck.IGen<Test> TheDefaultCountBiasIsWithSize() =>
             from elementGen in DomainGen.Gen()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
@@ -55,7 +55,7 @@ namespace Tests.V2.GenTests.ListGenTests
                     AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
 
                 var gen0 = elementGen.ListOf();
-                var gen1 = elementGen.ListOf().WithLengthBias(GalaxyCheck.Gen.Bias.WithSize);
+                var gen1 = elementGen.ListOf().WithCountBias(GalaxyCheck.Gen.Bias.WithSize);
 
                 SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
             });

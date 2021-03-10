@@ -12,7 +12,7 @@
         {
             if (left == Empty) return right;
             if (right == Empty) return left;
-            return Primitive(left.GetHashCode() * -1521134295 + right.GetHashCode());
+            return Primitive(left.HashCode * -1521134295 + right.HashCode);
         }
     }
 }

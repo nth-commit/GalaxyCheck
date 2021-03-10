@@ -12,13 +12,13 @@ namespace Tests.V2.GenTests.ListGenTests
     public class AboutRandomnessConsumption
     {
         [Property]
-        public NebulaCheck.IGen<Test> IfSizeIsBelowChaosSize_AndLengthIsOfARange_ItConsumesRandomnessForTheLengthAndForEachElement() =>
+        public NebulaCheck.IGen<Test> IfSizeIsBelowChaosSize_AndCountIsOfARange_ItConsumesRandomnessForTheCountAndForEachElement() =>
             from seed in DomainGen.Seed()
             from size in DomainGen.Size(allowChaos: false)
             from elementGen in DomainGen.Gen()
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().BetweenLengths(0, 20);
+                var gen = elementGen.ListOf().BetweenCounts(0, 20);
 
                 var listSample = gen.Advanced.SampleOneWithMetrics(seed: seed, size: size);
                 var elementSample = elementGen.Advanced.SampleWithMetrics(iterations: listSample.Value.Count, seed: seed, size: size);
@@ -27,14 +27,14 @@ namespace Tests.V2.GenTests.ListGenTests
             });
 
         [Property]
-        public NebulaCheck.IGen<Test> IfSizeIsBelowChaosSize_AndLengthIsSpecific_ItConsumesRandomnessForEachElement() =>
+        public NebulaCheck.IGen<Test> IfSizeIsBelowChaosSize_AndCountIsSpecific_ItConsumesRandomnessForEachElement() =>
             from seed in DomainGen.Seed()
             from size in DomainGen.Size(allowChaos: false)
             from elementGen in DomainGen.Gen()
-            from length in Gen.Int32().Between(0, 20)
+            from count in Gen.Int32().Between(0, 20)
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().OfLength(length);
+                var gen = elementGen.ListOf().OfCount(count);
 
                 var listSample = gen.Advanced.SampleOneWithMetrics(seed: seed, size: size);
                 var elementSample = elementGen.Advanced.SampleWithMetrics(iterations: listSample.Value.Count, seed: seed, size: size);

@@ -12,31 +12,31 @@ namespace GalaxyCheck.Gens
     public interface IListGen<T> : IGen<ImmutableList<T>>
     {
         /// <summary>
-        /// Constrains the generator so that it only produces lists with the given length.
+        /// Constrains the generator so that it only produces lists with the given count.
         /// </summary>
-        /// <param name="length">The length to constrain generated lists to.</param>
+        /// <param name="count">The count to constrain generated lists to.</param>
         /// <returns>A new generator with the constrain applied.</returns>
-        IListGen<T> OfLength(int length);
+        IListGen<T> OfCount(int count);
 
         /// <summary>
-        /// Constrains the generator so that it only produces lists with at least the given length.
+        /// Constrains the generator so that it only produces lists with at least the given count.
         /// </summary>
-        /// <param name="minLength">The minimum length that generated lists should be constrained to.</param>
+        /// <param name="minCount">The minimum count that generated lists should be constrained to.</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        IListGen<T> OfMinimumLength(int minLength);
+        IListGen<T> WithCountGreaterThanEqual(int minCount);
 
         /// <summary>
-        /// Constrains the generator so that it only produces lists with at most the given length.
+        /// Constrains the generator so that it only produces lists with at most the given count.
         /// </summary>
-        /// <param name="maxLength">The maximum length that generated lists should be constrained to.</param>
+        /// <param name="maxCount">The maximum count that generated lists should be constrained to.</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        IListGen<T> OfMaximumLength(int maxLength);
+        IListGen<T> WithCountLessThanEqual(int maxCount);
 
         /// <summary>
-        /// Modifies how the generator biases lengths of produced lists with respect to the size parameter.
+        /// Modifies how the generator biases counts of produced lists with respect to the size parameter.
         /// </summary>
         /// <returns>A new generator with the biasing effect applied.</returns>
-        IListGen<T> WithLengthBias(Gen.Bias bias);
+        IListGen<T> WithCountBias(Gen.Bias bias);
     }
 }
 
@@ -49,7 +49,7 @@ namespace GalaxyCheck
     {
         /// <summary>
         /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
-        /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the
+        /// default, the generator produces lists ranging from count 0 to 20 - but this can be configured using the
         /// builder methods on <see cref="IListGen{T}"/>.
         /// </summary>
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
@@ -58,7 +58,7 @@ namespace GalaxyCheck
 
         /// <summary>
         /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
-        /// default, the generator produces lists ranging from length 0 to 20 - but this can be configured using the
+        /// default, the generator produces lists ranging from count 0 to 20 - but this can be configured using the
         /// builder methods on <see cref="IListGen{T}"/>.
         /// </summary>
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
@@ -66,16 +66,16 @@ namespace GalaxyCheck
         public static IListGen<T> ListOf<T>(this IGen<T> gen) => new ListGen<T>(gen);
 
         /// <summary>
-        /// Constrains the generator so that it only produces lists with lengths within the supplied range (inclusive).
+        /// Constrains the generator so that it only produces lists with counts within the supplied range (inclusive).
         /// </summary>
         /// <param name="x">The first bound of the range.</param>
         /// <param name="y">The second bound of the range.</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IListGen<T> BetweenLengths<T>(this IListGen<T> gen, int x, int y)
+        public static IListGen<T> BetweenCounts<T>(this IListGen<T> gen, int x, int y)
         {
-            var minLength = x > y ? y : x;
-            var maxLength = x > y ? x : y;
-            return gen.OfMinimumLength(minLength).OfMaximumLength(maxLength);
+            var minCount = x > y ? y : x;
+            var maxCount = x > y ? x : y;
+            return gen.WithCountGreaterThanEqual(minCount).WithCountLessThanEqual(maxCount);
         }
     }
 }
@@ -84,18 +84,18 @@ namespace GalaxyCheck.Gens.Lists
 {
     public class ListGen<T> : BaseGen<ImmutableList<T>>, IListGen<T>
     {
-        private abstract record ListGenLengthConfig
+        private abstract record ListGenCountConfig
         {
-            private ListGenLengthConfig()
+            private ListGenCountConfig()
             {
             }
 
-            public record Specific(int Length) : ListGenLengthConfig;
+            public record Specific(int Count) : ListGenCountConfig;
 
-            public record Ranged(int? MinLength, int? MaxLength) : ListGenLengthConfig;
+            public record Ranged(int? MinCount, int? MaxCount) : ListGenCountConfig;
         }
 
-        private record ListGenConfig(ListGenLengthConfig? LengthConfig, Gen.Bias? Bias);
+        private record ListGenConfig(ListGenCountConfig? CountConfig, Gen.Bias? Bias);
 
         private readonly ListGenConfig _config;
         private readonly IGen<T> _elementGen;
@@ -107,40 +107,40 @@ namespace GalaxyCheck.Gens.Lists
         }
 
         public ListGen(IGen<T> elementGen)
-            : this(new ListGenConfig(LengthConfig: null, Bias: null), elementGen)
+            : this(new ListGenConfig(CountConfig: null, Bias: null), elementGen)
         {
         }
 
-        public IListGen<T> OfLength(int length) =>
-            WithPartialConfig(lengthConfig: new ListGenLengthConfig.Specific(length));
+        public IListGen<T> OfCount(int count) =>
+            WithPartialConfig(countConfig: new ListGenCountConfig.Specific(count));
 
-        public IListGen<T> OfMinimumLength(int minLength) =>
-            WithPartialConfig(lengthConfig: new ListGenLengthConfig.Ranged(
-                MinLength: minLength,
-                MaxLength: _config.LengthConfig is ListGenLengthConfig.Ranged rangedLengthConfig
-                    ? rangedLengthConfig.MaxLength
+        public IListGen<T> WithCountGreaterThanEqual(int minCount) =>
+            WithPartialConfig(countConfig: new ListGenCountConfig.Ranged(
+                MinCount: minCount,
+                MaxCount: _config.CountConfig is ListGenCountConfig.Ranged rangedCountConfig
+                    ? rangedCountConfig.MaxCount
                     : null));
 
-        public IListGen<T> OfMaximumLength(int maxLength) =>
-            WithPartialConfig(lengthConfig: new ListGenLengthConfig.Ranged(
-                MinLength: _config.LengthConfig is ListGenLengthConfig.Ranged rangedLengthConfig
-                    ? rangedLengthConfig.MinLength
+        public IListGen<T> WithCountLessThanEqual(int maxCount) =>
+            WithPartialConfig(countConfig: new ListGenCountConfig.Ranged(
+                MinCount: _config.CountConfig is ListGenCountConfig.Ranged rangedCountConfig
+                    ? rangedCountConfig.MinCount
                     : null,
-                MaxLength: maxLength));
+                MaxCount: maxCount));
 
-        public IListGen<T> BetweenLengths(int x, int y) =>
-            WithPartialConfig(lengthConfig: new ListGenLengthConfig.Ranged(
-                MinLength: x < y ? x : y,
-                MaxLength: x > y ? x : y));
+        public IListGen<T> BetweenCounts(int x, int y) =>
+            WithPartialConfig(countConfig: new ListGenCountConfig.Ranged(
+                MinCount: x < y ? x : y,
+                MaxCount: x > y ? x : y));
 
-        public IListGen<T> WithLengthBias(Gen.Bias bias) => WithPartialConfig(bias: bias);
+        public IListGen<T> WithCountBias(Gen.Bias bias) => WithPartialConfig(bias: bias);
 
         private IListGen<T> WithPartialConfig(
-            ListGenLengthConfig? lengthConfig = null,
+            ListGenCountConfig? countConfig = null,
             Gen.Bias? bias = null)
         {
             var newConfig = new ListGenConfig(
-                lengthConfig ?? _config.LengthConfig,
+                countConfig ?? _config.CountConfig,
                 bias ?? _config.Bias);
 
             return new ListGen<T>(newConfig, _elementGen);
@@ -151,95 +151,95 @@ namespace GalaxyCheck.Gens.Lists
 
         private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
         {
-            var (minLength, maxLength, lengthGen) = LengthGen(config);
-            var shrink = ShrinkTowardsLength(minLength);
+            var (minCount, maxCount, countGen) = CountGen(config);
+            var shrink = ShrinkTowardsCount(minCount);
 
             return
-                from length in lengthGen
-                from list in GenOfLength(length, minLength, maxLength, elementGen, shrink)
+                from count in countGen
+                from list in GenOfCount(count, minCount, maxCount, elementGen, shrink)
                 select list;
         }
 
-        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsLength(int length)
+        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsCount(int count)
         {
             // If the value type is a collection, that is, this generator is building a "collection of collections",
-            // it is "less complex" to order the inner collections by descending length. It also lets us find the
+            // it is "less complex" to order the inner collections by descending count. It also lets us find the
             // minimal shrink a lot more efficiently in some examples,
             // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
 
-            return ShrinkFunc.TowardsCountOptimized<IExampleSpace<T>, decimal>(length, exampleSpace =>
+            return ShrinkFunc.TowardsCountOptimized<IExampleSpace<T>, decimal>(count, exampleSpace =>
             {
                 return -exampleSpace.Current.Distance;
             });
         }
 
-        private static (int minLength, int maxLength, IGen<int> gen) LengthGen(ListGenConfig config)
+        private static (int minCount, int maxCount, IGen<int> gen) CountGen(ListGenConfig config)
         {
-            static (int minLength, int maxLength, IGen<int> gen) LengthError(string message) =>
+            static (int minCount, int maxCount, IGen<int> gen) CountError(string message) =>
                 (-1, -1, new ErrorGen<int>(nameof(ListGen<T>), message));
 
-            static (int minLength, int maxLength, IGen<int> gen) SpecificLengthGen(int length)
+            static (int minCount, int maxCount, IGen<int> gen) SpecificCountGen(int count)
             {
-                if (length < 0)
+                if (count < 0)
                 {
-                    return LengthError("'length' cannot be negative");
+                    return CountError("'count' cannot be negative");
                 }
 
-                return (length, length, Gen.Constant(length));
+                return (count, count, Gen.Constant(count));
             }
 
-            static (int minLength, int maxLength, IGen<int> gen) RangedLengthGen(int? minLength, int? maxLength, Gen.Bias? bias)
+            static (int minCount, int maxCount, IGen<int> gen) RangedCountGen(int? minCount, int? maxCount, Gen.Bias? bias)
             {
-                var resolvedMinLength = minLength ?? 0;
-                var resolvedMaxLength = maxLength ?? resolvedMinLength + 20;
+                var resolvedMinCount = minCount ?? 0;
+                var resolvedMaxCount = maxCount ?? resolvedMinCount + 20;
                 var resolvedBias = bias ?? Gen.Bias.WithSize;
 
-                if (resolvedMinLength < 0)
+                if (resolvedMinCount < 0)
                 {
-                    return LengthError("'minLength' cannot be negative");
+                    return CountError("'minCount' cannot be negative");
                 }
 
-                if (resolvedMaxLength < 0)
+                if (resolvedMaxCount < 0)
                 {
-                    return LengthError("'maxLength' cannot be negative");
+                    return CountError("'maxCount' cannot be negative");
                 }
 
-                if (resolvedMinLength > resolvedMaxLength)
+                if (resolvedMinCount > resolvedMaxCount)
                 {
-                    return LengthError("'minLength' cannot be greater than 'maxLength'");
+                    return CountError("'minCount' cannot be greater than 'maxCount'");
                 }
 
-                // TODO: If minLength == maxLength, defer to SpecificLengthGen
+                // TODO: If minCount == maxCount, defer to SpecificCountGen
 
                 var gen = Gen
                     .Int32()
-                    .GreaterThanEqual(resolvedMinLength)
-                    .LessThanEqual(resolvedMaxLength)
+                    .GreaterThanEqual(resolvedMinCount)
+                    .LessThanEqual(resolvedMaxCount)
                     .WithBias(resolvedBias)
                     .NoShrink();
 
-                return (resolvedMinLength, resolvedMaxLength, gen);
+                return (resolvedMinCount, resolvedMaxCount, gen);
             }
 
-            return config.LengthConfig switch
+            return config.CountConfig switch
             {
-                ListGenLengthConfig.Specific specificLengthConfig => SpecificLengthGen(specificLengthConfig.Length),
-                ListGenLengthConfig.Ranged rangedLengthConfig => RangedLengthGen(
-                    minLength: rangedLengthConfig.MinLength,
-                    maxLength: rangedLengthConfig.MaxLength,
+                ListGenCountConfig.Specific specificCountConfig => SpecificCountGen(specificCountConfig.Count),
+                ListGenCountConfig.Ranged rangedCountConfig => RangedCountGen(
+                    minCount: rangedCountConfig.MinCount,
+                    maxCount: rangedCountConfig.MaxCount,
                     bias: config.Bias),
-                null => RangedLengthGen(
-                    minLength: null,
-                    maxLength: null,
+                null => RangedCountGen(
+                    minCount: null,
+                    maxCount: null,
                     bias: config.Bias),
                 _ => throw new NotSupportedException()
             };
         }
 
-        private static IGen<ImmutableList<T>> GenOfLength(
-            int length,
-            int minLength,
-            int maxLength,
+        private static IGen<ImmutableList<T>> GenOfCount(
+            int count,
+            int minCount,
+            int maxCount,
             IGen<T> elementGen,
             ShrinkFunc<List<IExampleSpace<T>>> shrink)
         {
@@ -249,7 +249,7 @@ namespace GalaxyCheck.Gens.Lists
 
                 var elementIterationEnumerator = elementGen.Advanced.Run(parameters).GetEnumerator();
 
-                while (instances.Count < length)
+                while (instances.Count < count)
                 {
                     if (!elementIterationEnumerator.MoveNext())
                     {
@@ -274,13 +274,13 @@ namespace GalaxyCheck.Gens.Lists
 
                 var nextParameters = instances.Any() ? instances.Last().NextParameters : parameters;
 
-                var measureListLength = MeasureFunc.DistanceFromOrigin(minLength, minLength, maxLength);
+                var measureListCount = MeasureFunc.DistanceFromOrigin(minCount, minCount, maxCount);
 
                 var exampleSpace = ExampleSpaceFactory.Merge(
                     instances.Select(instance => instance.ExampleSpace).ToList(),
                     values => values.ToImmutableList(),
                     shrink,
-                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureListLength(exampleSpaces.Count));
+                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureListCount(exampleSpaces.Count));
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
             }
