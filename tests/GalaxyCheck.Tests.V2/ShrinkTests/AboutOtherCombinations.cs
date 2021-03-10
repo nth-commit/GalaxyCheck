@@ -24,9 +24,9 @@ namespace Tests.V2.ShrinkTests
         }
 
         [Property]
-        public IGen<Test> IfListLengthIsLessThanEqualK_ItWillNotShrink() =>
+        public IGen<Test> IfListCountIsLessThanEqualK_ItWillNotShrink() =>
             from k in Gen.Int32().Between(1, 20)
-            from list in DomainGen.AnyList().OfMaximumLength(k)
+            from list in DomainGen.AnyList().WithCountLessThanEqual(k)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.OtherCombinations<object>(k);
@@ -37,9 +37,9 @@ namespace Tests.V2.ShrinkTests
             });
 
         [Property]
-        public IGen<Test> IfListLengthIsGreaterThanK_ItWillShrink() =>
+        public IGen<Test> IfListCountIsGreaterThanK_ItWillShrink() =>
             from k in Gen.Int32().Between(1, 20)
-            from list in DomainGen.AnyList().OfMinimumLength(k + 1)
+            from list in DomainGen.AnyList().WithCountGreaterThan(k)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.OtherCombinations<object>(k);
@@ -51,7 +51,7 @@ namespace Tests.V2.ShrinkTests
 
         [Property]
         public IGen<Test> IfKIsOne_ItProducesAListOfEachSingleElement() =>
-            from list in DomainGen.AnyList().OfMinimumLength(2)
+            from list in DomainGen.AnyList().WithCountGreaterThanEqual(2)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.OtherCombinations<object>(1);
