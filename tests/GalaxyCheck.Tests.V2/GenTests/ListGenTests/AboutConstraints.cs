@@ -12,48 +12,48 @@ namespace Tests.V2.GenTests.ListGenTests
     public class AboutConstraints
     {
         [Property]
-        public NebulaCheck.IGen<Test> ItProducesValuesWithLengthGreaterThanOrEqualMinimumLength() =>
+        public NebulaCheck.IGen<Test> ItProducesValuesWithCountGreaterThanOrEqualMinimumCount() =>
             from elementGen in DomainGen.Gen()
-            from minLength in Gen.Int32().Between(0, 10)
+            from minCount in Gen.Int32().Between(0, 10)
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().OfMinimumLength(minLength);
+                var gen = elementGen.ListOf().WithCountGreaterThanEqual(minCount);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
-                exampleSpace.Traverse().Take(100).Should().OnlyContain(value => value.Count >= minLength);
+                exampleSpace.Traverse().Take(100).Should().OnlyContain(value => value.Count >= minCount);
             });
 
         [Property]
-        public NebulaCheck.IGen<Test> ItProducesValuesWithLengthLessThanOrEqualMaximumLength() =>
+        public NebulaCheck.IGen<Test> ItProducesValuesWithCountLessThanOrEqualMaximumCount() =>
             from elementGen in DomainGen.Gen()
-            from maxLength in Gen.Int32().Between(0, 10)
+            from maxCount in Gen.Int32().Between(0, 10)
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().OfMaximumLength(maxLength);
+                var gen = elementGen.ListOf().WithCountLessThanEqual(maxCount);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
-                exampleSpace.Traverse().Take(100).Should().OnlyContain(value => value.Count <= maxLength);
+                exampleSpace.Traverse().Take(100).Should().OnlyContain(value => value.Count <= maxCount);
             });
 
         [Property]
-        public NebulaCheck.IGen<Test> ItProducesValuesWithOfTheSpecificLength() =>
+        public NebulaCheck.IGen<Test> ItProducesValuesWithOfTheSpecificCount() =>
             from elementGen in DomainGen.Gen()
-            from length in Gen.Int32().Between(0, 20)
+            from count in Gen.Int32().Between(0, 20)
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().OfLength(length);
+                var gen = elementGen.ListOf().OfCount(count);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
-                exampleSpace.Traverse().Take(100).Should().OnlyContain(value => value.Count == length);
+                exampleSpace.Traverse().Take(100).Should().OnlyContain(value => value.Count == count);
             });
     }
 }

@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-using GalaxyCheck;
+﻿using GalaxyCheck;
 using GalaxyCheck.Gens;
-using Snapshooter.Xunit;
 using Snapshooter;
+using Snapshooter.Xunit;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Xunit;
 
-namespace Tests.V2.GenTests.Int32GenTests
+namespace Tests.V2.GenTests.ListGenTests
 {
     public class Snapshots
     {
@@ -15,12 +19,12 @@ namespace Tests.V2.GenTests.Int32GenTests
         {
             var seeds = Enumerable.Range(0, 5);
 
-            var gens = new Dictionary<string, IInt32Gen>
+            var gens = new Dictionary<string, IListGen<int>>
             {
-                { "Between_0_And_10", Gen.Int32().Between(0, 10) },
-                { "Between_0_And_100", Gen.Int32().Between(0, 100) },
-                { "Between_0_And_10000", Gen.Int32().Between(0, 10000) },
-                { "Between_Default", Gen.Int32() },
+                { "Between_Counts_1_And_4_And_Elements_0_And_10", Gen.Int32().Between(0, 10).ListOf().BetweenCounts(1, 4) },
+                { "Between_Counts_1_And_8_And_Elements_0_And_100", Gen.Int32().Between(0, 100).ListOf().BetweenCounts(1, 8) },
+                { "Between_Counts_1_And_16_And_Elements_0_And_10000", Gen.Int32().Between(0, 10000).ListOf().BetweenCounts(1, 16) },
+                { "Between_Defaults", Gen.Int32().ListOf() },
             };
 
             var biases = new[] { Gen.Bias.None, Gen.Bias.WithSize };
@@ -29,7 +33,7 @@ namespace Tests.V2.GenTests.Int32GenTests
             foreach (var (betweenDescription, gen) in gens)
             foreach (var bias in biases)
             {
-                var gen0 = gen.WithBias(bias);
+                var gen0 = gen.WithCountBias(bias);
 
                 var sample = gen.Sample(seed: seed);
 
@@ -49,10 +53,10 @@ namespace Tests.V2.GenTests.Int32GenTests
         {
             var seeds = Enumerable.Range(0, 5);
 
-            var gens = new Dictionary<string, IInt32Gen>
+            var gens = new Dictionary<string, IListGen<int>>
             {
-                { "Between_0_And_10", Gen.Int32().Between(0, 10) },
-                { "Between_0_And_100", Gen.Int32().Between(0, 100) },
+                { "Between_Counts_1_And_4_And_Elements_0_And_10", Gen.Int32().Between(0, 10).ListOf().BetweenCounts(1, 4) },
+                { "Between_Counts_1_And_8_And_Elements_0_And_100", Gen.Int32().Between(0, 100).ListOf().BetweenCounts(1, 8) },
             };
 
             var biases = new[] { Gen.Bias.None, Gen.Bias.WithSize };
@@ -61,12 +65,12 @@ namespace Tests.V2.GenTests.Int32GenTests
             foreach (var (betweenDescription, gen) in gens)
             foreach (var bias in biases)
             {
-                var gen0 = gen.WithBias(bias);
+                var gen0 = gen.WithCountBias(bias);
 
                 var sample = gen.Advanced
                     .SampleOneExampleSpace(seed: seed, size: 75)
                     .Take(500)
-                    .Render(x => x.ToString());
+                    .Render(x => JsonSerializer.Serialize(x));
 
                 var nameExtension = string.Join("_", new[]
                 {
