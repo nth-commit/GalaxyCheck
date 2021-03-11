@@ -52,7 +52,6 @@ namespace GalaxyCheck
         /// <summary>
         /// Hacky. But it works for the test cases captured. Need to unify the arity model.
         /// </summary>
-        /// <returns></returns>
         private static ExampleViewModel GetExampleViewModel(IExample example)
         {
             var value = example.Value;
@@ -84,18 +83,6 @@ namespace GalaxyCheck
             {
                 yield return $"    {line}";
             }
-        }
-
-        private class AdvancedToGen<T> : IGen<T>
-        {
-            public AdvancedToGen(IGenAdvanced<T> advanced)
-            {
-                Advanced = advanced;
-            }
-
-            public IGenAdvanced<T> Advanced { get; }
-
-            IGenAdvanced IGen.Advanced => Advanced;
         }
     }
 

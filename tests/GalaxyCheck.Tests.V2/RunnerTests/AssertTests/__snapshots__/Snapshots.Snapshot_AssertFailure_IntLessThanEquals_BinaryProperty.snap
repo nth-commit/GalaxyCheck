@@ -1,0 +1,7 @@
+﻿Falsified after 2 tests (11 shrinks)
+Reproduction: (Seed = 1832373849, Size = 1)
+Counterexample:
+    [0] = 1000
+    [1] = 1001
+
+Property function returned false

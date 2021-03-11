@@ -1,8 +1,4 @@
-﻿using GalaxyCheck.Runners;
-using GalaxyCheck.Runners.Sample;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 
 namespace GalaxyCheck.Xunit
 {
