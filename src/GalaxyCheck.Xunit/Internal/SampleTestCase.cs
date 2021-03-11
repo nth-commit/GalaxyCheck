@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -25,8 +26,13 @@ namespace GalaxyCheck.Xunit.Internal
 
         protected override void RunProperty(Property<object> property, ITestOutputHelper testOutputHelper)
         {
-            var sample = property.Advanced.SamplePresentableExampleSpaceWithMetrics(enableLinqInference: property.Options.EnableLinqInference);
-            throw new SampleException(sample);
+            var log = new List<string>();
+
+            property.Advanced.Print(
+                stdout: log.Add,
+                enableLinqInference: property.Options.EnableLinqInference);
+
+            throw new SampleException(string.Join(Environment.NewLine, log));
         }
     }
 }
