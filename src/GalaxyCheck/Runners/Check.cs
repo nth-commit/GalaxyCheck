@@ -16,6 +16,8 @@ namespace GalaxyCheck
 
         public int Discards { get; init; }
 
+        public int Shrinks { get; init; }
+
         public Counterexample<T>? Counterexample { get; init; }
 
         public ImmutableList<CheckIteration<T>> Checks { get; init; }
@@ -31,6 +33,7 @@ namespace GalaxyCheck
         public CheckResult(
             int iterations,
             int discards,
+            int shrinks,
             Counterexample<T>? counterexample,
             ImmutableList<CheckIteration<T>> checks,
             GenParameters initialParameters,
@@ -38,6 +41,7 @@ namespace GalaxyCheck
         {
             Iterations = iterations;
             Discards = discards;
+            Shrinks = shrinks;
             Checks = checks;
             Counterexample = counterexample;
             InitialParameters = initialParameters;
@@ -111,6 +115,7 @@ namespace GalaxyCheck
             return new CheckResult<T>(
                 termination.Context.CompletedIterations,
                 termination.Context.Discards,
+                termination.Context.Shrinks,
                 termination.Context.Counterexample == null
                     ? null
                     : FromCounterexampleState(termination.Context.Counterexample, property.Options.EnableLinqInference),
@@ -322,6 +327,7 @@ namespace GalaxyCheck
             int RequestedIterations,
             int CompletedIterations,
             int Discards,
+            int Shrinks,
             ImmutableList<CounterexampleState<T>> CounterexampleStateHistory,
             GenParameters NextParameters,
             ResizeStrategy<T> ResizeStrategy)
@@ -334,6 +340,7 @@ namespace GalaxyCheck
                     new CheckContext<T>(
                         property,
                         requestedIterations,
+                        0,
                         0,
                         0,
                         ImmutableList.Create<CounterexampleState<T>>(),
@@ -350,6 +357,7 @@ namespace GalaxyCheck
                 RequestedIterations,
                 CompletedIterations + 1,
                 Discards,
+                Shrinks,
                 CounterexampleStateHistory,
                 NextParameters,
                 ResizeStrategy);
@@ -359,6 +367,17 @@ namespace GalaxyCheck
                 RequestedIterations,
                 CompletedIterations,
                 Discards + 1,
+                Shrinks,
+                CounterexampleStateHistory,
+                NextParameters,
+                ResizeStrategy);
+
+            internal CheckContext<T> IncrementShrinks() => new CheckContext<T>(
+                Property,
+                RequestedIterations,
+                CompletedIterations,
+                Discards,
+                Shrinks + 1,
                 CounterexampleStateHistory,
                 NextParameters,
                 ResizeStrategy);
@@ -368,6 +387,7 @@ namespace GalaxyCheck
                 RequestedIterations,
                 CompletedIterations,
                 Discards,
+                Shrinks,
                 Enumerable.Concat(new[] { counterexampleState }, CounterexampleStateHistory).ToImmutableList(),
                 NextParameters,
                 ResizeStrategy);
@@ -377,6 +397,7 @@ namespace GalaxyCheck
                 RequestedIterations,
                 CompletedIterations,
                 Discards,
+                Shrinks,
                 CounterexampleStateHistory,
                 genParameters,
                 ResizeStrategy);
@@ -513,7 +534,7 @@ namespace GalaxyCheck
                 ExplorationStage<Test<T>>.Counterexample CounterexampleExploration) : CheckState<T>(Context)
             {
                 internal override CheckState<T> NextState() => new HandleInstanceNextExplorationStage<T>(
-                    Context,
+                    Context.IncrementShrinks(),
                     Instance,
                     NextExplorations,
                     CounterexampleState,

@@ -100,7 +100,8 @@ namespace GalaxyCheck.Xunit.Internal
                         .Select(x => $"{x.name} = {x.value}");
 
                     return $"({ string.Join(", ", attributes) })";
-                });
+                },
+                formatMessage: (x) => Environment.NewLine + Environment.NewLine + x);
         }
     }
 }

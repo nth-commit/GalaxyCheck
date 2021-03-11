@@ -42,7 +42,7 @@ namespace Tests.V2.RunnerTests.AssertTests
                 .Should()
                 .Throw<GalaxyCheck.Runners.PropertyFailedException>()
                 .WithMessage($@"
-                    Falsified after 1 test
+                    Falsified after 1 test (* shrink*)
                     Reproduction: (Seed = {seed}, Size = {size})
                     Counterexample: 0
 
@@ -111,7 +111,7 @@ namespace Tests.V2.RunnerTests.AssertTests
                 .Throw<GalaxyCheck.Runners.PropertyFailedException>()
                 .WithMessage($@"
 
-                    Falsified after 1 test
+                    Falsified after 1 test (* shrink*)
                     Reproduction: (Seed = {seed}, Size = {size})
                     Counterexample: 0
 

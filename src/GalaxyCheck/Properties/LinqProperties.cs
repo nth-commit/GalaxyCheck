@@ -11,5 +11,8 @@ namespace GalaxyCheck
             0);
 
         public static Test ForThese(Action func) => ForThese(func.AsTrueFunc());
+
+        public static Property<object> FromLinq(IGen<Test> testGen) =>
+            new Property(testGen, new PropertyOptions { EnableLinqInference = true });
     }
 }

@@ -13,7 +13,8 @@ namespace GalaxyCheck
             int? iterations = null,
             int? seed = null,
             int? size = null,
-            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction = null)
+            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction = null,
+            Func<string, string>? formatMessage = null)
         {
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
 
@@ -22,7 +23,9 @@ namespace GalaxyCheck
                 throw new PropertyFailedException(
                     BoxCounterexample(checkResult.Counterexample!),
                     checkResult.Iterations,
-                    formatReproduction);
+                    checkResult.Shrinks,
+                    formatReproduction,
+                    formatMessage);
             }
         }
 
@@ -48,31 +51,39 @@ namespace GalaxyCheck.Runners
         public PropertyFailedException(
             Counterexample<object?> counterexample,
             int iterations,
-            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
-            : base(BuildMessage(counterexample, iterations, formatReproduction))
+            int shrinks,
+            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction,
+            Func<string, string>? formatMessage)
+            : base(FormatMessage(formatMessage, BuildMessage(counterexample, iterations, shrinks, formatReproduction)))
         {
         }
+
+        private static string FormatMessage(Func<string, string>? formatMessage, string message) =>
+            formatMessage == null
+                ? message
+                : formatMessage(message);
 
         private static string BuildMessage(
             Counterexample<object?> counterexample,
             int iterations,
+            int shrinks,
             Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction) =>
-                string.Join(Environment.NewLine, BuildLines(counterexample, iterations, formatReproduction));
+                string.Join(Environment.NewLine, BuildLines(counterexample, iterations, shrinks, formatReproduction));
 
         private static IEnumerable<string> BuildLines(
             Counterexample<object?> counterexample,
             int iterations,
+            int shrinks,
             Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
         {
             const string LineBreak = "";
 
-            yield return LineBreak;
-
-            yield return FalsifiedAfterLine(iterations);
+            yield return FalsifiedAfterLine(iterations, shrinks);
             yield return ReproductionLine(counterexample, formatReproduction);
             yield return CounterexampleValueLine(counterexample);
 
             yield return LineBreak;
+
             if (counterexample.Exception == null)
             {
                 yield return "Property function returned false";
@@ -83,7 +94,12 @@ namespace GalaxyCheck.Runners
             }
         }
 
-        private static string FalsifiedAfterLine(int iterations) => iterations == 1 ? "Falsified after 1 test" : $"Falsified after {iterations} tests";
+        private static string FalsifiedAfterLine(int iterations, int shrinks) =>
+            $"Falsified after {IterationsTrivia(iterations)} ({ShrinksTrivia(shrinks)})";
+
+        private static string IterationsTrivia(int iterations) => iterations == 1 ? "1 test" : $"{iterations} tests";
+
+        private static string ShrinksTrivia(int shrinks) => shrinks == 1 ? "1 shrink" : $"{shrinks} shrinks";
 
         private static string ReproductionLine(
             Counterexample<object?> counterexample,
