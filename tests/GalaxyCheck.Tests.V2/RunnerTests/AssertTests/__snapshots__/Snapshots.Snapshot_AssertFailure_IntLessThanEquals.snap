@@ -1,5 +1,5 @@
-﻿Falsified after 5 tests (49 shrinks)
-Reproduction: (Seed = 41607838, Size = 12)
+﻿Falsified after 67 tests (55 shrinks)
+Reproduction: (Seed = 2030042252, Size = 74)
 Counterexample: 1000
 
 Property function returned false

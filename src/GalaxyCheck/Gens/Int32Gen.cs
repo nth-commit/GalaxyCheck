@@ -159,7 +159,7 @@ namespace GalaxyCheck.Gens.Int32
 
         private static StatefulGenFunc<int> CreateBiasedStatefulGen(int min, int max, int origin)
         {
-            var getBounds = BoundsScalingFactoryFuncs.ScaledExponentially(min, max, origin);
+            var getBounds = BoundsScalingFactoryFuncs.ScaledExponentiallyWithDiscreteIntervals(min, max, origin);
             int? extremeMinimum = min == origin ? null : min;
             int? extremeMaximum = max == origin ? null : max;
 
