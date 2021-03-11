@@ -1,5 +1,5 @@
-﻿Falsified after 2 tests (11 shrinks)
-Reproduction: (Seed = 1832373849, Size = 1)
+﻿Falsified after 60 tests (12 shrinks)
+Reproduction: (Seed = 2036131183, Size = 59)
 Counterexample:
     [0] = 1000
     [1] = 1001
