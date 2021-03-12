@@ -93,11 +93,10 @@ namespace Tests.V2.WeightedListTests
         [Property]
         public IGen<Test> IfTheIndexIsGreaterThanOrEqualTheCount_ItThrows() =>
             from source in TestGen.WeightedElement().ListOf()
-            from index in Gen.Int32().GreaterThanEqual(source.Count)
+            let list = new WeightedList<object>(source)
+            from index in Gen.Int32().GreaterThanEqual(list.Count)
             select Property.ForThese(() =>
             {
-                var list = new WeightedList<object>(source);
-
                 Action action = () =>
                 {
                     var _ = list[index];

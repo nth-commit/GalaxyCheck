@@ -26,7 +26,7 @@ namespace Tests.V2.SizingTests
             });
 
         [Property]
-        public IGen<Test> IfSizeIsOneHundred_ItProducesTheOriginBounds() =>
+        public IGen<Test> IfSizeIsOneHundred_ItProducesTheExtremeBounds() =>
             from min in Gen.Int32()
             from max in Gen.Int32().GreaterThanEqual(min)
             from origin in Gen.Int32().Between(min, max)
