@@ -1,4 +1,5 @@
-﻿using GalaxyCheck.Runners;
+﻿using GalaxyCheck.Internal.Replaying;
+using GalaxyCheck.Runners;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,10 +14,11 @@ namespace GalaxyCheck
             int? iterations = null,
             int? seed = null,
             int? size = null,
-            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction = null,
+            string? replay = null,
+            Func<string, string>? formatReproduction = null,
             Func<string, string>? formatMessage = null)
         {
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
+            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, replay: replay);
 
             if (checkResult.Falsified)
             {
@@ -52,7 +54,7 @@ namespace GalaxyCheck.Runners
             Counterexample<object?> counterexample,
             int iterations,
             int shrinks,
-            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction,
+            Func<string, string>? formatReproduction,
             Func<string, string>? formatMessage)
             : base(FormatMessage(formatMessage, BuildMessage(counterexample, iterations, shrinks, formatReproduction)))
         {
@@ -67,14 +69,14 @@ namespace GalaxyCheck.Runners
             Counterexample<object?> counterexample,
             int iterations,
             int shrinks,
-            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction) =>
+            Func<string, string>? formatReproduction) =>
                 string.Join(Environment.NewLine, BuildLines(counterexample, iterations, shrinks, formatReproduction));
 
         private static IEnumerable<string> BuildLines(
             Counterexample<object?> counterexample,
             int iterations,
             int shrinks,
-            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
+            Func<string, string>? formatReproduction)
         {
             const string LineBreak = "";
 
@@ -103,29 +105,20 @@ namespace GalaxyCheck.Runners
 
         private static string ReproductionLine(
             Counterexample<object?> counterexample,
-            Func<(int seed, int size, IEnumerable<int> path), string>? formatReproduction)
+            Func<string, string>? formatReproduction)
         {
             static string PrefixLine(string reproductionFormatted) => $"Reproduction: {reproductionFormatted}";
 
-            var seed = counterexample.RepeatParameters.Rng.Seed;
-            var size = counterexample.RepeatParameters.Size.Value;
+            var replay = new Replay(counterexample.RepeatParameters, counterexample.RepeatPath);
+            var replayEncoded = ReplayEncoding.Encode(replay);
 
             if (formatReproduction == null)
             {
-                var attributes =
-                    new List<(string name, string value)>
-                    {
-                        ("Seed", seed.ToString(CultureInfo.InvariantCulture)),
-                        ("Size", size.ToString(CultureInfo.InvariantCulture)),
-                    }
-                    .Select(x => $"{x.name} = {x.value}");
-
-                return PrefixLine($"({string.Join(", ", attributes)})");
+                return PrefixLine(replayEncoded);
             }
             else
             {
-                var reproduction = (seed, size, counterexample.RepeatPath);
-                return PrefixLine(formatReproduction(reproduction));
+                return PrefixLine(formatReproduction(replayEncoded));
             }
         }
 

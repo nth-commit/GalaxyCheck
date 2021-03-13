@@ -9,13 +9,14 @@ namespace GalaxyCheck.Runners.CheckAutomata
         CheckState<T> State,
         IGenInstance<Test<T>> Instance,
         CounterexampleState<T>? CounterexampleState,
-        bool WasDiscard) : AbstractTransition<T>(State)
+        bool WasDiscard,
+        bool WasReplay = false) : AbstractTransition<T>(State)
     {
         internal override AbstractTransition<T> NextTransition() => WasDiscard == true
             ? NextStateOnDiscard(State, Instance)
             : CounterexampleState == null
                 ? NextStateWithoutCounterexample(State, Instance)
-                : NextStateWithCounterexample(State, Instance, CounterexampleState);
+                : NextStateWithCounterexample(State, Instance, CounterexampleState, WasReplay);
 
         private static AbstractTransition<T> NextStateOnDiscard(
             CheckState<T> context,
@@ -42,13 +43,19 @@ namespace GalaxyCheck.Runners.CheckAutomata
         private static AbstractTransition<T> NextStateWithCounterexample(
             CheckState<T> context,
             IGenInstance<Test<T>> instance,
-            CounterexampleState<T> counterexampleState)
+            CounterexampleState<T> counterexampleState,
+            bool wasReplay)
         {
             var nextSize = context.ResizeStrategy(instance, wasCounterexample: true);
             var nextState = context
                 .IncrementCompletedIterations()
                 .WithNextGenParameters(instance.NextParameters.With(size: nextSize))
                 .AddCounterexample(counterexampleState);
+
+            if (wasReplay)
+            {
+                return new Termination<T>(nextState);
+            }
 
             if (nextState.CompletedIterations == nextState.RequestedIterations)
             {
