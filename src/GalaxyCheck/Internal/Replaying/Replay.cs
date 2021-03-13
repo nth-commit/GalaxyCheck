@@ -3,7 +3,6 @@
 namespace GalaxyCheck.Internal.Replaying
 {
     public record Replay(
-        int Seed,
-        int Size,
+        GenParameters GenParameters,
         IEnumerable<int> ExampleSpacePath);
 }

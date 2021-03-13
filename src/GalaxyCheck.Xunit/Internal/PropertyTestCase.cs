@@ -75,9 +75,11 @@ namespace GalaxyCheck.Xunit.Internal
                 return Fail(exception);
             }
 
+            var replay = methodInfo.GetCustomAttributes<ReplayAttribute>().SingleOrDefault()?.Replay;
+
             try
             {
-                RunProperty(property, testOutputHelper);
+                RunProperty(property, replay, testOutputHelper);
                 return Pass();
             }
             catch (Exception propertyFailedException)
@@ -86,21 +88,11 @@ namespace GalaxyCheck.Xunit.Internal
             }
         }
 
-        protected virtual void RunProperty(Property<object> property, ITestOutputHelper testOutputHelper)
+        protected virtual void RunProperty(Property<object> property, string? replay, ITestOutputHelper testOutputHelper)
         {
             property.Assert(
-                formatReproduction: (x) =>
-                {
-                    var attributes =
-                        new List<(string name, string value)>
-                        {
-                            ("Seed", x.seed.ToString(CultureInfo.InvariantCulture)),
-                            ("Size", x.size.ToString(CultureInfo.InvariantCulture)),
-                        }
-                        .Select(x => $"{x.name} = {x.value}");
-
-                    return $"({ string.Join(", ", attributes) })";
-                },
+                replay: replay,
+                formatReproduction: (newReplay) => $"{Environment.NewLine}    [Replay(\"{newReplay}\")]",
                 formatMessage: (x) => Environment.NewLine + Environment.NewLine + x);
         }
     }

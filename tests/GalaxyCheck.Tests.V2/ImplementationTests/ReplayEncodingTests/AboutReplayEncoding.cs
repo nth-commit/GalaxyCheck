@@ -1,7 +1,10 @@
 ﻿using FluentAssertions;
+using GalaxyCheck.Internal.Random;
 using GalaxyCheck.Internal.Replaying;
+using GalaxyCheck.Internal.Sizing;
 using NebulaCheck;
 using NebulaCheck.Xunit;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit;
@@ -14,24 +17,24 @@ namespace Tests.V2.ImplementationTests.ReplayEncodingTests
             new TheoryData<Replay, string>
             {
                 {
-                    new Replay(0, 0, new [] { 0 }),
+                    CreateReplay(0, 0, new [] { 0 }),
                     "H4sIAAAAAAAACjPQM9AzAACGS1suBQAAAA=="
                 },
                 {
-                    new Replay(0, 0, new [] { 0, 0, 0, 0, 0, 0 }),
+                    CreateReplay(0, 0, new [] { 0, 0, 0, 0, 0, 0 }),
                     "H4sIAAAAAAAACjPQM9AzsIJDALKWW5IPAAAA"
                 },
                 {
-                    new Replay(0, 0, Enumerable.Range(0, 10).Select(_ => 0)),
+                    CreateReplay(0, 0, Enumerable.Range(0, 10).Select(_ => 0)),
                     "H4sIAAAAAAAACjPQM9AzsMKAANukRbAXAAAA"
                 },
                 {
-                    new Replay(0, 0, Enumerable.Range(0, 100).Select(_ => 0)),
+                    CreateReplay(0, 0, Enumerable.Range(0, 100).Select(_ => 0)),
                     "H4sIAAAAAAAACjPQM9AzsBoWEAC35Wk5ywAAAA=="
                 },
                 {
-                    new Replay(int.MaxValue, int.MaxValue, Enumerable.Range(0, 100)),
-                    "H4sIAAAAAAAACkWQtw0EQQwDO3rIUG76L+w2+4wgQBuu0WZrfvGHhhMkomiG5fBHOh544sILb3zwxY8w4mmCSEJEEU0MscSRRjr5LJMUWWSTQy55yJCjQC9RqFCjQYuOMsqpoJJ6hYpqaqiljjba6aCTFv36Nj300scY40wwyYgp5s0ZZpljjXU22GTFFtvsW7vsccY5F1xy4oprbrh3xn1aP3t8NwEAAA=="
+                    CreateReplay(int.MaxValue, 100, Enumerable.Range(0, 100)),
+                    "H4sIAAAAAAAACg2Qxw3AQBACO7I2sGn6L8z3RQIGwjXabM3nZp/hBIkommE5/ImOB5648MIbH3zxI4x4niCSEFFEE0MscaSRTr7IJEUW2eSQSx4y5CjQaxQq1GjQoqOMciqopB5QUU0NtdTRRjsddNKiH2/TQy99jDHOBJOMmGLenGGWOdZYZ4NNVmyxzb61yx5nnHPBJSeuuOaGe2fcD7ogWEAwAQAA"
                 },
             };
 
@@ -55,12 +58,14 @@ namespace Tests.V2.ImplementationTests.ReplayEncodingTests
             from exampleSpacePath in Gen.Int32().ListOf()
             select Property.ForThese(() =>
             {
-                var replay0 = new Replay(seed, size, exampleSpacePath);
+                var replay0 = CreateReplay(seed, size, exampleSpacePath);
                 var replay1 = ReplayEncoding.Decode(ReplayEncoding.Encode(replay0));
 
-                replay1.Seed.Should().Be(replay0.Seed);
-                replay1.Size.Should().Be(replay0.Size);
+                replay1.GenParameters.Should().Be(replay0.GenParameters);
                 replay1.ExampleSpacePath.Should().BeEquivalentTo(replay0.ExampleSpacePath);
             });
+
+        private static Replay CreateReplay(int seed, int size, IEnumerable<int> exampleSpacePath) =>
+            new Replay(new GalaxyCheck.GenParameters(Rng.Create(seed), new Size(size)), exampleSpacePath);
     }
 }

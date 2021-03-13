@@ -84,7 +84,8 @@ namespace GalaxyCheck
              this Property<T> property,
              int? iterations = null,
              int? seed = null,
-             int? size = null)
+             int? size = null,
+             string? replay = null)
         {
             var initialParameters = new GenParameters(
                 Rng: seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
@@ -92,10 +93,13 @@ namespace GalaxyCheck
 
             ResizeStrategy<T> resizeStrategy = size == null ? SuperStrategicResize<T> : NoopResize<T>;
 
-            var initialTransition = new InitialTransition<T>(CheckState<T>.Create(property, iterations ?? 100, initialParameters, resizeStrategy));
+            var initialState = CheckState<T>.Create(property, iterations ?? 100, initialParameters, resizeStrategy);
+            AbstractTransition<T> initialTransition = replay == null
+                ? new InitialTransition<T>(initialState)
+                : new ReplayTransition<T>(initialState, replay);
 
             var transitions = EnumerableExtensions
-                .Unfold<AbstractTransition<T>>(
+                .Unfold(
                     initialTransition,
                     previousTransition => previousTransition is Termination<T>
                         ? new Option.None<AbstractTransition<T>>()
