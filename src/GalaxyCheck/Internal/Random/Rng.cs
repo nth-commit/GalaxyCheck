@@ -34,7 +34,7 @@ namespace GalaxyCheck.Internal.Random
 
         public IRng Next() => new Rng(Family, Random.Next(), Order + 1);
 
-        public IRng Fork() => Create(Family * -1521134295 + Order);
+        public IRng Fork() => Create((Family + 1) * -1521134295 + Order);
 
         public int Value(int min, int max)
         {

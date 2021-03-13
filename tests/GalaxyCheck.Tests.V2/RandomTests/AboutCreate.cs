@@ -1,35 +1,31 @@
-﻿using NebulaCheck;
-using Xunit;
-
-using Rng = GalaxyCheck.Internal.Random.Rng;
+﻿using FluentAssertions;
+using GalaxyCheck.Internal.Random;
+using NebulaCheck;
+using NebulaCheck.Xunit;
 
 namespace Tests.V2.RandomTests
 {
     public class AboutCreate
     {
-        [Fact]
-        public void ItIsRepeatable() => Gen
-            .Int32()
-            .NoShrink()
-            .ForAll(seed =>
+        [Property]
+        public IGen<Test> ItIsRepeatable() =>
+            from seed in Gen.Int32()
+            select Property.ForThese(() =>
             {
                 var rng0 = Rng.Create(seed);
                 var rng1 = Rng.Create(seed);
 
-                Assert.Equal(rng0, rng1);
-            })
-            .Assert();
+                rng0.Should().BeEquivalentTo(rng1);
+            });
 
-        [Fact]
-        public void ItInitializesTheOrder() => Gen
-            .Int32()
-            .NoShrink()
-            .ForAll(seed =>
+        [Property]
+        public IGen<Test> ItInitializesTheOrder() =>
+            from seed in Gen.Int32()
+            select Property.ForThese(() =>
             {
                 var rng = Rng.Create(seed);
 
-                Assert.Equal(0, rng.Order);
-            })
-            .Assert();
+                rng.Order.Should().Be(0);
+            });
     }
 }
