@@ -32,9 +32,9 @@ namespace Tests.V2.RunnerTests.AssertTests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var property = Property.FromLinq(
-                from x in Gen.Int32()
-                from y in Gen.Int32().GreaterThan(x)
-                select Property.ForThese(() => x < 1000));
+                    from x in Gen.Int32()
+                    from y in Gen.Int32().GreaterThan(x)
+                    select Property.ForThese(() => x < 1000));
 
                 Action action = () => property.Assert(seed: 0);
 
