@@ -85,6 +85,7 @@ namespace GalaxyCheck
              int? iterations = null,
              int? seed = null,
              int? size = null,
+             int? shrinkLimit = null,
              string? replay = null)
         {
             var initialParameters = new GenParameters(
@@ -93,7 +94,13 @@ namespace GalaxyCheck
 
             ResizeStrategy<T> resizeStrategy = size == null ? SuperStrategicResize<T> : NoopResize<T>;
 
-            var initialState = CheckState<T>.Create(property, iterations ?? 100, initialParameters, resizeStrategy);
+            var initialState = CheckState<T>.Create(
+                property,
+                iterations ?? 100,
+                shrinkLimit ?? 500,
+                initialParameters,
+                resizeStrategy);
+
             AbstractTransition<T> initialTransition = replay == null
                 ? new InitialTransition<T>(initialState)
                 : new ReplayTransition<T>(initialState, replay);

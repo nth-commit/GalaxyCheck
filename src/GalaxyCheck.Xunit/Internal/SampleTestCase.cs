@@ -24,7 +24,7 @@ namespace GalaxyCheck.Xunit.Internal
         {
         }
 
-        protected override void RunProperty(Property<object> property, string? replay, ITestOutputHelper testOutputHelper)
+        protected override void RunProperty(Property<object> property, int shrinkLimit, string? replay, ITestOutputHelper testOutputHelper)
         {
             var log = new List<string>();
 

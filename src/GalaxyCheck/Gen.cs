@@ -3,6 +3,7 @@ using GalaxyCheck.Injection;
 using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Gens;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace GalaxyCheck
@@ -31,9 +32,7 @@ namespace GalaxyCheck
         /// <typeparam name="T">The type of the generator's value.</typeparam>
         /// <param name="value">The constant value the generator should produce.</param>
         /// <returns>The new generator.</returns>
-        public static IGen<T> Constant<T>(T value) => Advanced.Create(
-            (useNextInt, size) => value,
-            identify: IdentifyFuncs.Constant<T>());
+        public static IGen<T> Constant<T>(T value) => Advanced.Create((useNextInt, size) => value);
 
         /// <summary>
         /// Creates a generator that produces parameters to the given method. Can be used to dynamically invoke a
@@ -45,21 +44,7 @@ namespace GalaxyCheck
 
         public static partial class Advanced
         {
-            public static IGen<T> Create<T>(
-                StatefulGenFunc<T> generate,
-                ShrinkFunc<T>? shrink = null,
-                MeasureFunc<T>? measure = null,
-                IdentifyFunc<T>? identify = null) => Create(
-                    generate,
-                    value => ExampleSpaceFactory.Unfold(
-                        value,
-                        shrink ?? ShrinkFunc.None<T>(),
-                        measure ?? MeasureFunc.Unmeasured<T>(),
-                        identify ?? IdentifyFuncs.Default<T>()));
-
-            public static IGen<T> Create<T>(
-                StatefulGenFunc<T> generate,
-                Func<T, IExampleSpace<T>> unfold) => new PrimitiveGen<T>(generate, unfold);
+            public static IGen<T> Create<T>(StatefulGenFunc<T> generate) => new PrimitiveGen<T>(generate);
         }
     }
 }

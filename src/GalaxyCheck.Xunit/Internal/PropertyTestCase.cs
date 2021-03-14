@@ -75,11 +75,12 @@ namespace GalaxyCheck.Xunit.Internal
                 return Fail(exception);
             }
 
+            var propertyAttribute = methodInfo.GetCustomAttributes<PropertyAttribute>().Single();
             var replay = methodInfo.GetCustomAttributes<ReplayAttribute>().SingleOrDefault()?.Replay;
 
             try
             {
-                RunProperty(property, replay, testOutputHelper);
+                RunProperty(property, propertyAttribute.ShrinkLimit, replay, testOutputHelper);
                 return Pass();
             }
             catch (Exception propertyFailedException)
@@ -88,10 +89,11 @@ namespace GalaxyCheck.Xunit.Internal
             }
         }
 
-        protected virtual void RunProperty(Property<object> property, string? replay, ITestOutputHelper testOutputHelper)
+        protected virtual void RunProperty(Property<object> property, int shrinkLimit, string? replay, ITestOutputHelper testOutputHelper)
         {
             property.Assert(
                 replay: replay,
+                shrinkLimit: shrinkLimit,
                 formatReproduction: (newReplay) => $"{Environment.NewLine}    [Replay(\"{newReplay}\")]",
                 formatMessage: (x) => Environment.NewLine + Environment.NewLine + x);
         }

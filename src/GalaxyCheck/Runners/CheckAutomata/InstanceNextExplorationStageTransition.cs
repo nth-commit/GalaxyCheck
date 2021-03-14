@@ -24,26 +24,39 @@ namespace GalaxyCheck.Runners.CheckAutomata
                     State,
                     Instance,
                     CounterexampleState,
-                    WasDiscard: false);
+                    WasDiscard: false,
+                    WasReplay: false);
             }
+
+            if (IsFirstExplorationStage == false && State.Shrinks >= State.ShrinkLimit)
+            {
+                return new InstanceCompleteTransition<T>(
+                    State,
+                    Instance,
+                    CounterexampleState,
+                    WasDiscard: false,
+                    WasReplay: false);
+            }
+
+            var state = IsFirstExplorationStage ? State : State.IncrementShrinks();
 
             return head.Match<AbstractTransition<T>>(
                 onCounterexampleExploration: (counterexampleExploration) =>
                     new CounterexampleExplorationTransition<T>(
-                        State,
+                        state,
                         Instance,
                         tail,
                         counterexampleExploration),
                 onNonCounterexampleExploration: (nonCounterexampleExploration) =>
                     new NonCounterexampleExplorationTransition<T>(
-                        State,
+                        state,
                         Instance,
                         tail,
                         nonCounterexampleExploration,
                         CounterexampleState),
                 onDiscardExploration: () => IsFirstExplorationStage
-                    ? new InstanceCompleteTransition<T>(State, Instance, CounterexampleState: null, WasDiscard: true)
-                    : new DiscardExplorationTransition<T>(State, Instance, tail, CounterexampleState));
+                    ? new InstanceCompleteTransition<T>(state, Instance, CounterexampleState: null, WasDiscard: true, WasReplay: false)
+                    : new DiscardExplorationTransition<T>(state, Instance, tail, CounterexampleState));
         }
     }
 }

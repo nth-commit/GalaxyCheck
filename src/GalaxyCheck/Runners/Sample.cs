@@ -100,7 +100,7 @@ namespace GalaxyCheck.Runners.Sample
             int? size,
             bool? enableLinqInference)
         {
-            var gen = new AdvancedToGen<T>(advanced).ForAll(x =>
+            var gen = advanced.AsGen().ForAll(x =>
             {
                 if (x is Test test)
                 {
@@ -127,18 +127,6 @@ namespace GalaxyCheck.Runners.Sample
                 values,
                 checkResult.Discards,
                 checkResult.RandomnessConsumption);
-        }
-
-        private class AdvancedToGen<T> : IGen<T>
-        {
-            public AdvancedToGen(IGenAdvanced<T> advanced)
-            {
-                Advanced = advanced;
-            }
-
-            public IGenAdvanced<T> Advanced { get; }
-
-            IGenAdvanced IGen.Advanced => Advanced;
         }
     }
 }

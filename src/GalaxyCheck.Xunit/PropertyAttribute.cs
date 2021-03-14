@@ -8,5 +8,6 @@ namespace GalaxyCheck.Xunit
     [XunitTestCaseDiscoverer("GalaxyCheck.Xunit.Internal.PropertyDiscoverer", "GalaxyCheck.Xunit")]
     public class PropertyAttribute : FactAttribute
     {
+        public int ShrinkLimit { get; set; } = 500;
     }
 }

@@ -14,11 +14,12 @@ namespace GalaxyCheck
             int? iterations = null,
             int? seed = null,
             int? size = null,
+            int? shrinkLimit = null,
             string? replay = null,
             Func<string, string>? formatReproduction = null,
             Func<string, string>? formatMessage = null)
         {
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, replay: replay);
+            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, shrinkLimit: shrinkLimit, replay: replay);
 
             if (checkResult.Falsified)
             {

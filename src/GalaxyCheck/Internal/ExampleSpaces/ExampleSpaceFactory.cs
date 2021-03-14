@@ -47,6 +47,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         /// <param name="rootValue"></param>
         /// <param name="shrink"></param>
         /// <param name="measure"></param>
+        /// <param name="identify"></param>
         /// <returns></returns>
         public static IExampleSpace<T> Unfold<T>(
             T rootValue,

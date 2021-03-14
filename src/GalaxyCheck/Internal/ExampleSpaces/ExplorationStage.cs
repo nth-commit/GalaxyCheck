@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GalaxyCheck.Internal.ExampleSpaces
 {
@@ -67,5 +68,17 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 onCounterexampleExploration: (_) => true,
                 onNonCounterexampleExploration: (_) => false,
                 onDiscardExploration: () => false);
+
+        public static ExplorationStage<T> PrependPath<T>(
+            this ExplorationStage<T> explorationStage,
+            IEnumerable<int> path) => explorationStage.Match(
+                onNonCounterexampleExploration: nonCounterexample => ExplorationStage<T>.Factory.NonCounterexample(
+                    nonCounterexample.ExampleSpace,
+                    Enumerable.Concat(path, nonCounterexample.Path)),
+                onCounterexampleExploration: counterexample => ExplorationStage<T>.Factory.Counterexample(
+                    counterexample.ExampleSpace,
+                    Enumerable.Concat(path, counterexample.Path),
+                    counterexample.Exception),
+                onDiscardExploration: () => ExplorationStage<T>.Factory.Discard());
     }
 }

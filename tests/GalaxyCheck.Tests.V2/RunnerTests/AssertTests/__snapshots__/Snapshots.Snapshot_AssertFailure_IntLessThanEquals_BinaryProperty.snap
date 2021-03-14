@@ -1,4 +1,4 @@
-﻿Falsified after 60 tests (12 shrinks)
+﻿Falsified after 60 tests (55 shrinks)
 Reproduction: H4sIAAAAAAAACg3CgREAIAgDsY04ShXx9x9ML6l0y9I49g2RiMIsNudr5gEXagBOIwAAAA==
 Counterexample:
     [0] = 1000

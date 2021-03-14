@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
+using GalaxyCheck.Internal.ExampleSpaces;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System.Linq;
@@ -21,13 +22,13 @@ namespace Tests.V2.GenTests.ConstantTests
 
                 var traversal = gen.Advanced
                     .SampleOneExampleSpace(seed: seed, size: size)
-                    .Traverse()
+                    .TraverseExamples()
                     .Take(100)
                     .ToList();
 
                 traversal
                     .Should().ContainSingle()
-                    .Subject.Should().BeEquivalentTo(value);
+                    .Subject.Should().BeEquivalentTo(new Example<object>(ExampleId.Empty, value, 0));
             });
 
         [Property]

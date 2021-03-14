@@ -10,7 +10,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         IGenInstance<Test<T>> Instance,
         CounterexampleState<T>? CounterexampleState,
         bool WasDiscard,
-        bool WasReplay = false) : AbstractTransition<T>(State)
+        bool WasReplay) : AbstractTransition<T>(State)
     {
         internal override AbstractTransition<T> NextTransition() => WasDiscard == true
             ? NextStateOnDiscard(State, Instance)
