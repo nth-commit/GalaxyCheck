@@ -4,10 +4,6 @@ namespace GalaxyCheck.Internal.Sizing
 {
     public record Size
     {
-        public static readonly Size MinValue = new Size(0);
-
-        public static readonly Size MaxValue = new Size(100);
-
         public Size(int value)
         {
             if (value < 0 || value > 100)

@@ -68,7 +68,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 return new Termination<T>(nextState);
             }
 
-            if (instance.RepeatParameters.Size == Size.MaxValue)
+            if (instance.RepeatParameters.Size.Value == 100)
             {
                 // We're at the max size, don't bother starting again from 0% as the compute time is most
                 // likely not worth it. TODO: Add config to disable this if someone REALLY wants to find a

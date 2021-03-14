@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Tests.V2.SizingTests
 {
-    public class AboutSizeToBounds
+    public class AboutSizingToBounds
     {
         [Property]
         public IGen<Test> IfSizeIsZero_ItProducesTheOriginBounds() =>
@@ -18,7 +18,7 @@ namespace Tests.V2.SizingTests
             from origin in Gen.Int32().Between(min, max)
             select Property.ForThese(() =>
             {
-                var sizeToBounds = BoundsScalingFactoryFuncs.ScaledExponentiallyWithDiscreteIntervals(min, max, origin);
+                var sizeToBounds = SizingToBounds.Exponential(min, max, origin);
 
                 var bounds = sizeToBounds(new Size(0));
 
@@ -32,7 +32,7 @@ namespace Tests.V2.SizingTests
             from origin in Gen.Int32().Between(min, max)
             select Property.ForThese(() =>
             {
-                var sizeToBounds = BoundsScalingFactoryFuncs.ScaledExponentiallyWithDiscreteIntervals(min, max, origin);
+                var sizeToBounds = SizingToBounds.Exponential(min, max, origin);
 
                 var bounds = sizeToBounds(new Size(100));
 
@@ -47,7 +47,7 @@ namespace Tests.V2.SizingTests
         [InlineData(int.MinValue, int.MaxValue, int.MaxValue)]
         public void Snapshots(int min, int max, int origin)
         {
-            var sizeToBounds = BoundsScalingFactoryFuncs.ScaledExponentiallyWithDiscreteIntervals(min, max, origin);
+            var sizeToBounds = SizingToBounds.Exponential(min, max, origin);
 
             var bounds = Enumerable
                 .Range(0, 101)
