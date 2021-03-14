@@ -99,9 +99,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     onFail: exception => ExplorationStage<T>.Factory.Counterexample(exampleSpace, path, exception));
             }
 
-            static IEnumerable<ExplorationStage<T>> ExploreSubspace(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace)
-            {
-                var subspaceExploration = exampleSpace.Subspace
+            static SubspaceExploration<T> GetSubspaceExploration(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace) =>
+                exampleSpace.Subspace
                     .Select((exampleSpace, subspaceIndex) =>
                     {
                         var path = new[] { subspaceIndex };
@@ -123,6 +122,40 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                                 Enumerable.Concat(acc.ExplorationStages, new[] { curr.explorationStage }));
                         });
 
+            static IEnumerable<ExplorationStage<T>> ExploreSubspace(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace)
+            {
+                CounterexampleSubspace<T>? counterexampleSubspace = new CounterexampleSubspace<T>(exampleSpace, Enumerable.Empty<int>());
+
+                while (counterexampleSubspace != null)
+                {
+                    var subspaceExploration = GetSubspaceExploration(analyze, counterexampleSubspace.CounterexampleSpace);
+                    var previousPath = counterexampleSubspace.Path;
+
+                    counterexampleSubspace = null;
+
+                    foreach (var explorationStage in subspaceExploration.ExplorationStages.Select(es => es.PrependPath(previousPath)))
+                    {
+                        yield return explorationStage;
+
+                        counterexampleSubspace = explorationStage.Match<CounterexampleSubspace<T>?>(
+                            onCounterexampleExploration: counterexampleExploration =>
+                                new CounterexampleSubspace<T>(counterexampleExploration.ExampleSpace, counterexampleExploration.Path),
+                            onNonCounterexampleExploration: _ => null,
+                            onDiscardExploration: () => null);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Crashes on MacOS, stackoverflahhhh :'(
+            /// 
+            /// I wanna leave this as an easily accessible example for me (and I'm too lazy to establish an index system).
+            /// I'm really bad at doing non-recursive solutions to obviously recursive problems.
+            /// </summary>
+            static IEnumerable<ExplorationStage<T>> ExploreSubspaceRec(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace)
+            {
+                var subspaceExploration = GetSubspaceExploration(analyze, exampleSpace);
+
                 foreach (var explorationStage in subspaceExploration.ExplorationStages)
                 {
                     yield return explorationStage;
@@ -131,17 +164,9 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 var counterexampleSubspace = subspaceExploration.CounterexampleSubspace;
                 if (counterexampleSubspace != null)
                 {
-                    foreach (var childExplorationStage in ExploreSubspace(analyze, counterexampleSubspace.CounterexampleSpace))
+                    foreach (var childExplorationStage in ExploreSubspaceRec(analyze, counterexampleSubspace.CounterexampleSpace))
                     {
-                        yield return childExplorationStage.Match(
-                            onNonCounterexampleExploration: nonCounterexample => ExplorationStage<T>.Factory.NonCounterexample(
-                                nonCounterexample.ExampleSpace,
-                                Enumerable.Concat(counterexampleSubspace.Path, nonCounterexample.Path)),
-                            onCounterexampleExploration: counterexample => ExplorationStage<T>.Factory.Counterexample(
-                                counterexample.ExampleSpace,
-                                Enumerable.Concat(counterexampleSubspace.Path, counterexample.Path),
-                                counterexample.Exception),
-                            onDiscardExploration: () => ExplorationStage<T>.Factory.Discard());
+                        yield return childExplorationStage.PrependPath(counterexampleSubspace.Path);
                     }
                 }
             }

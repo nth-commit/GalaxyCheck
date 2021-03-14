@@ -12,11 +12,11 @@ namespace GalaxyCheck.Runners.CheckAutomata
         ExplorationStage<Test<T>>.Counterexample CounterexampleExploration) : AbstractTransition<T>(State)
     {
         internal override AbstractTransition<T> NextTransition() => new InstanceNextExplorationStageTransition<T>(
-            State.IncrementShrinks(),
+            State,
             Instance,
             NextExplorations,
             CounterexampleState,
-            false);
+            IsFirstExplorationStage: false);
 
         public CounterexampleState<T> CounterexampleState => new CounterexampleState<T>(
             CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),

@@ -7,6 +7,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
     public record CheckState<T>(
         Property<T> Property,
         int RequestedIterations,
+        int ShrinkLimit,
         int CompletedIterations,
         int Discards,
         int Shrinks,
@@ -17,11 +18,13 @@ namespace GalaxyCheck.Runners.CheckAutomata
         internal static CheckState<T> Create(
             Property<T> property,
             int requestedIterations,
+            int shrinkLimit,
             GenParameters initialParameters,
             ResizeStrategy<T> resizeStrategy) =>
                 new CheckState<T>(
                     property,
                     requestedIterations,
+                    shrinkLimit,
                     0,
                     0,
                     0,
@@ -37,6 +40,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         internal CheckState<T> IncrementCompletedIterations() => new CheckState<T>(
             Property,
             RequestedIterations,
+            ShrinkLimit,
             CompletedIterations + 1,
             Discards,
             Shrinks,
@@ -47,6 +51,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         internal CheckState<T> IncrementDiscards() => new CheckState<T>(
             Property,
             RequestedIterations,
+            ShrinkLimit,
             CompletedIterations,
             Discards + 1,
             Shrinks,
@@ -57,6 +62,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         internal CheckState<T> IncrementShrinks() => new CheckState<T>(
             Property,
             RequestedIterations,
+            ShrinkLimit,
             CompletedIterations,
             Discards,
             Shrinks + 1,
@@ -67,6 +73,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         internal CheckState<T> AddCounterexample(CounterexampleState<T> counterexampleState) => new CheckState<T>(
             Property,
             RequestedIterations,
+            ShrinkLimit,
             CompletedIterations,
             Discards,
             Shrinks,
@@ -77,6 +84,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         internal CheckState<T> WithNextGenParameters(GenParameters genParameters) => new CheckState<T>(
             Property,
             RequestedIterations,
+            ShrinkLimit,
             CompletedIterations,
             Discards,
             Shrinks,
