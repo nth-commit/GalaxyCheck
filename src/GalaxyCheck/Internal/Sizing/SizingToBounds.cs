@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace GalaxyCheck.Internal.Sizing
 {
-    public delegate (int min, int max) BoundsScalingFunc(Size size);
+    public delegate (int min, int max) SizeToBoundsFunc(Size size);
 
-    public delegate BoundsScalingFunc BoundsScalingFactoryFunc(int min, int max, int origin);
+    public delegate SizeToBoundsFunc SizingToBoundsFunc(int min, int max, int origin);
 
-    public static class BoundsScalingFactoryFuncs
+    public static class SizingToBounds
     {
-        public static BoundsScalingFactoryFunc ScaledExponentiallyWithDiscreteIntervals => (min, max, origin) =>
+        public static SizingToBoundsFunc Exponential => (min, max, origin) =>
         {
             static Dictionary<Size, int> GetBoundsBySize(int from, int to)
             {

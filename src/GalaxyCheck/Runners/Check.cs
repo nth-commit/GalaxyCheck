@@ -89,7 +89,7 @@ namespace GalaxyCheck
         {
             var initialParameters = new GenParameters(
                 Rng: seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
-                Size: size == null ? Size.MinValue : new Size(size.Value));
+                Size: new Size(size ?? 0));
 
             ResizeStrategy<T> resizeStrategy = size == null ? SuperStrategicResize<T> : NoopResize<T>;
 
@@ -169,7 +169,7 @@ namespace GalaxyCheck
                     if (incrementWrappedToZero)
                     {
                         // Clamp to MaxValue
-                        return Size.MaxValue;
+                        return new Size(100);
                     }
 
                     return nextSize;

@@ -159,27 +159,27 @@ namespace GalaxyCheck.Gens.Int32
 
         private static StatefulGenFunc<int> CreateBiasedStatefulGen(int min, int max, int origin)
         {
-            var getBounds = BoundsScalingFactoryFuncs.ScaledExponentiallyWithDiscreteIntervals(min, max, origin);
+            var sizeToBounds = SizingToBounds.Exponential(min, max, origin);
             int? extremeMinimum = min == origin ? null : min;
             int? extremeMaximum = max == origin ? null : max;
 
-            StatefulGenFunc<int> scaledBySize = FromBounds(getBounds);
+            StatefulGenFunc<int> inextreme = FromBounds(sizeToBounds);
 
-            StatefulGenFunc<int> withExtreme1 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 16, 1);
+            StatefulGenFunc<int> withExtreme1 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 16, 1);
 
-            StatefulGenFunc<int> withExtreme2 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 8, 1);
+            StatefulGenFunc<int> withExtreme2 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 8, 1);
 
-            StatefulGenFunc<int> withExtreme3 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 4, 1);
+            StatefulGenFunc<int> withExtreme3 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 4, 1);
 
-            StatefulGenFunc<int> withExtreme4 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 2, 1);
+            StatefulGenFunc<int> withExtreme4 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 2, 1);
 
-            StatefulGenFunc<int> withExtreme5 = OrExtreme(scaledBySize, extremeMinimum, extremeMaximum, 1, 1);
+            StatefulGenFunc<int> withExtreme5 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 1, 1);
 
             return (useNextInt, size) =>
             {
                 var innerGenFunc = size.Value switch
                 {
-                    <= 50 => scaledBySize,
+                    <= 50 => inextreme,
                     <= 60 => withExtreme1,
                     <= 70 => withExtreme2,
                     <= 80 => withExtreme3,
@@ -191,9 +191,9 @@ namespace GalaxyCheck.Gens.Int32
             };
         }
 
-        private static StatefulGenFunc<int> FromBounds(BoundsScalingFunc getBounds) => (useNextInt, size) =>
+        private static StatefulGenFunc<int> FromBounds(SizeToBoundsFunc sizeToBounds) => (useNextInt, size) =>
         {
-            var (min, max) = getBounds(size);
+            var (min, max) = sizeToBounds(size);
             return useNextInt(min, max);
         };
 
