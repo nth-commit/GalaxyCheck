@@ -15,6 +15,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
     /// <returns>A sample of smaller values, or an empty enumerable if the value cannot shrink.</returns>
     public delegate IEnumerable<T> ShrinkFunc<T>(T value);
 
+    public delegate IEnumerable<T> ContextualShrinkFunc<T, TContext>(T value, TContext ctx);
+
     public static class ShrinkFunc
     {
         public static ShrinkFunc<TResult> Map<T, TResult>(
