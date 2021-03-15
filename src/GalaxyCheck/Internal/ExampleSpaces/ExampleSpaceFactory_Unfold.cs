@@ -29,16 +29,16 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             MeasureFunc<T> measure,
             IdentifyFunc<T> identify)
         {
-            return UnfoldContextual(
+            return Unfold(
                 rootValue,
                 new NoContext(),
-                (value, context) => shrink(value),
+                (value, context) => (context, shrink(value)),
                 measure,
                 identify,
                 (context, example) => context);
         }
 
-        public static IExampleSpace<T> UnfoldContextual<T, TContext>(
+        public static IExampleSpace<T> Unfold<T, TContext>(
             T rootValue,
             TContext rootContext,
             ContextualShrinkFunc<T, TContext> shrink,
@@ -71,9 +71,9 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             var encountered0 = encountered.Add(example.Id);
             var context0 = functions.NextContext(context, example.Value.Value);
 
-            var shrinks = functions.Shrink(accumulator, context0);
+            var (context1, shrinks) = functions.Shrink(accumulator, context0);
 
-            var subspace = ContextualizedUnfoldSubspaceInternal(context0, shrinks, functions, encountered0);
+            var subspace = ContextualizedUnfoldSubspaceInternal(context1, shrinks, functions, encountered0);
 
             return new ExampleSpace<ContextualValue<TProjection, TContext>>(example, subspace);
         }
