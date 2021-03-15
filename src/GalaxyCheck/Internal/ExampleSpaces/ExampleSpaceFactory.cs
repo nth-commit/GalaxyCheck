@@ -128,23 +128,41 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             IdentifyFuncs.Default<int>());
 
         private record Int32OptimizedContext(
-            ImmutableList<int> EncounteredValues,
-            int CurrentOrigin);
+            ImmutableStack<int> EncounteredValues,
+            bool IsRoot);
 
-        public static IExampleSpace<int> Int32Optimized(int rootValue, int rootOrigin, int min, int max) => UnfoldContextual(
-            rootValue,
-            new Int32OptimizedContext(ImmutableList.Create<int>(), rootOrigin),
+        public static IExampleSpace<int> Int32Optimized(int value, int origin, int min, int max) => Unfold(
+            value,
+            new Int32OptimizedContext(ImmutableStack.Create<int>(), IsRoot: true),
             (value, context) =>
             {
-                return ShrinkFunc.Towards(context.CurrentOrigin)(value);
+                var nextContext = new Int32OptimizedContext(ImmutableStack.Create<int>(), IsRoot: false);
+                var shrinks = ShrinkInt32Optimized(value, origin, context);
+                return (nextContext, shrinks);
             },
-            MeasureFunc.DistanceFromOrigin(rootOrigin, min, max),
+            MeasureFunc.DistanceFromOrigin(origin, min, max),
             IdentifyFuncs.Default<int>(),
             (context, value) =>
             {
-                return new Int32OptimizedContext(
-                    context.EncounteredValues.Add(value),
-                    context.CurrentOrigin);
+                return new Int32OptimizedContext(context.EncounteredValues.Push(value), IsRoot: context.IsRoot);
             });
+
+        private static IEnumerable<int> ShrinkInt32Optimized(int value, int origin, Int32OptimizedContext context)
+        {
+            if (context.IsRoot)
+            {
+                // Just shrink to the origin, regardless
+                return ShrinkFunc.Towards(origin)(value);
+            }
+
+            var previousEncounteredValues = context.EncounteredValues.Skip(1);
+            if (previousEncounteredValues.Any() == false)
+            {
+                // There are no shrinks left
+                return Enumerable.Empty<int>();
+            }
+
+            return ShrinkFunc.Towards(previousEncounteredValues.First())(value);
+        }
     }
 }

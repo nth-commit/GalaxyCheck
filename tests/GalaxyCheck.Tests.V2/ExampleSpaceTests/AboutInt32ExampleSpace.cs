@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck.Internal.ExampleSpaces;
 using Snapshooter;
 using Snapshooter.Xunit;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,18 +20,24 @@ namespace Tests.V2.ExampleSpaceTests
             _fixture = fixture;
         }
 
-        [Fact]
-        public void Snapshots()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Snapshots(bool isOptimized)
         {
             var tests = _fixture
                 .Scenarios
                 .Select(scenario =>
                 {
-                    var exampleSpace = ExampleSpaceFactory.Int32(
-                        value: scenario.Value,
-                        origin: scenario.Origin,
-                        min: scenario.Min,
-                        max: scenario.Max);
+                    Func<int, int, int, int, IExampleSpace<int>> exampleSpaceFactory = isOptimized
+                        ? ExampleSpaceFactory.Int32Optimized
+                        : ExampleSpaceFactory.Int32;
+
+                    var exampleSpace = exampleSpaceFactory(
+                        scenario.Value,
+                        scenario.Origin,
+                        scenario.Min,
+                        scenario.Max);
 
                     var rendering = exampleSpace.Render(x => x.ToString());
 
@@ -44,8 +51,9 @@ namespace Tests.V2.ExampleSpaceTests
 
             foreach (var test in tests)
             {
+                var nameExtensionBase = $"Value={test.Input.Value};Origin={test.Input.Origin}Min={test.Input.Min};Max={test.Input.Max}";
+                var nameExtension = isOptimized ? nameExtensionBase : nameExtensionBase + $";Unoptimized";
                 var input = test.Input;
-                var nameExtension = $"Value={test.Input.Value};Origin={test.Input.Origin}Min={test.Input.Min};Max={test.Input.Max}";
                 Snapshot.Match(test.Output, SnapshotNameExtension.Create(nameExtension));
             }
         }

@@ -2,4 +2,7 @@
 ├> 4 (Id = 4, Distance = 0)
 ├> 1 (Id = 1, Distance = 33.3333...)
 |  └> 2 (Id = 2, Distance = 22.2222...)
+|     └> 3 (Id = 3, Distance = 11.1111...)
 └> 0 (Id = 0, Distance = 44.4444...)
+   └> 2 (Id = 2, Distance = 22.2222...)
+      └> 3 (Id = 3, Distance = 11.1111...)

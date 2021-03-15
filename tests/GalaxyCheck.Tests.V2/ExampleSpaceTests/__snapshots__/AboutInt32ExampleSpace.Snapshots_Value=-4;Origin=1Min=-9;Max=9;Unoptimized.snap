@@ -2,4 +2,7 @@
 ├> 1 (Id = 1, Distance = 0)
 ├> -2 (Id = -2, Distance = 30.0)
 |  └> -1 (Id = -1, Distance = 20.0)
+|     └> 0 (Id = 0, Distance = 10.0)
 └> -3 (Id = -3, Distance = 40.0)
+   └> -1 (Id = -1, Distance = 20.0)
+      └> 0 (Id = 0, Distance = 10.0)
