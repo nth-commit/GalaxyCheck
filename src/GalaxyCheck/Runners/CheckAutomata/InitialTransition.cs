@@ -6,7 +6,7 @@
         {
             if (State.CompletedIterations >= State.RequestedIterations)
             {
-                return new Termination<T>(State);
+                return new Termination<T>(State, TerminationReason.ReachedMaximumIterations);
             }
 
             var iterations = State.Property.Advanced.Run(State.NextParameters);

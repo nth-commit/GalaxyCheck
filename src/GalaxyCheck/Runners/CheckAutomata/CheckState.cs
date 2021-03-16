@@ -13,14 +13,16 @@ namespace GalaxyCheck.Runners.CheckAutomata
         int Shrinks,
         ImmutableList<CounterexampleState<T>> CounterexampleStateHistory,
         GenParameters NextParameters,
-        ResizeStrategy<T> ResizeStrategy)
+        ResizeStrategy<T> ResizeStrategy,
+        bool DeepCheck)
     {
         internal static CheckState<T> Create(
             Property<T> property,
             int requestedIterations,
             int shrinkLimit,
             GenParameters initialParameters,
-            ResizeStrategy<T> resizeStrategy) =>
+            ResizeStrategy<T> resizeStrategy,
+            bool deepCheck) =>
                 new CheckState<T>(
                     property,
                     requestedIterations,
@@ -30,7 +32,8 @@ namespace GalaxyCheck.Runners.CheckAutomata
                     0,
                     ImmutableList.Create<CounterexampleState<T>>(),
                     initialParameters,
-                    resizeStrategy);
+                    resizeStrategy,
+                    deepCheck);
 
         public CounterexampleState<T>? Counterexample => CounterexampleStateHistory
             .OrderBy(c => c.ExampleSpace.Current.Distance)
@@ -46,7 +49,8 @@ namespace GalaxyCheck.Runners.CheckAutomata
             Shrinks,
             CounterexampleStateHistory,
             NextParameters,
-            ResizeStrategy);
+            ResizeStrategy,
+            DeepCheck);
 
         internal CheckState<T> IncrementDiscards() => new CheckState<T>(
             Property,
@@ -57,7 +61,8 @@ namespace GalaxyCheck.Runners.CheckAutomata
             Shrinks,
             CounterexampleStateHistory,
             NextParameters,
-            ResizeStrategy);
+            ResizeStrategy,
+            DeepCheck);
 
         internal CheckState<T> IncrementShrinks() => new CheckState<T>(
             Property,
@@ -68,7 +73,8 @@ namespace GalaxyCheck.Runners.CheckAutomata
             Shrinks + 1,
             CounterexampleStateHistory,
             NextParameters,
-            ResizeStrategy);
+            ResizeStrategy,
+            DeepCheck);
 
         internal CheckState<T> AddCounterexample(CounterexampleState<T> counterexampleState) => new CheckState<T>(
             Property,
@@ -79,7 +85,8 @@ namespace GalaxyCheck.Runners.CheckAutomata
             Shrinks,
             Enumerable.Concat(new[] { counterexampleState }, CounterexampleStateHistory).ToImmutableList(),
             NextParameters,
-            ResizeStrategy);
+            ResizeStrategy,
+            DeepCheck);
 
         internal CheckState<T> WithNextGenParameters(GenParameters genParameters) => new CheckState<T>(
             Property,
@@ -90,6 +97,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             Shrinks,
             CounterexampleStateHistory,
             genParameters,
-            ResizeStrategy);
+            ResizeStrategy,
+            DeepCheck);
     }
 }

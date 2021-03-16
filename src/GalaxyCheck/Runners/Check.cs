@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
 using GalaxyCheck.Internal.Random;
+using GalaxyCheck.Internal.Replaying;
 using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.Utility;
 using GalaxyCheck.Runners.CheckAutomata;
@@ -11,6 +12,17 @@ using System.Linq;
 
 namespace GalaxyCheck
 {
+    public enum TerminationReason
+    {
+        IsReplay = 1,
+        DeepCheckDisabled = 2,
+        ReachedMaximumIterations = 3,
+        ReachedMaximumSize = 4,
+        FoundTheoreticalSmallestCounterexample = 5,
+        FoundPragmaticSmallestCounterexample = 6,
+        FoundError = 7
+    }
+
     public record CheckResult<T>
     {
         public int Iterations { get; init; }
@@ -27,6 +39,8 @@ namespace GalaxyCheck
 
         public GenParameters NextParameters { get; set; }
 
+        public TerminationReason TerminationReason { get; set; }
+
         public bool Falsified => Counterexample != null;
 
         public int RandomnessConsumption => NextParameters.Rng.Order - InitialParameters.Rng.Order;
@@ -38,7 +52,8 @@ namespace GalaxyCheck
             Counterexample<T>? counterexample,
             ImmutableList<CheckIteration<T>> checks,
             GenParameters initialParameters,
-            GenParameters nextParameters)
+            GenParameters nextParameters,
+            TerminationReason terminationReason)
         {
             Iterations = iterations;
             Discards = discards;
@@ -47,6 +62,7 @@ namespace GalaxyCheck
             Counterexample = counterexample;
             InitialParameters = initialParameters;
             NextParameters = nextParameters;
+            TerminationReason = terminationReason;
         }
     }
 
@@ -56,6 +72,7 @@ namespace GalaxyCheck
         decimal Distance,
         GenParameters RepeatParameters,
         IEnumerable<int> RepeatPath,
+        string Replay,
         Exception? Exception,
         object? PresentationalValue);
 
@@ -73,7 +90,7 @@ namespace GalaxyCheck
             bool IsCounterexample,
             Exception? Exception) : CheckIteration<T>;
 
-        public record Termination<T>(CheckState<T> Context) : CheckIteration<T>;
+        public record Termination<T>(CheckState<T> Context, TerminationReason Reason) : CheckIteration<T>;
 
         public record Discard<T> : CheckIteration<T>;
     }
@@ -86,7 +103,8 @@ namespace GalaxyCheck
              int? seed = null,
              int? size = null,
              int? shrinkLimit = null,
-             string? replay = null)
+             string? replay = null,
+             bool deepCheck = true)
         {
             var initialParameters = new GenParameters(
                 Rng: seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
@@ -99,7 +117,8 @@ namespace GalaxyCheck
                 iterations ?? 100,
                 shrinkLimit ?? 500,
                 initialParameters,
-                resizeStrategy);
+                resizeStrategy,
+                deepCheck);
 
             AbstractTransition<T> initialTransition = replay == null
                 ? new InitialTransition<T>(initialState)
@@ -134,19 +153,24 @@ namespace GalaxyCheck
                     : FromCounterexampleState(termination.Context.Counterexample, property.Options.EnableLinqInference),
                 checks,
                 initialParameters,
-                termination.Context.NextParameters);
+                termination.Context.NextParameters,
+                termination.Reason);
         }
 
         private static Counterexample<T> FromCounterexampleState<T>(
             CounterexampleState<T> counterexampleState,
             bool enablePresentationalInference)
         {
+            var replay = new Replay(counterexampleState.RepeatParameters, counterexampleState.RepeatPath);
+            var replayEncoded = ReplayEncoding.Encode(replay);
+
             return new Counterexample<T>(
                 counterexampleState.ExampleSpace.Current.Id,
                 counterexampleState.ExampleSpace.Current.Value,
                 counterexampleState.ExampleSpace.Current.Distance,
                 counterexampleState.RepeatParameters,
                 counterexampleState.RepeatPath,
+                replayEncoded,
                 counterexampleState.Exception,
                 enablePresentationalInference
                     ? NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.RepeatPath)
@@ -188,19 +212,19 @@ namespace GalaxyCheck
         private static Size NoopResize<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample) =>
             lastIteration.NextParameters.Size;
 
-        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(AbstractTransition<T> state, bool enablePresentationalInference)
+        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(AbstractTransition<T> transition, bool enablePresentationalInference)
         {
-            CheckIteration<T>? FromHandleCounterexample(CounterexampleExplorationTransition<T> state, bool enablePresentationalInference)
+            CheckIteration<T>? FromHandleCounterexample(CounterexampleExplorationTransition<T> transition, bool enablePresentationalInference)
             {
-                if (state.CounterexampleState == null)
+                if (transition.CounterexampleState == null)
                 {
                     throw new Exception("Fatal: Expected not null");
                 }
 
-                var exampleSpace = state.CounterexampleState.ExampleSpace;
+                var exampleSpace = transition.CounterexampleState.ExampleSpace;
 
                 var presentationalExampleSpace = enablePresentationalInference
-                    ? NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.CounterexampleExploration.Path)
+                    ? NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.CounterexampleExploration.Path)
                         ?.Cast<object>()
                         ?.Map(x => x == null ? null : UnwrapBinding(x))
                     : null;
@@ -210,20 +234,20 @@ namespace GalaxyCheck
                     PresentationalValue: presentationalExampleSpace?.Current.Value,
                     ExampleSpace: exampleSpace,
                     PresentationalExampleSpace: presentationalExampleSpace,
-                    Parameters: state.CounterexampleState.RepeatParameters,
-                    Path: state.CounterexampleState.RepeatPath,
-                    Exception: state.CounterexampleState.Exception,
+                    Parameters: transition.CounterexampleState.RepeatParameters,
+                    Path: transition.CounterexampleState.RepeatPath,
+                    Exception: transition.CounterexampleState.Exception,
                     IsCounterexample: true);
             }
 
-            CheckIteration<T>? FromHandleNonCounterexample(NonCounterexampleExplorationTransition<T> state, bool enablePresentationalInference)
+            CheckIteration<T>? FromHandleNonCounterexample(NonCounterexampleExplorationTransition<T> transition, bool enablePresentationalInference)
             {
-                var inputExampleSpace = state.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
+                var inputExampleSpace = transition.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
-                var exampleSpace = state.NonCounterexampleExploration.ExampleSpace;
+                var exampleSpace = transition.NonCounterexampleExploration.ExampleSpace;
 
                 var presentationalExampleSpace = enablePresentationalInference
-                    ? NavigateToPresentationalExampleSpace(state.Instance.ExampleSpaceHistory, state.NonCounterexampleExploration.Path)
+                    ? NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.NonCounterexampleExploration.Path)
                         ?.Cast<object>()
                         ?.Map(x => x == null ? null : UnwrapBinding(x))
                     : null;
@@ -233,27 +257,27 @@ namespace GalaxyCheck
                     PresentationalValue: presentationalExampleSpace?.Current.Value,
                     ExampleSpace: inputExampleSpace,
                     PresentationalExampleSpace: presentationalExampleSpace,
-                    Parameters: state.Instance.RepeatParameters,
-                    Path: state.NonCounterexampleExploration.Path,
+                    Parameters: transition.Instance.RepeatParameters,
+                    Path: transition.NonCounterexampleExploration.Path,
                     Exception: null,
                     IsCounterexample: false);
             }
 
-            CheckIteration<T>? FromTermination(Termination<T> state) =>
-                new CheckIteration.Termination<T>(state.State);
+            CheckIteration<T>? FromTermination(Termination<T> transition) =>
+                new CheckIteration.Termination<T>(transition.State, transition.Reason);
 
             CheckIteration<T>? ToDiscard() =>
                 new CheckIteration.Discard<T>();
 
-            return state switch
+            return transition switch
             {
-                CounterexampleExplorationTransition<T> s => FromHandleCounterexample(s, enablePresentationalInference),
-                NonCounterexampleExplorationTransition<T> s => FromHandleNonCounterexample(s, enablePresentationalInference),
-                DiscardExplorationTransition<T> s => ToDiscard(),
-                DiscardTransition<T> s => ToDiscard(),
-                ErrorTransition<T> s =>
-                    throw new Exceptions.GenErrorException(s.Error.GenName, s.Error.Message),
-                Termination<T> s => FromTermination(s),
+                CounterexampleExplorationTransition<T> t => FromHandleCounterexample(t, enablePresentationalInference),
+                NonCounterexampleExplorationTransition<T> t => FromHandleNonCounterexample(t, enablePresentationalInference),
+                DiscardExplorationTransition<T> t => ToDiscard(),
+                DiscardTransition<T> t => ToDiscard(),
+                ErrorTransition<T> t =>
+                    throw new Exceptions.GenErrorException(t.Error.GenName, t.Error.Message),
+                Termination<T> t => FromTermination(t),
                 _ => null
             };
         }

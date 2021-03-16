@@ -2,7 +2,9 @@
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record Termination<T>(CheckState<T> State) : AbstractTransition<T>(State)
+    public record Termination<T>(
+        CheckState<T> State,
+        TerminationReason Reason) : AbstractTransition<T>(State)
     {
         internal override AbstractTransition<T> NextTransition()
         {

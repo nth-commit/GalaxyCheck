@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Sizing;
 using System.Linq;
 using static GalaxyCheck.CheckExtensions;
 
@@ -19,73 +18,94 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 : NextStateWithCounterexample(State, Instance, CounterexampleState, WasReplay);
 
         private static AbstractTransition<T> NextStateOnDiscard(
-            CheckState<T> context,
+            CheckState<T> state,
             IGenInstance<Test<T>> instance)
         {
             // TODO: Resize on discards more like Gen.Where does
             // TODO: Exhaustion protection
-            var nextSize = context.ResizeStrategy(instance, wasCounterexample: false);
-            return new InitialTransition<T>(context
+            var nextSize = state.ResizeStrategy(instance, wasCounterexample: false);
+            return new InitialTransition<T>(state
                 .IncrementDiscards()
                 .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
         }
 
         private static AbstractTransition<T> NextStateWithoutCounterexample(
-            CheckState<T> context,
+            CheckState<T> state,
             IGenInstance<Test<T>> instance)
         {
-            var nextSize = context.ResizeStrategy(instance, wasCounterexample: false);
-            return new InitialTransition<T>(context
+            var nextSize = state.ResizeStrategy(instance, wasCounterexample: false);
+            return new InitialTransition<T>(state
                 .IncrementCompletedIterations()
                 .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
         }
 
         private static AbstractTransition<T> NextStateWithCounterexample(
-            CheckState<T> context,
+            CheckState<T> state,
             IGenInstance<Test<T>> instance,
             CounterexampleState<T> counterexampleState,
             bool wasReplay)
         {
-            var nextSize = context.ResizeStrategy(instance, wasCounterexample: true);
-            var nextState = context
+            var nextSize = state.ResizeStrategy(instance, wasCounterexample: true);
+            var nextState = state
                 .IncrementCompletedIterations()
                 .WithNextGenParameters(instance.NextParameters.With(size: nextSize))
                 .AddCounterexample(counterexampleState);
 
+            var terminationReason = TryTerminate(nextState, counterexampleState, instance, wasReplay);
+
+            return terminationReason == null
+                ? new InitialTransition<T>(nextState.WithNextGenParameters(instance.NextParameters.With(size: nextSize)))
+                : new Termination<T>(nextState, terminationReason.Value);
+        }
+
+        private static TerminationReason? TryTerminate(
+            CheckState<T> state,
+            CounterexampleState<T> counterexampleState,
+            IGenInstance<Test<T>> instance,
+            bool wasReplay)
+        {
             if (wasReplay)
             {
-                return new Termination<T>(nextState);
+                // We just want to repeat the last failure. The check we are replaying presumably reached for the
+                // smallest counterexample anyway.
+                return TerminationReason.IsReplay;
             }
 
-            if (nextState.CompletedIterations == nextState.RequestedIterations)
+            if (!state.DeepCheck)
             {
-                return new Termination<T>(nextState);
+                return TerminationReason.DeepCheckDisabled;
             }
 
-            if (counterexampleState.ExampleSpace.Current.Distance == 0)
+            if (state.CompletedIterations == state.RequestedIterations)
             {
-                // The counterexample is literally the smallest possible example. Can't get smaller than that.
-                return new Termination<T>(nextState);
+                // We should stop reaching for smaller counterexamples if we are at max iterations already.
+                return TerminationReason.ReachedMaximumIterations;
             }
 
             if (instance.RepeatParameters.Size.Value == 100)
             {
-                // We're at the max size, don't bother starting again from 0% as the compute time is most
-                // likely not worth it. TODO: Add config to disable this if someone REALLY wants to find a
-                // smaller counterexample.
-                return new Termination<T>(nextState);
+                // We're at the max size, don't bother starting again from 0% as the compute time is most likely not
+                // worth it. TODO: Add config to disable this if someone REALLY wants to find a smaller counterexample.
+                return TerminationReason.ReachedMaximumSize;
+            }
+                
+            if (counterexampleState.ExampleSpace.Current.Distance == 0)
+            {
+                // The counterexample is literally the smallest possible example that fits the constraints.
+                return TerminationReason.FoundTheoreticalSmallestCounterexample;
             }
 
+
             const int RecentCounterexampleThreshold = 3;
-            var recentCounterexamples = nextState.CounterexampleStateHistory.Take(RecentCounterexampleThreshold).ToList();
+            var recentCounterexamples = state.CounterexampleStateHistory.Take(RecentCounterexampleThreshold).ToList();
             if (recentCounterexamples.Count() == RecentCounterexampleThreshold &&
                 recentCounterexamples.GroupBy(x => x.ExampleSpace.Current.Id).Count() == 1)
             {
                 // The recent counterexamples have settled somewhat, short-circuit the remaining iterations
-                return new Termination<T>(nextState);
+                return TerminationReason.FoundPragmaticSmallestCounterexample;
             }
 
-            return new InitialTransition<T>(nextState.WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
+            return null;
         }
     }
 }
