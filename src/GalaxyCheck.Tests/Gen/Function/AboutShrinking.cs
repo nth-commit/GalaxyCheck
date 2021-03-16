@@ -41,7 +41,10 @@ namespace Tests.Gen.Function
                 var gen = GC.Gen.Function<int, int>(returnGen);
 
                 var inputs = Enumerable.Range(0, 100);
-                var func = gen.Minimal(seed: seed, pred: (f) => inputs.Select(x => f(x)).Any(y0 => y0 == y.Value));
+                var func = gen.Minimal(
+                    seed: seed,
+                    deepMinimal: true,
+                    pred: (f) => inputs.Select(x => f(x)).Any(y0 => y0 == y.Value));
 
                 Assert.All(inputs, x => Assert.Equal(y.Value, func(x)));
             });

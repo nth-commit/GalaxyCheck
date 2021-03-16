@@ -9,6 +9,7 @@ namespace GalaxyCheck
             int iterations = 100,
             int? seed = null,
             int? size = null,
+            bool deepMinimal = false,
             Func<T, bool>? pred = null)
         {
             pred ??= (_) => true;
@@ -18,7 +19,8 @@ namespace GalaxyCheck
                 var result = pred(x);
                 return result == false;
             });
-            var result = property.Check(iterations: iterations, seed: seed, size: size);
+
+            var result = property.Check(iterations: iterations, seed: seed, size: size, deepCheck: deepMinimal);
 
             if (result.Falsified)
             {

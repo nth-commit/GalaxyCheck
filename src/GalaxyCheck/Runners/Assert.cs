@@ -1,8 +1,6 @@
-﻿using GalaxyCheck.Internal.Replaying;
-using GalaxyCheck.Runners;
+﻿using GalaxyCheck.Runners;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace GalaxyCheck
@@ -41,6 +39,7 @@ namespace GalaxyCheck
                 counterexample.Distance,
                 counterexample.RepeatParameters,
                 counterexample.RepeatPath,
+                counterexample.Replay,
                 counterexample.Exception,
                 counterexample.PresentationalValue);
         }
@@ -110,16 +109,13 @@ namespace GalaxyCheck.Runners
         {
             static string PrefixLine(string reproductionFormatted) => $"Reproduction: {reproductionFormatted}";
 
-            var replay = new Replay(counterexample.RepeatParameters, counterexample.RepeatPath);
-            var replayEncoded = ReplayEncoding.Encode(replay);
-
             if (formatReproduction == null)
             {
-                return PrefixLine(replayEncoded);
+                return PrefixLine(counterexample.Replay);
             }
             else
             {
-                return PrefixLine(formatReproduction(replayEncoded));
+                return PrefixLine(formatReproduction(counterexample.Replay));
             }
         }
 
