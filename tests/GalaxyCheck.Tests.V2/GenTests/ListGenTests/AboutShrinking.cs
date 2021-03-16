@@ -19,10 +19,10 @@ namespace Tests.V2.GenTests.ListGenTests
             from seed in DomainGen.Seed()
             select Property.ForThese(() =>
             {
-                var elementMinimum = elementGen.Minimal(seed: seed);
+                var elementMinimum = elementGen.Minimum(seed: seed);
                 var gen = GalaxyCheck.Gen.ListOf(elementGen).WithCountGreaterThanEqual(minCount);
 
-                var minimum = gen.Minimal(seed: seed);
+                var minimum = gen.Minimum(seed: seed);
 
                 minimum.Should()
                     .HaveCount(minCount).And
@@ -39,7 +39,7 @@ namespace Tests.V2.GenTests.ListGenTests
             {
                 var gen = GalaxyCheck.Gen.ListOf(elementGen);
 
-                var minimum = gen.Minimal(seed: seed, pred: list => list.Count >= localMinCount);
+                var minimum = gen.Minimum(seed: seed, pred: list => list.Count >= localMinCount);
 
                 minimum.Should().HaveCount(localMinCount);
             });
@@ -53,7 +53,7 @@ namespace Tests.V2.GenTests.ListGenTests
             {
                 var gen = GalaxyCheck.Gen.Int32().Between(0, 100).ListOf();
 
-                var minimum = gen.Minimal(seed: seed, pred: list => list.Any(element => element >= elementMinimum));
+                var minimum = gen.Minimum(seed: seed, pred: list => list.Any(element => element >= elementMinimum));
 
                 minimum.Should().BeEquivalentTo(elementMinimum);
             });

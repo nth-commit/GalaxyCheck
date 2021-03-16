@@ -20,7 +20,7 @@ namespace Tests.V2.GenTests.Int32GenTests
             {
                 var gen = GalaxyCheck.Gen.Int32().WithBias(bias).ShrinkTowards(origin);
 
-                var minimum = gen.Minimal(seed: seed);
+                var minimum = gen.Minimum(seed: seed);
 
                 minimum.Should().Be(origin);
             });
@@ -35,7 +35,7 @@ namespace Tests.V2.GenTests.Int32GenTests
             {
                 var gen = GalaxyCheck.Gen.Int32().WithBias(bias).ShrinkTowards(origin);
 
-                var minimum = gen.Minimal(seed: seed, pred: value => value >= localMin);
+                var minimum = gen.Minimum(seed: seed, pred: value => value >= localMin);
 
                 minimum.Should().Be(localMin);
             });
@@ -50,7 +50,7 @@ namespace Tests.V2.GenTests.Int32GenTests
             {
                 var gen = GalaxyCheck.Gen.Int32().WithBias(bias).ShrinkTowards(origin);
 
-                var minimum = gen.Minimal(seed: seed, pred: value => value <= localMin);
+                var minimum = gen.Minimum(seed: seed, pred: value => value <= localMin);
 
                 minimum.Should().Be(localMin);
             });

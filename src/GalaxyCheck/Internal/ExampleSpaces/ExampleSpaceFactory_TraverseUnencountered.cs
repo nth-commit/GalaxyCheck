@@ -17,7 +17,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                 accumulators,
                 new NoContext(),
                 encountered,
-                (context, _) => context,
+                (_, context) => context,
                 (accumulator, _, encountered) =>
                     nextExampleSpace(accumulator, encountered).Map(value => new ContextualValue<T, NoContext>(value, new NoContext())));
 
@@ -28,7 +28,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             IEnumerable<TAccumulator> accumulators,
             TContext context,
             ImmutableHashSet<ExampleId> encountered,
-            Func<TContext, T, TContext> nextContext,
+            NextContextFunc<T, TContext> nextContext,
             Func<TAccumulator, TContext, ImmutableHashSet<ExampleId>, IExampleSpace<ContextualValue<T, TContext>>> nextExampleSpace)
         {
             return accumulators
@@ -50,7 +50,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                                 acc.Encountered);
                         }
 
-                        var context0 = nextContext(acc.Context, exampleSpace.Current.Value.Value);
+                        var context0 = nextContext(exampleSpace.Current.Value.Value, acc.Context);
 
                         return new UnfoldSubspaceState<T, TContext>(
                             new Option.Some<IExampleSpace<ContextualValue<T, TContext>>>(exampleSpace),

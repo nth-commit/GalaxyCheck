@@ -17,6 +17,19 @@ namespace GalaxyCheck.Internal.ExampleSpaces
 
     public delegate (TContext, IEnumerable<T>) ContextualShrinkFunc<T, TContext>(T value, TContext ctx);
 
+    public delegate TContext NextContextFunc<T, TContext>(T value, TContext ctx);
+
+    public record NoContext;
+
+    public interface ContextualShrinker<T, TContext>
+    {
+        TContext RootContext { get; }
+
+        ContextualShrinkFunc<T, TContext> ContextualShrink { get; }
+
+        NextContextFunc<T, TContext> ContextualTraverse { get; }
+    }
+
     public static class ShrinkFunc
     {
         public static ShrinkFunc<TResult> Map<T, TResult>(
@@ -24,7 +37,6 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             Func<T, TResult> forwardMapper,
             Func<TResult, T> reverseMapper) =>
                 value => shrink(reverseMapper(value)).Select(forwardMapper);
-
 
         /// <summary>
         /// Creates a no-op shrink function for `T`, which always returns an empty enumerable (indicating that any
@@ -259,5 +271,27 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     return x0 > 0 ? new Option.Some<long>(x0) : new Option.None<long>();
                 })
                 .Select(x => Math.Sign(value) == -1 ? -x : x);
+
+
+        private class NoopContextualShrinker<T> : ContextualShrinker<T, NoContext>
+        {
+            private readonly ShrinkFunc<T> _shrinker;
+
+            public NoopContextualShrinker(ShrinkFunc<T> shrinker)
+            {
+                _shrinker = shrinker;
+            }
+
+            public NoContext RootContext => new NoContext();
+
+            public ContextualShrinkFunc<T, NoContext> ContextualShrink => (value, context) => (context, _shrinker(value));
+
+            public NextContextFunc<T, NoContext> ContextualTraverse => (_, context) => context;
+        }
+
+        public static ContextualShrinker<T, NoContext> WithoutContext<T>(ShrinkFunc<T> shrinker) =>
+            new NoopContextualShrinker<T>(shrinker);
+
+        public static ContextualShrinker<T, NoContext> ContextualNone<T>() => WithoutContext<T>(None<T>());
     }
 }

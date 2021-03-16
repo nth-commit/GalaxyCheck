@@ -40,14 +40,14 @@ namespace Tests
 
         public static void ShrinksTo<T>(IGen<T> gen, T expected, int seed, Func<T, bool>? pred = null)
         {
-            var actual = gen.Minimal(seed: seed, pred: pred);
+            var actual = gen.Minimum(seed: seed, pred: pred);
 
             Assert.Equal(expected, actual);
         }
 
         public static void ShrinksTo<T>(IGen<T> gen, Action<T> assert, int seed, Func<T, bool>? pred = null)
         {
-            var actual = gen.Minimal(seed: seed, pred: pred);
+            var actual = gen.Minimum(seed: seed, pred: pred);
 
             assert(actual);
         }
