@@ -106,6 +106,8 @@ namespace GalaxyCheck.Gens
             GenParameters parameters,
             int? iterationLimit)
         {
+            IEnumerable<T> SealEnumerable(IEnumerable<T> source) => ThrowOnLimit(source.Repeat(), iterationLimit);
+
             var enumerable = CreateInfiniteEnumerable(elementGen, parameters, iterationLimit);
 
             IExample<IEnumerable<T>> rootExample = new Example<IEnumerable<T>>(
@@ -122,6 +124,12 @@ namespace GalaxyCheck.Gens
                         return Enumerable.Empty<IExampleSpace<IEnumerable<T>>>();
                     }
 
+                    if (enumerable.MaxIterations == 1)
+                    {
+                        var exampleSpace = enumerable.First().Map(element => SealEnumerable(new[] { element }));
+                        return new[] { exampleSpace };
+                    }
+
                     var exampleSpaces = enumerable.Take(enumerable.MaxIterations).ToList();
 
                     var rootExampleExplored = ExampleSpaceFactory.Merge(
@@ -130,7 +138,7 @@ namespace GalaxyCheck.Gens
                         ShrinkTowardsLength(1),
                         (_) => 0);
 
-                    return rootExampleExplored.Subspace.Select(es => es.Map(xs => ThrowOnLimit(xs.Repeat(), iterationLimit)));
+                    return rootExampleExplored.Subspace.Select(es => es.Map(SealEnumerable));
                 });
         }
 
