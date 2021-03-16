@@ -19,9 +19,19 @@ namespace IntegrationSample
         [Property]
         public IGen<Test> InfalliblePureProperty() =>
             from a in Gen.Int32().Between(0, 100)
-            from b in Gen.Int32().Between(a + 1, a + 100)
-            from c in Gen.Int32().Between(b + 1, b + 100)
-            select Property.ForThese(() => a < b && b < c);
+            select Property.ForThese(() =>
+            {
+                AnnounceTestInvocation(nameof(InfalliblePureProperty));
+            });
+
+        [Property]
+        public IGen<Test> FalliblePureProperty() =>
+            from a in Gen.Int32().Between(0, 100)
+            select Property.ForThese(() =>
+            {
+                AnnounceTestInvocation(nameof(FalliblePureProperty));
+                throw new Exception("Failed!");
+            });
 
         [Property]
         public void InfallibleVoidProperty([Between(0, 100)] int x)
@@ -62,6 +72,13 @@ namespace IntegrationSample
             AnnounceTestInvocation(nameof(FallibleNestedProperty));
             return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
         }
+
+        [Sample]
+        public IGen<Test> Sample() =>
+            from a in Gen.Int32().Between(0, 100)
+            select Property.ForThese(() =>
+            {
+            });
 
         private void AnnounceTestInvocation(string testName, params object[] injectedValues)
         {
