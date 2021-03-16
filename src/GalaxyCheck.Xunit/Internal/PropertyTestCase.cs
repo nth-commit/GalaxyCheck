@@ -75,7 +75,7 @@ namespace GalaxyCheck.Xunit.Internal
                 return Fail(exception);
             }
 
-            var propertyAttribute = methodInfo.GetCustomAttributes<PropertyAttribute>().Single();
+            var propertyAttribute = GetPropertyAttribute(methodInfo);
             var replay = methodInfo.GetCustomAttributes<ReplayAttribute>().SingleOrDefault()?.Replay;
 
             try
@@ -87,6 +87,11 @@ namespace GalaxyCheck.Xunit.Internal
             {
                 return Fail(propertyFailedException);
             }
+        }
+
+        protected virtual PropertyAttribute GetPropertyAttribute(MethodInfo methodInfo)
+        {
+            return methodInfo.GetCustomAttributes<PropertyAttribute>().Single();
         }
 
         protected virtual void RunProperty(Property<object> property, int shrinkLimit, string? replay, ITestOutputHelper testOutputHelper)

@@ -21,6 +21,23 @@ namespace Tests
         }
 
         [Fact]
+        public void InfalliblePureProperty()
+        {
+            var testResult = _fixture.FindTestResult(nameof(InfalliblePureProperty));
+
+            testResult.Outcome.Should().Be("Passed");
+        }
+
+        [Fact]
+        public void FalliblePureProperty()
+        {
+            var testResult = _fixture.FindTestResult(nameof(FalliblePureProperty));
+
+            testResult.Outcome.Should().Be("Failed");
+            testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
+        }
+
+        [Fact]
         public void InfallibleVoidProperty()
         {
             var testResult = _fixture.FindTestResult(nameof(InfallibleVoidProperty));
@@ -69,6 +86,15 @@ namespace Tests
 
             testResult.Outcome.Should().Be("Failed");
             testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
+        }
+
+        [Fact]
+        public void Sample()
+        {
+            var testResult = _fixture.FindTestResult(nameof(Sample));
+
+            testResult.Outcome.Should().Be("Failed");
+            testResult.Message.Should().StartWith("GalaxyCheck.Xunit.SampleException : Test case failed to prevent false-positives.");
         }
 
         public record Invocation(object[] InjectedParameters);

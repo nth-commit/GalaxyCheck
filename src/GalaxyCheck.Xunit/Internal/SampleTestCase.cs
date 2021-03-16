@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -22,6 +24,11 @@ namespace GalaxyCheck.Xunit.Internal
             object[]? testMethodArguments = null)
             : base(diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod, testMethodArguments)
         {
+        }
+
+        protected override PropertyAttribute GetPropertyAttribute(MethodInfo methodInfo)
+        {
+            return methodInfo.GetCustomAttributes<SampleAttribute>().Single();
         }
 
         protected override void RunProperty(Property<object> property, int shrinkLimit, string? replay, ITestOutputHelper testOutputHelper)
