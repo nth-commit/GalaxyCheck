@@ -12,7 +12,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
            MeasureFunc<TAccumulator> Measure,
            IdentifyFunc<TAccumulator> Identify,
            Func<TAccumulator, TProjection> Projection,
-           Func<TContext, TProjection, TContext> NextContext);
+           NextContextFunc<TProjection, TContext> NextContext);
 
         /// <summary>
         /// Creates an example space by recursively applying a shrinking function to the root value.
@@ -31,27 +31,23 @@ namespace GalaxyCheck.Internal.ExampleSpaces
         {
             return Unfold(
                 rootValue,
-                new NoContext(),
-                (value, context) => (context, shrink(value)),
+                ShrinkFunc.WithoutContext(shrink),
                 measure,
-                identify,
-                (context, example) => context);
+                identify);
         }
 
         public static IExampleSpace<T> Unfold<T, TContext>(
             T rootValue,
-            TContext rootContext,
-            ContextualShrinkFunc<T, TContext> shrink,
+            ContextualShrinker<T, TContext> contextualShrinker,
             MeasureFunc<T> measure,
-            IdentifyFunc<T> identify,
-            Func<TContext, T, TContext> nextContext)
+            IdentifyFunc<T> identify)
         {
             var functions = new ContextualizedUnfoldFunctions<T, TContext, T>(
-                shrink, measure, identify, x => x, nextContext);
+                contextualShrinker.ContextualShrink, measure, identify, x => x, contextualShrinker.ContextualTraverse);
 
             var contextualizedExampleSpace = ContextualizedUnfoldInternal(
                 rootValue,
-                rootContext,
+                contextualShrinker.RootContext,
                 functions,
                 ImmutableHashSet.Create<ExampleId>());
 
@@ -69,7 +65,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             var example = CreateExample(accumulator, context, functions);
 
             var encountered0 = encountered.Add(example.Id);
-            var context0 = functions.NextContext(context, example.Value.Value);
+            var context0 = functions.NextContext(example.Value.Value, context);
 
             var (context1, shrinks) = functions.Shrink(accumulator, context0);
 
@@ -110,7 +106,7 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             return TraverseUnencounteredContextual(accumulators, context, encountered, functions.NextContext, GenerateNextExampleSpace).Select(exampleSpace =>
             {
                 var currentExample = exampleSpace.Current;
-                var context0 = functions.NextContext(currentExample.Value.Context, currentExample.Value.Value);
+                var context0 = functions.NextContext(currentExample.Value.Value, currentExample.Value.Context);
 
                 var exampleWithMoreContext = new Example<ContextualValue<TProjection, TContext>>(
                     currentExample.Id,

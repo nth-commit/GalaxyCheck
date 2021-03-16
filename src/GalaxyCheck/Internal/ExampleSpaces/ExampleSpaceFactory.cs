@@ -127,42 +127,56 @@ namespace GalaxyCheck.Internal.ExampleSpaces
             MeasureFunc.DistanceFromOrigin(origin, min, max),
             IdentifyFuncs.Default<int>());
 
+        public static IExampleSpace<int> Int32Optimized(int value, int origin, int min, int max) => Unfold(
+            value,
+            new Int32OptimizedContextualShrinker(origin),
+            MeasureFunc.DistanceFromOrigin(origin, min, max),
+            IdentifyFuncs.Default<int>());
+
         private record Int32OptimizedContext(
             ImmutableStack<int> EncounteredValues,
             bool IsRoot);
 
-        public static IExampleSpace<int> Int32Optimized(int value, int origin, int min, int max) => Unfold(
-            value,
-            new Int32OptimizedContext(ImmutableStack.Create<int>(), IsRoot: true),
-            (value, context) =>
+        private class Int32OptimizedContextualShrinker : ContextualShrinker<int, Int32OptimizedContext>
+        {
+            private readonly int _origin;
+
+            public Int32OptimizedContextualShrinker(int origin)
+            {
+                _origin = origin;
+            }
+
+            public Int32OptimizedContext RootContext => new Int32OptimizedContext(ImmutableStack.Create<int>(), IsRoot: true);
+
+            public ContextualShrinkFunc<int, Int32OptimizedContext> ContextualShrink => (value, context) =>
             {
                 var nextContext = new Int32OptimizedContext(ImmutableStack.Create<int>(), IsRoot: false);
-                var shrinks = ShrinkInt32Optimized(value, origin, context);
+                var shrinks = ShrinkInt32Optimized(value, _origin, context);
                 return (nextContext, shrinks);
-            },
-            MeasureFunc.DistanceFromOrigin(origin, min, max),
-            IdentifyFuncs.Default<int>(),
-            (context, value) =>
+            };
+
+            public NextContextFunc<int, Int32OptimizedContext> ContextualTraverse => (value, context) =>
             {
                 return new Int32OptimizedContext(context.EncounteredValues.Push(value), IsRoot: context.IsRoot);
-            });
+            };
 
-        private static IEnumerable<int> ShrinkInt32Optimized(int value, int origin, Int32OptimizedContext context)
-        {
-            if (context.IsRoot)
+            private static IEnumerable<int> ShrinkInt32Optimized(int value, int origin, Int32OptimizedContext context)
             {
-                // Just shrink to the origin, regardless
-                return ShrinkFunc.Towards(origin)(value);
-            }
+                if (context.IsRoot)
+                {
+                    // Just shrink to the origin, regardless
+                    return ShrinkFunc.Towards(origin)(value);
+                }
 
-            var previousEncounteredValues = context.EncounteredValues.Skip(1);
-            if (previousEncounteredValues.Any() == false)
-            {
-                // There are no shrinks left
-                return Enumerable.Empty<int>();
-            }
+                var previousEncounteredValues = context.EncounteredValues.Skip(1);
+                if (previousEncounteredValues.Any() == false)
+                {
+                    // There are no shrinks left
+                    return Enumerable.Empty<int>();
+                }
 
-            return ShrinkFunc.Towards(previousEncounteredValues.First())(value);
+                return ShrinkFunc.Towards(previousEncounteredValues.First())(value);
+            }
         }
     }
 }

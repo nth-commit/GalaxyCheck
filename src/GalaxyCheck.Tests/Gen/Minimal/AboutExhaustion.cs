@@ -17,7 +17,7 @@ namespace Tests.Gen.Minimal
 
             TestWithSeed(seed =>
             {
-                Action test = () => gen.Minimal(seed: seed);
+                Action test = () => gen.Minimum(seed: seed);
 
                 Assert.Throws<GC.Exceptions.GenExhaustionException>(test);
             });

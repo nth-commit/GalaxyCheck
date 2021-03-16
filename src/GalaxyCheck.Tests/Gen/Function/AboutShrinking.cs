@@ -26,7 +26,7 @@ namespace Tests.Gen.Function
                 var returnGen = GC.Gen.Int32().Between(0, 10).WithBias(GC.Gen.Bias.None);
                 var gen = GC.Gen.Function(returnGen);
 
-                var func = gen.Minimal(seed: seed, pred: (f) => f() == y.Value);
+                var func = gen.Minimum(seed: seed, pred: (f) => f() == y.Value);
 
                 Assert.Equal(y.Value, func());
             });
@@ -41,9 +41,9 @@ namespace Tests.Gen.Function
                 var gen = GC.Gen.Function<int, int>(returnGen);
 
                 var inputs = Enumerable.Range(0, 100);
-                var func = gen.Minimal(
+                var func = gen.Minimum(
                     seed: seed,
-                    deepMinimal: true,
+                    deepMinimum: true,
                     pred: (f) => inputs.Select(x => f(x)).Any(y0 => y0 == y.Value));
 
                 Assert.All(inputs, x => Assert.Equal(y.Value, func(x)));
