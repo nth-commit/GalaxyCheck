@@ -175,7 +175,8 @@ namespace GalaxyCheck.Internal.ExampleSpaces
                     return Enumerable.Empty<int>();
                 }
 
-                return ShrinkFunc.Towards(previousEncounteredValues.First())(value);
+                var difference = value >= origin ? 1 : -1;
+                return ShrinkFunc.Towards(previousEncounteredValues.First() + difference)(value);
             }
         }
     }

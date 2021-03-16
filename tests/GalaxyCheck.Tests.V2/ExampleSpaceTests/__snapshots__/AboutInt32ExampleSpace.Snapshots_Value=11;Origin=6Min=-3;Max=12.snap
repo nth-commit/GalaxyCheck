@@ -1,5 +1,6 @@
 ﻿11 (Id = 11, Distance = 83.3333...)
 ├> 6 (Id = 6, Distance = 0)
 ├> 9 (Id = 9, Distance = 50.0)
+|  ├> 7 (Id = 7, Distance = 16.6667...)
 |  └> 8 (Id = 8, Distance = 33.3333...)
 └> 10 (Id = 10, Distance = 66.6667...)

@@ -289,3 +289,4 @@ __pycache__/
 
 src/NebulaCheck
 src/NebulaCheck.Xunit
+**/__snapshots__/__mismatch__

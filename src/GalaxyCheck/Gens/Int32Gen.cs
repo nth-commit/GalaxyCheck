@@ -151,7 +151,8 @@ namespace GalaxyCheck.Gens.Int32
 
             return Gen
                 .Advanced.Create(statefulGen)
-                .Advanced.Unfold(value => ExampleSpaceFactory.Int32(value: value, origin: origin, min: min, max: max));
+                .Advanced.Unfold(value =>
+                    ExampleSpaceFactory.Int32Optimized(value: value, origin: origin, min: min, max: max));
         }
 
         private static StatefulGenFunc<int> CreateUnbiasedStatefulGen(int min, int max) =>

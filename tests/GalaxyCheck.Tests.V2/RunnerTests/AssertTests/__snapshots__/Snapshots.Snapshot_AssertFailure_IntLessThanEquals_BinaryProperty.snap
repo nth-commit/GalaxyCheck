@@ -1,5 +1,5 @@
-﻿Falsified after 60 tests (55 shrinks)
-Reproduction: H4sIAAAAAAAACg3CgREAIAgDsY04ShXx9x9ML6l0y9I49g2RiMIsNudr5gEXagBOIwAAAA==
+﻿Falsified after 60 tests (21 shrinks)
+Reproduction: H4sIAAAAAAAACjMyMDYzNDY0tDDWM7XUM7QytDICYxA0tDIAAAjJxbIfAAAA
 Counterexample:
     [0] = 1000
     [1] = 1001
