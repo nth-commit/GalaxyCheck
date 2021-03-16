@@ -54,5 +54,39 @@ namespace Tests.V2.GenTests.Int32GenTests
 
                 minimum.Should().Be(localMin);
             });
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItShrinksAnyScenarioWithin64Attempts_ForAPositiveRange() =>
+            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize).NoShrink()
+            from localMin in Gen.Int32().Between(0, int.MaxValue / 2).NoShrink()
+            from seed in DomainGen.Seed()
+            select Property.ForThese(() =>
+            {
+                var gen = GalaxyCheck.Gen.Int32().GreaterThanEqual(0).WithBias(bias);
+
+                var minimum = gen.Advanced.MinimumWithMetrics(
+                    seed: seed,
+                    deepMinimum: false,
+                    pred: value => value >= localMin);
+
+                minimum.Shrinks.Should().BeLessOrEqualTo(64);
+            });
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItShrinksAnyScenarioWithin64Attempts_ForANegativeRange() =>
+            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize).NoShrink()
+            from localMin in Gen.Int32().Between(0, int.MinValue / 2).NoShrink()
+            from seed in DomainGen.Seed()
+            select Property.ForThese(() =>
+            {
+                var gen = GalaxyCheck.Gen.Int32().LessThanEqual(0).WithBias(bias);
+
+                var minimum = gen.Advanced.MinimumWithMetrics(
+                    seed: seed,
+                    deepMinimum: false,
+                    pred: value => value <= localMin);
+
+                minimum.Shrinks.Should().BeLessOrEqualTo(64);
+            });
     }
 }
