@@ -10,188 +10,79 @@ namespace GalaxyCheck
 {
     public static partial class Gen
     {
-        public static IFunctionGen<TResult> Function<TResult>(IGen<TResult> returnGen) =>
-            new FunctionGen<TResult>(returnGen);
+        public static IGen<Func<TResult>> Function<TResult>(
+            IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                VariadicFunction(returnGen, invocationLimit)
+                    .Select<VariadicFunc<TResult>, Func<TResult>>(
+                        f => () => f());
 
-        public static IFunctionGen<T0, TResult> Function<T0, TResult>(IGen<TResult> returnGen) =>
-            new FunctionGen<T0, TResult>(returnGen);
+        public static IGen<Func<T0, TResult>> Function<T0, TResult>(
+            IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                VariadicFunction(returnGen, invocationLimit)
+                    .Select<VariadicFunc<TResult>, Func<T0, TResult>>(
+                        f => (arg0) => f(arg0));
 
-        public static IFunctionGen<T0, T1, TResult> Function<T0, T1, TResult>(IGen<TResult> returnGen) =>
-            new FunctionGen<T0, T1, TResult>(returnGen);
+        public static IGen<Func<T0, T1, TResult>> Function<T0, T1, TResult>(
+            IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                VariadicFunction(returnGen, invocationLimit)
+                    .Select<VariadicFunc<TResult>, Func<T0, T1, TResult>>(
+                        f => (arg0, arg1) => f(arg0, arg1));
 
-        public static IFunctionGen<T0, T1, T2, TResult> Function<T0, T1, T2, TResult>(IGen<TResult> returnGen) =>
-            new FunctionGen<T0, T1, T2, TResult>(returnGen);
+        public static IGen<Func<T0, T1, T2, TResult>> Function<T0, T1, T2, TResult>(
+            IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                VariadicFunction(returnGen, invocationLimit)
+                    .Select<VariadicFunc<TResult>, Func<T0, T1, T2, TResult>>(
+                        f => (arg0, arg1, arg2) => f(arg0, arg1, arg2));
 
-        public static IFunctionGen<T0, T1, T2, T3, TResult> Function<T0, T1, T2, T3, TResult>(IGen<TResult> returnGen) =>
-            new FunctionGen<T0, T1, T2, T3, TResult>(returnGen);
+        public static IGen<Func<T0, T1, T2, T3, TResult>> Function<T0, T1, T2, T3, TResult>(
+            IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                VariadicFunction(returnGen, invocationLimit)
+                    .Select<VariadicFunc<TResult>, Func<T0, T1, T2, T3, TResult>>(
+                        f => (arg0, arg1, arg2, arg3) => f(arg0, arg1, arg2, arg3));
+
+        private static IGen<VariadicFunc<TResult>> VariadicFunction<TResult>(IGen<TResult> returnGen, int? invocationLimit) =>
+            new VariadicFunctionGen<TResult>(returnGen, invocationLimit);
+    }
+
+    public static partial class Extensions
+    {
+        public static IGen<Func<TResult>> FunctionOf<TResult>(
+            this IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                Gen.Function(returnGen, invocationLimit);
+
+        public static IGen<Func<T0, TResult>> FunctionOf<T0, TResult>(
+            this IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                Gen.Function<T0, TResult>(returnGen, invocationLimit);
+
+        public static IGen<Func<T0, T1, TResult>> FunctionOf<T0, T1, TResult>(
+            this IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                Gen.Function<T0, T1, TResult>(returnGen, invocationLimit);
+
+        public static IGen<Func<T0, T1, T2, TResult>> FunctionOf<T0, T1, T2, TResult>(
+            this IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                Gen.Function<T0, T1, T2, TResult>(returnGen, invocationLimit);
+
+        public static IGen<Func<T0, T1, T2, T3, TResult>> FunctionOf<T0, T1, T2, T3, TResult>(
+            this IGen<TResult> returnGen,
+            int? invocationLimit = 1000) =>
+                Gen.Function<T0, T1, T2, T3, TResult>(returnGen, invocationLimit);
     }
 }
 
 namespace GalaxyCheck.Gens
 {
-    public interface IFunctionGen<TResult> : IGen<Func<TResult>>
-    {
-        IFunctionGen<TResult> WithInvocationLimit(int limit);
+    public delegate TResult VariadicFunc<out TResult>(params object?[] args);
 
-        IFunctionGen<TResult> WithoutInvocationLimit();
-    }
-
-    public class FunctionGen<TResult> : GenProvider<Func<TResult>>, IFunctionGen<TResult>
-    {
-        private readonly IGen<TResult> _returnGen;
-        private readonly int? _invocationLimit;
-
-        private FunctionGen(IGen<TResult> returnGen, int? invocationLimit)
-        {
-            _returnGen = returnGen;
-            _invocationLimit = invocationLimit;
-        }
-
-        public FunctionGen(IGen<TResult> returnGen)
-            : this(returnGen, 1000)
-        {
-        }
-
-        public IFunctionGen<TResult> WithInvocationLimit(int limit) => new FunctionGen<TResult>(_returnGen, limit);
-
-        public IFunctionGen<TResult> WithoutInvocationLimit() => new FunctionGen<TResult>(_returnGen, null);
-
-        protected override IGen<Func<TResult>> Gen =>
-            from f in new VariadicFunctionGen<TResult>(_returnGen, _invocationLimit)
-            select new Func<TResult>(() => f());
-    }
-
-    public interface IFunctionGen<T0, TResult> : IGen<Func<T0, TResult>>
-    {
-        IFunctionGen<T0, TResult> WithInvocationLimit(int limit);
-
-        IFunctionGen<T0, TResult> WithoutInvocationLimit();
-    }
-
-    public class FunctionGen<T0, TResult> : GenProvider<Func<T0, TResult>>, IFunctionGen<T0, TResult>
-    {
-        private readonly IGen<TResult> _returnGen;
-        private readonly int? _invocationLimit;
-
-        private FunctionGen(IGen<TResult> returnGen, int? invocationLimit)
-        {
-            _returnGen = returnGen;
-            _invocationLimit = invocationLimit;
-        }
-
-        public FunctionGen(IGen<TResult> returnGen)
-            : this(returnGen, 1000)
-        {
-        }
-
-        public IFunctionGen<T0, TResult> WithInvocationLimit(int limit) => new FunctionGen<T0, TResult>(_returnGen, limit);
-
-        public IFunctionGen<T0, TResult> WithoutInvocationLimit() => new FunctionGen<T0, TResult>(_returnGen, null);
-
-        protected override IGen<Func<T0, TResult>> Gen =>
-            from f in new VariadicFunctionGen<TResult>(_returnGen, _invocationLimit)
-            select new Func<T0, TResult>((arg0) => f(arg0));
-    }
-
-    public interface IFunctionGen<T0, T1, TResult> : IGen<Func<T0, T1, TResult>>
-    {
-        IFunctionGen<T0, T1, TResult> WithInvocationLimit(int limit);
-
-        IFunctionGen<T0, T1, TResult> WithoutInvocationLimit();
-    }
-
-    public class FunctionGen<T0, T1, TResult> : GenProvider<Func<T0, T1, TResult>>, IFunctionGen<T0, T1, TResult>
-    {
-        private readonly IGen<TResult> _returnGen;
-        private readonly int? _invocationLimit;
-
-        private FunctionGen(IGen<TResult> returnGen, int? invocationLimit)
-        {
-            _returnGen = returnGen;
-            _invocationLimit = invocationLimit;
-        }
-
-        public FunctionGen(IGen<TResult> returnGen)
-            : this(returnGen, 1000)
-        {
-        }
-
-        public IFunctionGen<T0, T1, TResult> WithInvocationLimit(int limit) => new FunctionGen<T0, T1, TResult>(_returnGen, limit);
-
-        public IFunctionGen<T0, T1, TResult> WithoutInvocationLimit() => new FunctionGen<T0, T1, TResult>(_returnGen, null);
-
-        protected override IGen<Func<T0, T1, TResult>> Gen =>
-            from f in new VariadicFunctionGen<TResult>(_returnGen, _invocationLimit)
-            select new Func<T0, T1, TResult>((arg0, arg1) => f(arg0, arg1));
-    }
-
-    public interface IFunctionGen<T0, T1, T2, TResult> : IGen<Func<T0, T1, T2, TResult>>
-    {
-        IFunctionGen<T0, T1, T2, TResult> WithInvocationLimit(int limit);
-
-        IFunctionGen<T0, T1, T2, TResult> WithoutInvocationLimit();
-    }
-
-    public class FunctionGen<T0, T1, T2, TResult> : GenProvider<Func<T0, T1, T2, TResult>>, IFunctionGen<T0, T1, T2, TResult>
-    {
-        private readonly IGen<TResult> _returnGen;
-        private readonly int? _invocationLimit;
-
-        private FunctionGen(IGen<TResult> returnGen, int? invocationLimit)
-        {
-            _returnGen = returnGen;
-            _invocationLimit = invocationLimit;
-        }
-
-        public FunctionGen(IGen<TResult> returnGen)
-            : this(returnGen, 1000)
-        {
-        }
-
-        public IFunctionGen<T0, T1, T2, TResult> WithInvocationLimit(int limit) => new FunctionGen<T0, T1, T2, TResult>(_returnGen, limit);
-
-        public IFunctionGen<T0, T1, T2, TResult> WithoutInvocationLimit() => new FunctionGen<T0, T1, T2, TResult>(_returnGen, null);
-
-        protected override IGen<Func<T0, T1, T2, TResult>> Gen =>
-            from f in new VariadicFunctionGen<TResult>(_returnGen, _invocationLimit)
-            select new Func<T0, T1, T2, TResult>((arg0, arg1, arg2) => f(arg0, arg1, arg2));
-    }
-
-    public interface IFunctionGen<T0, T1, T2, T3, TResult> : IGen<Func<T0, T1, T2, T3, TResult>>
-    {
-        IFunctionGen<T0, T1, T2, T3, TResult> WithInvocationLimit(int limit);
-
-        IFunctionGen<T0, T1, T2, T3, TResult> WithoutInvocationLimit();
-    }
-
-    public class FunctionGen<T0, T1, T2, T3, TResult> : GenProvider<Func<T0, T1, T2, T3, TResult>>, IFunctionGen<T0, T1, T2, T3, TResult>
-    {
-        private readonly IGen<TResult> _returnGen;
-        private readonly int? _invocationLimit;
-
-        private FunctionGen(IGen<TResult> returnGen, int? invocationLimit)
-        {
-            _returnGen = returnGen;
-            _invocationLimit = invocationLimit;
-        }
-
-        public FunctionGen(IGen<TResult> returnGen)
-            : this(returnGen, 1000)
-        {
-        }
-
-        public IFunctionGen<T0, T1, T2, T3, TResult> WithInvocationLimit(int limit) => new FunctionGen<T0, T1, T2, T3, TResult>(_returnGen, limit);
-
-        public IFunctionGen<T0, T1, T2, T3, TResult> WithoutInvocationLimit() => new FunctionGen<T0, T1, T2, T3, TResult>(_returnGen, null);
-
-        protected override IGen<Func<T0, T1, T2, T3, TResult>> Gen =>
-            from f in new VariadicFunctionGen<TResult>(_returnGen, _invocationLimit)
-            select new Func<T0, T1, T2, T3, TResult>((arg0, arg1, arg2, arg3) => f(arg0, arg1, arg2, arg3));
-    }
-
-    internal delegate TResult VariadicFunc<TResult>(params object?[] args);
-
-    internal class VariadicFunctionGen<TResult> : LazyGen<VariadicFunc<TResult>>
+    public class VariadicFunctionGen<TResult> : LazyGen<VariadicFunc<TResult>>
     {
         public VariadicFunctionGen(IGen<TResult> returnGen, int? invocationLimit)
             : base(() => Create(returnGen, invocationLimit))
@@ -199,7 +90,7 @@ namespace GalaxyCheck.Gens
         }
 
         public static IGen<VariadicFunc<TResult>> Create(IGen<TResult> returnGen, int? invocationLimit) =>
-            from returnValueSource in returnGen.InfiniteOf().WithoutIterationLimit()
+            from returnValueSource in returnGen.InfiniteOf(iterationLimit: null)
             select ToPureFunction(returnValueSource, invocationLimit);
 
         /// <summary>
@@ -247,10 +138,7 @@ namespace GalaxyCheck.Gens
 
         private static void ThrowGenLimitExceeded()
         {
-            var interfaceIdentifier = "IFunctionGen";
-            var withLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IFunctionGen<object>.WithInvocationLimit)}";
-            var withoutLimitMethodIdentifier = $"{interfaceIdentifier}.{nameof(IFunctionGen<object>.WithoutInvocationLimit)}";
-            var message = $"Function exceeded invocation limit. This is a built-in safety mechanism to prevent hanging tests. Use {withLimitMethodIdentifier} or {withoutLimitMethodIdentifier} to modify this limit.";
+            var message = "Function exceeded invocation limit. This is a built-in safety mechanism to prevent hanging tests. Relax this constraint by configuring the invocationLimit parameter.";
             throw new Exceptions.GenLimitExceededException(message);
         }
 

@@ -56,7 +56,10 @@ namespace GalaxyCheck
         /// </summary>
         /// <returns>The new generator.</returns>
         public static IInt32Gen Int32() => new Int32Gen();
+    }
 
+    public static partial class Extensions
+    {
         /// <summary>
         /// Constrains the generator so that it only produces values between the supplied range (inclusive).
         /// </summary>

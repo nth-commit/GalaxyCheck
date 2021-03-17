@@ -1,4 +1,5 @@
-﻿using GalaxyCheck;
+﻿using FluentAssertions;
+using GalaxyCheck;
 using GalaxyCheck.Internal.ExampleSpaces;
 using NebulaCheck;
 using System;
@@ -43,7 +44,7 @@ namespace Tests.V2.GenTests.InfiniteGenTests
                 from size in DomainGen.Size()
                 select Property.ForThese(() =>
                 {
-                    var gen = elementGen.InfiniteOf().WithIterationLimit(limit).Select(EnsureSourceCanShrink);
+                    var gen = elementGen.InfiniteOf(iterationLimit: limit).Select(EnsureSourceCanShrink);
 
                     var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
@@ -62,7 +63,7 @@ namespace Tests.V2.GenTests.InfiniteGenTests
                 from size in DomainGen.Size()
                 select Property.ForThese(() =>
                 {
-                    var gen = elementGen.InfiniteOf().WithoutIterationLimit().Select(EnsureSourceCanShrink);
+                    var gen = elementGen.InfiniteOf(iterationLimit: null).Select(EnsureSourceCanShrink);
 
                     var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
@@ -86,9 +87,10 @@ namespace Tests.V2.GenTests.InfiniteGenTests
             enumerable.Take(expectedLimit).ToList();
 
             // It throws when it exceeds the limit
-            Action throwing = () => enumerable.Take(expectedLimit + 1).ToList();
-            var exception = Assert.Throws<GalaxyCheck.Exceptions.GenLimitExceededException>(throwing);
-            Assert.Equal("Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Use IInfiniteGen.WithIterationLimit or IInfiniteGen.WithoutIterationLimit to modify this limit.", exception.Message);
+            Action action = () => enumerable.Take(expectedLimit + 1).ToList();
+            action.Should()
+                .Throw<GalaxyCheck.Exceptions.GenLimitExceededException>()
+                .WithMessage("Infinite enumerable exceeded iteration limit. This is a built-in safety mechanism to prevent hanging tests. Relax this constraint by configuring the iterationLimit parameter.");
         }
 
         private static void AssertUnlimited<T>(IExampleSpace<IEnumerable<T>> exampleSpace)
