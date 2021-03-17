@@ -54,8 +54,11 @@ namespace GalaxyCheck
         /// </summary>
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
         /// <returns>The new generator.</returns>
-        public static IListGen<T> List<T>(IGen<T> elementGen) => elementGen.ListOf();
+        public static IListGen<T> List<T>(IGen<T> elementGen) => new ListGen<T>(elementGen);
+    }
 
+    public static partial class Extensions
+    {
         /// <summary>
         /// Creates a generator that produces lists, the elements of which are produced by the given generator. By
         /// default, the generator produces lists ranging from count 0 to 20 - but this can be configured using the
@@ -63,7 +66,7 @@ namespace GalaxyCheck
         /// </summary>
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
         /// <returns>The new generator.</returns>
-        public static IListGen<T> ListOf<T>(this IGen<T> gen) => new ListGen<T>(gen);
+        public static IListGen<T> ListOf<T>(this IGen<T> gen) => Gen.List(gen);
 
         /// <summary>
         /// Constrains the generator so that it only produces lists with counts within the supplied range (inclusive).
