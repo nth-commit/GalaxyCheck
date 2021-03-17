@@ -199,7 +199,7 @@ namespace GalaxyCheck.Gens
         }
 
         public static IGen<VariadicFunc<TResult>> Create(IGen<TResult> returnGen, int? invocationLimit) =>
-            from returnValueSource in returnGen.InfiniteOf().WithoutIterationLimit()
+            from returnValueSource in returnGen.InfiniteOf(iterationLimit: null)
             select ToPureFunction(returnValueSource, invocationLimit);
 
         /// <summary>
