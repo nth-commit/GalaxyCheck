@@ -31,7 +31,7 @@ namespace GalaxyCheck
                 var projectedExampleSpace = instance.ExampleSpace.Map(selector);
 
                 return GenIterationFactory.Instance(
-                    instance.RepeatParameters,
+                    instance.ReplayParameters,
                     instance.NextParameters,
                     projectedExampleSpace,
                     instance.ExampleSpaceHistory);

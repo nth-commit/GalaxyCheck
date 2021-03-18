@@ -37,8 +37,8 @@ namespace GalaxyCheck
                 counterexample.Id,
                 value,
                 counterexample.Distance,
-                counterexample.RepeatParameters,
-                counterexample.RepeatPath,
+                counterexample.ReplayParameters,
+                counterexample.ReplayPath,
                 counterexample.Replay,
                 counterexample.Exception,
                 counterexample.PresentationalValue);

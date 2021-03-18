@@ -6,8 +6,7 @@ namespace GalaxyCheck
     {
         public class GenErrorException : Exception
         {
-            public GenErrorException(string genName, string message)
-                : base($"Error while running generator {genName}: {message}")
+            public GenErrorException(string message) : base(message)
             {
             }
         }

@@ -37,7 +37,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
         public CounterexampleState<T>? Counterexample => CounterexampleStateHistory
             .OrderBy(c => c.ExampleSpace.Current.Distance)
-            .ThenByDescending(c => c.RepeatParameters.Size.Value) // Bigger sizes are more likely to normalize
+            .ThenByDescending(c => c.ReplayParameters.Size.Value) // Bigger sizes are more likely to normalize
             .FirstOrDefault();
 
         internal CheckState<T> IncrementCompletedIterations() => new CheckState<T>(

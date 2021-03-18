@@ -21,7 +21,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         public CounterexampleState<T> CounterexampleState => new CounterexampleState<T>(
             CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
             Instance.ExampleSpaceHistory,
-            Instance.RepeatParameters,
+            Instance.ReplayParameters,
             CounterexampleExploration.Path,
             CounterexampleExploration.Exception);
     }

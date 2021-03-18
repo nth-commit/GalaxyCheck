@@ -12,17 +12,17 @@ namespace GalaxyCheck
                 .Run(parameters)
                 .Select(iteration => iteration.Data.Match(
                     onInstance: instance => GenIterationFactory.Instance(
-                        iteration.RepeatParameters,
+                        iteration.ReplayParameters,
                         iteration.NextParameters,
                         ExampleSpaceExtensions.Cast<T>(instance.ExampleSpace),
                         instance.ExampleSpaceHistory),
                     onError: error => GenIterationFactory.Error<T>(
-                        iteration.RepeatParameters,
+                        iteration.ReplayParameters,
                         iteration.NextParameters,
                         error.GenName,
                         error.Message),
                     onDiscard: discard => GenIterationFactory.Discard<T>(
-                        iteration.RepeatParameters,
+                        iteration.ReplayParameters,
                         iteration.NextParameters))));
     }
 }
