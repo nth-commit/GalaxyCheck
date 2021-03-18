@@ -275,8 +275,7 @@ namespace GalaxyCheck
                 NonCounterexampleExplorationTransition<T> t => FromHandleNonCounterexample(t, enablePresentationalInference),
                 DiscardExplorationTransition<T> t => ToDiscard(),
                 DiscardTransition<T> t => ToDiscard(),
-                ErrorTransition<T> t =>
-                    throw new Exceptions.GenErrorException(t.Error.GenName, t.Error.Message),
+                ErrorTransition<T> t => throw new Exceptions.GenErrorException(t.Error),
                 Termination<T> t => FromTermination(t),
                 _ => null
             };

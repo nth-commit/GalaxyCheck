@@ -13,9 +13,12 @@ namespace GalaxyCheck.Runners.CheckAutomata
         {
             var (head, tail) = Iterations;
             return head!.Match<AbstractTransition<T>>(
-                onInstance: (instance) => new InstanceExplorationTransition<T>(State, instance),   
-                onDiscard: (discard) => new DiscardTransition<T>(State, tail, discard),
-                onError: (error) => new ErrorTransition<T>(State, error));
+                onInstance: (instance) =>
+                    new InstanceExplorationTransition<T>(State, instance),   
+                onDiscard: (discard) =>
+                    new DiscardTransition<T>(State, tail, discard),
+                onError: (error) =>
+                    new ErrorTransition<T>(State, $"Error while running generator {error.GenName}: {error.Message}"));
         }
     }
 }
