@@ -28,7 +28,7 @@ namespace GalaxyCheck
             GenInstanceTransformation<T, T> transformation = (instance) =>
             {
                 return GenIterationFactory.Instance(
-                    instance.RepeatParameters,
+                    instance.ReplayParameters,
                     instance.NextParameters,
                     unfolder(instance.ExampleSpace.Current.Value),
                     instance.ExampleSpaceHistory);

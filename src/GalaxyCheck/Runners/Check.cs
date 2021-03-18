@@ -70,8 +70,8 @@ namespace GalaxyCheck
         ExampleId Id,
         T Value,
         decimal Distance,
-        GenParameters RepeatParameters,
-        IEnumerable<int> RepeatPath,
+        GenParameters ReplayParameters,
+        IEnumerable<int> ReplayPath,
         string Replay,
         Exception? Exception,
         object? PresentationalValue);
@@ -161,19 +161,19 @@ namespace GalaxyCheck
             CounterexampleState<T> counterexampleState,
             bool enablePresentationalInference)
         {
-            var replay = new Replay(counterexampleState.RepeatParameters, counterexampleState.RepeatPath);
+            var replay = new Replay(counterexampleState.ReplayParameters, counterexampleState.ReplayPath);
             var replayEncoded = ReplayEncoding.Encode(replay);
 
             return new Counterexample<T>(
                 counterexampleState.ExampleSpace.Current.Id,
                 counterexampleState.ExampleSpace.Current.Value,
                 counterexampleState.ExampleSpace.Current.Distance,
-                counterexampleState.RepeatParameters,
-                counterexampleState.RepeatPath,
+                counterexampleState.ReplayParameters,
+                counterexampleState.ReplayPath,
                 replayEncoded,
                 counterexampleState.Exception,
                 enablePresentationalInference
-                    ? NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.RepeatPath)
+                    ? NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.ReplayPath)
                     : null);
         }
 
@@ -234,8 +234,8 @@ namespace GalaxyCheck
                     PresentationalValue: presentationalExampleSpace?.Current.Value,
                     ExampleSpace: exampleSpace,
                     PresentationalExampleSpace: presentationalExampleSpace,
-                    Parameters: transition.CounterexampleState.RepeatParameters,
-                    Path: transition.CounterexampleState.RepeatPath,
+                    Parameters: transition.CounterexampleState.ReplayParameters,
+                    Path: transition.CounterexampleState.ReplayPath,
                     Exception: transition.CounterexampleState.Exception,
                     IsCounterexample: true);
             }
@@ -257,7 +257,7 @@ namespace GalaxyCheck
                     PresentationalValue: presentationalExampleSpace?.Current.Value,
                     ExampleSpace: inputExampleSpace,
                     PresentationalExampleSpace: presentationalExampleSpace,
-                    Parameters: transition.Instance.RepeatParameters,
+                    Parameters: transition.Instance.ReplayParameters,
                     Path: transition.NonCounterexampleExploration.Path,
                     Exception: null,
                     IsCounterexample: false);
@@ -349,8 +349,8 @@ namespace GalaxyCheck
         public record CounterexampleState<T>(
             IExampleSpace<T> ExampleSpace,
             IEnumerable<IExampleSpace> ExampleSpaceHistory,
-            GenParameters RepeatParameters,
-            IEnumerable<int> RepeatPath,
+            GenParameters ReplayParameters,
+            IEnumerable<int> ReplayPath,
             Exception? Exception);
     }
 }

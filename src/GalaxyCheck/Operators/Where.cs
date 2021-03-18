@@ -23,11 +23,11 @@ namespace GalaxyCheck
                 var filteredExampleSpace = instance.ExampleSpace.Filter(pred);
                 if (filteredExampleSpace == null)
                 {
-                    return GenIterationFactory.Discard<T>(instance.RepeatParameters, instance.NextParameters);
+                    return GenIterationFactory.Discard<T>(instance.ReplayParameters, instance.NextParameters);
                 }
 
                 return GenIterationFactory.Instance(
-                    instance.RepeatParameters,
+                    instance.ReplayParameters,
                     instance.NextParameters,
                     filteredExampleSpace,
                     instance.ExampleSpaceHistory);
@@ -46,7 +46,7 @@ namespace GalaxyCheck
                         if (consecutiveDiscardCount >= MaxConsecutiveDiscards)
                         {
                             var resizedIteration = GenIterationFactory.Discard<T>(
-                                iteration.RepeatParameters,
+                                iteration.ReplayParameters,
                                 iteration.NextParameters.With(size: iteration.NextParameters.Size.BigIncrement()));
 
                             return (iteration: resizedIteration, consecutiveDiscardCount);

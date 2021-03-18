@@ -179,7 +179,7 @@ namespace GalaxyCheck.Internal.GenIterations
 
     public interface IGenIteration
     {
-        GenParameters RepeatParameters { get; }
+        GenParameters ReplayParameters { get; }
 
         GenParameters NextParameters { get; }
 
@@ -213,16 +213,16 @@ namespace GalaxyCheck.Internal.GenIterations
         private record GenIteration<T> : IGenIteration<T>
         {
             public GenIteration(
-                GenParameters repeatParameters,
+                GenParameters replayParameters,
                 GenParameters nextParameters,
                 IGenData<T> data)
             {
-                RepeatParameters = repeatParameters;
+                ReplayParameters = replayParameters;
                 NextParameters = nextParameters;
                 Data = data;
             }
 
-            public GenParameters RepeatParameters { get; init; }
+            public GenParameters ReplayParameters { get; init; }
 
             public GenParameters NextParameters { get; init; }
 
@@ -237,17 +237,17 @@ namespace GalaxyCheck.Internal.GenIterations
                 Func<IGenInstance<T>, TResult> onInstance,
                 Func<IGenError<T>, TResult> onError,
                 Func<IGenDiscard<T>, TResult> onDiscard) => Data.Match(
-                    onInstance: _ => onInstance(new GenInstance<T>(RepeatParameters, NextParameters, Data)),
-                    onError: _ => onError(new GenError<T>(RepeatParameters, NextParameters, Data)),
-                    onDiscard: _ => onDiscard(new GenDiscard<T>(RepeatParameters, NextParameters, Data)));
+                    onInstance: _ => onInstance(new GenInstance<T>(ReplayParameters, NextParameters, Data)),
+                    onError: _ => onError(new GenError<T>(ReplayParameters, NextParameters, Data)),
+                    onDiscard: _ => onDiscard(new GenDiscard<T>(ReplayParameters, NextParameters, Data)));
 
             private record GenInstance<U> : GenIteration<U>, IGenInstance<U>
             {
                 public GenInstance(
-                    GenParameters repeatParameters,
+                    GenParameters replayParameters,
                     GenParameters nextParameters,
                     IGenData<U> data)
-                    : base(repeatParameters, nextParameters, data)
+                    : base(replayParameters, nextParameters, data)
                 {
                 }
 
@@ -261,10 +261,10 @@ namespace GalaxyCheck.Internal.GenIterations
             private record GenError<U> : GenIteration<U>, IGenError<U>
             {
                 public GenError(
-                    GenParameters repeatParameters,
+                    GenParameters replayParameters,
                     GenParameters nextParameters,
                     IGenData<U> data)
-                    : base(repeatParameters, nextParameters, data)
+                    : base(replayParameters, nextParameters, data)
                 {
                 }
 
@@ -276,17 +276,17 @@ namespace GalaxyCheck.Internal.GenIterations
             private record GenDiscard<U> : GenIteration<U>, IGenDiscard<U>
             {
                 public GenDiscard(
-                    GenParameters repeatParameters,
+                    GenParameters replayParameters,
                     GenParameters nextParameters,
                     IGenData<U> data)
-                    : base(repeatParameters, nextParameters, data)
+                    : base(replayParameters, nextParameters, data)
                 {
                 }
             }
         }
 
         public static IGenIteration<T> Instance<T>(
-            GenParameters repeatParameters,
+            GenParameters replayParameters,
             GenParameters nextParameters,
             IExampleSpace<T> exampleSpace)
         {
@@ -294,11 +294,11 @@ namespace GalaxyCheck.Internal.GenIterations
                 exampleSpace,
                 new[] { exampleSpace });
 
-            return new GenIteration<T>(repeatParameters, nextParameters, instanceData);
+            return new GenIteration<T>(replayParameters, nextParameters, instanceData);
         }
 
         public static IGenIteration<T> Instance<T>(
-            GenParameters repeatParameters,
+            GenParameters replayParameters,
             GenParameters nextParameters,
             IExampleSpace<T> exampleSpace,
             IEnumerable<IExampleSpace> lastExampleSpaceHistory)
@@ -307,20 +307,20 @@ namespace GalaxyCheck.Internal.GenIterations
                 exampleSpace,
                 Enumerable.Concat(lastExampleSpaceHistory, new[] { exampleSpace }));
 
-            return new GenIteration<T>(repeatParameters, nextParameters, instanceData);
+            return new GenIteration<T>(replayParameters, nextParameters, instanceData);
         }
 
         public static IGenIteration<T> Error<T>(
-            GenParameters repeatParameters,
+            GenParameters replayParameters,
             GenParameters nextParameters,
             string genName,
             string message) =>
-                new GenIteration<T>(repeatParameters, nextParameters, GenData<T>.ErrorData(genName, message));
+                new GenIteration<T>(replayParameters, nextParameters, GenData<T>.ErrorData(genName, message));
 
         public static IGenIteration<T> Discard<T>(
-            GenParameters repeatParameters,
+            GenParameters replayParameters,
             GenParameters nextParameters) =>
-                new GenIteration<T>(repeatParameters, nextParameters, GenData<T>.DiscardData());
+                new GenIteration<T>(replayParameters, nextParameters, GenData<T>.DiscardData());
     }
 
     public static class GenIterationExtensions
@@ -329,9 +329,9 @@ namespace GalaxyCheck.Internal.GenIterations
             this IGenIteration<TSource> iteration) => iteration.Match<Either<IGenInstance<TSource>, IGenIteration<TNonInstance>>>(
                 onInstance: instance => new Left<IGenInstance<TSource>, IGenIteration<TNonInstance>>(instance),
                 onError: error => new Right<IGenInstance<TSource>, IGenIteration<TNonInstance>>(
-                    GenIterationFactory.Error<TNonInstance>(error.RepeatParameters, error.NextParameters, error.GenName, error.Message)),
+                    GenIterationFactory.Error<TNonInstance>(error.ReplayParameters, error.NextParameters, error.GenName, error.Message)),
                 onDiscard: discard => new Right<IGenInstance<TSource>, IGenIteration<TNonInstance>>(
-                    GenIterationFactory.Discard<TNonInstance>(discard.RepeatParameters, discard.NextParameters)));
+                    GenIterationFactory.Discard<TNonInstance>(discard.ReplayParameters, discard.NextParameters)));
 
         public static bool IsInstance<T>(this IGenIteration<T> iteration) => iteration.Match(
             onInstance: _ => true,

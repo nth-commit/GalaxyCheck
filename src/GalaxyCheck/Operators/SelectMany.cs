@@ -76,7 +76,7 @@ namespace GalaxyCheck
                                     parameters);
 
                                 return GenIterationFactory.Instance(
-                                    iteration.RepeatParameters,
+                                    iteration.ReplayParameters,
                                     iteration.NextParameters,
                                     jointExampleSpace);
                             },
@@ -101,23 +101,23 @@ namespace GalaxyCheck
                         var innerStream = BindExampleSpace(
                             instance.ExampleSpace,
                             selector,
-                            instance.RepeatParameters.With(rng: instance.NextParameters.Rng));
+                            instance.ReplayParameters.With(rng: instance.NextParameters.Rng));
 
                         foreach (var innerIteration in innerStream)
                         {
                             yield return innerIteration.Match(
                                 onInstance: innerInstance => GenIterationFactory.Instance(
-                                    iteration.RepeatParameters,
+                                    iteration.ReplayParameters,
                                     innerIteration.NextParameters,
                                     innerInstance.ExampleSpace,
                                     instance.ExampleSpaceHistory),
                                 onError: innerError => GenIterationFactory.Error<TResult>(
-                                    iteration.RepeatParameters,
+                                    iteration.ReplayParameters,
                                     innerIteration.NextParameters,
                                     innerError.GenName,
                                     innerError.Message),
                                 onDiscard: innerDiscard => GenIterationFactory.Discard<TResult>(
-                                    iteration.RepeatParameters,
+                                    iteration.ReplayParameters,
                                     innerIteration.NextParameters));
                         }
 
