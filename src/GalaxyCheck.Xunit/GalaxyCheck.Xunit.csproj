@@ -1,14 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile Condition="'$(Configuration)' == 'Release'">true</GenerateDocumentationFile>
 
     <!-- NuGet settings -->
     <PackageId>GalaxyCheck.Xunit</PackageId>
     <PackageTags>GalaxyCheck;Property-Based Testing;Test Framework;Xunit</PackageTags>
     <PackageProjectUrl>https://github.com/nth-commit/GalaxyCheck</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nth-commit/GalaxyCheck</RepositoryUrl>
   </PropertyGroup>
