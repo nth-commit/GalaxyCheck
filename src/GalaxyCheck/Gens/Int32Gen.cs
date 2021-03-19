@@ -1,51 +1,6 @@
-﻿using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Gens;
-using GalaxyCheck.Internal.Sizing;
-using GalaxyCheck.Internal.WeightedLists;
-using System;
-using System.Collections.Generic;
-
-namespace GalaxyCheck.Gens
-{
-    public interface IInt32Gen : IGen<int>
-    {
-        /// <summary>
-        /// Constrains the generator so that it only produces values less than or equal to the supplied maximum.
-        /// </summary>
-        /// <param name="max">The maximum integer to generate.</param>
-        /// <returns>A new generator with the constraint applied.</returns>
-        IInt32Gen LessThanEqual(int max);
-
-        /// <summary>
-        /// Constrains the generator so that it only produces values greater than or equal to the supplied minimum.
-        /// </summary>
-        /// <param name="min">The minimum integer to generate.</param>
-        /// <returns>A new generator with the constraint applied.</returns>
-        IInt32Gen GreaterThanEqual(int min);
-
-        /// <summary>
-        /// Modifies the generator so that values will ultimately shrink to the supplied origin. The origin is the
-        /// "smallest" value that all values should shrink towards. By default, the origin will be 0. The origin must
-        /// be within the the bounds of the generator. If the bounds have been modified so that they don't contain 0,
-        /// and an origin has not been supplied, the generator will try and infer the most sensible origin.
-        /// </summary>
-        /// <param name="origin">The "smallest" value that generated integers should shrink towards.</param>
-        /// <returns>A new generator with the origin applied.</returns>
-        IInt32Gen ShrinkTowards(int origin);
-
-        /// <summary>
-        /// Modifies how the generator biases values with respect to the size parameter.
-        /// </summary>
-        /// <returns>A new generator with the biasing effect applied.</returns>
-        IInt32Gen WithBias(Gen.Bias bias);
-    }
-}
-
-namespace GalaxyCheck
+﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
-    using GalaxyCheck.Gens.Int32;
 
     public static partial class Gen
     {
@@ -89,9 +44,50 @@ namespace GalaxyCheck
     }
 }
 
-namespace GalaxyCheck.Gens.Int32
+namespace GalaxyCheck.Gens
 {
-    public class Int32Gen : BaseGen<int>, IInt32Gen
+    using GalaxyCheck.Internal.ExampleSpaces;
+    using GalaxyCheck.Internal.GenIterations;
+    using GalaxyCheck.Internal.Gens;
+    using GalaxyCheck.Internal.Sizing;
+    using GalaxyCheck.Internal.WeightedLists;
+    using System;
+    using System.Collections.Generic;
+
+    public interface IInt32Gen : IGen<int>
+    {
+        /// <summary>
+        /// Constrains the generator so that it only produces values less than or equal to the supplied maximum.
+        /// </summary>
+        /// <param name="max">The maximum integer to generate.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        IInt32Gen LessThanEqual(int max);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces values greater than or equal to the supplied minimum.
+        /// </summary>
+        /// <param name="min">The minimum integer to generate.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        IInt32Gen GreaterThanEqual(int min);
+
+        /// <summary>
+        /// Modifies the generator so that values will ultimately shrink to the supplied origin. The origin is the
+        /// "smallest" value that all values should shrink towards. By default, the origin will be 0. The origin must
+        /// be within the the bounds of the generator. If the bounds have been modified so that they don't contain 0,
+        /// and an origin has not been supplied, the generator will try and infer the most sensible origin.
+        /// </summary>
+        /// <param name="origin">The "smallest" value that generated integers should shrink towards.</param>
+        /// <returns>A new generator with the origin applied.</returns>
+        IInt32Gen ShrinkTowards(int origin);
+
+        /// <summary>
+        /// Modifies how the generator biases values with respect to the size parameter.
+        /// </summary>
+        /// <returns>A new generator with the biasing effect applied.</returns>
+        IInt32Gen WithBias(Gen.Bias bias);
+    }
+
+    internal class Int32Gen : BaseGen<int>, IInt32Gen
     {
         private record IntegerGenConfig(int? Min, int? Max, int? Origin, Gen.Bias? Bias);
 
@@ -251,7 +247,7 @@ namespace GalaxyCheck.Gens.Int32
             ExtremeMaximum = 2
         }
 
-        private static IGen<int> Error(string message) => new ErrorGen<int>(nameof(Int32Gen), message);
+        private static IGen<int> Error(string message) => Gen.Advanced.Error<int>(nameof(Int32Gen), message);
 
         /// <summary>
         /// Infer the origin by finding the closest value to 0 that is within the bounds.

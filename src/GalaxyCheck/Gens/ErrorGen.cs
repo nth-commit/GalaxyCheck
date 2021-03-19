@@ -1,9 +1,23 @@
-﻿using GalaxyCheck.Internal.GenIterations;
-using System.Collections.Generic;
-
-namespace GalaxyCheck.Internal.Gens
+﻿namespace GalaxyCheck
 {
-    public class ErrorGen<T> : BaseGen<T>, IGen<T>
+    using GalaxyCheck.Gens;
+
+    public static partial class Gen
+    {
+        public static partial class Advanced
+        {
+            public static IGen<T> Error<T>(string genName, string message) => new ErrorGen<T>(genName, message);
+        }
+    }
+}
+
+namespace GalaxyCheck.Gens
+{
+    using GalaxyCheck.Internal.GenIterations;
+    using GalaxyCheck.Internal.Gens;
+    using System.Collections.Generic;
+
+    internal class ErrorGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly string _genName;
         private readonly string _message;

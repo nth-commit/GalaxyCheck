@@ -1,49 +1,6 @@
-﻿using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Gens;
-using GalaxyCheck.Internal.Utility;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-
-namespace GalaxyCheck.Gens
-{
-    public interface IListGen<T> : IGen<ImmutableList<T>>
-    {
-        /// <summary>
-        /// Constrains the generator so that it only produces lists with the given count.
-        /// </summary>
-        /// <param name="count">The count to constrain generated lists to.</param>
-        /// <returns>A new generator with the constrain applied.</returns>
-        IListGen<T> OfCount(int count);
-
-        /// <summary>
-        /// Constrains the generator so that it only produces lists with at least the given count.
-        /// </summary>
-        /// <param name="minCount">The minimum count that generated lists should be constrained to.</param>
-        /// <returns>A new generator with the constraint applied.</returns>
-        IListGen<T> WithCountGreaterThanEqual(int minCount);
-
-        /// <summary>
-        /// Constrains the generator so that it only produces lists with at most the given count.
-        /// </summary>
-        /// <param name="maxCount">The maximum count that generated lists should be constrained to.</param>
-        /// <returns>A new generator with the constraint applied.</returns>
-        IListGen<T> WithCountLessThanEqual(int maxCount);
-
-        /// <summary>
-        /// Modifies how the generator biases counts of produced lists with respect to the size parameter.
-        /// </summary>
-        /// <returns>A new generator with the biasing effect applied.</returns>
-        IListGen<T> WithCountBias(Gen.Bias bias);
-    }
-}
-
-namespace GalaxyCheck
+﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
-    using GalaxyCheck.Gens.Lists;
 
     public static partial class Gen
     {
@@ -99,9 +56,48 @@ namespace GalaxyCheck
     }
 }
 
-namespace GalaxyCheck.Gens.Lists
+namespace GalaxyCheck.Gens
 {
-    public class ListGen<T> : BaseGen<ImmutableList<T>>, IListGen<T>
+    using GalaxyCheck.Internal.ExampleSpaces;
+    using GalaxyCheck.Internal.GenIterations;
+    using GalaxyCheck.Internal.Gens;
+    using GalaxyCheck.Internal.Utility;
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
+
+    public interface IListGen<T> : IGen<ImmutableList<T>>
+    {
+        /// <summary>
+        /// Constrains the generator so that it only produces lists with the given count.
+        /// </summary>
+        /// <param name="count">The count to constrain generated lists to.</param>
+        /// <returns>A new generator with the constrain applied.</returns>
+        IListGen<T> OfCount(int count);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces lists with at least the given count.
+        /// </summary>
+        /// <param name="minCount">The minimum count that generated lists should be constrained to.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        IListGen<T> WithCountGreaterThanEqual(int minCount);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces lists with at most the given count.
+        /// </summary>
+        /// <param name="maxCount">The maximum count that generated lists should be constrained to.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        IListGen<T> WithCountLessThanEqual(int maxCount);
+
+        /// <summary>
+        /// Modifies how the generator biases counts of produced lists with respect to the size parameter.
+        /// </summary>
+        /// <returns>A new generator with the biasing effect applied.</returns>
+        IListGen<T> WithCountBias(Gen.Bias bias);
+    }
+
+    internal class ListGen<T> : BaseGen<ImmutableList<T>>, IListGen<T>
     {
         private abstract record ListGenCountConfig
         {
@@ -195,7 +191,7 @@ namespace GalaxyCheck.Gens.Lists
         private static (int minCount, int maxCount, IGen<int> gen) CountGen(ListGenConfig config)
         {
             static (int minCount, int maxCount, IGen<int> gen) CountError(string message) =>
-                (-1, -1, new ErrorGen<int>(nameof(ListGen<T>), message));
+                (-1, -1, Gen.Advanced.Error<int>(nameof(ListGen<T>), message));
 
             static (int minCount, int maxCount, IGen<int> gen) SpecificCountGen(int count)
             {
@@ -307,6 +303,6 @@ namespace GalaxyCheck.Gens.Lists
             return new FunctionalGen<ImmutableList<T>>(Run).Repeat();
         }
 
-        private static IGen<ImmutableList<T>> Error(string message) => new ErrorGen<ImmutableList<T>>(nameof(ListGen<T>), message);
+        private static IGen<ImmutableList<T>> Error(string message) => Gen.Advanced.Error<ImmutableList<T>>(nameof(ListGen<T>), message);
     }
 }
