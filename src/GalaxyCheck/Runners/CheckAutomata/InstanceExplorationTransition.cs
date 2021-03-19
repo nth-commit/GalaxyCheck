@@ -1,5 +1,5 @@
-﻿using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.GenIterations;
+﻿using GalaxyCheck.Gens.Iterations.Generic;
+using GalaxyCheck.Internal.ExampleSpaces;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {

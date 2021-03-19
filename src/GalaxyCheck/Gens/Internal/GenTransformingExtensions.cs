@@ -1,21 +1,22 @@
 ﻿using GalaxyCheck;
-using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Gens.Internal.Iterations;
+using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Internal.Gens
+namespace GalaxyCheck.Gens.Internal
 {
-    public delegate IGen<U> GenTransformation<T, U>(IGen<T> gen);
+    internal delegate IGen<U> GenTransformation<T, U>(IGen<T> gen);
 
-    public delegate IEnumerable<IGenIteration<U>> GenStreamTransformation<T, U>(IEnumerable<IGenIteration<T>> stream);
+    internal delegate IEnumerable<IGenIteration<U>> GenStreamTransformation<T, U>(IEnumerable<IGenIteration<T>> stream);
 
-    public delegate IGenIteration<U> GenIterationTransformation<T, U>(IGenIteration<T> iteration);
+    internal delegate IGenIteration<U> GenIterationTransformation<T, U>(IGenIteration<T> iteration);
 
-    public delegate IGenIteration<U> GenInstanceTransformation<T, U>(IGenInstance<T> instance);
+    internal delegate IGenIteration<U> GenInstanceTransformation<T, U>(IGenInstance<T> instance);
 
-    public static class GenTransformingExtensions
+    internal static class GenTransformingExtensions
     {
         public static IGen<U> Transform<T, U>(this IGen<T> gen, GenTransformation<T, U> transformation) =>
             transformation(gen);
@@ -33,7 +34,7 @@ namespace GalaxyCheck.Internal.Gens
             GenInstanceTransformation<T, U> transformation) =>
                 gen.TransformIterations((IGenIteration<T> iteration) =>
                 {
-                    var either = GenIterationExtensions.ToEither<T, U>(iteration);
+                    var either = iteration.ToEither<T, U>();
 
                     if (EitherExtension.IsLeft(either, out IGenInstance<T> instance))
                     {
@@ -52,7 +53,7 @@ namespace GalaxyCheck.Internal.Gens
         public static IGen<T> Repeat<T>(this IGen<T> gen) => gen.Transform(GenTransformations.Repeat<T>());
     }
 
-    public static class GenTransformations
+    internal static class GenTransformations
     {
         public static GenTransformation<T, T> Repeat<T>() => (gen) => new FunctionalGen<T>((parameters) =>
         {
