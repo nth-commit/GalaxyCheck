@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.Gens
 {
-    public class LazyGen<T> : BaseGen<T>
+    internal class LazyGen<T> : BaseGen<T>
     {
         private readonly Lazy<IGen<T>> _lazy;
 

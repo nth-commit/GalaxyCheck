@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.Gens
 {
-    public abstract class BaseGen<T> : IGen<T>
+    internal abstract class BaseGen<T> : IGen<T>
     {
         public IGenAdvanced<T> Advanced => new GenAdvanced(this);
 

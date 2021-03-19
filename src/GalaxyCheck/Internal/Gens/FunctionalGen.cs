@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.Gens
 {
-    public delegate IEnumerable<IGenIteration<T>> GenFunc<T>(GenParameters parameters);
+    internal delegate IEnumerable<IGenIteration<T>> GenFunc<T>(GenParameters parameters);
 
-    public class FunctionalGen<T> : BaseGen<T>, IGen<T>
+    internal class FunctionalGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly GenFunc<T> _func;
 

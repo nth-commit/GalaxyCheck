@@ -11,7 +11,7 @@ namespace Tests.V2
         {
             if (gens.Any() == false)
             {
-                return new NebulaCheck.Internal.Gens.ErrorGen<T>("DomainGen.Choose", "Input gens was empty");
+                return NebulaCheck.Gen.Advanced.Error<T>("DomainGen.Choose", "Input gens was empty");
             }
 
             return NebulaCheck.Gen.Int32()
@@ -24,7 +24,7 @@ namespace Tests.V2
         {
             if (elements.Any() == false)
             {
-                return new NebulaCheck.Internal.Gens.ErrorGen<T>("DomainGen.Choose", "Input gens was empty");
+                return NebulaCheck.Gen.Advanced.Error<T>("DomainGen.Element", "Input gens was empty");
             }
 
             return NebulaCheck.Gen.Int32()
