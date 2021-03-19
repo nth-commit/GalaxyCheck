@@ -77,6 +77,8 @@ namespace Tests.V2
         public static NebulaCheck.IGen<Action<T0, T1, T2, T3>> Action<T0, T1, T2, T3>() =>
             Boolean().Select<bool, Action<T0, T1, T2, T3>>(b => (_, __, ___, ____) => IfTrueThenThrow(b));
 
+        public static NebulaCheck.IGen<Func<T, bool>> Predicate<T>() => NebulaCheck.Gen.Function<T, bool>(Boolean());
+
         private static void IfTrueThenThrow(bool b)
         {
             if (b == true)
