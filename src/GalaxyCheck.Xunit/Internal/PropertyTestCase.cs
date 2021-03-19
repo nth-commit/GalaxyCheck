@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -61,46 +57,39 @@ namespace GalaxyCheck.Xunit.Internal
                 return Task.FromResult(new RunSummary() { Total = 1 });
             }
 
-            var methodInfo = TestMethod.Method.ToRuntimeMethod();
-            var testClass = TestMethod.TestClass.Class.ToRuntimeType();
-            var testInstance = Activator.CreateInstance(testClass, constructorArguments);
+            Task<RunSummary> Skip(string reason)
+            {
+                messageBus.QueueMessage(new TestSkipped(test, reason));
+                return Task.FromResult(new RunSummary() { Skipped = 1 });
+            }
 
-            Property? property;
+            PropertyInitializationResult? propertyInitResult = null;
             try
             {
-                property = Property.Reflect(methodInfo, testInstance);
+                propertyInitResult = PropertyInitializer.Initialize(
+                    TestMethod.TestClass.Class.ToRuntimeType(),
+                    TestMethod.Method.ToRuntimeMethod(),
+                    constructorArguments);
             }
             catch (Exception exception)
             {
                 return Fail(exception);
             }
 
-            var propertyAttribute = GetPropertyAttribute(methodInfo);
-            var replay = methodInfo.GetCustomAttributes<ReplayAttribute>().SingleOrDefault()?.Replay;
+            if (propertyInitResult.ShouldSkip)
+            {
+                return Skip(propertyInitResult.SkipReason!);
+            }
 
             try
             {
-                RunProperty(property, propertyAttribute.ShrinkLimit, replay, testOutputHelper);
+                propertyInitResult.Runner.Run(propertyInitResult.Parameters, testOutputHelper);
                 return Pass();
             }
             catch (Exception propertyFailedException)
             {
                 return Fail(propertyFailedException);
             }
-        }
-
-        protected virtual PropertyAttribute GetPropertyAttribute(MethodInfo methodInfo)
-        {
-            return methodInfo.GetCustomAttributes<PropertyAttribute>().Single();
-        }
-
-        protected virtual void RunProperty(Property<object> property, int shrinkLimit, string? replay, ITestOutputHelper testOutputHelper)
-        {
-            property.Assert(
-                replay: replay,
-                shrinkLimit: shrinkLimit,
-                formatReproduction: (newReplay) => $"{Environment.NewLine}    [Replay(\"{newReplay}\")]",
-                formatMessage: (x) => Environment.NewLine + Environment.NewLine + x);
         }
     }
 }
