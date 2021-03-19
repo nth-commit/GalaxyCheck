@@ -5,14 +5,19 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  release:
+    types:
+      - published
 
 env:
-  GITHUB_USER: nth-commit
-  GITHUB_TOKEN: ${{ secrets.MY_GET_API_KEY }}
-  GITHUB_FEED: https://www.myget.org/F/galaxy-check/api/v2/package
+  MY_GET_FEED: https://www.myget.org/F/galaxy-check/api/v2/package
+  MY_GET_TOKEN: ${{ secrets.MY_GET_API_KEY }}
+  NUGET_FEED: https://api.nuget.org/v3/index.json
+  NUGET_TOKEN: ${{ secrets.NUGET_API_KEY }}
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit NebulaCheck NebulaCheck.Xunit
+  PRERELEASE_PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit NebulaCheck NebulaCheck.Xunit
+  PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit
 
 jobs:
   build:
@@ -20,7 +25,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest] #, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET
@@ -34,7 +39,7 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal
 
-  pack:
+  pack-prerelease:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -49,24 +54,28 @@ jobs:
           bash ./scripts/makeNebulaCheck.sh
       - name: Restore
         run: |
-          for project in $PACKABLE_PROJECTS; do
+          for project in $PRERELEASE_PACKABLE_PROJECTS; do
             dotnet restore src/$project/$project.csproj
           done
       - name: Build
         run: |
-          for project in $PACKABLE_PROJECTS; do
+          for project in $PRERELEASE_PACKABLE_PROJECTS; do
             dotnet build --no-restore src/$project/$project.csproj
           done
       - name: Pack
         run: |
-          for project in $PACKABLE_PROJECTS; do
-            dotnet pack -v normal -c Release --no-restore --include-symbols --include-source -p:PackageVersion=0.0.0-$GITHUB_RUN_ID src/$project/$project.csproj
-          done
-      - name: Collect
-        run: |
           mkdir ./nupkg
-          for f in $(find . -name '*.nupkg'); do
-            mv $f ./nupkg
+          for project in $PRERELEASE_PACKABLE_PROJECTS; do
+            dotnet pack \
+              -v normal \
+              -c Release \
+              -o ./nupkg \
+              --no-restore \
+              --include-symbols \
+              --include-source \
+              -p:PackageVersion=0.0.0-$GITHUB_RUN_ID \
+              -p:SymbolPackageFormat=snupkg \
+              src/$project/$project.csproj
           done
       - name: Upload
         uses: actions/upload-artifact@v2
@@ -75,8 +84,8 @@ jobs:
           path: ./nupkg
 
   prerelease:
-    needs: pack
-    if: github.ref == 'refs/heads/master'
+    needs: pack-prerelease
+    if: github.ref == 'refs/heads/master' && github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Setup .NET
@@ -87,9 +96,81 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: nupkg
-      - name: Push
+      - name: Push to MyGet
         run: |
           for f in ./nupkg/*.nupkg
           do
-            dotnet nuget push $f --api-key $GITHUB_TOKEN --source $GITHUB_FEED
+            dotnet nuget push $f --api-key $MY_GET_TOKEN --source $MY_GET_FEED
+          done
+
+  pack-release:
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Restore
+        run: |
+          for project in $PACKABLE_PROJECTS; do
+            dotnet restore src/$project/$project.csproj
+          done
+      - name: Build
+        run: |
+          for project in $PACKABLE_PROJECTS; do
+            dotnet build --no-restore src/$project/$project.csproj
+          done
+      - name: Pack
+        run: |
+          arrTag=(${GITHUB_REF//\// })
+          VERSION="${arrTag[2]}"
+          echo Version: $VERSION
+          VERSION="${VERSION//v}"
+          echo Clean Version: $VERSION
+
+          mkdir ./nupkg
+          for project in $PACKABLE_PROJECTS; do
+            dotnet pack \
+              -v normal \
+              -c Release \
+              -o ./nupkg \
+              --no-restore \
+              --include-symbols \
+              --include-source \
+              -p:PackageVersion=$VERSION \
+              -p:SymbolPackageFormat=snupkg \
+              src/$project/$project.csproj
+          done
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: nupkg
+          path: ./nupkg
+
+  release:
+    needs: pack-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Download
+        uses: actions/download-artifact@v1
+        with:
+          name: nupkg
+      - name: Push to MyGet
+        run: |
+          for f in ./nupkg/*.nupkg
+          do
+            dotnet nuget push $f --api-key $MY_GET_TOKEN --source $MY_GET_FEED
+          done
+      - name: Push to Nuget
+        run: |
+          for f in ./nupkg/*.nupkg
+          do
+            dotnet nuget push $f --api-key $NUGET_TOKEN --source $NUGET_FEED
           done
