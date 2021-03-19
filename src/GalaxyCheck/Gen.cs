@@ -1,7 +1,4 @@
-﻿using GalaxyCheck.Injection;
-using System.Reflection;
-
-namespace GalaxyCheck
+﻿namespace GalaxyCheck
 {
     public static partial class Gen
     {
@@ -20,14 +17,6 @@ namespace GalaxyCheck
             /// </summary>
             WithSize = 2
         }
-
-        /// <summary>
-        /// Creates a generator that produces parameters to the given method. Can be used to dynamically invoke a
-        /// method or a delegate.
-        /// </summary>
-        /// <param name="methodInfo">The method to generate parameters for.</param>
-        /// <returns>The new generator.</returns>
-        public static IGen<object[]> Parameters(MethodInfo methodInfo) => new ParametersGen(methodInfo);
 
         /// <summary>
         /// A container which contains generators for advanced usage.

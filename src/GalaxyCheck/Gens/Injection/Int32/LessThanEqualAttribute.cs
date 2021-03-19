@@ -1,7 +1,6 @@
-﻿using GalaxyCheck.Gens;
-using System;
+﻿using System;
 
-namespace GalaxyCheck.Injection.Int32
+namespace GalaxyCheck.Gens.Injection.Int32
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
     public class LessThanEqualAttribute : BaseInt32Attribute

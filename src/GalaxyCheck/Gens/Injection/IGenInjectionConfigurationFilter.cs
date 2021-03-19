@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck.Injection
+﻿namespace GalaxyCheck.Gens.Injection
 {
     public interface IGenInjectionConfigurationFilter<TValue, TGen>
         where TGen : IGen<TValue>

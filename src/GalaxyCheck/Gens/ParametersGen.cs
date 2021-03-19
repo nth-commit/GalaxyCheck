@@ -1,20 +1,37 @@
-﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Gens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
-namespace GalaxyCheck.Injection
+﻿namespace GalaxyCheck
 {
+    using GalaxyCheck.Gens;
+    using System.Reflection;
+
+    public static partial class Gen
+    {
+        /// <summary>
+        /// Creates a generator that produces parameters to the given method. Can be used to dynamically invoke a
+        /// method or a delegate.
+        /// </summary>
+        /// <param name="methodInfo">The method to generate parameters for.</param>
+        /// <returns>The new generator.</returns>
+        public static IGen<object[]> Parameters(MethodInfo methodInfo) => new ParametersGen(methodInfo);
+    }
+}
+
+namespace GalaxyCheck.Gens
+{
+    using GalaxyCheck.Gens.Injection;
+    using GalaxyCheck.Internal.GenIterations;
+    using GalaxyCheck.Internal.Gens;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+
     /// <summary>
     /// TODO:
     /// 1) Validation of misplaced generation attributes
     /// 2) More injection types
     /// 3) Nested primitive configuration
     /// </summary>
-    public class ParametersGen : BaseGen<object[]>, IGen<object[]>
+    internal class ParametersGen : BaseGen<object[]>, IGen<object[]>
     {
         private readonly Lazy<IGen<object[]>> _lazyGen;
 

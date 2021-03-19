@@ -1,5 +1,4 @@
-﻿using GalaxyCheck.Internal.Gens;
-using System;
+﻿using System;
 
 namespace GalaxyCheck
 {
@@ -26,7 +25,7 @@ namespace GalaxyCheck
         public bool EnableLinqInference { get; init; }
     }
 
-    public partial class Property : GenProvider<Test>, IGen<Test>
+    public partial class Property : IGen<Test>
     {
         public record TestImpl(TestFunc<object> Func, object Input, int Arity) : Test;
 
@@ -40,8 +39,9 @@ namespace GalaxyCheck
 
         public PropertyOptions Options { get; }
 
+        public IGenAdvanced<Test> Advanced => _gen.Advanced;
 
-        protected override IGen<Test> Gen => _gen;
+        IGenAdvanced IGen.Advanced => Advanced;
 
         public static implicit operator Property<object>(Property p)
         {
@@ -65,7 +65,7 @@ namespace GalaxyCheck
         }
     }
 
-    public class Property<T> : GenProvider<Test<T>>, IGen<Test<T>>
+    public class Property<T> : IGen<Test<T>>
     {
         public record TestImpl(TestFunc<T> Func, T Input, int Arity) : Test<T>
         {
@@ -91,7 +91,9 @@ namespace GalaxyCheck
 
         public PropertyOptions Options { get; }
 
-        protected override IGen<Test<T>> Gen => _gen;
+        public IGenAdvanced<Test<T>> Advanced => _gen.Advanced;
+
+        IGenAdvanced IGen.Advanced => Advanced;
 
         public static implicit operator Property(Property<T> p)
         {
