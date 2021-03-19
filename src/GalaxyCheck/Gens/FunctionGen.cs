@@ -75,7 +75,7 @@
 
 namespace GalaxyCheck.Gens
 {
-    using GalaxyCheck.Internal.Gens;
+    using GalaxyCheck.Gens.Internal;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;

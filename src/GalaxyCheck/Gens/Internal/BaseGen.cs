@@ -1,7 +1,8 @@
-﻿using GalaxyCheck.Internal.GenIterations;
+﻿using GalaxyCheck.Gens.Iterations;
+using GalaxyCheck.Gens.Iterations.Generic;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Internal.Gens
+namespace GalaxyCheck.Gens.Internal
 {
     internal abstract class BaseGen<T> : IGen<T>
     {

@@ -46,9 +46,9 @@
 
 namespace GalaxyCheck.Gens
 {
+    using GalaxyCheck.Gens.Internal;
+    using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Internal.ExampleSpaces;
-    using GalaxyCheck.Internal.GenIterations;
-    using GalaxyCheck.Internal.Gens;
     using GalaxyCheck.Internal.Sizing;
     using GalaxyCheck.Internal.WeightedLists;
     using System;

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GalaxyCheck.Gens.Internal;
+using GalaxyCheck.Gens.Internal.Iterations;
+using GalaxyCheck.Gens.Iterations.Generic;
+using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.Internal.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.Gens;
-using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Utility;
 
 namespace GalaxyCheck
 {

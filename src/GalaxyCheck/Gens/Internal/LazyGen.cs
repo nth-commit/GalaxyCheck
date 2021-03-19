@@ -1,8 +1,8 @@
-﻿using GalaxyCheck.Internal.GenIterations;
+﻿using GalaxyCheck.Gens.Iterations.Generic;
 using System;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Internal.Gens
+namespace GalaxyCheck.Gens.Internal
 {
     internal class LazyGen<T> : BaseGen<T>
     {

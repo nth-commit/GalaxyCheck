@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Internal.GenIterations;
+﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;

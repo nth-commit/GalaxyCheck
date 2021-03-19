@@ -1,7 +1,7 @@
-﻿using GalaxyCheck.Internal.GenIterations;
+﻿using GalaxyCheck.Gens.Iterations.Generic;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Internal.Gens
+namespace GalaxyCheck.Gens.Internal
 {
     internal delegate IEnumerable<IGenIteration<T>> GenFunc<T>(GenParameters parameters);
 

@@ -1,6 +1,6 @@
 ﻿using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Gens;
+using GalaxyCheck.Gens.Internal;
+using GalaxyCheck.Gens.Internal.Iterations;
 using System.Linq;
 
 namespace GalaxyCheck
