@@ -1,15 +1,8 @@
-﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.GenIterations;
-using GalaxyCheck.Internal.Gens;
-using GalaxyCheck.Internal.Utility;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace GalaxyCheck
+﻿namespace GalaxyCheck
 {
+    using GalaxyCheck.Gens;
+    using System.Collections.Generic;
+
     public static partial class Gen
     {
         /// <summary>
@@ -45,7 +38,16 @@ namespace GalaxyCheck
 
 namespace GalaxyCheck.Gens
 {
-    public class InfiniteGen<T> : BaseGen<IEnumerable<T>>, IGen<IEnumerable<T>>
+    using GalaxyCheck.Internal.ExampleSpaces;
+    using GalaxyCheck.Internal.GenIterations;
+    using GalaxyCheck.Internal.Gens;
+    using GalaxyCheck.Internal.Utility;
+    using System.Collections;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    internal class InfiniteGen<T> : BaseGen<IEnumerable<T>>, IGen<IEnumerable<T>>
     {
         private readonly IGen<T> _elementGen;
         private readonly int? _iterationLimit;

@@ -1,13 +1,8 @@
-﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Internal.Gens;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-
-namespace GalaxyCheck
+﻿namespace GalaxyCheck
 {
+    using GalaxyCheck.Gens;
+    using System;
+
     public static partial class Gen
     {
         public static IGen<Func<TResult>> Function<TResult>(
@@ -80,9 +75,16 @@ namespace GalaxyCheck
 
 namespace GalaxyCheck.Gens
 {
-    public delegate TResult VariadicFunc<out TResult>(params object?[] args);
+    using GalaxyCheck.Internal.Gens;
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
 
-    public class VariadicFunctionGen<TResult> : LazyGen<VariadicFunc<TResult>>
+    internal delegate TResult VariadicFunc<out TResult>(params object?[] args);
+
+    internal class VariadicFunctionGen<TResult> : LazyGen<VariadicFunc<TResult>>
     {
         public VariadicFunctionGen(IGen<TResult> returnGen, int? invocationLimit)
             : base(() => Create(returnGen, invocationLimit))
