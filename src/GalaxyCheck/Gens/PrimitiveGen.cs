@@ -1,15 +1,31 @@
 ﻿using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.GenIterations;
+using GalaxyCheck.Internal.Gens;
 using GalaxyCheck.Internal.Sizing;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace GalaxyCheck.Internal.Gens
+namespace GalaxyCheck
+{
+    using GalaxyCheck.Gens;
+
+    public static partial class Gen
+    {
+        public static partial class Advanced
+        {
+            public static IGen<T> Create<T>(StatefulGenFunc<T> generate) => new PrimitiveGen<T>(generate);
+        }
+    }
+}
+
+namespace GalaxyCheck.Gens
 {
     public delegate int NextIntFunc(int min, int max);
 
     public delegate T StatefulGenFunc<T>(NextIntFunc useNextInt, Size size);
 
-    public class PrimitiveGen<T> : BaseGen<T>, IGen<T>
+    internal class PrimitiveGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly StatefulGenFunc<T> _generate;
 
