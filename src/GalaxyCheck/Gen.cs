@@ -1,9 +1,4 @@
-﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Injection;
-using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.Gens;
-using System;
-using System.Linq;
+﻿using GalaxyCheck.Injection;
 using System.Reflection;
 
 namespace GalaxyCheck
@@ -27,14 +22,6 @@ namespace GalaxyCheck
         }
 
         /// <summary>
-        /// Creates a generator that always produces the given value.
-        /// </summary>
-        /// <typeparam name="T">The type of the generator's value.</typeparam>
-        /// <param name="value">The constant value the generator should produce.</param>
-        /// <returns>The new generator.</returns>
-        public static IGen<T> Constant<T>(T value) => Advanced.Create((useNextInt, size) => value);
-
-        /// <summary>
         /// Creates a generator that produces parameters to the given method. Can be used to dynamically invoke a
         /// method or a delegate.
         /// </summary>
@@ -42,9 +29,11 @@ namespace GalaxyCheck
         /// <returns>The new generator.</returns>
         public static IGen<object[]> Parameters(MethodInfo methodInfo) => new ParametersGen(methodInfo);
 
+        /// <summary>
+        /// A container which contains generators for advanced usage.
+        /// </summary>
         public static partial class Advanced
         {
-            public static IGen<T> Create<T>(StatefulGenFunc<T> generate) => new PrimitiveGen<T>(generate);
         }
     }
 }
