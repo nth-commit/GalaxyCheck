@@ -5,7 +5,7 @@ using System;
 
 namespace GalaxyCheck
 {
-    public static class SelectExtensions
+    public static partial class Extensions
     {
         /// <summary>
         /// Projects each element in a generator to a new form.

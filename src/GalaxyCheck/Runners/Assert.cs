@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace GalaxyCheck
 {
-    public static partial class Gen
+    public static partial class Extensions
     {
         public static void Assert<T>(
             this Property<T> property,

@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace GalaxyCheck
 {
-    public static class WhereExtensions
+    public static partial class Extensions
     {
         /// <summary>
         /// Filters a generator's values based on a predicate. Does not alter the structure of the stream. Instead,
