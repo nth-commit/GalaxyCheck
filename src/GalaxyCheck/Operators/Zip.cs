@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Internal.Utility;
+﻿using GalaxyCheck.Internal;
 using System.Collections.Generic;
 using System.Linq;
 

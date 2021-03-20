@@ -43,7 +43,7 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
     using GalaxyCheck.ExampleSpaces;
-    using GalaxyCheck.Internal.Utility;
+    using GalaxyCheck.Internal;
     using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;

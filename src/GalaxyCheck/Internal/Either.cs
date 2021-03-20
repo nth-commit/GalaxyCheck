@@ -1,8 +1,8 @@
-﻿namespace GalaxyCheck.Internal.Utility
+﻿namespace GalaxyCheck.Internal
 {
-    public interface IEither<out TLeft, out TRight> { }
+    internal interface IEither<out TLeft, out TRight> { }
 
-    public abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
+    internal abstract class Either<TLeft, TRight> : IEither<TLeft, TRight>
     {
         public static implicit operator Either<TLeft, TRight>(TLeft left)
         {
@@ -15,7 +15,7 @@
         }
     }
 
-    public sealed class Left<TLeft, TRight> : Either<TLeft, TRight>
+    internal sealed class Left<TLeft, TRight> : Either<TLeft, TRight>
     {
         public Left(in TLeft left)
         {
@@ -28,7 +28,7 @@
         public static implicit operator TLeft(Left<TLeft, TRight> left) => left.Value;
     }
 
-    public class Right<TLeft, TRight> : Either<TLeft, TRight>
+    internal class Right<TLeft, TRight> : Either<TLeft, TRight>
     {
         public Right(in TRight right)
         {
@@ -42,7 +42,7 @@
 
     }
 
-    public static class EitherExtension
+    internal static class EitherExtension
     {
         public static bool IsLeft<TLeft, TRight>(this Either<TLeft, TRight> either, out TLeft left)
         {

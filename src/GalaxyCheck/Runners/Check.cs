@@ -1,7 +1,7 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.ExampleSpaces;
-using GalaxyCheck.Internal.Utility;
+using GalaxyCheck.Internal;
 using GalaxyCheck.Runners.Check;
 using GalaxyCheck.Runners.CheckAutomata;
 using GalaxyCheck.Runners.Replaying;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace GalaxyCheck.Internal.Utility
+namespace GalaxyCheck.Internal
 {
     internal static class EnumerableExtensions
     {

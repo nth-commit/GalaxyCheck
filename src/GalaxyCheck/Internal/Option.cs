@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace GalaxyCheck.Internal.Utility
+﻿namespace GalaxyCheck.Internal
 {
     internal abstract record Option<T>
     {
@@ -8,10 +6,8 @@ namespace GalaxyCheck.Internal.Utility
 
     internal static class Option
     {
-        //[DebuggerStepThrough]
         public record Some<T>(T Value) : Option<T>;
 
-        //[DebuggerStepThrough]
         public record None<T>() : Option<T>;
     }
 }
