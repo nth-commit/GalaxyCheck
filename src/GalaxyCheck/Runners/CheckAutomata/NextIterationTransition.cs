@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record NextIterationTransition<T>(
+    internal record NextIterationTransition<T>(
         CheckState<T> State,
         IEnumerable<IGenIteration<Test<T>>> Iterations) : AbstractTransition<T>(State)
     {

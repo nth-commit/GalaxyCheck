@@ -1,6 +1,8 @@
-﻿namespace GalaxyCheck.Runners.CheckAutomata
+﻿using GalaxyCheck.Runners.Check;
+
+namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record ErrorTransition<T>(
+    internal record ErrorTransition<T>(
         CheckState<T> State,
         string Error) : AbstractTransition<T>(State)
     {

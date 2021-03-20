@@ -5,6 +5,7 @@ using GalaxyCheck.Internal.Random;
 using GalaxyCheck.Internal.Replaying;
 using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.Utility;
+using GalaxyCheck.Runners.Check;
 using GalaxyCheck.Runners.CheckAutomata;
 using System;
 using System.Collections.Generic;
@@ -13,90 +14,7 @@ using System.Linq;
 
 namespace GalaxyCheck
 {
-    public enum TerminationReason
-    {
-        IsReplay = 1,
-        DeepCheckDisabled = 2,
-        ReachedMaximumIterations = 3,
-        ReachedMaximumSize = 4,
-        FoundTheoreticalSmallestCounterexample = 5,
-        FoundPragmaticSmallestCounterexample = 6,
-        FoundError = 7
-    }
-
-    public record CheckResult<T>
-    {
-        public int Iterations { get; init; }
-
-        public int Discards { get; init; }
-
-        public int Shrinks { get; init; }
-
-        public Counterexample<T>? Counterexample { get; init; }
-
-        public ImmutableList<CheckIteration<T>> Checks { get; init; }
-
-        public GenParameters InitialParameters { get; set; }
-
-        public GenParameters NextParameters { get; set; }
-
-        public TerminationReason TerminationReason { get; set; }
-
-        public bool Falsified => Counterexample != null;
-
-        public int RandomnessConsumption => NextParameters.Rng.Order - InitialParameters.Rng.Order;
-
-        public CheckResult(
-            int iterations,
-            int discards,
-            int shrinks,
-            Counterexample<T>? counterexample,
-            ImmutableList<CheckIteration<T>> checks,
-            GenParameters initialParameters,
-            GenParameters nextParameters,
-            TerminationReason terminationReason)
-        {
-            Iterations = iterations;
-            Discards = discards;
-            Shrinks = shrinks;
-            Checks = checks;
-            Counterexample = counterexample;
-            InitialParameters = initialParameters;
-            NextParameters = nextParameters;
-            TerminationReason = terminationReason;
-        }
-    }
-
-    public record Counterexample<T>(
-        ExampleId Id,
-        T Value,
-        decimal Distance,
-        GenParameters ReplayParameters,
-        IEnumerable<int> ReplayPath,
-        string Replay,
-        Exception? Exception,
-        object? PresentationalValue);
-
-    public abstract record CheckIteration<T>;
-
-    public static class CheckIteration
-    {
-        public record Check<T>(
-            T Value,
-            object? PresentationalValue,
-            IExampleSpace<T> ExampleSpace,
-            IExampleSpace? PresentationalExampleSpace,
-            GenParameters Parameters,
-            IEnumerable<int> Path,
-            bool IsCounterexample,
-            Exception? Exception) : CheckIteration<T>;
-
-        public record Termination<T>(CheckState<T> Context, TerminationReason Reason) : CheckIteration<T>;
-
-        public record Discard<T> : CheckIteration<T>;
-    }
-
-    public static class CheckExtensions
+    public static partial class Extensions
     {
         public static CheckResult<T> Check<T>(
              this Property<T> property,
@@ -125,37 +43,55 @@ namespace GalaxyCheck
                 ? new InitialTransition<T>(initialState)
                 : new ReplayTransition<T>(initialState, replay);
 
-            var transitions = EnumerableExtensions
-                .Unfold(
-                    initialTransition,
-                    previousTransition => previousTransition is Termination<T>
-                        ? new Option.None<AbstractTransition<T>>()
-                        : new Option.Some<AbstractTransition<T>>(previousTransition.NextTransition()));
-
-            var checks = transitions
-                .Select(check => MapStateToIterationOrIgnore(check, property.Options.EnableLinqInference))
-                .OfType<CheckIteration<T>>()
-                .WithDiscardCircuitBreaker(state => state is CheckIteration.Discard<T>)
-                .ToImmutableList();
-
-            var finalCheckIteration = checks.Last();
-
-            if (finalCheckIteration is not CheckIteration.Termination<T> termination)
-            {
-                throw new Exception("Fatal: Unrecognised state");
-            }
+            var transitions = UnfoldTransitions(initialTransition);
+            var transitionAggregation = AggregateTransitions(transitions, property.Options);
 
             return new CheckResult<T>(
-                termination.Context.CompletedIterations,
-                termination.Context.Discards,
-                termination.Context.Shrinks,
-                termination.Context.Counterexample == null
+                transitionAggregation.FinalState.CompletedIterations,
+                transitionAggregation.FinalState.Discards,
+                transitionAggregation.FinalState.Shrinks,
+                transitionAggregation.FinalState.Counterexample == null
                     ? null
-                    : FromCounterexampleState(termination.Context.Counterexample, property.Options.EnableLinqInference),
-                checks,
+                    : FromCounterexampleState(transitionAggregation.FinalState.Counterexample, property.Options.EnableLinqInference),
+                transitionAggregation.Checks,
                 initialParameters,
-                termination.Context.NextParameters,
-                termination.Reason);
+                transitionAggregation.FinalState.NextParameters,
+                transitionAggregation.TerminationReason);
+        }
+
+        private static IEnumerable<AbstractTransition<T>> UnfoldTransitions<T>(AbstractTransition<T> initialTransition) =>
+            EnumerableExtensions.Unfold(
+                initialTransition,
+                previousTransition => previousTransition is Termination<T>
+                    ? new Option.None<AbstractTransition<T>>()
+                    : new Option.Some<AbstractTransition<T>>(previousTransition.NextTransition()));
+
+        private record TransitionAggregation<T>(
+            ImmutableList<CheckIteration<T>> Checks,
+            CheckState<T> FinalState,
+            TerminationReason TerminationReason);
+
+        private static TransitionAggregation<T> AggregateTransitions<T>(IEnumerable<AbstractTransition<T>> transitions, PropertyOptions options)
+        {
+            var mappedTransitions = transitions
+                .ScanInParallel<AbstractTransition<T>, CheckState<T>>(null!, (acc, curr) => curr.State)
+                .Select(x => (
+                    transition: x.element,
+                    check: MapTransitionToIterationOrIgnore(x.element, options.EnableLinqInference),
+                    state: x.state))
+                .WithDiscardCircuitBreaker(x => x.check != null, x => x.check is CheckIteration.Discard<T>)
+                .ToImmutableList();
+
+            var lastMappedTransition = mappedTransitions.Last();
+            if (lastMappedTransition.transition is not Termination<T> terminationTransition)
+            {
+                throw new Exception("Fatal: Check did not terminate");
+            }
+
+            return new TransitionAggregation<T>(
+                mappedTransitions.Select(x => x.check).OfType<CheckIteration<T>>().ToImmutableList(),
+                terminationTransition.State,
+                terminationTransition.Reason);
         }
 
         private static Counterexample<T> FromCounterexampleState<T>(
@@ -213,7 +149,7 @@ namespace GalaxyCheck
         private static Size NoopResize<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample) =>
             lastIteration.NextParameters.Size;
 
-        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(AbstractTransition<T> transition, bool enablePresentationalInference)
+        private static CheckIteration<T>? MapTransitionToIterationOrIgnore<T>(AbstractTransition<T> transition, bool enablePresentationalInference)
         {
             CheckIteration<T>? FromHandleCounterexample(CounterexampleExplorationTransition<T> transition, bool enablePresentationalInference)
             {
@@ -264,9 +200,6 @@ namespace GalaxyCheck
                     IsCounterexample: false);
             }
 
-            CheckIteration<T>? FromTermination(Termination<T> transition) =>
-                new CheckIteration.Termination<T>(transition.State, transition.Reason);
-
             CheckIteration<T>? ToDiscard() =>
                 new CheckIteration.Discard<T>();
 
@@ -277,7 +210,6 @@ namespace GalaxyCheck
                 DiscardExplorationTransition<T> t => ToDiscard(),
                 DiscardTransition<T> t => ToDiscard(),
                 ErrorTransition<T> t => throw new Exceptions.GenErrorException(t.Error),
-                Termination<T> t => FromTermination(t),
                 _ => null
             };
         }
@@ -344,14 +276,89 @@ namespace GalaxyCheck
 
             return obj;
         }
+    }
+}
 
-        public delegate Size ResizeStrategy<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample);
+namespace GalaxyCheck.Runners.Check
+{
+    public record CheckResult<T>
+    {
+        public int Iterations { get; init; }
 
-        public record CounterexampleState<T>(
+        public int Discards { get; init; }
+
+        public int Shrinks { get; init; }
+
+        public Counterexample<T>? Counterexample { get; init; }
+
+        public ImmutableList<CheckIteration<T>> Checks { get; init; }
+
+        public GenParameters InitialParameters { get; set; }
+
+        public GenParameters NextParameters { get; set; }
+
+        public TerminationReason TerminationReason { get; set; }
+
+        public bool Falsified => Counterexample != null;
+
+        public int RandomnessConsumption => NextParameters.Rng.Order - InitialParameters.Rng.Order;
+
+        public CheckResult(
+            int iterations,
+            int discards,
+            int shrinks,
+            Counterexample<T>? counterexample,
+            ImmutableList<CheckIteration<T>> checks,
+            GenParameters initialParameters,
+            GenParameters nextParameters,
+            TerminationReason terminationReason)
+        {
+            Iterations = iterations;
+            Discards = discards;
+            Shrinks = shrinks;
+            Checks = checks;
+            Counterexample = counterexample;
+            InitialParameters = initialParameters;
+            NextParameters = nextParameters;
+            TerminationReason = terminationReason;
+        }
+    }
+
+    public abstract record CheckIteration<T>;
+
+    public static class CheckIteration
+    {
+        public record Check<T>(
+            T Value,
+            object? PresentationalValue,
             IExampleSpace<T> ExampleSpace,
-            IEnumerable<IExampleSpace> ExampleSpaceHistory,
-            GenParameters ReplayParameters,
-            IEnumerable<int> ReplayPath,
-            Exception? Exception);
+            IExampleSpace? PresentationalExampleSpace,
+            GenParameters Parameters,
+            IEnumerable<int> Path,
+            bool IsCounterexample,
+            Exception? Exception) : CheckIteration<T>;
+
+        public record Discard<T> : CheckIteration<T>;
+    }
+
+    public record Counterexample<T>(
+        ExampleId Id,
+        T Value,
+        decimal Distance,
+        GenParameters ReplayParameters,
+        IEnumerable<int> ReplayPath,
+        string Replay,
+        Exception? Exception,
+        object? PresentationalValue);
+
+    public enum TerminationReason
+    {
+        IsReplay = 1,
+        DeepCheckDisabled = 2,
+        ReachedMaximumIterations = 3,
+        ReachedMaximumSize = 4,
+        FoundTheoreticalSmallestCounterexample = 5,
+        FoundPragmaticSmallestCounterexample = 6,
+        FoundError = 7
     }
 }

@@ -1,11 +1,15 @@
-﻿using GalaxyCheck.Gens.Parameters;
+﻿using GalaxyCheck.Gens.Iterations.Generic;
+using GalaxyCheck.Gens.Parameters;
+using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.Internal.Sizing;
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using static GalaxyCheck.CheckExtensions;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record CheckState<T>(
+    internal record CheckState<T>(
         Property<T> Property,
         int RequestedIterations,
         int ShrinkLimit,
@@ -17,7 +21,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         ResizeStrategy<T> ResizeStrategy,
         bool DeepCheck)
     {
-        internal static CheckState<T> Create(
+        public static CheckState<T> Create(
             Property<T> property,
             int requestedIterations,
             int shrinkLimit,
@@ -41,7 +45,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             .ThenByDescending(c => c.ReplayParameters.Size.Value) // Bigger sizes are more likely to normalize
             .FirstOrDefault();
 
-        internal CheckState<T> IncrementCompletedIterations() => new CheckState<T>(
+        public CheckState<T> IncrementCompletedIterations() => new CheckState<T>(
             Property,
             RequestedIterations,
             ShrinkLimit,
@@ -53,7 +57,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             ResizeStrategy,
             DeepCheck);
 
-        internal CheckState<T> IncrementDiscards() => new CheckState<T>(
+        public CheckState<T> IncrementDiscards() => new CheckState<T>(
             Property,
             RequestedIterations,
             ShrinkLimit,
@@ -65,7 +69,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             ResizeStrategy,
             DeepCheck);
 
-        internal CheckState<T> IncrementShrinks() => new CheckState<T>(
+        public CheckState<T> IncrementShrinks() => new CheckState<T>(
             Property,
             RequestedIterations,
             ShrinkLimit,
@@ -77,7 +81,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             ResizeStrategy,
             DeepCheck);
 
-        internal CheckState<T> AddCounterexample(CounterexampleState<T> counterexampleState) => new CheckState<T>(
+        public CheckState<T> AddCounterexample(CounterexampleState<T> counterexampleState) => new CheckState<T>(
             Property,
             RequestedIterations,
             ShrinkLimit,
@@ -89,7 +93,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             ResizeStrategy,
             DeepCheck);
 
-        internal CheckState<T> WithNextGenParameters(GenParameters genParameters) => new CheckState<T>(
+        public CheckState<T> WithNextGenParameters(GenParameters genParameters) => new CheckState<T>(
             Property,
             RequestedIterations,
             ShrinkLimit,
@@ -101,4 +105,13 @@ namespace GalaxyCheck.Runners.CheckAutomata
             ResizeStrategy,
             DeepCheck);
     }
+
+    internal delegate Size ResizeStrategy<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample);
+
+    internal record CounterexampleState<T>(
+        IExampleSpace<T> ExampleSpace,
+        IEnumerable<IExampleSpace> ExampleSpaceHistory,
+        GenParameters ReplayParameters,
+        IEnumerable<int> ReplayPath,
+        Exception? Exception);
 }

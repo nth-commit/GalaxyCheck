@@ -1,8 +1,9 @@
-﻿using System;
+﻿using GalaxyCheck.Runners.Check;
+using System;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record Termination<T>(
+    internal record Termination<T>(
         CheckState<T> State,
         TerminationReason Reason) : AbstractTransition<T>(State)
     {

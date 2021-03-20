@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record DiscardTransition<T>(
+    internal record DiscardTransition<T>(
         CheckState<T> State,
         IEnumerable<IGenIteration<Test<T>>> NextIterations,
         IGenDiscard<Test<T>> Discard) : AbstractTransition<T>(State)

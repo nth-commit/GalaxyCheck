@@ -1,6 +1,8 @@
-﻿namespace GalaxyCheck.Runners.CheckAutomata
+﻿using GalaxyCheck.Runners.Check;
+
+namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record InitialTransition<T>(CheckState<T> State) : AbstractTransition<T>(State)
+    internal record InitialTransition<T>(CheckState<T> State) : AbstractTransition<T>(State)
     {
         internal override AbstractTransition<T> NextTransition()
         {

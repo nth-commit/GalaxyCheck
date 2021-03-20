@@ -137,17 +137,32 @@ namespace GalaxyCheck.Internal.Utility
 
         public static IEnumerable<(T element, int consecutiveDiscardCount)> WithConsecutiveDiscardCount<T>(
             this IEnumerable<T> source,
+            Func<T, bool> isCounted,
             Func<T, bool> isDiscard)
         {
-            return source.ScanInParallel(0, (consecutiveDiscardCount, element) => isDiscard(element) ? consecutiveDiscardCount + 1 : 0);
+            return source.ScanInParallel(0, (consecutiveDiscardCount, element) =>
+            {
+                if (isCounted(element) == false)
+                {
+                    return consecutiveDiscardCount;
+                }
+
+                if (isDiscard(element))
+                {
+                    return consecutiveDiscardCount + 1;
+                }
+
+                return 0;
+            });
         }
 
         public static IEnumerable<T> WithDiscardCircuitBreaker<T>(
             this IEnumerable<T> source,
+            Func<T, bool> isCounted,
             Func<T, bool> isDiscard)
         {
             return source
-                .WithConsecutiveDiscardCount(isDiscard)
+                .WithConsecutiveDiscardCount(isCounted, isDiscard)
                 .Select((x) =>
                 {
                     var (element, consecutiveDiscardCount) = x;

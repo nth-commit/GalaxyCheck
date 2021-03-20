@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck;
+using GalaxyCheck.Runners.Check;
 using Xunit;
 
 namespace Tests
