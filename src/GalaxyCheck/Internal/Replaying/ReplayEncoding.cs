@@ -1,4 +1,5 @@
-﻿using GalaxyCheck.Internal.Random;
+﻿using GalaxyCheck.Gens.Parameters;
+using GalaxyCheck.Internal.Random;
 using System;
 using System.Collections.Generic;
 using System.IO;

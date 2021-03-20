@@ -16,6 +16,7 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Internal.Iterations;
     using GalaxyCheck.Gens.Iterations.Generic;
+    using GalaxyCheck.Gens.Parameters;
     using System.Collections.Generic;
 
     internal class ErrorGen<T> : BaseGen<T>, IGen<T>

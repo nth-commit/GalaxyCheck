@@ -1,18 +1,10 @@
 ﻿using GalaxyCheck.Gens.Iterations;
 using GalaxyCheck.Gens.Iterations.Generic;
-using GalaxyCheck.Internal.Sizing;
+using GalaxyCheck.Gens.Parameters;
 using System.Collections.Generic;
 
 namespace GalaxyCheck
 {
-    public record GenParameters(IRng Rng, Size Size)
-    {
-        public GenParameters With(
-            IRng? rng = null,
-            Size? size = null) =>
-                new GenParameters(rng ?? Rng, size ?? Size);
-    }
-
     public interface IGenAdvanced
     {
         /// <summary>

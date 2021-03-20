@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using GalaxyCheck.Gens.Parameters;
+using System.Collections.Immutable;
 using System.Linq;
 using static GalaxyCheck.CheckExtensions;
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GalaxyCheck.Gens.Parameters;
+using System.Collections.Generic;
 
 namespace GalaxyCheck.Internal.Replaying
 {
