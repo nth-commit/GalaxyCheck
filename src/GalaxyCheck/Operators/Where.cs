@@ -38,7 +38,7 @@ namespace GalaxyCheck
                 const int MaxConsecutiveDiscards = 10;
 
                 return stream
-                    .WithConsecutiveDiscardCount(iteration => iteration.IsDiscard())
+                    .WithConsecutiveDiscardCount(_ => true, iteration => iteration.IsDiscard())
                     .Select((x) =>
                     {
                         var (iteration, consecutiveDiscardCount) = x;

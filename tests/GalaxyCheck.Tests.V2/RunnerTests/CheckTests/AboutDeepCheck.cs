@@ -19,7 +19,7 @@ namespace Tests.V2.RunnerTests.CheckTests
 
                 var result = property.Check(seed: seed, deepCheck: true);
 
-                result.TerminationReason.Should().NotBe(GalaxyCheck.TerminationReason.DeepCheckDisabled);
+                result.TerminationReason.Should().NotBe(GalaxyCheck.Runners.Check.TerminationReason.DeepCheckDisabled);
             });
 
         [Property]
@@ -31,7 +31,7 @@ namespace Tests.V2.RunnerTests.CheckTests
 
                 var result = property.Check(seed: seed, deepCheck: false);
 
-                result.TerminationReason.Should().Be(GalaxyCheck.TerminationReason.DeepCheckDisabled);
+                result.TerminationReason.Should().Be(GalaxyCheck.Runners.Check.TerminationReason.DeepCheckDisabled);
             });
 
         [Property]

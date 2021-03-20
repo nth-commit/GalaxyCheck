@@ -3,11 +3,10 @@ using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Utility;
 using System;
 using System.Collections.Generic;
-using static GalaxyCheck.CheckExtensions;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record InstanceNextExplorationStageTransition<T>(
+    internal record InstanceNextExplorationStageTransition<T>(
         CheckState<T> State,
         IGenInstance<Test<T>> Instance,
         IEnumerable<ExplorationStage<Test<T>>> Explorations,

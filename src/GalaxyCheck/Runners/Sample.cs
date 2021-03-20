@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using GalaxyCheck.Runners.Check;
 
 namespace GalaxyCheck
 {

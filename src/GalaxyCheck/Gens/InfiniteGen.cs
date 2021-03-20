@@ -133,7 +133,7 @@ namespace GalaxyCheck.Gens
         {
             var source = elementGen.Advanced
                 .Run(parameters)
-                .WithDiscardCircuitBreaker(iteration => iteration.IsDiscard())
+                .WithDiscardCircuitBreaker(_ => true, iteration => iteration.IsDiscard())
                 .Select(iteration => iteration.Match<IGenInstance<T>?>(
                     onInstance: instance => instance,
                     onError: _ => null,

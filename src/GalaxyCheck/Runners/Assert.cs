@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.Runners;
+using GalaxyCheck.Runners.Check;
 using System;
 using System.Collections.Generic;
 using System.Linq;

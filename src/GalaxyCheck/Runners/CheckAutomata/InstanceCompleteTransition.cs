@@ -1,10 +1,10 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
+using GalaxyCheck.Runners.Check;
 using System.Linq;
-using static GalaxyCheck.CheckExtensions;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record InstanceCompleteTransition<T>(
+    internal record InstanceCompleteTransition<T>(
         CheckState<T> State,
         IGenInstance<Test<T>> Instance,
         CounterexampleState<T>? CounterexampleState,

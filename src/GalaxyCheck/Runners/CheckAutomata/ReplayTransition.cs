@@ -3,11 +3,10 @@ using GalaxyCheck.Internal.ExampleSpaces;
 using GalaxyCheck.Internal.Replaying;
 using System;
 using System.Linq;
-using static GalaxyCheck.CheckExtensions;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record ReplayTransition<T>(
+    internal record ReplayTransition<T>(
         CheckState<T> State,
         string ReplayEncoded) : AbstractTransition<T>(State)
     {

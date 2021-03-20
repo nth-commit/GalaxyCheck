@@ -3,7 +3,7 @@ using GalaxyCheck.Internal.ExampleSpaces;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record InstanceExplorationTransition<T>(
+    internal record InstanceExplorationTransition<T>(
         CheckState<T> State,
         IGenInstance<Test<T>> Instance) : AbstractTransition<T>(State)
     {

@@ -1,11 +1,10 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Internal.ExampleSpaces;
 using System.Collections.Generic;
-using static GalaxyCheck.CheckExtensions;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public record CounterexampleExplorationTransition<T>(
+    internal record CounterexampleExplorationTransition<T>(
         CheckState<T> State,
         IGenInstance<Test<T>> Instance,
         IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
