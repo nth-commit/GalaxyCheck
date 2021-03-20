@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 
 namespace Tests.V2.ImplementationTests.RngTests
 {

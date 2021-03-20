@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck.Gens.Parameters.Internal;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 
 namespace Tests.V2.ImplementationTests.RngTests
 {

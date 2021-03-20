@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck.ExampleSpaces;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using System.Linq;
 using Xunit;
 

@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using Property = NebulaCheck.Property;
 using System;
 using System.Linq;

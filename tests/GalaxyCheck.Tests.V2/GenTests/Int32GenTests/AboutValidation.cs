@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using System;
 using System.Linq;
 using Test = NebulaCheck.Test;
