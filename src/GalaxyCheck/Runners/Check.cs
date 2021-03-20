@@ -1,6 +1,6 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
-using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Internal.Utility;
 using GalaxyCheck.Runners.Check;
 using GalaxyCheck.Runners.CheckAutomata;

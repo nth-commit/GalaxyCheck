@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Internal.ExampleSpaces
+namespace GalaxyCheck.ExampleSpaces
 {
     public static class ExampleSpaceExtensions
     {

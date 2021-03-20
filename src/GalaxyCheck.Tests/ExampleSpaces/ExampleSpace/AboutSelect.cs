@@ -3,8 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using GC = GalaxyCheck;
-using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.ExampleSpaces;
 
 namespace Tests.ExampleSpaces.ExampleSpace
 {
@@ -17,7 +16,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
+            var sourceExampleSpace = ExampleSpaceFactory.Unfold(
                 value,
                 shrink.Invoke,
                 measure.Invoke,
@@ -35,7 +34,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
+            var sourceExampleSpace = ExampleSpaceFactory.Unfold(
                 value,
                 shrink.Invoke,
                 measure.Invoke,
@@ -53,7 +52,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
             Func<object, decimal> measure,
             Func<object, object> selector)
         {
-            var sourceExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
+            var sourceExampleSpace = ExampleSpaceFactory.Unfold(
                 value,
                 shrink.Invoke,
                 measure.Invoke,

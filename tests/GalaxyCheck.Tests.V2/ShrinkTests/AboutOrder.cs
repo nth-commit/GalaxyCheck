@@ -2,7 +2,7 @@
 using NebulaCheck.Xunit;
 using System;
 using System.Linq;
-using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.ExampleSpaces;
 using FluentAssertions;
 
 namespace Tests.V2.ShrinkTests

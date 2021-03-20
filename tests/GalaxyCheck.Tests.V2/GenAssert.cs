@@ -1,5 +1,5 @@
 ﻿using GalaxyCheck;
-using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.ExampleSpaces;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;

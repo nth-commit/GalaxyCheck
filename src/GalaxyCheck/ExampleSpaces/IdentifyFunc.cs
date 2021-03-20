@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck.Internal.ExampleSpaces
+﻿namespace GalaxyCheck.ExampleSpaces
 {
     public delegate ExampleId IdentifyFunc<T>(T value);
 

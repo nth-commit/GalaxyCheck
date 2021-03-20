@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
-using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.ExampleSpaces;
 using NebulaCheck;
 using System;
 using System.Collections.Generic;
