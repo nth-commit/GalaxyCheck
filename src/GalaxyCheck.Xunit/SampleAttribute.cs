@@ -2,12 +2,12 @@
 using System;
 using Xunit.Sdk;
 
-namespace GalaxyCheck.Xunit
+namespace GalaxyCheck
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     [XunitTestCaseDiscoverer("GalaxyCheck.Xunit.Internal.PropertyDiscoverer", "GalaxyCheck.Xunit")]
     public class SampleAttribute : PropertyAttribute
     {
-        public override IPropertyRunner Runner => new PropertySampleRunner();
+        internal override IPropertyRunner Runner => new PropertySampleRunner();
     }
 }

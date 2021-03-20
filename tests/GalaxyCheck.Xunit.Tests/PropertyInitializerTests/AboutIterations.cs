@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using GalaxyCheck.Xunit;
+using GalaxyCheck;
 using GalaxyCheck.Xunit.Internal;
 using System;
 using System.Reflection;

@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace GalaxyCheck.Xunit.Internal
 {
-    public record PropertyInitializationResult(
+    internal record PropertyInitializationResult(
         IPropertyRunner Runner,
         PropertyRunParameters Parameters,
         string? SkipReason)
@@ -12,7 +12,7 @@ namespace GalaxyCheck.Xunit.Internal
         public bool ShouldSkip => SkipReason != null;
     }
 
-    public static class PropertyInitializer
+    internal static class PropertyInitializer
     {
         public static PropertyInitializationResult Initialize(Type testClassType, MethodInfo testMethodInfo, object[] constructorArguments)
         {
