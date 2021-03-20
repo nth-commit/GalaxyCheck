@@ -1,7 +1,6 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.Sizing;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

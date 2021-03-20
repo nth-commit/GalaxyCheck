@@ -1,11 +1,11 @@
 ﻿using FluentAssertions;
-using GalaxyCheck.Internal.Sizing;
+using GalaxyCheck.Gens.Parameters;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System;
 using System.Linq;
 
-namespace Tests.V2.SizingTests
+namespace Tests.V2.ImplementationTests.SizingTests
 {
     public class AboutSize
     {

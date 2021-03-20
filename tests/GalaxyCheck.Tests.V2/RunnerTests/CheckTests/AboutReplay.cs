@@ -112,9 +112,7 @@ namespace Tests.V2.RunnerTests.CheckTests
         private static Replay CreateReplay(int replaySeed, int replaySize, ImmutableList<int> replayPath)
         {
             return new Replay(
-                new GalaxyCheck.Gens.Parameters.GenParameters(
-                    GalaxyCheck.Internal.Random.Rng.Create(replaySeed),
-                    new GalaxyCheck.Internal.Sizing.Size(replaySize)),
+                GalaxyCheck.Gens.Parameters.GenParameters.Create(replaySeed, replaySize),
                 replayPath);
         }
     }

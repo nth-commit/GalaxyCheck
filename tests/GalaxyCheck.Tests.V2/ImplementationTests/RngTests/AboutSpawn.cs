@@ -1,10 +1,10 @@
 ﻿using FluentAssertions;
-using GalaxyCheck.Internal.Random;
+using GalaxyCheck.Gens.Parameters.Internal;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System.Linq;
 
-namespace Tests.V2.RandomTests
+namespace Tests.V2.ImplementationTests.RngTests
 {
     public class AboutSpawn
     {

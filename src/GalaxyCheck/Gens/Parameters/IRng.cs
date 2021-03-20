@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck
+﻿namespace GalaxyCheck.Gens.Parameters
 {
     /// <summary>
     /// A side-effectless random number generator for 32-bit integers.

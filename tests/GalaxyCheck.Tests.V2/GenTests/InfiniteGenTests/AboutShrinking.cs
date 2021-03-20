@@ -65,7 +65,7 @@ namespace Tests.V2.GenTests.InfiniteGenTests
 
         private static int ForkSeed(int seed)
         {
-            return GalaxyCheck.Internal.Random.Rng.Create(seed).Fork().Seed;
+            return GalaxyCheck.Gens.Parameters.Internal.Rng.Create(seed).Fork().Seed;
         }
     }
 }

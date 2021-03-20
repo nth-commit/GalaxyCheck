@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck.Gens.Parameters;
-using GalaxyCheck.Internal.Random;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,7 +64,7 @@ namespace GalaxyCheck.Internal.Replaying
             var exampleSpacePath = DecodeExampleSpacePath(components[2]);
 
             return new Replay(
-                new GenParameters(Rng.Create(seed), new Sizing.Size(size)),
+                GenParameters.Create(seed, size),
                 exampleSpacePath);
         }
     }
