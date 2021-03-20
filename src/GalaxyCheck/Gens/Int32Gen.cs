@@ -51,7 +51,6 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Parameters;
     using GalaxyCheck.Gens.Parameters.Internal;
     using GalaxyCheck.Internal.ExampleSpaces;
-    using GalaxyCheck.Internal.WeightedLists;
     using System;
     using System.Collections.Generic;
 

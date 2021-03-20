@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using GalaxyCheck.Internal.WeightedLists;
+using GalaxyCheck.Gens.Internal;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System;
@@ -11,36 +11,36 @@ namespace Tests.V2.ImplementationTests.WeightedListTests
 {
     public class AboutWeightedList
     {
-        public static TheoryData<List<WeightedElement<string>>, List<string>> Data =>
-            new TheoryData<List<WeightedElement<string>>, List<string>>
+        public static TheoryData<List<(int weight, string element)>, List<string>> Data =>
+            new TheoryData<List<(int weight, string element)>, List<string>>
             {
                 {
-                    new List<WeightedElement<string>>
+                    new List<(int weight, string element)>
                     {
-                        new WeightedElement<string>(0, "a")
+                        (0, "a")
                     },
                     new List<string> { }
                 },
                 {
-                    new List<WeightedElement<string>>
+                    new List<(int weight, string element)>
                     {
-                        new WeightedElement<string>(1, "a"),
-                        new WeightedElement<string>(0, "b")
+                        (1, "a"),
+                        (0, "b")
                     },
                     new List<string> { "a" }
                 },
                 {
-                    new List<WeightedElement<string>>
+                    new List<(int weight, string element)>
                     {
-                        new WeightedElement<string>(2, "a"),
+                        (2, "a"),
                     },
                     new List<string> { "a", "a" }
                 },
                 {
-                    new List<WeightedElement<string>>
+                    new List<(int weight, string element)>
                     {
-                        new WeightedElement<string>(3, "a"),
-                        new WeightedElement<string>(2, "b")
+                        (3, "a"),
+                        (2, "b")
                     },
                     new List<string> { "a", "a", "a", "b", "b" }
                 },
@@ -48,9 +48,10 @@ namespace Tests.V2.ImplementationTests.WeightedListTests
 
         [Theory]
         [MemberData(nameof(Data))]
-        public void Examples(List<WeightedElement<string>> weightedElements, List<string> expectedValues)
+        public void Examples(List<(int weight, string element)> weightedElementData, List<string> expectedValues)
         {
-            var weightedList = new WeightedList<string>(weightedElements);
+            var weightedList = new WeightedList<string>(
+                weightedElementData.Select(x => new WeightedElement<string>(x.weight, x.element)));
 
             weightedList.Should().BeEquivalentTo(expectedValues);
         }
