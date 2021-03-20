@@ -3,7 +3,7 @@ using NebulaCheck;
 using NebulaCheck.Xunit;
 using System;
 
-namespace Tests.V2.RandomTests
+namespace Tests.V2.ImplementationTests.RngTests
 {
     public class AboutValue
     {

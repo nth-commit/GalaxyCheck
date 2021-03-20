@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
-using GalaxyCheck.Internal.Sizing;
+using GalaxyCheck.Gens.Parameters;
+using GalaxyCheck.Gens.Parameters.Internal;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using Snapshooter;
@@ -7,7 +8,7 @@ using Snapshooter.Xunit;
 using System.Linq;
 using Xunit;
 
-namespace Tests.V2.SizingTests
+namespace Tests.V2.ImplementationTests.SizingTests
 {
     public class AboutSizingToBounds
     {

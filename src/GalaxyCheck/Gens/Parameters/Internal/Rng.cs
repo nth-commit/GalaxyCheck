@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace GalaxyCheck.Internal.Random
+namespace GalaxyCheck.Gens.Parameters.Internal
 {
-    public record Rng : IRng
+    internal record Rng : IRng
     {
         /// <summary>
         /// Creates a new RNG with a random seed.

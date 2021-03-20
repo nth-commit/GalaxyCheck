@@ -1,7 +1,5 @@
 ﻿using FluentAssertions;
-using GalaxyCheck.Internal.Random;
 using GalaxyCheck.Internal.Replaying;
-using GalaxyCheck.Internal.Sizing;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System.Collections.Generic;
@@ -66,6 +64,6 @@ namespace Tests.V2.ImplementationTests.ReplayEncodingTests
             });
 
         private static Replay CreateReplay(int seed, int size, IEnumerable<int> exampleSpacePath) =>
-            new Replay(new GalaxyCheck.Gens.Parameters.GenParameters(Rng.Create(seed), new Size(size)), exampleSpacePath);
+            new Replay(GalaxyCheck.Gens.Parameters.GenParameters.Create(seed, size), exampleSpacePath);
     }
 }

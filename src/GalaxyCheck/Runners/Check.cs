@@ -1,9 +1,7 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.Random;
 using GalaxyCheck.Internal.Replaying;
-using GalaxyCheck.Internal.Sizing;
 using GalaxyCheck.Internal.Utility;
 using GalaxyCheck.Runners.Check;
 using GalaxyCheck.Runners.CheckAutomata;
@@ -25,9 +23,9 @@ namespace GalaxyCheck
              string? replay = null,
              bool deepCheck = true)
         {
-            var initialParameters = new GenParameters(
-                Rng: seed == null ? Rng.Spawn() : Rng.Create(seed.Value),
-                Size: new Size(size ?? 0));
+            var initialParameters = seed == null
+                ? GenParameters.Create(size ?? 0)
+                : GenParameters.Create(seed.Value, size ?? 0); 
 
             ResizeStrategy<T> resizeStrategy = size == null ? SuperStrategicResize<T> : NoopResize<T>;
 

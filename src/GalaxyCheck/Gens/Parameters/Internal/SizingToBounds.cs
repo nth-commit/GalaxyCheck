@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.Internal.Sizing
+namespace GalaxyCheck.Gens.Parameters.Internal
 {
-    public delegate (int min, int max) SizeToBoundsFunc(Size size);
+    internal delegate (int min, int max) SizeToBoundsFunc(Size size);
 
-    public delegate SizeToBoundsFunc SizingToBoundsFunc(int min, int max, int origin);
+    internal delegate SizeToBoundsFunc SizingToBoundsFunc(int min, int max, int origin);
 
-    public static class SizingToBounds
+    internal static class SizingToBounds
     {
         public static SizingToBoundsFunc Exponential => (min, max, origin) =>
         {
