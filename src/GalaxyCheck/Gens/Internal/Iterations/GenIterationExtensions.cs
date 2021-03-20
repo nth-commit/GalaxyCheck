@@ -1,5 +1,5 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
-using GalaxyCheck.Internal.Utility;
+using GalaxyCheck.Internal;
 
 namespace GalaxyCheck.Gens.Internal.Iterations
 {

@@ -2,7 +2,7 @@
 using Snapshooter.Xunit;
 using Xunit;
 using GC = GalaxyCheck;
-using GalaxyCheck.Internal.ExampleSpaces;
+using GalaxyCheck.ExampleSpaces;
 
 namespace Tests.ExampleSpaces
 {
@@ -17,7 +17,7 @@ namespace Tests.ExampleSpaces
         {
             var exampleSpace = ExampleSpaceFactory.Unfold(
                 value,
-                GC.Internal.ExampleSpaces.ShrinkFunc.Towards(target),
+                ShrinkFunc.Towards(target),
                 x => x,
                 IdentifyFuncs.Default<int>());
 
@@ -30,7 +30,7 @@ namespace Tests.ExampleSpaces
             var exampleSpace = ExampleSpaceFactory
                 .Unfold(
                     10,
-                    GC.Internal.ExampleSpaces.ShrinkFunc.Towards(0),
+                    ShrinkFunc.Towards(0),
                     x => x,
                     IdentifyFuncs.Default<int>())
                 .Filter(x => x % 2 == 0);

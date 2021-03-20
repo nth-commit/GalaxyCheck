@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck.Internal.ExampleSpaces
+﻿namespace GalaxyCheck.ExampleSpaces
 {
     /// <summary>
     /// An example that lives inside an example space.

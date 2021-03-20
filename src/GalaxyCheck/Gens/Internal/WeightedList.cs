@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.Internal.WeightedLists
+namespace GalaxyCheck.Gens.Internal
 {
-    public record WeightedElement<T>(int Weight, T Element);
+    internal record WeightedElement<T>(int Weight, T Element);
 
-    public class WeightedList<T> : IReadOnlyList<T>
+    internal class WeightedList<T> : IReadOnlyList<T>
     {
         private readonly int _totalWeight;
         private readonly ImmutableList<ElementAndIndexRange> _valueAndIndexRanges;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GalaxyCheck.Internal.ExampleSpaces
+namespace GalaxyCheck.ExampleSpaces
 {
     /// <summary>
     /// Represents an space of examples. An example space generally has an original or root value, which can be

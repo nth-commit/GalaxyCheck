@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
-namespace GalaxyCheck.Internal.Utility
+namespace GalaxyCheck.Internal
 {
-    public static class TypeExtensions
+    internal static class TypeExtensions
     {
         public static bool IsAnonymousType(this Type type)
         {

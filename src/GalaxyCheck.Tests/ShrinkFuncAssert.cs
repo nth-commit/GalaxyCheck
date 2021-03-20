@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using ES = GalaxyCheck.Internal.ExampleSpaces;
+using ES = GalaxyCheck.ExampleSpaces;
 
 namespace Tests
 {

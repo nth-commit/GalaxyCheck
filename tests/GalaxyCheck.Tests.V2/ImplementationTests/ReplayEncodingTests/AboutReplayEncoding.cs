@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using GalaxyCheck.Internal.Replaying;
+using GalaxyCheck.Runners.Replaying;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System.Collections.Generic;
@@ -11,35 +11,37 @@ namespace Tests.V2.ImplementationTests.ReplayEncodingTests
 {
     public class AboutReplayEncoding
     {
-        public static TheoryData<Replay, string> Data =>
-            new TheoryData<Replay, string>
+        public static TheoryData<int, int, IEnumerable<int>, string> Data =>
+            new TheoryData<int, int, IEnumerable<int>, string>
             {
                 {
-                    CreateReplay(0, 0, new [] { 0 }),
+                    0, 0, new [] { 0 },
                     "H4sIAAAAAAAACjPQM9AzAACGS1suBQAAAA=="
                 },
                 {
-                    CreateReplay(0, 0, new [] { 0, 0, 0, 0, 0, 0 }),
+                    0, 0, new [] { 0, 0, 0, 0, 0, 0 },
                     "H4sIAAAAAAAACjPQM9AzsIJDALKWW5IPAAAA"
                 },
                 {
-                    CreateReplay(0, 0, Enumerable.Range(0, 10).Select(_ => 0)),
+                    0, 0, Enumerable.Range(0, 10).Select(_ => 0),
                     "H4sIAAAAAAAACjPQM9AzsMKAANukRbAXAAAA"
                 },
                 {
-                    CreateReplay(0, 0, Enumerable.Range(0, 100).Select(_ => 0)),
+                    0, 0, Enumerable.Range(0, 100).Select(_ => 0),
                     "H4sIAAAAAAAACjPQM9AzsBoWEAC35Wk5ywAAAA=="
                 },
                 {
-                    CreateReplay(int.MaxValue, 100, Enumerable.Range(0, 100)),
+                    int.MaxValue, 100, Enumerable.Range(0, 100),
                     "H4sIAAAAAAAACg2Qxw3AQBACO7I2sGn6L8z3RQIGwjXabM3nZp/hBIkommE5/ImOB5648MIbH3zxI4x4niCSEFFEE0MscaSRTr7IJEUW2eSQSx4y5CjQaxQq1GjQoqOMciqopB5QUU0NtdTRRjsddNKiH2/TQy99jDHOBJOMmGLenGGWOdZYZ4NNVmyxzb61yx5nnHPBJSeuuOaGe2fcD7ogWEAwAQAA"
                 },
             };
 
         [Theory]
         [MemberData(nameof(Data))]
-        public void Examples(Replay replay, string expectedEncoding)
+        public void Examples(int seed, int size, IEnumerable<int> exampleSpacePath, string expectedEncoding)
         {
+            var replay = CreateReplay(seed, size, exampleSpacePath);
+
             // TODO: Cross-platform consistent replay encoding
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

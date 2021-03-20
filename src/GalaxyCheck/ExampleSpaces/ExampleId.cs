@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck.Internal.ExampleSpaces
+﻿namespace GalaxyCheck.ExampleSpaces
 {
     public record ExampleId(int HashCode)
     {

@@ -1,8 +1,8 @@
 ﻿using FsCheck.Xunit;
+using GalaxyCheck.ExampleSpaces;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using GC = GalaxyCheck;
 
 namespace Tests.ExampleSpaces.ExampleSpace
 {
@@ -13,11 +13,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
         {
             static IEnumerable<int> shrink(int x) => new[] { x };
 
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
+            var exampleSpace = ExampleSpaceFactory.Unfold(
                 value,
                 shrink,
-                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>(),
-                GC.Internal.ExampleSpaces.IdentifyFuncs.Default<int>());
+                MeasureFunc.Unmeasured<int>(),
+                IdentifyFuncs.Default<int>());
 
             Assert.Equal(new [] { value }, exampleSpace.Sample().Select(problem => problem.Value));
         }
@@ -27,11 +27,11 @@ namespace Tests.ExampleSpaces.ExampleSpace
         {
             static IEnumerable<int> shrink(int x) => x <= 1 ? Enumerable.Empty<int>() : new[] { x - 1 };
 
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
+            var exampleSpace = ExampleSpaceFactory.Unfold(
                 10,
                 shrink,
-                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<int>(),
-                GC.Internal.ExampleSpaces.IdentifyFuncs.Default<int>());
+                MeasureFunc.Unmeasured<int>(),
+                IdentifyFuncs.Default<int>());
 
             Assert.Equal(
                 new[] { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 },

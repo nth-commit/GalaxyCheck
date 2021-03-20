@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Internal.ExampleSpaces
+namespace GalaxyCheck.ExampleSpaces
 {
     public delegate decimal MeasureFunc<T>(T value);
 

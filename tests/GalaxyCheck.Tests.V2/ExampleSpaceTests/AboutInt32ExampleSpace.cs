@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Internal.ExampleSpaces;
+﻿using GalaxyCheck.ExampleSpaces;
 using Snapshooter;
 using Snapshooter.Xunit;
 using System;

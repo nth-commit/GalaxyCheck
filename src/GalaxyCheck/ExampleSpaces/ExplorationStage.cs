@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Internal.ExampleSpaces
+namespace GalaxyCheck.ExampleSpaces
 {
     public record ExplorationStage<T>
     {

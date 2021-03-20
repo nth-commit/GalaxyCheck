@@ -1,10 +1,10 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
-using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.Replaying;
-using GalaxyCheck.Internal.Utility;
+using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Internal;
 using GalaxyCheck.Runners.Check;
 using GalaxyCheck.Runners.CheckAutomata;
+using GalaxyCheck.Runners.Replaying;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

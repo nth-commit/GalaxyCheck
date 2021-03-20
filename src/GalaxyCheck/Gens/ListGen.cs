@@ -62,8 +62,8 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Internal.Iterations;
     using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
-    using GalaxyCheck.Internal.ExampleSpaces;
-    using GalaxyCheck.Internal.Utility;
+    using GalaxyCheck.ExampleSpaces;
+    using GalaxyCheck.Internal;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;

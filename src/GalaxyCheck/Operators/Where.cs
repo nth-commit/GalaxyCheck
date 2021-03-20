@@ -1,7 +1,7 @@
 ﻿using GalaxyCheck.Gens.Internal;
 using GalaxyCheck.Gens.Internal.Iterations;
-using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.Utility;
+using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Internal;
 using System;
 using System.Linq;
 

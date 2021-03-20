@@ -1,10 +1,10 @@
-﻿using GalaxyCheck.Internal.Utility;
+﻿using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.Internal.ExampleSpaces
+namespace GalaxyCheck.ExampleSpaces
 {
     public static partial class ExampleSpaceFactory
     {

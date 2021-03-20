@@ -1,6 +1,6 @@
 ﻿using FsCheck.Xunit;
+using GalaxyCheck.ExampleSpaces;
 using Xunit;
-using GC = GalaxyCheck;
 
 namespace Tests.ExampleSpaces.ExampleSpace
 {
@@ -9,7 +9,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         [Property]
         public void ItContainsOneExample(object value)
         {
-            var exampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Singleton(value);
+            var exampleSpace = ExampleSpaceFactory.Singleton(value);
 
             var example = Assert.Single(exampleSpace.Sample());
             Assert.Equal(value, example.Value);
@@ -19,12 +19,12 @@ namespace Tests.ExampleSpaces.ExampleSpace
         [Property]
         public void ItBehavesLikeUnfoldWithPrimitiveFunctions(object value)
         {
-            var singletonExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Singleton(value);
-            var unfoldedExampleSpace = GC.Internal.ExampleSpaces.ExampleSpaceFactory.Unfold(
+            var singletonExampleSpace = ExampleSpaceFactory.Singleton(value);
+            var unfoldedExampleSpace = ExampleSpaceFactory.Unfold(
                 value,
-                GC.Internal.ExampleSpaces.ShrinkFunc.None<object>(),
-                GC.Internal.ExampleSpaces.MeasureFunc.Unmeasured<object>(),
-                GC.Internal.ExampleSpaces.IdentifyFuncs.Constant<object>());
+                ShrinkFunc.None<object>(),
+                MeasureFunc.Unmeasured<object>(),
+                IdentifyFuncs.Constant<object>());
 
             Assert.Equal(unfoldedExampleSpace.Sample(), singletonExampleSpace.Sample());
         }
