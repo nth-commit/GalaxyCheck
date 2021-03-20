@@ -1,5 +1,4 @@
 ﻿using NebulaCheck;
-using NebulaCheck.Xunit;
 using System;
 using System.Linq;
 using GalaxyCheck.ExampleSpaces;

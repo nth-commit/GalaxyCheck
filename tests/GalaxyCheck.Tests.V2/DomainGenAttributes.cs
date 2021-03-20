@@ -1,6 +1,5 @@
 ﻿using NebulaCheck;
-using NebulaCheck.Gens;
-using NebulaCheck.Injection.Int32;
+using NebulaCheck.Gens.Injection.Int32;
 
 namespace Tests.V2
 {

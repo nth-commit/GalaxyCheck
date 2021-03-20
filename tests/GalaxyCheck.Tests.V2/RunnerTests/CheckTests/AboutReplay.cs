@@ -2,7 +2,6 @@
 using GalaxyCheck;
 using GalaxyCheck.Runners.Replaying;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using System;
 using System.Collections.Immutable;
 using System.Linq;

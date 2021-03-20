@@ -2,7 +2,6 @@
 using GalaxyCheck.Gens;
 using Moq;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using System.Linq;
 using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;

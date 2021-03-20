@@ -2,7 +2,6 @@
 using GalaxyCheck;
 using GalaxyCheck.ExampleSpaces;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using System;
 using System.Linq;
 using Gen = NebulaCheck.Gen;

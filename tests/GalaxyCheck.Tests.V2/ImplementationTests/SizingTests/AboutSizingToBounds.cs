@@ -2,7 +2,6 @@
 using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.Gens.Parameters.Internal;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using Snapshooter;
 using Snapshooter.Xunit;
 using System.Linq;

@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using NebulaCheck;
-using NebulaCheck.Xunit;
 using System.Linq;
 
 namespace Tests.V2.PropertyTests.ActionPropertyTests
