@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 
 namespace GalaxyCheck.Xunit.Internal
 {
-    public class PropertySampleRunner : IPropertyRunner
+    internal class PropertySampleRunner : IPropertyRunner
     {
         public void Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper)
         {

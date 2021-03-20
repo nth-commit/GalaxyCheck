@@ -2,13 +2,13 @@
 
 namespace GalaxyCheck.Xunit.Internal
 {
-    public record PropertyRunParameters(
+    internal record PropertyRunParameters(
         Property<object> Property,
         int Iterations,
         int ShrinkLimit,
         string? Replay);
 
-    public interface IPropertyRunner
+    internal interface IPropertyRunner
     {
         void Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper);
     }

@@ -3,7 +3,7 @@ using Xunit.Abstractions;
 
 namespace GalaxyCheck.Xunit.Internal
 {
-    public class PropertyAssertRunner : IPropertyRunner
+    internal class PropertyAssertRunner : IPropertyRunner
     {
         public void Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper)
         {

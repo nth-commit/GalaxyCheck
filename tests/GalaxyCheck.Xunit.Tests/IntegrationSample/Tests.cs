@@ -1,6 +1,5 @@
 using GalaxyCheck;
 using GalaxyCheck.Gens.Injection.Int32;
-using GalaxyCheck.Xunit;
 using Newtonsoft.Json;
 using System;
 using Xunit.Abstractions;

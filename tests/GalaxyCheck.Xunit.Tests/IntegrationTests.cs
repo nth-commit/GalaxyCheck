@@ -94,7 +94,7 @@ namespace Tests
             var testResult = _fixture.FindTestResult(nameof(Sample));
 
             testResult.Outcome.Should().Be("Failed");
-            testResult.Message.Should().StartWith("GalaxyCheck.Xunit.SampleException : Test case failed to prevent false-positives.");
+            testResult.Message.Should().StartWith("GalaxyCheck.SampleException : Test case failed to prevent false-positives.");
         }
 
         public record Invocation(object[] InjectedParameters);

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Xunit
+namespace GalaxyCheck
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class ReplayAttribute : Attribute

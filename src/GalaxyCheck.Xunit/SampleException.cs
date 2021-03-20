@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Xunit
+namespace GalaxyCheck
 {
     public class SampleException : Exception
     {

@@ -3,7 +3,7 @@ using System;
 using Xunit;
 using Xunit.Sdk;
 
-namespace GalaxyCheck.Xunit
+namespace GalaxyCheck
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     [XunitTestCaseDiscoverer("GalaxyCheck.Xunit.Internal.PropertyDiscoverer", "GalaxyCheck.Xunit")]
@@ -13,6 +13,6 @@ namespace GalaxyCheck.Xunit
 
         public int Iterations { get; set; } = 100;
 
-        public virtual IPropertyRunner Runner => new PropertyAssertRunner();
+        internal virtual IPropertyRunner Runner => new PropertyAssertRunner();
     }
 }
