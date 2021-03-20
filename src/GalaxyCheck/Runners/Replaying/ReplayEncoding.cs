@@ -6,9 +6,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 
-namespace GalaxyCheck.Internal.Replaying
+namespace GalaxyCheck.Runners.Replaying
 {
-    public static class ReplayEncoding
+    internal static class ReplayEncoding
     {
         private static string EncodeInt(int seed) => seed.ToString();
         private static int DecodeInt(string str) => int.Parse(str);

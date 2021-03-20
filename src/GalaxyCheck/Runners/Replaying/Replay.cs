@@ -1,9 +1,9 @@
 ﻿using GalaxyCheck.Gens.Parameters;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Internal.Replaying
+namespace GalaxyCheck.Runners.Replaying
 {
-    public record Replay(
+    internal record Replay(
         GenParameters GenParameters,
         IEnumerable<int> ExampleSpacePath);
 }

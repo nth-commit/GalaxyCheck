@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
-using GalaxyCheck.Internal.Replaying;
+using GalaxyCheck.Runners.Replaying;
 using NebulaCheck;
 using NebulaCheck.Xunit;
 using System;

@@ -1,6 +1,6 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Internal.ExampleSpaces;
-using GalaxyCheck.Internal.Replaying;
+using GalaxyCheck.Runners.Replaying;
 using System;
 using System.Linq;
 
