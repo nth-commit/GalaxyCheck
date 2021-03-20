@@ -2,7 +2,7 @@
 
 namespace GalaxyCheck
 {
-    public static class ForAllExtensions
+    public static partial class Extensions
     {
         /// <summary>
         /// Specify a property of a generator, using the supplied property function.

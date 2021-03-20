@@ -4,7 +4,7 @@ using GalaxyCheck.Internal.ExampleSpaces;
 
 namespace GalaxyCheck
 {
-    public static class NoShrinkExtensions
+    public static partial class Extensions
     {
         public static IGen<T> NoShrink<T>(this IGen<T> gen) =>
             gen.TransformInstances(instance => GenIterationFactory.Instance(

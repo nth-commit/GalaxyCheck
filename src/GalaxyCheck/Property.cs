@@ -2,11 +2,9 @@
 
 namespace GalaxyCheck
 {
-    public delegate bool TestFunc<in T>(T value);
-
     public interface Test
     {
-        TestFunc<object> Func { get; }
+        Func<object, bool> Func { get; }
 
         object Input { get; }
 
@@ -15,7 +13,7 @@ namespace GalaxyCheck
 
     public interface Test<T> : Test
     {
-        new TestFunc<T> Func { get; }
+        new Func<T, bool> Func { get; }
 
         new T Input { get; }
     }
@@ -27,7 +25,7 @@ namespace GalaxyCheck
 
     public partial class Property : IGen<Test>
     {
-        public record TestImpl(TestFunc<object> Func, object Input, int Arity) : Test;
+        public record TestImpl(Func<object, bool> Func, object Input, int Arity) : Test;
 
         private readonly IGen<Test> _gen;
 
@@ -67,9 +65,9 @@ namespace GalaxyCheck
 
     public class Property<T> : IGen<Test<T>>
     {
-        public record TestImpl(TestFunc<T> Func, T Input, int Arity) : Test<T>
+        public record TestImpl(Func<T, bool> Func, T Input, int Arity) : Test<T>
         {
-            TestFunc<object> Test.Func => x => Func((T)x);
+            Func<object, bool> Test.Func => x => Func((T)x);
 
             object Test.Input => Input!;
         }
@@ -82,7 +80,7 @@ namespace GalaxyCheck
             Options = options ?? new PropertyOptions { EnableLinqInference = false };
         }
 
-        public Property(IGen<T> inputGen, TestFunc<T> f, int arity)
+        public Property(IGen<T> inputGen, Func<T, bool> f, int arity)
             : this(
                 from x in inputGen
                 select new TestImpl(f, x, arity))

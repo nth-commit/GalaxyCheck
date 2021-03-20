@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace GalaxyCheck
 {
-    public static class SelectManyExtensions
+    public static partial class Extensions
     {
         /// <summary>
         /// Projects each value of a generator to a new generator by the given selector. Subspaces of the source
