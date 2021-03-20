@@ -17,9 +17,10 @@
 
 namespace GalaxyCheck.Gens
 {
-    using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Injection;
+    using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Iterations.Generic;
+    using GalaxyCheck.Gens.Parameters;
     using System;
     using System.Collections.Generic;
     using System.Linq;

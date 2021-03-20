@@ -66,6 +66,6 @@ namespace Tests.V2.ImplementationTests.ReplayEncodingTests
             });
 
         private static Replay CreateReplay(int seed, int size, IEnumerable<int> exampleSpacePath) =>
-            new Replay(new GalaxyCheck.GenParameters(Rng.Create(seed), new Size(size)), exampleSpacePath);
+            new Replay(new GalaxyCheck.Gens.Parameters.GenParameters(Rng.Create(seed), new Size(size)), exampleSpacePath);
     }
 }
