@@ -1,3 +1,5 @@
+# GalaxyCheck
+
 GalaxyCheck is a modern property-based testing framework for .NET, in a similar vein to [FsCheck](https://github.com/fscheck/FsCheck). Although GalaxyCheck has been more directly influenced by [fast-check](https://github.com/dubzzz/fast-check), [jqwik](https://github.com/jlink/jqwik) is and [Hedgehog](https://github.com/hedgehogqa/fsharp-hedgehog).
 
 The library heavily leans on LINQ expressions, allowing seamless between test-data generators and properties.
