@@ -1,14 +1,14 @@
 # GalaxyCheck
 
-GalaxyCheck is a modern property-based testing framework for .NET, in a similar vein to [FsCheck](https://github.com/fscheck/FsCheck). Although GalaxyCheck has been more directly influenced by [fast-check](https://github.com/dubzzz/fast-check), [jqwik](https://github.com/jlink/jqwik) is and [Hedgehog](https://github.com/hedgehogqa/fsharp-hedgehog).
+GalaxyCheck is a modern property-based testing framework for .NET, in a similar vein to [FsCheck](https://github.com/fscheck/FsCheck). Although GalaxyCheck has been more directly influenced by [fast-check](https://github.com/dubzzz/fast-check), [jqwik](https://github.com/jlink/jqwik) and [Hedgehog](https://github.com/hedgehogqa/fsharp-hedgehog).
 
-The library heavily leans on LINQ expressions, allowing seamless between test-data generators and properties.
+The library heavily leans on LINQ expressions, allowing seamless integration between generators and properties. In GalaxyCheck, properties _are_ simply generators of tests.
 
 [![Nuget](https://img.shields.io/nuget/v/galaxycheck)](https://www.nuget.org/packages/GalaxyCheck/)
 
 ## Quickstart
 
-The recommend way to getting started quickly with GalaxyCheck, is through [xunit](https://github.com/xunit/xunit), and using the integration package, [GalaxyCheck.Xunit](https://www.nuget.org/packages/GalaxyCheck.Xunit/).
+The recommended way to getting started quickly with GalaxyCheck, is with [xunit](https://github.com/xunit/xunit), and using the integration package [GalaxyCheck.Xunit](https://www.nuget.org/packages/GalaxyCheck.Xunit/).
 
 ```csharp
 using GalaxyCheck;
@@ -22,8 +22,6 @@ public class AboutSort
         select Property.ForThese(() => xs.Sort().SequenceEqual(xs.Sort().Sort()));
 }
 ```
-
-GalaxyCheck makes randomly-generated lists of integers available to the test function, to prove its correctness over many iterations and a high variance of input.
 
 ## Notable features
 
@@ -81,7 +79,7 @@ public static IGen<(int x, int y)> Point =>
     select (x, y);
 ```
 
-Hooooold up. Requirements have changed. We actually now need to generate a range, and the interesting thing about the kind of range is that the minimum and maximum bounds need to be in order
+Hooooold up. Requirements have changed. We actually now need to generate a range, and the interesting thing about a range is that the minimum and maximum bounds need to be in order.
 
 This would be a significant structural change in some other frameworks, but using LINQ, it's trivial:
 
@@ -111,7 +109,7 @@ Other frameworks have similar features, though often only supply you with the or
 
 GalaxyCheck encodes the exact iteration and the exact shrink into the replay, which means starting the debugger will take you straight there.
 
-### Visibility
+### Transparency
 
 Other frameworks provide sampling functionality, but it can be quite disruptive to get at whilst you're in there writing properties. GalaxyCheck provides a `SampleAttribute`, which can be hot-swapped with `PropertyAttribute`, so you can immediately get an intuition of what values your function is being called with.
 
