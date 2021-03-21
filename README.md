@@ -2,7 +2,7 @@
 
 GalaxyCheck is a modern property-based testing framework for .NET, in a similar vein to [FsCheck](https://github.com/fscheck/FsCheck). Although GalaxyCheck has been more directly influenced by [fast-check](https://github.com/dubzzz/fast-check), [jqwik](https://github.com/jlink/jqwik) and [Hedgehog](https://github.com/hedgehogqa/fsharp-hedgehog).
 
-The library heavily leans on LINQ expressions, allowing seamless integration between generators and properties. In GalaxyCheck, properties _are_ simply generators of tests.
+The library uses LINQ expressions to allow seamless integration between generators and properties. In GalaxyCheck, properties _are_ simply generators of tests.
 
 [![Nuget](https://img.shields.io/nuget/v/galaxycheck)](https://www.nuget.org/packages/GalaxyCheck/)
 
@@ -145,7 +145,7 @@ GalaxyCheck.SampleException : Test case failed to prevent false-positives.
         [1] = -1944670218
 ```
 
-Interestingly, sampling those values revealed a bug in my test. If `x` is close to `int.MaxValue`, `x + 5` may overflow. Therefore, I've learnt that for this test, I need to constrain the generator for `x` a bit more:
+Interestingly, sampling those values revealed a bug in our test. If `x` is close to `int.MaxValue`, `x + 5` may overflow. Therefore, we've learnt that for this test, we need to constrain the generator for `x` a bit more:
 
 ```csharp
 [Sample]
