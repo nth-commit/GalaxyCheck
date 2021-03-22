@@ -5,9 +5,9 @@ using NebulaCheck;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xunit;
 using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
+using Test = NebulaCheck.Test;
 
 namespace Tests.V2.GenTests.InfiniteGenTests
 {
@@ -15,63 +15,48 @@ namespace Tests.V2.GenTests.InfiniteGenTests
     {
         private const int ExpectedDefaultIterationLimit = 1000;
 
-        [Fact]
-        public void AGeneratedEnumerableHasTheDefaultIterationLimitIfNotConfiguredOtherwise()
-        {
-            NebulaCheck.Property<object> property = new Property(
-                from elementGen in DomainGen.Gen()
-                from seed in DomainGen.Seed()
-                from size in DomainGen.Size()
-                select Property.ForThese(() =>
-                {
-                    var gen = elementGen.InfiniteOf().Select(EnsureSourceCanShrink);
+        [Property]
+        public NebulaCheck.IGen<Test> AGeneratedEnumerableHasTheDefaultIterationLimitIfNotConfiguredOtherwise() =>
+            from elementGen in DomainGen.Gen()
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = elementGen.InfiniteOf().Select(EnsureSourceCanShrink);
 
-                    var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
+                var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
-                    AssertLimit(sample, ExpectedDefaultIterationLimit);
-                }));
+                AssertLimit(sample, ExpectedDefaultIterationLimit);
+            });
 
-            property.Assert(iterations: 10);
-        }
+        [Property]
+        public NebulaCheck.IGen<Test> AGeneratedEnumerableHasTheGivenLimit() =>
+            from elementGen in DomainGen.Gen()
+            from limit in Gen.Int32().Between(1, 1000)
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = elementGen.InfiniteOf(iterationLimit: limit).Select(EnsureSourceCanShrink);
 
-        [Fact]
-        public void AGeneratedEnumerableHasTheGivenLimit()
-        {
-            NebulaCheck.Property<object> property = new Property(
-                from elementGen in DomainGen.Gen()
-                from limit in Gen.Int32().Between(1, 1000)
-                from seed in DomainGen.Seed()
-                from size in DomainGen.Size()
-                select Property.ForThese(() =>
-                {
-                    var gen = elementGen.InfiniteOf(iterationLimit: limit).Select(EnsureSourceCanShrink);
+                var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
-                    var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
+                AssertLimit(sample, limit);
+            });
 
-                    AssertLimit(sample, limit);
-                }));
+        [Property]
+        public NebulaCheck.IGen<Test> AGeneratedEnumerableWithoutALimitNeverThrows() =>
+            from elementGen in DomainGen.Gen()
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = elementGen.InfiniteOf(iterationLimit: null).Select(EnsureSourceCanShrink);
 
-            property.Assert(iterations: 10);
-        }
+                var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
-        [Fact]
-        public void AGeneratedEnumerableWithoutALimitNeverThrows()
-        {
-            NebulaCheck.Property<object> property = new Property(
-                from elementGen in DomainGen.Gen()
-                from seed in DomainGen.Seed()
-                from size in DomainGen.Size()
-                select Property.ForThese(() =>
-                {
-                    var gen = elementGen.InfiniteOf(iterationLimit: null).Select(EnsureSourceCanShrink);
-
-                    var sample = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
-
-                    AssertUnlimited(sample);
-                }));
-
-            property.Assert(iterations: 10);
-        }
+                AssertUnlimited(sample);
+            });
 
         private static void AssertLimit<T>(IExampleSpace<IEnumerable<T>> exampleSpace, int expectedLimit)
         {
