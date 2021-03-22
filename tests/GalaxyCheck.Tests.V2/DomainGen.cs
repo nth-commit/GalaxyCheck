@@ -38,7 +38,7 @@ namespace Tests.V2
             ? NebulaCheck.Gen.Int32().Between(0, 100)
             : NebulaCheck.Gen.Int32().Between(0, 50);
 
-        public static NebulaCheck.IGen<int> Iterations() => NebulaCheck.Gen.Int32().Between(0, 200);
+        public static NebulaCheck.IGen<int> Iterations(bool allowZero = true) => NebulaCheck.Gen.Int32().Between(allowZero ? 0 : 1, 200);
 
         public static NebulaCheck.IGen<GalaxyCheck.IGen<object>> Gen() =>
             Choose<GalaxyCheck.IGen>(
