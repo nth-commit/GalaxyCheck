@@ -6,6 +6,16 @@
     {
         public static partial class Advanced
         {
+            /// <summary>
+            /// As an alternative to throwing exceptions, creates a generator that always errors. This is useful when
+            /// writing custom generators - if any of the inputs were invalid, switching to an error generator ensures
+            /// that GalaxyCheck will handle the error through its normal error codepath. Otherwise, exceptions might
+            /// bubble up and provide less-interesting diagnostics.
+            /// </summary>
+            /// <param name="genName">The name of the generator where the error was detected.</param>
+            /// <param name="message">A message explaining what this error is, and what it might have been caused by.
+            /// </param>
+            /// <returns>A new generator that errors when it runs.</returns>
             public static IGen<T> Error<T>(string genName, string message) => new ErrorGen<T>(genName, message);
         }
     }
