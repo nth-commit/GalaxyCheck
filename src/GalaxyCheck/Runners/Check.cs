@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using GalaxyCheck.Gens.Parameters.Internal;
 
 namespace GalaxyCheck
 {
@@ -23,15 +24,16 @@ namespace GalaxyCheck
              string? replay = null,
              bool deepCheck = true)
         {
-            var initialParameters = seed == null
-                ? GenParameters.Create(size ?? 0)
-                : GenParameters.Create(seed.Value, size ?? 0); 
+            var resolvedIterations = iterations ?? 100;
+            var (resolvedSize, resizeStrategy) = ResolveSizingAspects<T>(size, resolvedIterations);
 
-            ResizeStrategy<T> resizeStrategy = size == null ? SuperStrategicResize<T> : NoopResize<T>;
+            var initialParameters = seed == null
+                ? GenParameters.Create(resolvedSize)
+                : GenParameters.Create(Rng.Create(seed.Value), resolvedSize);
 
             var initialState = CheckState<T>.Create(
                 property,
-                iterations ?? 100,
+                resolvedIterations,
                 shrinkLimit ?? 500,
                 initialParameters,
                 resizeStrategy,
@@ -55,6 +57,24 @@ namespace GalaxyCheck
                 initialParameters,
                 transitionAggregation.FinalState.NextParameters,
                 transitionAggregation.TerminationReason);
+        }
+
+        private static (Size initialSize, ResizeStrategy<T> resizeStrategy) ResolveSizingAspects<T>(int? givenSize, int resolvedIterations)
+        {
+            if (givenSize == null)
+            {
+                if (resolvedIterations >= 100)
+                {
+                    return (new Size(0), SuperStrategicResize<T>());
+                }
+                else
+                {
+                    var (initialSize, nextSizes) = SamplingSize.SampleSize(resolvedIterations);
+                    return (initialSize!, PlannedResize<T>(nextSizes));
+                }
+            }
+
+            return (new Size(givenSize.Value), NoopResize<T>());
         }
 
         private static IEnumerable<AbstractTransition<T>> UnfoldTransitions<T>(AbstractTransition<T> initialTransition) =>
@@ -118,13 +138,12 @@ namespace GalaxyCheck
         /// accelerate towards max size, and never loop back to zero. Because we know this is a fallible property, we 
         /// should generate bigger values, because bigger values are more likely to be able to normalize.
         /// </summary>
-        /// <returns></returns>
-        private static Size SuperStrategicResize<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample)
+        private static ResizeStrategy<T> SuperStrategicResize<T>()
         {
-            return lastIteration.Match(
+            return (info) => info.Iteration.Match(
                 onInstance: instance =>
                 {
-                    if (wasCounterexample == false)
+                    if (info.CounterexampleState == null)
                     {
                         return instance.NextParameters.Size.Increment();
                     }
@@ -144,8 +163,28 @@ namespace GalaxyCheck
                 onDiscard: discard => discard.NextParameters.Size);
         }
 
-        private static Size NoopResize<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample) =>
-            lastIteration.NextParameters.Size;
+        /// <summary>
+        /// Resize according to the given size plan. If we find a counterexample, switch to super-strategic resizing.
+        /// </summary>
+        private static ResizeStrategy<T> PlannedResize<T>(IEnumerable<Size> plannedSizes)
+        {
+            var sizes = plannedSizes.ToImmutableList();
+            return (info) =>
+            {
+                if (info.CounterexampleState != null)
+                {
+                    return SuperStrategicResize<T>()(info);
+                }
+
+                var size = sizes.Skip(info.CheckState.CompletedIterations).FirstOrDefault() ?? new Size(0);
+                return size;
+            };
+        }
+
+        /// <summary>
+        /// If you thought you were going to resize well have I got news for you. Resizing cancelled!
+        /// </summary>
+        private static ResizeStrategy<T> NoopResize<T>() => (info) => info.Iteration.NextParameters.Size;
 
         private static CheckIteration<T>? MapTransitionToIterationOrIgnore<T>(AbstractTransition<T> transition, bool enablePresentationalInference)
         {

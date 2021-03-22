@@ -105,7 +105,12 @@ namespace GalaxyCheck.Runners.CheckAutomata
             DeepCheck);
     }
 
-    internal delegate Size ResizeStrategy<T>(IGenIteration<Test<T>> lastIteration, bool wasCounterexample);
+    internal record ResizeStrategyInformation<T>(
+        CheckState<T> CheckState,
+        CounterexampleState<T>? CounterexampleState,
+        IGenIteration<Test<T>> Iteration);
+
+    internal delegate Size ResizeStrategy<T>(ResizeStrategyInformation<T> info);
 
     internal record CounterexampleState<T>(
         IExampleSpace<T> ExampleSpace,

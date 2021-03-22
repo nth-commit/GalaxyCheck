@@ -22,6 +22,16 @@
             return new GenParameters(Internal.Rng.Spawn(), new Size(size));
         }
 
+        internal static GenParameters Create(IRng rng, Size size)
+        {
+            return new GenParameters(rng, size);
+        }
+
+        internal static GenParameters Create(Size size)
+        {
+            return new GenParameters(Internal.Rng.Spawn(), size);
+        }
+
         public GenParameters With(
             IRng? rng = null,
             Size? size = null) =>
