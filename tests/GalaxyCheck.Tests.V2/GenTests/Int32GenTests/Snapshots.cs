@@ -29,9 +29,7 @@ namespace Tests.V2.GenTests.Int32GenTests
             foreach (var (betweenDescription, gen) in gens)
             foreach (var bias in biases)
             {
-                var gen0 = gen.WithBias(bias);
-
-                var sample = gen.Sample(seed: seed);
+                var sample = gen.WithBias(bias).Sample(seed: seed);
 
                 var nameExtension = string.Join("_", new[]
                 {
@@ -61,10 +59,9 @@ namespace Tests.V2.GenTests.Int32GenTests
             foreach (var (betweenDescription, gen) in gens)
             foreach (var bias in biases)
             {
-                var gen0 = gen.WithBias(bias);
-
-                var sample = gen.Advanced
-                    .SampleOneExampleSpace(seed: seed, size: 75)
+                var sample = gen
+                    .WithBias(bias)
+                    .Advanced.SampleOneExampleSpace(seed: seed, size: 75)
                     .Take(500)
                     .Render(x => x.ToString());
 
