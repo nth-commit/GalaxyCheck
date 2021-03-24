@@ -50,15 +50,10 @@ namespace Tests.V2.GenTests.InfiniteGenTests
                 var listGen = elementGen.ListOf().OfCount(count);
                 var infiniteGen = elementGen.InfiniteOf().Select(enumerable => enumerable.Take(count).ToImmutableList());
 
-                var listSample = Sample(listGen, ForkSeed(seed));
+                var listSample = Sample(listGen, SeedUtility.Fork(seed));
                 var infiniteSample = Sample(infiniteGen, seed);
 
                 infiniteSample.Should().BeEquivalentTo(listSample);
             });
-
-        private static int ForkSeed(int seed)
-        {
-            return GalaxyCheck.Gens.Parameters.Internal.Rng.Create(seed).Fork().Seed;
-        }
     }
 }

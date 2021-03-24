@@ -49,7 +49,7 @@ namespace Tests.V2.GenTests.InfiniteGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var elementMin = elementGen.Minimum(seed: ForkSeed(seed), size: size);
+                var elementMin = elementGen.Minimum(seed: SeedUtility.Fork(seed), size: size);
 
                 var infiniteGen = elementGen.InfiniteOf().Select(enumerable =>
                 {
@@ -61,10 +61,5 @@ namespace Tests.V2.GenTests.InfiniteGenTests
                 
                 minimum.Take(10).Should().BeEquivalentTo(Enumerable.Range(0, 10).Select(_ => elementMin));
             });
-
-        private static int ForkSeed(int seed)
-        {
-            return GalaxyCheck.Gens.Parameters.Internal.Rng.Create(seed).Fork().Seed;
-        }
     }
 }
