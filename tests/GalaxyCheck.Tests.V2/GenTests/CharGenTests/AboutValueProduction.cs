@@ -3,10 +3,9 @@ using GalaxyCheck;
 using NebulaCheck;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Test = NebulaCheck.Test;
 using Property = NebulaCheck.Property;
-using Gen = NebulaCheck.Gen;
-using System.Text.RegularExpressions;
 
 namespace Tests.V2.GenTests.CharGenTests
 {

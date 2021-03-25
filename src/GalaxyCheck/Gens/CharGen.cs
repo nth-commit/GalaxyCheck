@@ -45,16 +45,16 @@ namespace GalaxyCheck.Gens
 
         private static IGen<char> CreateGen(Gen.CharType charType)
         {
+            if (charType <= 0 || charType > Gen.CharType.All)
+            {
+                return Gen.Advanced.Error<char>(nameof(CharGen), "'charType' was not a valid flag value");
+            }
+
             var chars = CharacterSetsByFlag
                 .Aggregate(
                     Enumerable.Empty<char>(),
                     (acc, curr) => charType.HasFlag(curr.Key) ? acc.Concat(curr.Value) : acc)
                 .ToList();
-
-            if (chars.Any() == false)
-            {
-                return Gen.Advanced.Error<char>(nameof(CharGen), "'charType' was not a recognised flag value");
-            }
 
             return Gen.Int32().Between(0, chars.Count - 1).Select(i => chars[i]);
         }
@@ -63,7 +63,7 @@ namespace GalaxyCheck.Gens
             new Dictionary<Gen.CharType, IReadOnlyList<char>>
             {
                 { Gen.CharType.Whitespace, new List<char> { ' ' } },
-                { Gen.CharType.Alphabetical, CreateCharRanges((65, 90), (97, 122)) },
+                { Gen.CharType.Alphabetical, CreateCharRanges((97, 122), (65, 90)) },
                 { Gen.CharType.Numeric, CreateCharRanges((48, 57)) },
                 { Gen.CharType.Symbol, CreateCharRanges((33, 47), (58, 64), (91, 96), (123, 126)) },
                 { Gen.CharType.Extended, CreateCharRanges((128, 255)) },
