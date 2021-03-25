@@ -2,12 +2,9 @@
 using GalaxyCheck.Gens;
 using Snapshooter;
 using Snapshooter.Xunit;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.V2.GenTests.ListGenTests

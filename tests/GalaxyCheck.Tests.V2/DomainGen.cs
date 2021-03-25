@@ -7,19 +7,6 @@ namespace Tests.V2
 {
     public static class DomainGen
     {
-        public static NebulaCheck.IGen<T> Choose<T>(params NebulaCheck.IGen<T>[] gens)
-        {
-            if (gens.Any() == false)
-            {
-                return NebulaCheck.Gen.Advanced.Error<T>("DomainGen.Choose", "Input gens was empty");
-            }
-
-            return NebulaCheck.Gen.Int32()
-                .WithBias(NebulaCheck.Gen.Bias.None)
-                .Between(0, gens.Length - 1)
-                .SelectMany(i => gens[i]);
-        }
-
         public static NebulaCheck.IGen<T> Element<T>(params T[] elements)
         {
             if (elements.Any() == false)
@@ -41,7 +28,7 @@ namespace Tests.V2
         public static NebulaCheck.IGen<int> Iterations(bool allowZero = true) => NebulaCheck.Gen.Int32().Between(allowZero ? 0 : 1, 200);
 
         public static NebulaCheck.IGen<GalaxyCheck.IGen<object>> Gen() =>
-            Choose<GalaxyCheck.IGen>(
+            NebulaCheck.Gen.Choose<GalaxyCheck.IGen>(
                 NebulaCheck.Gen.Constant(GalaxyCheck.Gen.Int32().Between(-1000, 1000)),
                 NebulaCheck.Gen.Constant(GalaxyCheck.Gen.Int32().Between(0, 1).WithBias(GalaxyCheck.Gen.Bias.None))
             ).Select(gen => gen.Cast<object>());
@@ -56,7 +43,7 @@ namespace Tests.V2
             from x in NebulaCheck.Gen.Int32().Between(0, 1).WithBias(NebulaCheck.Gen.Bias.None)
             select (x == 1);
 
-        public static NebulaCheck.IGen<object> Any() => Choose(
+        public static NebulaCheck.IGen<object> Any() => NebulaCheck.Gen.Choose(
             NebulaCheck.Gen.Int32().Cast<object>(),
             Boolean().Cast<object>());
 

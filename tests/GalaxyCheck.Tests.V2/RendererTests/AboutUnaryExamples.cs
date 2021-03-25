@@ -12,7 +12,7 @@ namespace Tests.V2.RendererTests
     {
         [Property]
         public IGen<Test> ItRendersOneLine() =>
-            from value in DomainGen.Choose(DomainGen.Any(), DomainGen.AnyList())
+            from value in Gen.Choose(DomainGen.Any(), DomainGen.AnyList())
             select Property.ForThese(() =>
             {
                 var rendering = ExampleRenderer.Render(new ExampleViewModel.Unary(value));
