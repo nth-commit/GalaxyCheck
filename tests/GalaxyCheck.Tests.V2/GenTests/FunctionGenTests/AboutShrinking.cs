@@ -13,7 +13,7 @@ namespace Tests.V2.GenTests.FunctionGenTests
         [Property]
         public NebulaCheck.IGen<Test> IfTheImageContainsTheTargetReturnValue_ItShrinksToTheFunctionWhereTheImageIsTheTargetReturnValue() =>
             from returnValues in Gen.Int32().ListOf().OfCount(10)
-            from targetReturnValue in DomainGen.Element(returnValues.ToArray())
+            from targetReturnValue in Gen.Element(returnValues.AsEnumerable())
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
