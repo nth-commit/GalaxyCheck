@@ -221,7 +221,7 @@ namespace GalaxyCheck.Gens
                     return Error("'chars' must not be empty");
                 }
 
-                return Gen.Element<char>(charList);
+                return Gen.Element(charList);
             }
             else
             {

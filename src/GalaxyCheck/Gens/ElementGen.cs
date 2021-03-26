@@ -21,12 +21,5 @@ namespace GalaxyCheck
 
             return Int32().Between(0, sourceList.Count - 1).Select(i => sourceList[i]);
         }
-
-        /// <summary>
-        /// Generates elements picked from the source array.
-        /// </summary>
-        /// <param name="source">The source elements to pick from.</param>
-        /// <returns>A new generator.</returns>
-        public static IGen<T> Element<T>(params T[] elements) => Element(elements.AsEnumerable());
     }
 }
