@@ -14,7 +14,7 @@ namespace Tests.Property.Check
         [Property(Arbitrary = new[] { typeof(ArbitraryGen) }, EndSize = 50)]
         public FsCheck.Property ItConsumesRandomnessLikeSample(Iterations iterations, int randomnessConsumptionPerIteration, object value)
         {
-            var gen = GC.Gen.Advanced.Create<object>((useNextInt, _) =>
+            var gen = GC.Gen.Advanced.Primitive<object>((useNextInt, _) =>
             {
                 for (int i = 0; i < randomnessConsumptionPerIteration; i++)
                 {

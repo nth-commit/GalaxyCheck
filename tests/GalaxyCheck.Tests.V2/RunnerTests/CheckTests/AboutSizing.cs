@@ -15,7 +15,7 @@ namespace Tests.V2.RunnerTests.CheckTests
             from seed in DomainGen.Seed()
             select Property.ForThese(() =>
             {
-                var property = GalaxyCheck.Gen.Advanced.Create((_, size) => size.Value).ForAll(x => x < 50);
+                var property = GalaxyCheck.Gen.Advanced.Primitive((_, size) => size.Value).ForAll(x => x < 50);
 
                 var result = property.Check(iterations: iterations, seed: seed);
 
@@ -29,7 +29,7 @@ namespace Tests.V2.RunnerTests.CheckTests
             from seed in DomainGen.Seed()
             select Property.ForThese(() =>
             {
-                var property = GalaxyCheck.Gen.Advanced.Create((_, size) => size.Value).ForAll(x => x > 50);
+                var property = GalaxyCheck.Gen.Advanced.Primitive((_, size) => size.Value).ForAll(x => x > 50);
 
                 var result = property.Check(iterations: iterations, seed: seed);
 

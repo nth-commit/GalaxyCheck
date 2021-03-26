@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace GalaxyCheck
 {
-    public static partial class Gen
+    public static partial class Extensions
     {
         public static IGen<T> Cast<T>(this IGen gen) => new FunctionalGen<T>(parameters =>
             gen.Advanced

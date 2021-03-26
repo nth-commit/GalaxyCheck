@@ -110,7 +110,7 @@ namespace GalaxyCheck.Gens
             var weightedIndexes = new WeightedList<int>(choices.Select((c, i) => new WeightedElement<int>(c.Weight, i)));
 
             return Gen
-                .Advanced.Create((useNextInt, _) => useNextInt(0, weightedIndexes.Count - 1))
+                .Advanced.Primitive((useNextInt, _) => useNextInt(0, weightedIndexes.Count - 1))
                 .Advanced.Unfold(weightedIndex =>
                 {
                     var unweightedIndex = weightedIndexes[weightedIndex];

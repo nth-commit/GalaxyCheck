@@ -149,7 +149,7 @@ namespace GalaxyCheck.Gens
                 : CreateUnbiasedStatefulGen(min, max);
 
             return Gen
-                .Advanced.Create(statefulGen)
+                .Advanced.Primitive(statefulGen)
                 .Advanced.Unfold(value =>
                     ExampleSpaceFactory.Int32Optimized(value: value, origin: origin, min: min, max: max));
         }
