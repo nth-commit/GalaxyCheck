@@ -162,47 +162,4 @@ namespace GalaxyCheck
                 }))
                 .Select(x => valueSelector(x.left, x.right));
     }
-
-    public static partial class Gen
-    {
-        public static IGen<TResult> SelectMany<T0, TResult>(
-            IGen<T0> gen0,
-            Func<T0, IGen<TResult>> selector) =>
-                from x0 in gen0
-                from x in selector(x0)
-                select x;
-
-        public static IGen<TResult> SelectMany<T0, T1, TResult>(
-            IGen<T0> gen0,
-            IGen<T1> gen1,
-            Func<T0, T1, IGen<TResult>> selector) =>
-                from x0 in gen0
-                from x1 in gen1
-                from x in selector(x0, x1)
-                select x;
-
-        public static IGen<TResult> SelectMany<T0, T1, T2, TResult>(
-            IGen<T0> gen0,
-            IGen<T1> gen1,
-            IGen<T2> gen2,
-            Func<T0, T1, T2, IGen<TResult>> selector) =>
-                from x0 in gen0
-                from x1 in gen1
-                from x2 in gen2
-                from x in selector(x0, x1, x2)
-                select x;
-
-        public static IGen<TResult> SelectMany<T0, T1, T2, T3, TResult>(
-            IGen<T0> gen0,
-            IGen<T1> gen1,
-            IGen<T2> gen2,
-            IGen<T3> gen3,
-            Func<T0, T1, T2, T3, IGen<TResult>> selector) =>
-                from x0 in gen0
-                from x1 in gen1
-                from x2 in gen2
-                from x3 in gen3
-                from x in selector(x0, x1, x2, x3)
-                select x;
-    }
 }

@@ -1,10 +1,8 @@
-﻿using System;
+﻿using GalaxyCheck;
+using System;
 using System.Linq;
-using Xunit;
-using GalaxyCheck;
-using DevGen = GalaxyCheck.Gen;
-using DevProperty = GalaxyCheck.Property;
 using System.Reflection;
+using Xunit;
 
 namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 {
@@ -18,15 +16,14 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
         [Fact]
         public void AVoidMethodInfoReceivesInputLikeForAll()
         {
-            var gen0 = DevGen.Int32();
-            var gen1 = DevGen.Int32();
+            var gen0 = Gen.Int32();
+            var gen1 = Gen.Int32();
 
-            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => { });
-            DevGen.Select(forAllProperty, x => new object[] { x.Input.Item1, x.Input.Item2 });
+            var forAllProperty = Property.ForAll(gen0, gen1, (x, y) => { });
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             Action<int, int> f = (x, y) => { };
-            var methodInfoProperty = DevProperty.Reflect(f.Method, null);
+            var methodInfoProperty = Property.Reflect(f.Method, null);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
@@ -35,54 +32,34 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
         [Fact]
         public void ABooleanReturningMethodInfoReceivesInputLikeForAll()
         {
-            var gen0 = DevGen.Int32();
-            var gen1 = DevGen.Int32();
+            var gen0 = Gen.Int32();
+            var gen1 = Gen.Int32();
 
-            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => true);
+            var forAllProperty = Property.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             Func<int, int, bool> f = (x, y) => true;
-            var methodInfoProperty = DevProperty.Reflect(f.Method, null);
+            var methodInfoProperty = Property.Reflect(f.Method, null);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 10);
         }
 
-        private DevProperty ARecursiveProperty(int x)
+        private Property ARecursiveProperty(int x)
         {
-            return DevGen.Int32().ForAll(y => true);
+            return Gen.Int32().ForAll(y => true);
         }
 
         [Fact]
         public void APropertyReturningMethodInfoReceivesAConcatenationOfInput()
         {
-            var gen0 = DevGen.Int32();
-            var gen1 = DevGen.Int32();
+            var gen0 = Gen.Int32();
+            var gen1 = Gen.Int32();
 
-            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => true);
+            var forAllProperty = Property.ForAll(gen0, gen1, (x, y) => true);
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
-            var methodInfoProperty = DevProperty.Reflect(GetMethod(nameof(ARecursiveProperty)), this);
-            var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
-
-            GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);
-        }
-
-        private Property<int> AGenericRecursiveProperty(int x)
-        {
-            return DevGen.Int32().ForAll(y => true);
-        }
-
-        [Fact(Skip = "Not yet supported")]
-        public void AGenericPropertyReturningMethodInfoReceivesAConcatenationOfInput()
-        {
-            var gen0 = DevGen.Int32();
-            var gen1 = DevGen.Int32();
-
-            var forAllProperty = DevProperty.ForAll(gen0, gen1, (x, y) => true);
-            var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
-
-            var methodInfoProperty = DevProperty.Reflect(GetMethod(nameof(AGenericRecursiveProperty)), this);
+            var methodInfoProperty = Property.Reflect(GetMethod(nameof(ARecursiveProperty)), this);
             var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);

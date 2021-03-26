@@ -1,14 +1,14 @@
 ﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Runners.Check;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
-using GalaxyCheck.Runners.Check;
 
 namespace GalaxyCheck
 {
     using GalaxyCheck.Runners.Sample;
 
-    public static partial class Gen
+    public static partial class Extensions
     {
         public static T SampleOne<T>(
             this IGen<T> gen,

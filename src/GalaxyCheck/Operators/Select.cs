@@ -39,43 +39,4 @@ namespace GalaxyCheck
             return gen.TransformInstances(transformation);
         }
     }
-
-    public static partial class Gen
-    {
-        public static IGen<TResult> Select<T0, TResult>(
-            IGen<T0> gen0,
-            Func<T0, TResult> selector) =>
-                from x0 in gen0
-                select selector(x0);
-
-        public static IGen<TResult> Select<T0, T1, TResult>(
-            IGen<T0> gen0,
-            IGen<T1> gen1,
-            Func<T0, T1, TResult> selector) =>
-                from x0 in gen0
-                from x1 in gen1
-                select selector(x0, x1);
-
-        public static IGen<TResult> Select<T0, T1, T2, TResult>(
-            IGen<T0> gen0,
-            IGen<T1> gen1,
-            IGen<T2> gen2,
-            Func<T0, T1, T2, TResult> selector) =>
-                from x0 in gen0
-                from x1 in gen1
-                from x2 in gen2
-                select selector(x0, x1, x2);
-
-        public static IGen<TResult> Select<T0, T1, T2, T3, TResult>(
-            IGen<T0> gen0,
-            IGen<T1> gen1,
-            IGen<T2> gen2,
-            IGen<T3> gen3,
-            Func<T0, T1, T2, T3, TResult> selector) =>
-                from x0 in gen0
-                from x1 in gen1
-                from x2 in gen2
-                from x3 in gen3
-                select selector(x0, x1, x2, x3);
-    }
 }

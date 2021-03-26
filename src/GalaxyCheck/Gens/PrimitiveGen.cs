@@ -13,7 +13,7 @@ namespace GalaxyCheck
     {
         public static partial class Advanced
         {
-            public static IGen<T> Create<T>(StatefulGenFunc<T> generate) => new PrimitiveGen<T>(generate);
+            public static IGen<T> Primitive<T>(StatefulGenFunc<T> generate) => new PrimitiveGen<T>(generate);
         }
     }
 }

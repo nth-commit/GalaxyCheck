@@ -7,6 +7,6 @@
         /// </summary>
         /// <param name="value">The constant value the generator should produce.</param>
         /// <returns>The new generator.</returns>
-        public static IGen<T> Constant<T>(T value) => Advanced.Create((useNextInt, size) => value);
+        public static IGen<T> Constant<T>(T value) => Advanced.Primitive((useNextInt, size) => value);
     }
 }
