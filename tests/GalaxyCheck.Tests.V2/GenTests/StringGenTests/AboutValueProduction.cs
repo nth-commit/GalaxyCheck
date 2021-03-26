@@ -65,7 +65,7 @@ namespace Tests.V2.GenTests.StringGenTests
         [Property]
         public NebulaCheck.IGen<Test> IfTheStringLengthIsRanged_ItProducesValuesLikeListOfCharConstrainedInTheSameWay() =>
             from lengths in Gen.Int32().Between(0, 20).Two()
-            from lengthBias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize)
+            from lengthBias in DomainGen.Bias()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
@@ -137,8 +137,8 @@ namespace Tests.V2.GenTests.StringGenTests
                     GalaxyCheck.Gen.CharType.Control
                 };
 
-                return DomainGen
-                    .Element(allCharTypes.ToArray())
+                return Gen
+                    .Element(allCharTypes)
                     .ListOf()
                     .WithCountGreaterThan(0)
                     .Select(xs => xs.Aggregate((GalaxyCheck.Gen.CharType)0, (acc, curr) => acc | curr));

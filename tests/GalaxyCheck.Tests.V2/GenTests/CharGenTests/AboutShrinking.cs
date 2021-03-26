@@ -2,6 +2,7 @@
 using GalaxyCheck;
 using NebulaCheck;
 using System.Linq;
+using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
@@ -121,8 +122,8 @@ namespace Tests.V2.GenTests.CharGenTests
 
                 var candidateCharTypes = allCharTypes.Except(excludedCharType);
 
-                return DomainGen
-                    .Element(candidateCharTypes.ToArray())
+                return Gen
+                    .Element(candidateCharTypes)
                     .ListOf()
                     .WithCountGreaterThan(0)
                     .Select(xs => xs.Aggregate((GalaxyCheck.Gen.CharType)0, (acc, curr) => acc | curr));

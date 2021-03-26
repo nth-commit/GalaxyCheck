@@ -7,18 +7,6 @@ namespace Tests.V2
 {
     public static class DomainGen
     {
-        public static NebulaCheck.IGen<T> Element<T>(params T[] elements)
-        {
-            if (elements.Any() == false)
-            {
-                return NebulaCheck.Gen.Advanced.Error<T>("DomainGen.Element", "Input gens was empty");
-            }
-
-            return NebulaCheck.Gen.Int32()
-                .Between(0, elements.Length - 1)
-                .Select(i => elements[i]);
-        }
-
         public static NebulaCheck.IGen<int> Seed() => NebulaCheck.Gen.Int32().WithBias(NebulaCheck.Gen.Bias.None).NoShrink();
 
         public static NebulaCheck.IGen<int> Size(bool allowChaos = true) => allowChaos
@@ -32,6 +20,9 @@ namespace Tests.V2
                 NebulaCheck.Gen.Constant(GalaxyCheck.Gen.Int32().Between(-1000, 1000)),
                 NebulaCheck.Gen.Constant(GalaxyCheck.Gen.Int32().Between(0, 1).WithBias(GalaxyCheck.Gen.Bias.None))
             ).Select(gen => gen.Cast<object>());
+
+        public static NebulaCheck.IGen<GalaxyCheck.Gen.Bias> Bias() =>
+            NebulaCheck.Gen.Element(new[] { GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize });
 
         public static NebulaCheck.IGen<(T, T)> Two<T>(this NebulaCheck.IGen<T> gen) => NebulaCheck.Gen.Zip(gen, gen);
 

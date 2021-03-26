@@ -12,7 +12,7 @@ namespace Tests.V2.GenTests.ListGenTests
     {
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksTheCountToTheMinimumCountWhilstShrinkingTheElementsToTheirMinimums() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize)
+            from bias in DomainGen.Bias()
             from elementGen in DomainGen.Gen()
             from minCount in Gen.Int32().Between(0, 20)
             from seed in DomainGen.Seed()
@@ -30,7 +30,7 @@ namespace Tests.V2.GenTests.ListGenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksTheCountToTheLocalMinimumCount() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize)
+            from bias in DomainGen.Bias()
             from elementGen in DomainGen.Gen()
             from localMinCount in Gen.Int32().Between(0, 5)
             from seed in DomainGen.Seed()
@@ -45,7 +45,7 @@ namespace Tests.V2.GenTests.ListGenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksToTheSinglePredicatedElement() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize)
+            from bias in DomainGen.Bias()
             from elementMinimum in Gen.Int32().Between(0, 100)
             from seed in DomainGen.Seed()
             select Property.ForThese(() =>

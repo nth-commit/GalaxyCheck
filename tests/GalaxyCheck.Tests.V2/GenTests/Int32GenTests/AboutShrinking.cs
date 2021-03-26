@@ -12,7 +12,7 @@ namespace Tests.V2.GenTests.Int32GenTests
     {
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksToTheOrigin() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize)
+            from bias in DomainGen.Bias()
             from origin in Gen.Int32()
             from seed in DomainGen.Seed()
             select Property.ForThese(() =>
@@ -26,7 +26,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksToTheLocalMinimum_ForAPositiveRange() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize)
+            from bias in DomainGen.Bias()
             from origin in Gen.Int32().Between(0, 100)
             from localMin in Gen.Int32().Between(origin, 200)
             from seed in DomainGen.Seed()
@@ -41,7 +41,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksToTheLocalMinimum_ForANegativeRange() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize)
+            from bias in DomainGen.Bias()
             from origin in Gen.Int32().Between(0, -100)
             from localMin in Gen.Int32().Between(origin, -200)
             from seed in DomainGen.Seed()
@@ -56,7 +56,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksAnyScenarioWithin64Attempts_ForAPositiveRange() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize).NoShrink()
+            from bias in DomainGen.Bias().NoShrink()
             from localMin in Gen.Int32().Between(0, int.MaxValue / 2).NoShrink()
             from seed in DomainGen.Seed()
             select Property.ForThese(() =>
@@ -73,7 +73,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItShrinksAnyScenarioWithin64Attempts_ForANegativeRange() =>
-            from bias in DomainGen.Element(GalaxyCheck.Gen.Bias.None, GalaxyCheck.Gen.Bias.WithSize).NoShrink()
+            from bias in DomainGen.Bias().NoShrink()
             from localMin in Gen.Int32().Between(0, int.MinValue / 2).NoShrink()
             from seed in DomainGen.Seed()
             select Property.ForThese(() =>

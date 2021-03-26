@@ -71,7 +71,7 @@ namespace Tests.V2.ExampleSpaceTests
                 Scenarios = JsonSerializer.Deserialize<List<Int32ExampleSpaceScenario>>(json)!;
             }
 
-            private static string GetTestDirectory([CallerFilePath] string path = null) => Path.GetDirectoryName(path)!;
+            private static string GetTestDirectory([CallerFilePath] string path = null!) => Path.GetDirectoryName(path)!;
         }
     }
 }
