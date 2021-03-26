@@ -28,7 +28,7 @@ namespace Tests.V2.GenTests.CharGenTests
             });
 
         [Property]
-        public NebulaCheck.IGen<Test> OtherwiseIfCharTypeHasAlphabetical_ItShrinksToA() =>
+        public NebulaCheck.IGen<Test> OtherwiseIfCharTypeHasAlphabetical_ItShrinksToLowercaseA() =>
             from charType in TestGen.CharType(GalaxyCheck.Gen.CharType.Whitespace)
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
@@ -38,7 +38,7 @@ namespace Tests.V2.GenTests.CharGenTests
 
                 var minimum = gen.Minimum(seed: seed, size: size);
 
-                minimum.Should().Be('A');
+                minimum.Should().Be('a');
             });
 
         [Property]

@@ -75,7 +75,7 @@ namespace GalaxyCheck.Gens
         /// Constrains the generator so that it only produces lists with the given count.
         /// </summary>
         /// <param name="count">The count to constrain generated lists to.</param>
-        /// <returns>A new generator with the constrain applied.</returns>
+        /// <returns>A new generator with the constraint applied.</returns>
         IListGen<T> OfCount(int count);
 
         /// <summary>
