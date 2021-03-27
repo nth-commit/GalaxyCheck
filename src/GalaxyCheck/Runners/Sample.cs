@@ -13,7 +13,7 @@ namespace GalaxyCheck
         public static T SampleOne<T>(
             this IGen<T> gen,
             int? seed = null,
-            int? size = null) => gen.Sample(iterations: 1, seed: seed, size: size).Single();
+            int? size = null) => gen.Sample(iterations: 1, seed: seed, size: size ?? 100).Single();
 
         public static List<T> Sample<T>(
             this IGen<T> gen,
