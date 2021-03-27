@@ -9,6 +9,18 @@ namespace Tests.V2.GenTests.CreateGenTests
 {
     public class AboutUnresolvableTypes
     {
+        [Fact]
+        public void ItErrorsWhenPrimitiveIsUnresolvable()
+        {
+            var gen = new CreateGen<int>(ImmutableDictionary.Create<Type, IGen>());
+
+            Action action = () => gen.SampleOne(seed: 0);
+
+            action.Should()
+                .Throw<Exceptions.GenErrorException>()
+                .WithMessage("Error while running generator CreateGen: could not resolve type 'System.Int32'");
+        }
+
         private class ClassWithOneProperty
         {
             public int Property { get; set; }
@@ -23,7 +35,7 @@ namespace Tests.V2.GenTests.CreateGenTests
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator CreateGen: could not resolve type 'System.Int32' at path '$'");
+                .WithMessage("Error while running generator CreateGen: could not resolve type 'System.Int32' at path '$.Property'");
         }
 
         private class ClassWithOneNestedProperty
@@ -40,7 +52,7 @@ namespace Tests.V2.GenTests.CreateGenTests
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator CreateGen: could not resolve type 'System.Int32' at path '$.Property'");
+                .WithMessage("Error while running generator CreateGen: could not resolve type 'System.Int32' at path '$.Property.Property'");
         }
     }
 }
