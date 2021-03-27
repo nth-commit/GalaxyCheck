@@ -11,7 +11,6 @@ using System.Linq.Expressions;
 /// <summary>
 /// TODO:
 ///     - Docs
-///     - Handle primitives at the root
 ///     - Plugin-able strategies for handling nullables, lists, tuples, ienumerables, records etc.
 /// </summary>
 namespace GalaxyCheck
@@ -38,7 +37,9 @@ namespace GalaxyCheck.Gens
         private static readonly ImmutableDictionary<Type, IGen> DefaultRegisteredGensByType =
             new Dictionary<Type, IGen>
             {
-                { typeof(int), Gen.Int32() }
+                { typeof(int), Gen.Int32() },
+                { typeof(char), Gen.Char() },
+                { typeof(string), Gen.String() }
             }.ToImmutableDictionary();
 
         private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
@@ -66,7 +67,7 @@ namespace GalaxyCheck.Gens
                     typeof(T),
                     _registeredGensByType,
                     message => Gen.Advanced.Error<T>(nameof(CreateGen<T>), message),
-                    ImmutableStack.Create(("$", typeof(T))))
+                    ImmutableStack.Create<(string name, Type type)>(("$", typeof(T))))
                 .Cast<T>()
                 .Advanced.Run(parameters);
     }
@@ -79,22 +80,40 @@ namespace GalaxyCheck.Gens
             Func<string, IGen> errorFactory,
             ImmutableStack<(string name, Type type)> path)
         {
-            if (path.Pop().Any(item => item.type == type))
+            if (path.Skip(1).Any(item => item.type == type))
             {
-                var pathString = string.Join(".", path.Reverse().Select(item => item.name));
-                return errorFactory($"detected circular reference on type '{type}' at path '{pathString}'");
+                return errorFactory($"detected circular reference on type '{type}'{RenderPathDiagnostics(path)}");
             }
 
+            if (registeredGensByType.TryGetValue(type, out IGen? valueGen))
+            {
+                return valueGen;
+            }
+
+            if (type.BaseType == typeof(object))
+            {
+                return BuildObjectGenerator(type, registeredGensByType, errorFactory, path);
+            }
+
+            return errorFactory($"could not resolve type '{type}'{RenderPathDiagnostics(path)}");
+        }
+
+        private static IGen BuildObjectGenerator(
+            Type type,
+            ImmutableDictionary<Type, IGen> registeredGensByType,
+            Func<string, IGen> errorFactory,
+            ImmutableStack<(string name, Type type)> path)
+        {
             var setPropertiesGen = type.GetProperties().Aggregate(
                 Gen.Constant<Action<object>>(_ => { }),
                 (actionGen, property) => actionGen.SelectMany(setProperties =>
                 {
-                    var valueGen = ResolveGen(
+                    var valueGen = BuildGen(
                         property.PropertyType,
                         registeredGensByType,
                         errorFactory,
                         path.Push((property.Name, property.PropertyType)));
-                    
+
                     if (valueGen == null)
                     {
                         var pathString = string.Join(".", path.Reverse().Select(item => item.name));
@@ -116,23 +135,10 @@ namespace GalaxyCheck.Gens
             });
         }
 
-        private static IGen? ResolveGen(
-            Type type,
-            ImmutableDictionary<Type, IGen> registeredGensByType,
-            Func<string, IGen> errorFactory,
-            ImmutableStack<(string, Type)> path)
-        {
-            if (registeredGensByType.TryGetValue(type, out IGen? valueGen))
-            {
-                return valueGen;
-            }
+        private static string RenderPathDiagnostics(ImmutableStack<(string name, Type type)> path) =>
+            path.Count() == 1 ? "" : $" at path '{RenderPath(path)}'";
 
-            if (type.BaseType == typeof(object))
-            {
-                return BuildGen(type, registeredGensByType, errorFactory, path);
-            }
-
-            return null;
-        }
+        private static string RenderPath(ImmutableStack<(string name, Type type)> path) =>
+            string.Join(".", path.Reverse().Select(item => item.name));
     }
 }
