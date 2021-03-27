@@ -7,11 +7,18 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 /// <summary>
 /// TODO:
 ///     - Docs
-///     - Plugin-able strategies for handling nullables, lists, tuples, ienumerables, records etc.
+///     - Plugin-able strategies for handling nullables, lists, tuples, ienumerables etc.
+///     - Private properties
+///     - Readonly properties
+///     - Fields
+///     - Exception handling in ctor/property
+///     - Private default constructor
+///     - Render ctor params in path more sensibly
 /// </summary>
 namespace GalaxyCheck
 {
@@ -92,13 +99,33 @@ namespace GalaxyCheck.Gens
 
             if (type.BaseType == typeof(object))
             {
-                return BuildObjectGenerator(type, registeredGensByType, errorFactory, path);
+                return BuildObjectGen(type, registeredGensByType, errorFactory, path);
             }
 
             return errorFactory($"could not resolve type '{type}'{RenderPathDiagnostics(path)}");
         }
 
-        private static IGen BuildObjectGenerator(
+        private static IGen BuildObjectGen(
+            Type type,
+            ImmutableDictionary<Type, IGen> registeredGensByType,
+            Func<string, IGen> errorFactory,
+            ImmutableStack<(string name, Type type)> path)
+        {
+            var publicNonDefaultConstructor = type
+                .GetConstructors()
+                .Where(c => c.IsPublic)
+                .Select(c => (constructor: c, parameters: c.GetParameters()))
+                .Where(x => x.parameters.Length > 0)
+                .OrderByDescending(x => x.parameters.Length)
+                .Select(x => x.constructor)
+                .FirstOrDefault();
+
+            return publicNonDefaultConstructor == null
+                ? BuildObjectGenFromProperties(type, registeredGensByType, errorFactory, path)
+                : BuildObjectGenFromConstructor(registeredGensByType, errorFactory, path, publicNonDefaultConstructor);
+        }
+
+        private static IGen BuildObjectGenFromProperties(
             Type type,
             ImmutableDictionary<Type, IGen> registeredGensByType,
             Func<string, IGen> errorFactory,
@@ -114,12 +141,6 @@ namespace GalaxyCheck.Gens
                         errorFactory,
                         path.Push((property.Name, property.PropertyType)));
 
-                    if (valueGen == null)
-                    {
-                        var pathString = string.Join(".", path.Reverse().Select(item => item.name));
-                        return errorFactory($"could not resolve type '{property.PropertyType}' at path '{pathString}'").Cast<Action<object>>();
-                    }
-
                     return valueGen.Cast<object>().Select<object, Action<object>>(value => (obj) =>
                     {
                         setProperties(obj);
@@ -133,6 +154,28 @@ namespace GalaxyCheck.Gens
                 setProperties(instance);
                 return instance;
             });
+        }
+
+        private static IGen BuildObjectGenFromConstructor(
+            ImmutableDictionary<Type, IGen> registeredGensByType,
+            Func<string, IGen> errorFactory,
+            ImmutableStack<(string name, Type type)> path,
+            ConstructorInfo constructorInfo)
+        {
+            var parameterGens = constructorInfo.GetParameters().Select(parameter =>
+            {
+                var valueGen = BuildGen(
+                    parameter.ParameterType,
+                    registeredGensByType,
+                    errorFactory,
+                    path.Push((parameter.Name, parameter.ParameterType))); // TODO: Indicate it's a ctor param in the path
+
+                return valueGen.Cast<object>();
+            });
+
+            return Gen
+                .Zip(parameterGens)
+                .Select(parameters => constructorInfo.Invoke(parameters.ToArray()));
         }
 
         private static string RenderPathDiagnostics(ImmutableStack<(string name, Type type)> path) =>

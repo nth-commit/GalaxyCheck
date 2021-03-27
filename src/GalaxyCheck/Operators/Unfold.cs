@@ -17,7 +17,7 @@ namespace GalaxyCheck
             return advanced.Unfold(value => ExampleSpaceFactory.Unfold(
                 value,
                 shrinkValue.Invoke,
-                measureValue == null ? MeasureFunc.Unmeasured<T>() : measureValue.Invoke,
+                measureValue == null ? MeasureFunc.Unmeasured<T>() : measureValue!.Invoke,
                 identifyValue == null ? IdentifyFuncs.Default<T>() : value0 => ExampleId.Primitive(identifyValue(value0))));
         }
 
