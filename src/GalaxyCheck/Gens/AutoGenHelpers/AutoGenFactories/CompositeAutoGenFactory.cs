@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
@@ -18,33 +17,30 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
             _errorFactory = errorFactory;
         }
 
-        public bool CanHandleType(Type type) =>
-            _genFactoriesByPriority.Any(genFactory => genFactory.CanHandleType(type));
+        public bool CanHandleType(Type type, AutoGenFactoryContext context) =>
+            _genFactoriesByPriority.Any(genFactory => genFactory.CanHandleType(type, context));
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context)
         {
-            if (path.Skip(1).Any(item => item.type == type))
+            if (context.TypeHistory.Skip(1).Any(t => t == type))
             {
-                return _errorFactory($"detected circular reference on type '{type}'{RenderPathDiagnostics(path)}");
+                return _errorFactory($"detected circular reference on type '{type}'{RenderPathDiagnostics(context)}");
             }
 
             var gen = _genFactoriesByPriority
-                .Where(genFactory => genFactory.CanHandleType(type))
-                .Select(genFactory => genFactory.CreateGen(innerFactory, type, path))
+                .Where(genFactory => genFactory.CanHandleType(type, context))
+                .Select(genFactory => genFactory.CreateGen(innerFactory, type, context))
                 .FirstOrDefault();
 
             if (gen == null)
             {
-                return _errorFactory($"could not resolve type '{type}'{RenderPathDiagnostics(path)}");
+                return _errorFactory($"could not resolve type '{type}'{RenderPathDiagnostics(context)}");
             }
 
             return gen;
         }
 
-        private static string RenderPathDiagnostics(ImmutableStack<(string name, Type type)> path) =>
-            path.Count() == 1 ? "" : $" at path '{RenderPath(path)}'";
-
-        private static string RenderPath(ImmutableStack<(string name, Type type)> path) =>
-            string.Join(".", path.Reverse().Select(item => item.name));
+        private static string RenderPathDiagnostics(AutoGenFactoryContext context) =>
+            context.Members.Count() == 1 ? "" : $" at path '{context.MemberPath}'";
     }
 }

@@ -3,6 +3,7 @@ using GalaxyCheck.Gens.AutoGenHelpers;
 using GalaxyCheck.Gens.Internal;
 using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
+using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -40,6 +41,10 @@ namespace GalaxyCheck.Gens
             IGen<TMember> memberGen);
     }
 
+    internal record AutoGenMemberOverride(
+        string Path,
+        IGen Gen);
+
     internal class AutoGen<T> : BaseGen<T>, IAutoGen<T>
     {
         private static readonly ImmutableDictionary<Type, IGen> DefaultRegisteredGensByType =
@@ -51,34 +56,50 @@ namespace GalaxyCheck.Gens
             }.ToImmutableDictionary();
 
         private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
+        private readonly ImmutableList<AutoGenMemberOverride> _memberOverrides;
 
-        internal AutoGen(ImmutableDictionary<Type, IGen> registeredGensByType)
+        internal AutoGen(
+            ImmutableDictionary<Type, IGen> registeredGensByType,
+            ImmutableList<AutoGenMemberOverride> memberOverrides)
         {
             _registeredGensByType = registeredGensByType;
+            _memberOverrides = memberOverrides;
         }
 
-        public AutoGen() : this(DefaultRegisteredGensByType)
+        public AutoGen() : this(
+            DefaultRegisteredGensByType,
+            ImmutableList.Create<AutoGenMemberOverride>())
         {
         }
 
         public IAutoGen<T> OverrideMember<TMember>(Expression<Func<T, TMember>> memberSelector, IGen<TMember> fieldGen)
         {
-            throw new NotImplementedException();
+            var pathResult = PathResolver.FromExpression(memberSelector);
+            return pathResult.Match<string, PathResolutionError, IAutoGen<T>>(
+                fromLeft: path => new AutoGen<T>(
+                    _registeredGensByType,
+                    _memberOverrides.Add(new AutoGenMemberOverride(path, fieldGen))),
+                fromRight: error => null!);
         }
 
         public IAutoGen<T> RegisterType<TRegister>(IGen<TRegister> gen) =>
-            new AutoGen<T>(_registeredGensByType.SetItem(typeof(TRegister), gen));
+            new AutoGen<T>(
+                _registeredGensByType.SetItem(typeof(TRegister), gen),
+                _memberOverrides);
 
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) =>
-            BuildGen(_registeredGensByType).Advanced.Run(parameters);
+            BuildGen(_registeredGensByType, _memberOverrides).Advanced.Run(parameters);
 
-        private static IGen<T> BuildGen(ImmutableDictionary<Type, IGen> registeredGensByType) =>
-            AutoGenBuilder
-                .Build(
-                    typeof(T),
-                    registeredGensByType,
-                    message => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message),
-                    ImmutableStack.Create<(string name, Type type)>(("$", typeof(T))))
-                .Cast<T>();
+        private static IGen<T> BuildGen(
+            IReadOnlyDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyList<AutoGenMemberOverride> memberOverrides) =>
+                AutoGenBuilder
+                    .Build(
+                        typeof(T),
+                        registeredGensByType,
+                        memberOverrides,
+                        message => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message),
+                        AutoGenFactoryContext.Create(typeof(T)))
+                    .Cast<T>();
     }
 }

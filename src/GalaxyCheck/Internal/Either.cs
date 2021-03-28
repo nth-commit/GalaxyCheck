@@ -1,4 +1,6 @@
-﻿namespace GalaxyCheck.Internal
+﻿using System;
+
+namespace GalaxyCheck.Internal
 {
     internal interface IEither<out TLeft, out TRight> { }
 
@@ -66,6 +68,16 @@
 
             right = default!;
             return false;
+        }
+
+        public static TResult Match<TLeft, TRight, TResult>(
+            this Either<TLeft, TRight> either,
+            Func<TLeft, TResult> fromLeft,
+            Func<TRight, TResult> fromRight)
+        {
+            if (either.IsLeft(out TLeft left)) return fromLeft(left);
+            if (either.IsRight(out TRight right)) return fromRight(right);
+            throw new Exception("Fatal: Unhandled case");
         }
     }
 }

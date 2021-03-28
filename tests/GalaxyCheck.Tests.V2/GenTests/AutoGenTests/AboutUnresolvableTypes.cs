@@ -12,7 +12,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItErrorsWhenPrimitiveIsUnresolvable()
         {
-            var gen = new AutoGen<int>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new AutoGen<int>(
+                ImmutableDictionary.Create<Type, IGen>(),
+                ImmutableList.Create<AutoGenMemberOverride>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
@@ -29,7 +31,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItErrorsWhenPropertyTypeIsUnresolvable()
         {
-            var gen = new AutoGen<ClassWithOneProperty>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new AutoGen<ClassWithOneProperty>(
+                ImmutableDictionary.Create<Type, IGen>(),
+                ImmutableList.Create<AutoGenMemberOverride>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
@@ -46,7 +50,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItErrorsWhenNestedPropertyTypeIsUnresolvable()
         {
-            var gen = new AutoGen<ClassWithOneNestedProperty>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new AutoGen<ClassWithOneNestedProperty>(
+                ImmutableDictionary.Create<Type, IGen>(),
+                ImmutableList.Create<AutoGenMemberOverride>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
