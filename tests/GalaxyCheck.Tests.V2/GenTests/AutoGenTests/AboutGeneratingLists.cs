@@ -7,7 +7,7 @@ using System.Linq;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.CreateGenTests
+namespace Tests.V2.GenTests.AutoGenTests
 {
     public class AboutGeneratingLists
     {
@@ -20,7 +20,7 @@ namespace Tests.V2.GenTests.CreateGenTests
                 List<IReadOnlyList<int>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyList<int>> gen) =>
                     AboutGeneratingLists.SampleTraversal(gen, seed, size);
 
-                var gen0 = GalaxyCheck.Gen.Create<IReadOnlyList<int>>();
+                var gen0 = GalaxyCheck.Gen.Auto<IReadOnlyList<int>>();
                 var gen1 = GalaxyCheck.Gen.Int32().ListOf();
 
                 var sample0 = SampleTraversal(gen0);
@@ -38,7 +38,7 @@ namespace Tests.V2.GenTests.CreateGenTests
                 List<List<int>> SampleTraversal(GalaxyCheck.IGen<List<int>> gen) =>
                     AboutGeneratingLists.SampleTraversal(gen, seed, size);
 
-                var gen0 = GalaxyCheck.Gen.Create<List<int>>();
+                var gen0 = GalaxyCheck.Gen.Auto<List<int>>();
                 var gen1 = GalaxyCheck.Gen.Int32().ListOf().Select(x => x.ToList());
 
                 var sample0 = SampleTraversal(gen0);
@@ -56,7 +56,7 @@ namespace Tests.V2.GenTests.CreateGenTests
                 List<ImmutableList<int>> SampleTraversal(GalaxyCheck.IGen<ImmutableList<int>> gen) =>
                     AboutGeneratingLists.SampleTraversal(gen, seed, size);
 
-                var gen0 = GalaxyCheck.Gen.Create<ImmutableList<int>>();
+                var gen0 = GalaxyCheck.Gen.Auto<ImmutableList<int>>();
                 var gen1 = GalaxyCheck.Gen.Int32().ListOf();
 
                 var sample0 = SampleTraversal(gen0);
@@ -74,7 +74,7 @@ namespace Tests.V2.GenTests.CreateGenTests
                 List<IList<int>> SampleTraversal(GalaxyCheck.IGen<IList<int>> gen) =>
                     AboutGeneratingLists.SampleTraversal(gen, seed, size);
 
-                var gen0 = GalaxyCheck.Gen.Create<IList<int>>();
+                var gen0 = GalaxyCheck.Gen.Auto<IList<int>>();
                 var gen1 = GalaxyCheck.Gen.Int32().ListOf();
 
                 var sample0 = SampleTraversal(gen0);

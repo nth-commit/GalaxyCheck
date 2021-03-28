@@ -3,7 +3,7 @@ using GalaxyCheck;
 using System.Linq;
 using Xunit;
 
-namespace Tests.V2.GenTests.CreateGenTests
+namespace Tests.V2.GenTests.AutoGenTests
 {
     public class AboutGeneratingRecords
     {
@@ -12,7 +12,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         [Fact]
         public void ItGeneratesAnEmptyRecord()
         {
-            var gen = Gen.Create<EmptyRecord>();
+            var gen = Gen.Auto<EmptyRecord>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -25,7 +25,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void ItGeneratesARecordWithOneProperty()
         {
             var gen = Gen
-                .Create<RecordWithOneProperty>()
+                .Auto<RecordWithOneProperty>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
@@ -40,7 +40,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void ItGeneratesARecordWithTwoProperties()
         {
             var gen = Gen
-                .Create<RecordWithTwoProperties>()
+                .Auto<RecordWithTwoProperties>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
@@ -56,7 +56,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void ItGeneratesARecordWithOneNestedProperty()
         {
             var gen = Gen
-                .Create<RecordWithOneNestedProperty>()
+                .Auto<RecordWithOneNestedProperty>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
