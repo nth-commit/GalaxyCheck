@@ -87,101 +87,151 @@ namespace GalaxyCheck.Gens
             Func<string, IGen> errorFactory,
             ImmutableStack<(string name, Type type)> path)
         {
-            if (path.Skip(1).Any(item => item.type == type))
+            var genFactoriesByPriority = new List<IGenFactory>
             {
-                return errorFactory($"detected circular reference on type '{type}'{RenderPathDiagnostics(path)}");
-            }
+                new RegistryGenFactory(registeredGensByType),
+                new ConstructorParamsGenFactory(),
+                new PropertySettingGenFactory()
+            };
 
-            if (registeredGensByType.TryGetValue(type, out IGen? valueGen))
-            {
-                return valueGen;
-            }
+            var compositeGenFactory = new CompositeGenFactory(genFactoriesByPriority, errorFactory);
 
-            if (type.BaseType == typeof(object))
-            {
-                return BuildObjectGen(type, registeredGensByType, errorFactory, path);
-            }
-
-            return errorFactory($"could not resolve type '{type}'{RenderPathDiagnostics(path)}");
+            return compositeGenFactory.CreateGen(compositeGenFactory, type, path);
         }
 
-        private static IGen BuildObjectGen(
-            Type type,
-            ImmutableDictionary<Type, IGen> registeredGensByType,
-            Func<string, IGen> errorFactory,
-            ImmutableStack<(string name, Type type)> path)
+        private class RegistryGenFactory : IGenFactory
         {
-            var publicNonDefaultConstructor = type
-                .GetConstructors()
-                .Where(c => c.IsPublic)
-                .Select(c => (constructor: c, parameters: c.GetParameters()))
-                .Where(x => x.parameters.Length > 0)
-                .OrderByDescending(x => x.parameters.Length)
-                .Select(x => x.constructor)
-                .FirstOrDefault();
+            private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
 
-            return publicNonDefaultConstructor == null
-                ? BuildObjectGenFromProperties(type, registeredGensByType, errorFactory, path)
-                : BuildObjectGenFromConstructor(registeredGensByType, errorFactory, path, publicNonDefaultConstructor);
-        }
+            public RegistryGenFactory(IReadOnlyDictionary<Type, IGen> registeredGensByType)
+            {
+                _registeredGensByType = registeredGensByType;
+            }
 
-        private static IGen BuildObjectGenFromProperties(
-            Type type,
-            ImmutableDictionary<Type, IGen> registeredGensByType,
-            Func<string, IGen> errorFactory,
-            ImmutableStack<(string name, Type type)> path)
-        {
-            var setPropertiesGen = type.GetProperties().Aggregate(
-                Gen.Constant<Action<object>>(_ => { }),
-                (actionGen, property) => actionGen.SelectMany(setProperties =>
+            public bool CanHandleType(Type type) => _registeredGensByType.ContainsKey(type);
+
+            public IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+            {
+                if (_registeredGensByType.TryGetValue(type, out IGen? gen) == false)
                 {
-                    var valueGen = BuildGen(
-                        property.PropertyType,
-                        registeredGensByType,
-                        errorFactory,
-                        path.Push((property.Name, property.PropertyType)));
+                    throw new Exception("Fatal: Expected gen to be registered");
+                }
 
-                    return valueGen.Cast<object>().Select<object, Action<object>>(value => (obj) =>
-                    {
-                        setProperties(obj);
-                        property.SetValue(obj, value);
-                    });
-                }));
-
-            return setPropertiesGen.Select(setProperties =>
-            {
-                var instance = Activator.CreateInstance(type);
-                setProperties(instance);
-                return instance;
-            });
+                return _registeredGensByType[type];
+            }
         }
 
-        private static IGen BuildObjectGenFromConstructor(
-            ImmutableDictionary<Type, IGen> registeredGensByType,
-            Func<string, IGen> errorFactory,
-            ImmutableStack<(string name, Type type)> path,
-            ConstructorInfo constructorInfo)
+        private class ConstructorParamsGenFactory : IGenFactory
         {
-            var parameterGens = constructorInfo.GetParameters().Select(parameter =>
+            public bool CanHandleType(Type type) => TryFindConstructor(type) != null;
+
+            public IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
             {
-                var valueGen = BuildGen(
-                    parameter.ParameterType,
-                    registeredGensByType,
-                    errorFactory,
-                    path.Push((parameter.Name, parameter.ParameterType))); // TODO: Indicate it's a ctor param in the path
+                var constructor = TryFindConstructor(type)!;
 
-                return valueGen.Cast<object>();
-            });
+                var parameterGens = constructor
+                    .GetParameters()
+                    .Select(parameter => innerFactory
+                        .CreateGen(parameter.ParameterType, path.Push((parameter.Name, parameter.ParameterType))) // TODO: Indicate it's a ctor param in the path
+                        .Cast<object>());
 
-            return Gen
-                .Zip(parameterGens)
-                .Select(parameters => constructorInfo.Invoke(parameters.ToArray()));
+                return Gen
+                    .Zip(parameterGens)
+                    .Select(parameters => constructor.Invoke(parameters.ToArray()));
+            }
+
+            private ConstructorInfo? TryFindConstructor(Type type) => (
+                from constructor in type.GetConstructors()
+                where constructor.IsPublic
+                let parameters = constructor.GetParameters()
+                where parameters.Length > 0
+                orderby parameters.Length descending
+                select constructor).FirstOrDefault();
         }
 
-        private static string RenderPathDiagnostics(ImmutableStack<(string name, Type type)> path) =>
-            path.Count() == 1 ? "" : $" at path '{RenderPath(path)}'";
+        private class PropertySettingGenFactory : IGenFactory
+        {
+            public bool CanHandleType(Type type) => type.BaseType == typeof(object);
 
-        private static string RenderPath(ImmutableStack<(string name, Type type)> path) =>
-            string.Join(".", path.Reverse().Select(item => item.name));
+            public IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+            {
+                var setPropertyActionGens = type
+                    .GetProperties()
+                    .Select(property => innerFactory
+                        .CreateGen(property.PropertyType, path.Push((property.Name, property.PropertyType)))
+                        .Cast<object>()
+                        .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));
+
+                return Gen
+                    .Zip(setPropertyActionGens)
+                    .Select(setPropertyActions =>
+                    {
+                        var instance = Activator.CreateInstance(type);
+
+                        foreach (var setPropertyAction in setPropertyActions)
+                        {
+                            setPropertyAction(instance);
+                        }
+
+                        return instance;
+                    });
+            }
+        }
+
+        private class CompositeGenFactory : IGenFactory
+        {
+            private readonly IReadOnlyList<IGenFactory> _genFactoriesByPriority;
+            private readonly Func<string, IGen> _errorFactory;
+
+            public CompositeGenFactory(
+                IReadOnlyList<IGenFactory> genFactoriesByPriority,
+                Func<string, IGen> errorFactory)
+            {
+                _genFactoriesByPriority = genFactoriesByPriority;
+                _errorFactory = errorFactory;
+            }
+
+            public bool CanHandleType(Type type) =>
+                _genFactoriesByPriority.Any(genFactory => genFactory.CanHandleType(type));
+
+            public IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+            {
+                if (path.Skip(1).Any(item => item.type == type))
+                {
+                    return _errorFactory($"detected circular reference on type '{type}'{RenderPathDiagnostics(path)}");
+                }
+
+                var gen = _genFactoriesByPriority
+                    .Where(genFactory => genFactory.CanHandleType(type))
+                    .Select(genFactory => genFactory.CreateGen(innerFactory, type, path))
+                    .FirstOrDefault();
+
+                if (gen == null)
+                {
+                    return _errorFactory($"could not resolve type '{type}'{RenderPathDiagnostics(path)}");
+                }
+
+                return gen;
+            }
+
+            private static string RenderPathDiagnostics(ImmutableStack<(string name, Type type)> path) =>
+                path.Count() == 1 ? "" : $" at path '{RenderPath(path)}'";
+
+            private static string RenderPath(ImmutableStack<(string name, Type type)> path) =>
+                string.Join(".", path.Reverse().Select(item => item.name));
+        }
+    }
+
+    internal interface IGenFactory
+    {
+        bool CanHandleType(Type type);
+
+        IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path);
+    }
+
+    internal static class GenFactoryExtensions
+    {
+        public static IGen CreateGen(this IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path) =>
+            innerFactory.CreateGen(innerFactory, type, path);
     }
 }
