@@ -12,7 +12,7 @@ using System.Reflection;
 /// <summary>
 /// TODO:
 ///     - Docs
-///     - Plugin-able strategies for handling nullables, lists, tuples, ienumerables etc.
+///     - Plugin-able strategies for handling nullables, tuples, ienumerables etc.
 ///     - Private properties
 ///     - Readonly properties
 ///     - Fields
@@ -90,6 +90,7 @@ namespace GalaxyCheck.Gens
             var genFactoriesByPriority = new List<IGenFactory>
             {
                 new RegistryGenFactory(registeredGensByType),
+                new ListGenFactory(),
                 new ConstructorParamsGenFactory(),
                 new PropertySettingGenFactory()
             };
@@ -110,15 +111,50 @@ namespace GalaxyCheck.Gens
 
             public bool CanHandleType(Type type) => _registeredGensByType.ContainsKey(type);
 
-            public IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+            public IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path) => _registeredGensByType[type];
+        }
+
+        private class ListGenFactory : IGenFactory
+        {
+            public bool CanHandleType(Type type)
             {
-                if (_registeredGensByType.TryGetValue(type, out IGen? gen) == false)
+                if (type.IsGenericType)
                 {
-                    throw new Exception("Fatal: Expected gen to be registered");
+                    var genericTypeDefinition = type.GetGenericTypeDefinition();
+                    return GenMethodByGenericTypeDefinition.ContainsKey(genericTypeDefinition);
                 }
 
-                return _registeredGensByType[type];
+                return false;
             }
+
+            public IGen CreateGen(IGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+            {
+                var elementType = type.GetGenericArguments().Single();
+                var elementGen = innerFactory.CreateGen(elementType, path);
+
+                var genericTypeDefinition = type.GetGenericTypeDefinition();
+                var methodName = GenMethodByGenericTypeDefinition[genericTypeDefinition];
+
+                var methodInfo = typeof(ListGenFactory).GetMethod(
+                    methodName,
+                    BindingFlags.Static | BindingFlags.NonPublic)!;
+
+                var genericMethodInfo = methodInfo.MakeGenericMethod(elementType);
+
+                return (IGen)genericMethodInfo.Invoke(null!, new object[] { elementGen });
+            }
+
+            private static readonly IReadOnlyDictionary<Type, string> GenMethodByGenericTypeDefinition = new Dictionary<Type, string>
+            {
+                { typeof(IReadOnlyList<>), nameof(CreateListGen) },
+                { typeof(List<>), nameof(CreateListGen) },
+                { typeof(ImmutableList<>), nameof(CreateImmutableListGen) },
+                { typeof(IList<>), nameof(CreateListGen) },
+            };
+
+            private static IGen<List<T>> CreateListGen<T>(IGen<T> elementGen) => CreateImmutableListGen(elementGen).Select(x => x.ToList());
+
+            private static IGen<ImmutableList<T>> CreateImmutableListGen<T>(IGen<T> elementGen) => elementGen.ListOf();
         }
 
         private class ConstructorParamsGenFactory : IGenFactory

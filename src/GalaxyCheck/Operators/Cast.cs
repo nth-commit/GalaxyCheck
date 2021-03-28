@@ -11,10 +11,10 @@ namespace GalaxyCheck
             gen.Advanced
                 .Run(parameters)
                 .Select(iteration => iteration.Data.Match(
-                    onInstance: instance => GenIterationFactory.Instance(
+                    onInstance: instance => GenIterationFactory.Instance<T>(
                         iteration.ReplayParameters,
                         iteration.NextParameters,
-                        ExampleSpaceExtensions.Cast<T>(instance.ExampleSpace),
+                        instance.ExampleSpace.Cast<T>(),
                         instance.ExampleSpaceHistory),
                     onError: error => GenIterationFactory.Error<T>(
                         iteration.ReplayParameters,
