@@ -16,8 +16,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void WhenThereIsAnImplicitDefaultConstructor_ItGeneratesBySettingProperties()
         {
             var gen = Gen
-                .Auto<ImplicitDefaultConstructor>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<ImplicitDefaultConstructor>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -38,8 +39,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void WhenThereIsAnExplicitDefaultConstructor_ItGeneratesBySettingProperties()
         {
             var gen = Gen
-                .Auto<ExplicitDefaultConstructor>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<ExplicitDefaultConstructor>();
 
             var instance = gen.SampleOne(seed: 0);
 

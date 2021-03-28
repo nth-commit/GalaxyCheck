@@ -1,8 +1,6 @@
 ﻿using GalaxyCheck.Internal;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers
 {

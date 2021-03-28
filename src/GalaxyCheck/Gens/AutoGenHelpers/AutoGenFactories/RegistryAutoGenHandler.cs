@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
-    internal class RegistryAutoGenFactory : IAutoGenFactory
+    internal class RegistryAutoGenHandler : IAutoGenHandler
     {
         private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
 
-        public RegistryAutoGenFactory(IReadOnlyDictionary<Type, IGen> registeredGensByType)
+        public RegistryAutoGenHandler(IReadOnlyDictionary<Type, IGen> registeredGensByType)
         {
             _registeredGensByType = registeredGensByType;
         }
 
-        public bool CanHandleType(Type type, AutoGenFactoryContext context) =>
+        public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
             _registeredGensByType.ContainsKey(type);
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context) =>
+        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context) =>
             _registeredGensByType[type];
     }
 }

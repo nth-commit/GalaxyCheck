@@ -6,9 +6,9 @@ using System.Reflection;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
-    internal class ListAutoGenFactory : IAutoGenFactory
+    internal class ListAutoGenHandler : IAutoGenHandler
     {
-        public bool CanHandleType(Type type, AutoGenFactoryContext context)
+        public bool CanHandleGen(Type type, AutoGenHandlerContext context)
         {
             if (type.IsGenericType)
             {
@@ -19,7 +19,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
             return false;
         }
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context)
+        public IGen CreateGen(IAutoGenHandler innerFactory, Type type, AutoGenHandlerContext context)
         {
             var elementType = type.GetGenericArguments().Single();
             var elementGen = innerFactory.CreateGen(elementType, context);
@@ -27,7 +27,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
             var genericTypeDefinition = type.GetGenericTypeDefinition();
             var methodName = GenMethodByGenericTypeDefinition[genericTypeDefinition];
 
-            var methodInfo = typeof(ListAutoGenFactory).GetMethod(
+            var methodInfo = typeof(ListAutoGenHandler).GetMethod(
                 methodName,
                 BindingFlags.Static | BindingFlags.NonPublic)!;
 

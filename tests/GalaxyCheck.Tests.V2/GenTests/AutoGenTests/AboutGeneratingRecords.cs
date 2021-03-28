@@ -25,8 +25,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItGeneratesARecordWithOneProperty()
         {
             var gen = Gen
-                .Auto<RecordWithOneProperty>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<RecordWithOneProperty>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -40,8 +41,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItGeneratesARecordWithTwoProperties()
         {
             var gen = Gen
-                .Auto<RecordWithTwoProperties>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<RecordWithTwoProperties>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -56,8 +58,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItGeneratesARecordWithOneNestedProperty()
         {
             var gen = Gen
-                .Auto<RecordWithOneNestedProperty>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<RecordWithOneNestedProperty>();
 
             var instance = gen.SampleOne(seed: 0);
 
