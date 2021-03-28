@@ -81,43 +81,60 @@ namespace GalaxyCheck.Gens
     {
         private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
         private readonly ImmutableList<AutoGenMemberOverride> _memberOverrides;
+        private readonly string? _errorExpression;
 
         private AutoGen(
             ImmutableDictionary<Type, IGen> registeredGensByType,
-            ImmutableList<AutoGenMemberOverride> memberOverrides)
+            ImmutableList<AutoGenMemberOverride> memberOverrides,
+            string? errorExpression)
         {
             _registeredGensByType = registeredGensByType;
             _memberOverrides = memberOverrides;
+            _errorExpression = errorExpression;
         }
 
         public AutoGen(ImmutableDictionary<Type, IGen> registeredGensByType)
-            : this(registeredGensByType, ImmutableList.Create<AutoGenMemberOverride>())
+            : this(registeredGensByType, ImmutableList.Create<AutoGenMemberOverride>(), null)
         {
         }
 
         public IAutoGen<T> OverrideMember<TMember>(Expression<Func<T, TMember>> memberSelector, IGen<TMember> fieldGen)
         {
             var pathResult = PathResolver.FromExpression(memberSelector);
-            return pathResult.Match<string, PathResolutionError, IAutoGen<T>>(
+            return pathResult.Match<string, string, IAutoGen<T>>(
                 fromLeft: path => new AutoGen<T>(
                     _registeredGensByType,
-                    _memberOverrides.Add(new AutoGenMemberOverride(path, fieldGen))),
-                fromRight: error => null!);
+                    _memberOverrides.Add(new AutoGenMemberOverride(path, fieldGen)),
+                    _errorExpression),
+                fromRight: error => new AutoGen<T>(
+                    _registeredGensByType,
+                    _memberOverrides,
+                    error));
         }
 
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) =>
-            BuildGen(_registeredGensByType, _memberOverrides).Advanced.Run(parameters);
+            BuildGen(_registeredGensByType, _memberOverrides, _errorExpression).Advanced.Run(parameters);
 
         private static IGen<T> BuildGen(
             IReadOnlyDictionary<Type, IGen> registeredGensByType,
-            IReadOnlyList<AutoGenMemberOverride> memberOverrides) =>
-                AutoGenBuilder
-                    .Build(
-                        typeof(T),
-                        registeredGensByType,
-                        memberOverrides,
-                        message => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message),
-                        AutoGenHandlerContext.Create(typeof(T)))
-                    .Cast<T>();
+            IReadOnlyList<AutoGenMemberOverride> memberOverrides,
+            string? errorExpression)
+        {
+            if (errorExpression != null)
+            {
+                return Gen.Advanced.Error<T>(
+                    nameof(AutoGen<T>),
+                    $"expression '{errorExpression}' was invalid, an overridding expression may only contain member access");
+            }
+
+            return AutoGenBuilder
+                .Build(
+                    typeof(T),
+                    registeredGensByType,
+                    memberOverrides,
+                    message => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message),
+                    AutoGenHandlerContext.Create(typeof(T)))
+                .Cast<T>();
+        }
     }
 }
