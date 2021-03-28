@@ -8,7 +8,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
     internal class ListAutoGenFactory : IAutoGenFactory
     {
-        public bool CanHandleType(Type type)
+        public bool CanHandleType(Type type, AutoGenFactoryContext context)
         {
             if (type.IsGenericType)
             {
@@ -19,10 +19,10 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
             return false;
         }
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context)
         {
             var elementType = type.GetGenericArguments().Single();
-            var elementGen = innerFactory.CreateGen(elementType, path);
+            var elementGen = innerFactory.CreateGen(elementType, context);
 
             var genericTypeDefinition = type.GetGenericTypeDefinition();
             var methodName = GenMethodByGenericTypeDefinition[genericTypeDefinition];

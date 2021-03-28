@@ -13,8 +13,10 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
             _registeredGensByType = registeredGensByType;
         }
 
-        public bool CanHandleType(Type type) => _registeredGensByType.ContainsKey(type);
+        public bool CanHandleType(Type type, AutoGenFactoryContext context) =>
+            _registeredGensByType.ContainsKey(type);
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path) => _registeredGensByType[type];
+        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context) =>
+            _registeredGensByType[type];
     }
 }

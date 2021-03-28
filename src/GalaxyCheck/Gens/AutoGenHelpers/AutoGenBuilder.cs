@@ -5,16 +5,18 @@ using System.Collections.Immutable;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers
 {
-    public static class AutoGenBuilder
+    internal static class AutoGenBuilder
     {
         public static IGen Build(
             Type type,
-            ImmutableDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyList<AutoGenMemberOverride> memberOverrides,
             Func<string, IGen> errorFactory,
-            ImmutableStack<(string name, Type type)> path)
+            AutoGenFactoryContext context)
         {
             var genFactoriesByPriority = new List<IAutoGenFactory>
             {
+                new MemberOverrideAutoGenFactory(memberOverrides),
                 new RegistryAutoGenFactory(registeredGensByType),
                 new ListAutoGenFactory(),
                 new ConstructorParamsAutoGenFactory(),
@@ -23,7 +25,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
 
             var compositeAutoGenFactory = new CompositeAutoGenFactory(genFactoriesByPriority, errorFactory);
 
-            return compositeAutoGenFactory.CreateGen(type, path);
+            return compositeAutoGenFactory.CreateGen(type, context);
         }
     }
 }

@@ -1,19 +1,19 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
     internal class PropertySettingAutoGenFactory : IAutoGenFactory
     {
-        public bool CanHandleType(Type type) => type.BaseType == typeof(object);
+        public bool CanHandleType(Type type, AutoGenFactoryContext context) =>
+            type.BaseType == typeof(object);
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, ImmutableStack<(string name, Type type)> path)
+        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context)
         {
             var setPropertyActionGens = type
                 .GetProperties()
                 .Select(property => innerFactory
-                    .CreateGen(property.PropertyType, path.Push((property.Name, property.PropertyType)))
+                    .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType))
                     .Cast<object>()
                     .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));
 
