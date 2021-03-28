@@ -12,18 +12,18 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
             IReadOnlyDictionary<Type, IGen> registeredGensByType,
             IReadOnlyList<AutoGenMemberOverride> memberOverrides,
             Func<string, IGen> errorFactory,
-            AutoGenFactoryContext context)
+            AutoGenHandlerContext context)
         {
-            var genFactoriesByPriority = new List<IAutoGenFactory>
+            var genFactoriesByPriority = new List<IAutoGenHandler>
             {
-                new MemberOverrideAutoGenFactory(memberOverrides),
-                new RegistryAutoGenFactory(registeredGensByType),
-                new ListAutoGenFactory(),
-                new ConstructorParamsAutoGenFactory(),
-                new PropertySettingAutoGenFactory()
+                new MemberOverrideAutoGenHandler(memberOverrides),
+                new RegistryAutoGenHandler(registeredGensByType),
+                new ListAutoGenHandler(),
+                new ConstructorParamsAutoGenHandler(),
+                new PropertySettingAutoGenHandler()
             };
 
-            var compositeAutoGenFactory = new CompositeAutoGenFactory(genFactoriesByPriority, errorFactory);
+            var compositeAutoGenFactory = new CompositeAutoGenHandler(genFactoriesByPriority, errorFactory);
 
             return compositeAutoGenFactory.CreateGen(type, context);
         }

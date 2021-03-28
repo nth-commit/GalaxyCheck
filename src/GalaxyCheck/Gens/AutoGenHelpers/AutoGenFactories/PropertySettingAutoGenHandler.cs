@@ -3,16 +3,16 @@ using System.Linq;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
-    internal class PropertySettingAutoGenFactory : IAutoGenFactory
+    internal class PropertySettingAutoGenHandler : IAutoGenHandler
     {
-        public bool CanHandleType(Type type, AutoGenFactoryContext context) =>
+        public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
             type.BaseType == typeof(object);
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context)
+        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
         {
             var setPropertyActionGens = type
                 .GetProperties()
-                .Select(property => innerFactory
+                .Select(property => innerHandler
                     .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType))
                     .Cast<object>()
                     .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));

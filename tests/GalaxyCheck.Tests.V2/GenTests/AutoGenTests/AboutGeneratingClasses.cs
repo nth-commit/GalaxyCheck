@@ -29,8 +29,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItGeneratesAClassWithOneProperty()
         {
             var gen = Gen
-                .Auto<ClassWithOneProperty>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<ClassWithOneProperty>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -49,8 +50,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItGeneratesAClassWithTwoProperties()
         {
             var gen = Gen
-                .Auto<ClassWithTwoProperties>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<ClassWithTwoProperties>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -68,8 +70,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItGeneratesAClassWithOneNestedProperty()
         {
             var gen = Gen
-                .Auto<ClassWithOneNestedProperty>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<ClassWithOneNestedProperty>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -86,8 +89,9 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItErrorsWhenGeneratingAClassWithOneRecursiveProperty()
         {
             var gen = Gen
-                .Auto<ClassWithOneRecursiveProperty>()
-                .RegisterType(Gen.Int32().Where(x => x != 0));
+                .AutoFactory()
+                .RegisterType(Gen.Int32().Where(x => x != 0))
+                .Create<ClassWithOneRecursiveProperty>();
 
             Action action = () => gen.SampleOne(seed: 0);
 

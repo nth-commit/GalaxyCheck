@@ -4,18 +4,18 @@ using System.Reflection;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
-    internal class ConstructorParamsAutoGenFactory : IAutoGenFactory
+    internal class ConstructorParamsAutoGenHandler : IAutoGenHandler
     {
-        public bool CanHandleType(Type type, AutoGenFactoryContext context) =>
+        public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
             TryFindConstructor(type) != null;
 
-        public IGen CreateGen(IAutoGenFactory innerFactory, Type type, AutoGenFactoryContext context)
+        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
         {
             var constructor = TryFindConstructor(type)!;
 
             var parameterGens = constructor
                 .GetParameters()
-                .Select(parameter => innerFactory
+                .Select(parameter => innerHandler
                     .CreateGen(parameter.ParameterType, context.Next(parameter.Name, parameter.ParameterType)) // TODO: Indicate it's a ctor param in the path
                     .Cast<object>());
 

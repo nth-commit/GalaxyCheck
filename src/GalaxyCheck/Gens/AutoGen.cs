@@ -7,9 +7,7 @@ using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 /// <summary>
 /// TODO:
@@ -26,16 +24,50 @@ namespace GalaxyCheck
 {
     public static partial class Gen
     {
-        public static IAutoGen<T> Auto<T>() => new AutoGen<T>();
+        public static IAutoGenFactory AutoFactory() => new AutoGenFactory();
+
+        public static IAutoGen<T> Auto<T>() => AutoFactory().Create<T>();
     }
 }
 
 namespace GalaxyCheck.Gens
 {
+    public interface IAutoGenFactory
+    {
+        IAutoGenFactory RegisterType<T>(IGen<T> gen);
+
+        IAutoGen<T> Create<T>();
+    }
+
+    internal class AutoGenFactory : IAutoGenFactory
+    {
+        private static readonly ImmutableDictionary<Type, IGen> DefaultRegisteredGensByType =
+            new Dictionary<Type, IGen>
+            {
+                { typeof(int), Gen.Int32() },
+                { typeof(char), Gen.Char() },
+                { typeof(string), Gen.String() }
+            }.ToImmutableDictionary();
+
+        private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
+
+        private AutoGenFactory(ImmutableDictionary<Type, IGen> registeredGensByType)
+        {
+            _registeredGensByType = registeredGensByType;
+        }
+
+        public AutoGenFactory() : this(DefaultRegisteredGensByType)
+        {
+        }
+
+        public IAutoGenFactory RegisterType<T>(IGen<T> gen) =>
+            new AutoGenFactory(_registeredGensByType.SetItem(typeof(T), gen));
+
+        public IAutoGen<T> Create<T>() => new AutoGen<T>(_registeredGensByType);
+    }
+
     public interface IAutoGen<T> : IGen<T>
     {
-        IAutoGen<T> RegisterType<TRegister>(IGen<TRegister> gen);
-
         IAutoGen<T> OverrideMember<TMember>(
             Expression<Func<T, TMember>> memberSelector,
             IGen<TMember> memberGen);
@@ -47,18 +79,10 @@ namespace GalaxyCheck.Gens
 
     internal class AutoGen<T> : BaseGen<T>, IAutoGen<T>
     {
-        private static readonly ImmutableDictionary<Type, IGen> DefaultRegisteredGensByType =
-            new Dictionary<Type, IGen>
-            {
-                { typeof(int), Gen.Int32() },
-                { typeof(char), Gen.Char() },
-                { typeof(string), Gen.String() }
-            }.ToImmutableDictionary();
-
         private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
         private readonly ImmutableList<AutoGenMemberOverride> _memberOverrides;
 
-        internal AutoGen(
+        private AutoGen(
             ImmutableDictionary<Type, IGen> registeredGensByType,
             ImmutableList<AutoGenMemberOverride> memberOverrides)
         {
@@ -66,9 +90,8 @@ namespace GalaxyCheck.Gens
             _memberOverrides = memberOverrides;
         }
 
-        public AutoGen() : this(
-            DefaultRegisteredGensByType,
-            ImmutableList.Create<AutoGenMemberOverride>())
+        public AutoGen(ImmutableDictionary<Type, IGen> registeredGensByType)
+            : this(registeredGensByType, ImmutableList.Create<AutoGenMemberOverride>())
         {
         }
 
@@ -82,11 +105,6 @@ namespace GalaxyCheck.Gens
                 fromRight: error => null!);
         }
 
-        public IAutoGen<T> RegisterType<TRegister>(IGen<TRegister> gen) =>
-            new AutoGen<T>(
-                _registeredGensByType.SetItem(typeof(TRegister), gen),
-                _memberOverrides);
-
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) =>
             BuildGen(_registeredGensByType, _memberOverrides).Advanced.Run(parameters);
 
@@ -99,7 +117,7 @@ namespace GalaxyCheck.Gens
                         registeredGensByType,
                         memberOverrides,
                         message => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message),
-                        AutoGenFactoryContext.Create(typeof(T)))
+                        AutoGenHandlerContext.Create(typeof(T)))
                     .Cast<T>();
     }
 }
