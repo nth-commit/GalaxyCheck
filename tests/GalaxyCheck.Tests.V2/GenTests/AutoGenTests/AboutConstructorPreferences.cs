@@ -3,7 +3,7 @@ using GalaxyCheck;
 using System.Linq;
 using Xunit;
 
-namespace Tests.V2.GenTests.CreateGenTests
+namespace Tests.V2.GenTests.AutoGenTests
 {
     public class AboutConstructorPreferences
     {
@@ -16,7 +16,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void WhenThereIsAnImplicitDefaultConstructor_ItGeneratesBySettingProperties()
         {
             var gen = Gen
-                .Create<ImplicitDefaultConstructor>()
+                .Auto<ImplicitDefaultConstructor>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
@@ -38,7 +38,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void WhenThereIsAnExplicitDefaultConstructor_ItGeneratesBySettingProperties()
         {
             var gen = Gen
-                .Create<ExplicitDefaultConstructor>()
+                .Auto<ExplicitDefaultConstructor>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
@@ -60,7 +60,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         [Fact]
         public void WhenThereIsAConstructorWithOneArgument_ItGeneratesByInvokingConstructor()
         {
-            var gen = Gen.Create<ConstructorWithOneArgument>();
+            var gen = Gen.Auto<ConstructorWithOneArgument>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -89,7 +89,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         [Fact]
         public void WhenThereIsAConstructorWithOneArgumentAndAnotherWithTwoArguments_ItGeneratesForTheConstructorWithTwoArguments()
         {
-            var gen = Gen.Create<ConstructorWithOneArgumentAndAnotherWithTwoArguments>();
+            var gen = Gen.Auto<ConstructorWithOneArgumentAndAnotherWithTwoArguments>();
 
             var instance = gen.SampleOne(seed: 0);
 

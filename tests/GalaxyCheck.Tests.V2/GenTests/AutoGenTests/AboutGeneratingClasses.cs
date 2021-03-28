@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using Xunit;
 
-namespace Tests.V2.GenTests.CreateGenTests
+namespace Tests.V2.GenTests.AutoGenTests
 {
     public class AboutGeneratingClasses
     {
@@ -13,7 +13,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         [Fact]
         public void ItGeneratesAnEmptyClass()
         {
-            var gen = Gen.Create<EmptyClass>();
+            var gen = Gen.Auto<EmptyClass>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -29,7 +29,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void ItGeneratesAClassWithOneProperty()
         {
             var gen = Gen
-                .Create<ClassWithOneProperty>()
+                .Auto<ClassWithOneProperty>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
@@ -49,7 +49,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void ItGeneratesAClassWithTwoProperties()
         {
             var gen = Gen
-                .Create<ClassWithTwoProperties>()
+                .Auto<ClassWithTwoProperties>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
@@ -68,7 +68,7 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void ItGeneratesAClassWithOneNestedProperty()
         {
             var gen = Gen
-                .Create<ClassWithOneNestedProperty>()
+                .Auto<ClassWithOneNestedProperty>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             var instance = gen.SampleOne(seed: 0);
@@ -86,14 +86,14 @@ namespace Tests.V2.GenTests.CreateGenTests
         public void ItErrorsWhenGeneratingAClassWithOneRecursiveProperty()
         {
             var gen = Gen
-                .Create<ClassWithOneRecursiveProperty>()
+                .Auto<ClassWithOneRecursiveProperty>()
                 .RegisterType(Gen.Int32().Where(x => x != 0));
 
             Action action = () => gen.SampleOne(seed: 0);
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator CreateGen: detected circular reference on type '*ClassWithOneRecursiveProperty' at path '$.Property'");
+                .WithMessage("Error while running generator AutoGen: detected circular reference on type '*ClassWithOneRecursiveProperty' at path '$.Property'");
         }
     }
 }
