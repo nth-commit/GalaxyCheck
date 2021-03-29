@@ -20,7 +20,7 @@ namespace Tests.V2.GenTests.ListGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = GalaxyCheck.Gen.List(elementGen).OfCount(count);
+                var gen = GalaxyCheck.Gen.List(elementGen).WithCount(count);
 
                 Action action = () => gen.SampleOne(seed: seed, size: size);
 

@@ -108,7 +108,7 @@ namespace Tests.V2.GenTests.StringGenTests
                 var gen1 = GalaxyCheck.Gen
                     .Char()
                     .ListOf()
-                    .OfCount(length)
+                    .WithCount(length)
                     .Select(cs => new string(cs.ToArray()));
 
                 var sample0 = SampleTraversal(gen0);

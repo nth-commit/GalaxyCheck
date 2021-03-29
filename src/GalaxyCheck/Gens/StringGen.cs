@@ -243,7 +243,7 @@ namespace GalaxyCheck.Gens
                     return Error("'length' cannot be negative");
                 }
 
-                return charGen.ListOf().OfCount(specificLengthConfig.Length);
+                return charGen.ListOf().WithCount(specificLengthConfig.Length);
             }
             else if (lengthConfig is StringGenLengthConfig.Ranged rangedLengthConfig)
             {

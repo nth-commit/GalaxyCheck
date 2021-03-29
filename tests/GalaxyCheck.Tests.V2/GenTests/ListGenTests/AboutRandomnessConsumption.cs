@@ -33,7 +33,7 @@ namespace Tests.V2.GenTests.ListGenTests
             from count in Gen.Int32().Between(0, 20)
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().OfCount(count);
+                var gen = elementGen.ListOf().WithCount(count);
 
                 var listSample = gen.Advanced.SampleOneWithMetrics(seed: seed, size: size);
                 var elementSample = elementGen.Advanced.SampleWithMetrics(iterations: listSample.Value.Count, seed: seed, size: size);
