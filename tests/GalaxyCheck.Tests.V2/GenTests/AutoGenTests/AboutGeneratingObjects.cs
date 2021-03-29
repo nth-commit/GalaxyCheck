@@ -71,6 +71,30 @@ namespace Tests.V2.GenTests.AutoGenTests
                 instance.Property2.Should().NotBe(0);
             });
 
+        private class ClassWithOneField
+        {
+#pragma warning disable CS0649
+            public int Field;
+#pragma warning restore CS0649
+        }
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateAnObjectWithAField() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = GalaxyCheck.Gen
+                    .AutoFactory()
+                    .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
+                    .Create<ClassWithOneField>();
+
+                var instance = gen.SampleOne(seed: seed, size: size);
+
+                instance.Should().NotBeNull();
+                instance.Field.Should().NotBe(0);
+            });
+
         private class ClassWithOneReadOnlyProperty
         {
             public int Property { get; } = 0;

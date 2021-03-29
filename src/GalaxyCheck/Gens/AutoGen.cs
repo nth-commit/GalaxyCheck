@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 /// <summary>
 /// TODO:
 ///     - Docs
-///     - Plugin-able strategies for handling nullables, tuples, ienumerables etc.
+///     - Plugin-able strategies for handling nullables, ienumerables etc.
 ///     - Fields
 ///     - Render ctor params in path more sensibly
 ///     - Use in parameter gen
