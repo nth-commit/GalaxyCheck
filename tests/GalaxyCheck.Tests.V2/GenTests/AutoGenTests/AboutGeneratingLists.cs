@@ -57,7 +57,7 @@ namespace Tests.V2.GenTests.AutoGenTests
                     AboutGeneratingLists.SampleTraversal(gen, seed, size);
 
                 var gen0 = GalaxyCheck.Gen.Auto<ImmutableList<int>>();
-                var gen1 = GalaxyCheck.Gen.Int32().ListOf();
+                var gen1 = GalaxyCheck.Gen.Int32().ListOf().Select(x => x.ToImmutableList());
 
                 var sample0 = SampleTraversal(gen0);
                 var sample1 = SampleTraversal(gen1);
@@ -75,7 +75,7 @@ namespace Tests.V2.GenTests.AutoGenTests
                     AboutGeneratingLists.SampleTraversal(gen, seed, size);
 
                 var gen0 = GalaxyCheck.Gen.Auto<IList<int>>();
-                var gen1 = GalaxyCheck.Gen.Int32().ListOf();
+                var gen1 = GalaxyCheck.Gen.Int32().ListOf().Select(x => x.ToList());
 
                 var sample0 = SampleTraversal(gen0);
                 var sample1 = SampleTraversal(gen1);

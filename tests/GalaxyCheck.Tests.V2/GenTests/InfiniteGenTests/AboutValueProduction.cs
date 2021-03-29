@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
 using NebulaCheck;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
@@ -42,13 +42,13 @@ namespace Tests.V2.GenTests.InfiniteGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                ImmutableList<object> Sample(GalaxyCheck.IGen<ImmutableList<object>> gen, int seed) =>
+                IReadOnlyList<object> Sample(GalaxyCheck.IGen<IReadOnlyList<object>> gen, int seed) =>
                     gen.SampleOne(seed: seed, size: size);
 
                 var gen = elementGen.InfiniteOf();
 
                 var listGen = elementGen.ListOf().WithCount(count);
-                var infiniteGen = elementGen.InfiniteOf().Select(enumerable => enumerable.Take(count).ToImmutableList());
+                var infiniteGen = elementGen.InfiniteOf().Select(enumerable => enumerable.Take(count).ToList());
 
                 var listSample = Sample(listGen, SeedUtility.Fork(seed));
                 var infiniteSample = Sample(infiniteGen, seed);

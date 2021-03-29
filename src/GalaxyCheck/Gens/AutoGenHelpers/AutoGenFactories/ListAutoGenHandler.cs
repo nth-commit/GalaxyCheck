@@ -44,8 +44,11 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
                 { typeof(IList<>), nameof(CreateListGen) },
             };
 
-        private static IGen<List<T>> CreateListGen<T>(IGen<T> elementGen) => CreateImmutableListGen(elementGen).Select(x => x.ToList());
+        private static IGen<IReadOnlyList<T>> CreateIReadOnlyListGen<T>(IGen<T> elementGen) => elementGen.ListOf();
 
-        private static IGen<ImmutableList<T>> CreateImmutableListGen<T>(IGen<T> elementGen) => elementGen.ListOf();
+        private static IGen<List<T>> CreateListGen<T>(IGen<T> elementGen) => CreateIReadOnlyListGen(elementGen).Select(x => x.ToList());
+
+        private static IGen<ImmutableList<T>> CreateImmutableListGen<T>(IGen<T> elementGen) =>
+            CreateIReadOnlyListGen(elementGen).Select(x => x.ToImmutableList());
     }
 }

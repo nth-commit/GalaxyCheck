@@ -69,7 +69,7 @@ namespace GalaxyCheck.Gens
     using System.Collections.Immutable;
     using System.Linq;
 
-    public interface IListGen<T> : IGen<ImmutableList<T>>
+    public interface IListGen<T> : IGen<IReadOnlyList<T>>
     {
         /// <summary>
         /// Constrains the generator so that it only produces lists with the given count.
@@ -99,7 +99,7 @@ namespace GalaxyCheck.Gens
         IListGen<T> WithCountBias(Gen.Bias bias);
     }
 
-    internal class ListGen<T> : BaseGen<ImmutableList<T>>, IListGen<T>
+    internal class ListGen<T> : BaseGen<IReadOnlyList<T>>, IListGen<T>
     {
         private abstract record ListGenCountConfig
         {
@@ -163,7 +163,7 @@ namespace GalaxyCheck.Gens
             return new ListGen<T>(newConfig, _elementGen);
         }
 
-        protected override IEnumerable<IGenIteration<ImmutableList<T>>> Run(GenParameters parameters) =>
+        protected override IEnumerable<IGenIteration<IReadOnlyList<T>>> Run(GenParameters parameters) =>
             BuildGen(_config, _elementGen).Advanced.Run(parameters);
 
         private static IGen<ImmutableList<T>> BuildGen(ListGenConfig config, IGen<T> elementGen)
