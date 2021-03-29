@@ -2,7 +2,6 @@
 using GalaxyCheck;
 using NebulaCheck;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
@@ -18,7 +17,7 @@ namespace Tests.V2.GenTests.ListGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<ImmutableList<object>> SampleTraversal(GalaxyCheck.IGen<ImmutableList<object>> gen) =>
+                List<IReadOnlyList<object>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyList<object>> gen) =>
                     AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
 
                 var gen0 = elementGen.ListOf();
@@ -34,7 +33,7 @@ namespace Tests.V2.GenTests.ListGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<ImmutableList<object>> SampleTraversal(GalaxyCheck.IGen<ImmutableList<object>> gen) =>
+                List<IReadOnlyList<object>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyList<object>> gen) =>
                     AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
 
                 var gen0 = elementGen.ListOf();
@@ -50,7 +49,7 @@ namespace Tests.V2.GenTests.ListGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<ImmutableList<object>> SampleTraversal(GalaxyCheck.IGen<ImmutableList<object>> gen) =>
+                List<IReadOnlyList<object>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyList<object>> gen) =>
                     AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
 
                 var gen0 = elementGen.ListOf();
@@ -59,7 +58,7 @@ namespace Tests.V2.GenTests.ListGenTests
                 SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
             });
 
-        private static List<ImmutableList<object>> SampleTraversal(GalaxyCheck.IGen<ImmutableList<object>> gen, int seed, int size) => gen.Advanced
+        private static List<IReadOnlyList<object>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyList<object>> gen, int seed, int size) => gen.Advanced
             .SampleOneExampleSpace(seed: seed, size: size)
             .Traverse()
             .Take(100)

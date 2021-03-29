@@ -54,7 +54,6 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Parameters;
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
     using System.Linq;
 
     public interface IStringGen : IGen<string>
@@ -229,10 +228,10 @@ namespace GalaxyCheck.Gens
             }
         }
 
-        private static IGen<ImmutableList<char>> CreateListGen(IGen<char> charGen, StringGenLengthConfig? lengthConfig, Gen.Bias? lengthBias)
+        private static IGen<IReadOnlyList<char>> CreateListGen(IGen<char> charGen, StringGenLengthConfig? lengthConfig, Gen.Bias? lengthBias)
         {
-            static IGen<ImmutableList<char>> Error(string message) =>
-                Gen.Advanced.Error<ImmutableList<char>>(nameof(StringGen), message);
+            static IGen<IReadOnlyList<char>> Error(string message) =>
+                Gen.Advanced.Error<IReadOnlyList<char>>(nameof(StringGen), message);
 
             lengthConfig ??= new StringGenLengthConfig.Ranged(null, null);
 
