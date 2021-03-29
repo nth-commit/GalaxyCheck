@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Tests.V2.GenTests.AutoGenTests
 {
-    public class AboutConstructorPreferences
+    public class AboutConstructorSelection
     {
         private class ImplicitDefaultConstructor
         {
@@ -13,7 +13,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         }
 
         [Fact]
-        public void WhenThereIsAnImplicitDefaultConstructor_ItGeneratesBySettingProperties()
+        public void WhenThereIsAnImplicitDefaultConstructor_ItUsesTheDefaultConstructor()
         {
             var gen = Gen
                 .AutoFactory()
@@ -36,7 +36,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         }
 
         [Fact]
-        public void WhenThereIsAnExplicitDefaultConstructor_ItGeneratesBySettingProperties()
+        public void WhenThereIsAnExplicitDefaultConstructor_ItUsesTheDefaultConstructor()
         {
             var gen = Gen
                 .AutoFactory()
@@ -60,9 +60,33 @@ namespace Tests.V2.GenTests.AutoGenTests
         }
 
         [Fact]
-        public void WhenThereIsAConstructorWithOneArgument_ItGeneratesByInvokingConstructor()
+        public void WhenThereIsAConstructorWithOneArgument_ItUsesTheDefaultConstructor()
         {
             var gen = Gen.Auto<ConstructorWithOneArgument>();
+
+            var instance = gen.SampleOne(seed: 0);
+
+            instance.Should().NotBeNull();
+            instance.Property.Should().NotBeNull();
+        }
+
+        private class DefaultConstructorAndAnotherWithOneArgument
+        {
+            public int? Property { get; set; }
+
+            public DefaultConstructorAndAnotherWithOneArgument()
+            {
+            }
+
+            public DefaultConstructorAndAnotherWithOneArgument(int property)
+            {
+            }
+        }
+
+        [Fact]
+        public void WhenThereIsADefaultConstructorAndAnotherWithOneArgument_ItUsesTheDefaultConstructor()
+        {
+            var gen = Gen.Auto<DefaultConstructorAndAnotherWithOneArgument>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -89,7 +113,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         }
 
         [Fact]
-        public void WhenThereIsAConstructorWithOneArgumentAndAnotherWithTwoArguments_ItGeneratesForTheConstructorWithTwoArguments()
+        public void WhenThereIsAConstructorWithOneArgumentAndAnotherWithTwoArguments_ItUsesTheConstructorWithTwoArguments()
         {
             var gen = Gen.Auto<ConstructorWithOneArgumentAndAnotherWithTwoArguments>();
 

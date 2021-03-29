@@ -3,9 +3,9 @@ using GalaxyCheck;
 using NebulaCheck;
 using System;
 using System.Linq;
+using Xunit;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
-
 
 namespace Tests.V2.GenTests.AutoGenTests
 {
@@ -13,8 +13,18 @@ namespace Tests.V2.GenTests.AutoGenTests
     {
         private record RecordWithOneProperty(object Property);
 
+        private class ClassWithOneConstructorArgument
+        {
+            public object Property { get; }
+
+            public ClassWithOneConstructorArgument(object property)
+            {
+                Property = property;
+            }
+        }
+
         [Property]
-        public NebulaCheck.IGen<Test> ItCanOverrideAProperty() =>
+        public NebulaCheck.IGen<Test> ItCanOverrideAnExternalInitProperty() =>
             from value in DomainGen.Any()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
@@ -33,7 +43,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         private record RecordWithOneNestedProperty(RecordWithOneProperty Property);
 
         [Property]
-        public NebulaCheck.IGen<Test> ItCanOverrideANestedProperty() =>
+        public NebulaCheck.IGen<Test> ItCanOverrideANestedExternalInitProperty() =>
             from value in DomainGen.Any()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
@@ -89,6 +99,34 @@ namespace Tests.V2.GenTests.AutoGenTests
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
                     .WithMessage("Error while running generator AutoGen: expression 'x => x.Method()' was invalid, an overridding expression may only contain member access");
+            });
+
+        private class ClassWithNonDefaultConstructor
+        {
+            public object Property { get; }
+
+            public ClassWithNonDefaultConstructor(object property)
+            {
+                Property = property;
+            }
+        }
+
+        [Property(Skip = "Future validation")]
+        public NebulaCheck.IGen<Test> ItErrorsWhenMemberAccessIsCircumventedByConstructor() =>
+            from memberGen in DomainGen.Gen()
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = GalaxyCheck.Gen
+                    .Auto<ClassWithNonDefaultConstructor>()
+                    .OverrideMember(x => x.Property, memberGen);
+
+                Action action = () => gen.SampleOne(seed: seed, size: size);
+
+                action.Should()
+                    .Throw<GalaxyCheck.Exceptions.GenErrorException>()
+                    .WithMessage("Error while running generator AutoGen: expression 'x => x.Property' targeted a valid member, but the type did not have a default constructor, so the member override would be ignored");
             });
     }
 }
