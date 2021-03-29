@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -18,14 +19,6 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 
         public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
         {
-            var setPropertyActionGens = type
-                .GetProperties()
-                .Where(property => property.CanWrite)
-                .Select(property => innerHandler
-                    .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType))
-                    .Cast<object>()
-                    .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));
-
             object instance;
             try
             {
@@ -38,24 +31,55 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
                 return _errorFactory(message, context);
             }
 
-            return Gen.Zip(setPropertyActionGens).SelectMany(setPropertyActions =>
-            {
-                foreach (var setPropertyAction in setPropertyActions)
+            return Gen
+                .Zip(
+                    Gen.Zip(CreateSetPropertyActionGens(innerHandler, type, context)),
+                    Gen.Zip(CreateSetFieldActionGens(innerHandler, type, context)))
+                .SelectMany((x) =>
                 {
-                    try
+                    foreach (var setPropertyAction in x.Item1)
                     {
-                        setPropertyAction(instance);
+                        try
+                        {
+                            setPropertyAction(instance);
+                        }
+                        catch (TargetInvocationException ex)
+                        {
+                            var innerEx = ex.InnerException;
+                            var message = $"'{innerEx.GetType()}' was thrown while setting property with message '{innerEx.Message}'";
+                            return _errorFactory(message, context).Cast<object>();
+                        }
                     }
-                    catch (TargetInvocationException ex)
-                    {
-                        var innerEx = ex.InnerException;
-                        var message = $"'{innerEx.GetType()}' was thrown while setting property with message '{innerEx.Message}'";
-                        return _errorFactory(message, context).Cast<object>();
-                    }
-                }
 
-                return Gen.Constant(instance);
-            });
+                    foreach (var setFieldAction in x.Item2)
+                    {
+                        setFieldAction(instance);
+                    }
+
+                    return Gen.Constant(instance);
+                });
+        }
+
+        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        {
+            return type
+                .GetProperties()
+                .Where(property => property.CanWrite)
+                .Select(property => innerHandler
+                    .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType))
+                    .Cast<object>()
+                    .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));
+        }
+
+        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        {
+            return type
+                .GetFields()
+                .Where(field => field.IsPublic)
+                .Select(field => innerHandler
+                    .CreateGen(field.FieldType, context.Next(field.Name, field.FieldType))
+                    .Cast<object>()
+                    .Select<object, Action<object>>(value => obj => field.SetValue(obj, value)));
         }
     }
 }
