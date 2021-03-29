@@ -10,7 +10,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListIsEmpty_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfCount(0)
+            from list in DomainGen.AnyList().WithCount(0)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -23,7 +23,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListHasOneElement_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfCount(1)
+            from list in DomainGen.AnyList().WithCount(1)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
@@ -36,7 +36,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListLengthIsEqualToMinLength_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfCount(minLength)
+            from list in DomainGen.AnyList().WithCount(minLength)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.Bisect<object>(minLength);
