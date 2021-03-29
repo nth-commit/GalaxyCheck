@@ -14,8 +14,6 @@ using System.Linq.Expressions;
 ///     - Docs
 ///     - Plugin-able strategies for handling nullables, tuples, ienumerables etc.
 ///     - Fields
-///     - Exception handling in ctor/property
-///     - Private default constructor
 ///     - Render ctor params in path more sensibly
 ///     - Use in parameter gen
 /// </summary>

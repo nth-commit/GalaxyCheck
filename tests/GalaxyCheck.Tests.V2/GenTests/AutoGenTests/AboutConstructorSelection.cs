@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -122,6 +123,25 @@ namespace Tests.V2.GenTests.AutoGenTests
             instance.Should().NotBeNull();
             instance.Property1.Should().NotBeNull();
             instance.Property2.Should().NotBeNull();
+        }
+
+        private class ClassWithNoPublicConstructor
+        {
+            private ClassWithNoPublicConstructor()
+            {
+            }
+        }
+
+        [Fact]
+        public void ItErrorsWhenThereIsNoPublicConstructor()
+        {
+            var gen = Gen.Auto<ClassWithNoPublicConstructor>();
+
+            Action action = () => gen.SampleOne(seed: 0);
+
+            action.Should()
+                .Throw<Exceptions.GenErrorException>()
+                .WithMessage("Error while running generator AutoGen: could not resolve type '*ClassWithNoPublicConstructor'");
         }
     }
 }
