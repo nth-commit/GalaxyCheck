@@ -1,7 +1,6 @@
 ﻿using GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers
 {
@@ -19,8 +18,8 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
                 new MemberOverrideAutoGenHandler(memberOverrides),
                 new RegistryAutoGenHandler(registeredGensByType),
                 new ListAutoGenHandler(),
-                new ConstructorParamsAutoGenHandler(),
-                new PropertySettingAutoGenHandler()
+                new DefaultConstructorAutoGenHandler(),
+                new NonDefaultConstructorAutoGenHandler(),
             };
 
             var compositeAutoGenFactory = new CompositeAutoGenHandler(genFactoriesByPriority, errorFactory);

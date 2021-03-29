@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
-    internal class ConstructorParamsAutoGenHandler : IAutoGenHandler
+    internal class NonDefaultConstructorAutoGenHandler : IAutoGenHandler
     {
         public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
             TryFindConstructor(type) != null;

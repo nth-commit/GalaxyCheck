@@ -13,12 +13,11 @@ using System.Linq.Expressions;
 /// TODO:
 ///     - Docs
 ///     - Plugin-able strategies for handling nullables, tuples, ienumerables etc.
-///     - Private properties
-///     - Readonly properties
 ///     - Fields
 ///     - Exception handling in ctor/property
 ///     - Private default constructor
 ///     - Render ctor params in path more sensibly
+///     - Use in parameter gen
 /// </summary>
 namespace GalaxyCheck
 {
