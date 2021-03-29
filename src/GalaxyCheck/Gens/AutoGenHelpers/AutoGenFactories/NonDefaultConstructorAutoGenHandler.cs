@@ -6,6 +6,13 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 {
     internal class NonDefaultConstructorAutoGenHandler : IAutoGenHandler
     {
+        private readonly Func<string, AutoGenHandlerContext, IGen> _errorFactory;
+
+        public NonDefaultConstructorAutoGenHandler(Func<string, AutoGenHandlerContext, IGen> errorFactory)
+        {
+            _errorFactory = errorFactory;
+        }
+
         public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
             TryFindConstructor(type) != null;
 
@@ -21,7 +28,19 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 
             return Gen
                 .Zip(parameterGens)
-                .Select(parameters => constructor.Invoke(parameters.ToArray()));
+                .SelectMany(parameters =>
+                {
+                    try
+                    {
+                        return Gen.Constant(constructor.Invoke(parameters.ToArray()));
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        var innerEx = ex.InnerException;
+                        var message = $"'{innerEx.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
+                        return _errorFactory(message, context).Cast<object>();
+                    }
+                });
         }
 
         private ConstructorInfo? TryFindConstructor(Type type) => (

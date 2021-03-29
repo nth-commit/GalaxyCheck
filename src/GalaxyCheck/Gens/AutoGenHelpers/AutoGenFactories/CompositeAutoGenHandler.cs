@@ -7,11 +7,11 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
     internal class CompositeAutoGenHandler : IAutoGenHandler
     {
         private readonly IReadOnlyList<IAutoGenHandler> _genHandlersByPriority;
-        private readonly Func<string, IGen> _errorFactory;
+        private readonly Func<string, AutoGenHandlerContext, IGen> _errorFactory;
 
         public CompositeAutoGenHandler(
             IReadOnlyList<IAutoGenHandler> genHandlersByPriority,
-            Func<string, IGen> errorFactory)
+            Func<string, AutoGenHandlerContext, IGen> errorFactory)
         {
             _genHandlersByPriority = genHandlersByPriority;
             _errorFactory = errorFactory;
@@ -24,7 +24,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
         {
             if (context.TypeHistory.Skip(1).Any(t => t == type))
             {
-                return _errorFactory($"detected circular reference on type '{type}'{RenderPathDiagnostics(context)}");
+                return _errorFactory($"detected circular reference on type '{type}'", context);
             }
 
             var gen = _genHandlersByPriority
@@ -34,7 +34,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
 
             if (gen == null)
             {
-                return _errorFactory($"could not resolve type '{type}'{RenderPathDiagnostics(context)}");
+                return _errorFactory($"could not resolve type '{type}'", context);
             }
 
             return gen;
