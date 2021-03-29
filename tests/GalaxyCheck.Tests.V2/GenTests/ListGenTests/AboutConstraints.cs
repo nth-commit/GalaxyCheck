@@ -48,7 +48,7 @@ namespace Tests.V2.GenTests.ListGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = elementGen.ListOf().OfCount(count);
+                var gen = elementGen.ListOf().WithCount(count);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 

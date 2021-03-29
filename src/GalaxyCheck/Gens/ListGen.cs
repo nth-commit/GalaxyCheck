@@ -76,7 +76,7 @@ namespace GalaxyCheck.Gens
         /// </summary>
         /// <param name="count">The count to constrain generated lists to.</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        IListGen<T> OfCount(int count);
+        IListGen<T> WithCount(int count);
 
         /// <summary>
         /// Constrains the generator so that it only produces lists with at least the given count.
@@ -128,7 +128,7 @@ namespace GalaxyCheck.Gens
         {
         }
 
-        public IListGen<T> OfCount(int count) =>
+        public IListGen<T> WithCount(int count) =>
             WithPartialConfig(countConfig: new ListGenCountConfig.Specific(count));
 
         public IListGen<T> WithCountGreaterThanEqual(int minCount) =>

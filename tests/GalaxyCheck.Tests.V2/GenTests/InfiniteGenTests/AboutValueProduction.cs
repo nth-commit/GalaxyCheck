@@ -47,7 +47,7 @@ namespace Tests.V2.GenTests.InfiniteGenTests
 
                 var gen = elementGen.InfiniteOf();
 
-                var listGen = elementGen.ListOf().OfCount(count);
+                var listGen = elementGen.ListOf().WithCount(count);
                 var infiniteGen = elementGen.InfiniteOf().Select(enumerable => enumerable.Take(count).ToImmutableList());
 
                 var listSample = Sample(listGen, SeedUtility.Fork(seed));
