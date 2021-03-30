@@ -13,7 +13,6 @@ using System.Linq.Expressions;
 /// TODO:
 ///     - Docs
 ///     - Plugin-able strategies for handling nullables, ienumerables etc.
-///     - Fields
 ///     - Render ctor params in path more sensibly
 ///     - Use in parameter gen
 /// </summary>
@@ -21,8 +20,20 @@ namespace GalaxyCheck
 {
     public static partial class Gen
     {
+        /// <summary>
+        /// Creates a factory for <see cref="IAutoGen{T}"/>. The factory allows you to assign specific generators to
+        /// types, and then be able to share that configuration across many auto-generators, see
+        /// <see cref="IAutoGenFactory"/>.
+        /// </summary>
+        /// <returns>A factory for auto-generators.</returns>
         public static IAutoGenFactory AutoFactory() => new AutoGenFactory();
 
+        /// <summary>
+        /// Generates instances of the given type, using the default <see cref="IAutoGenFactory"/>. The auto-generator
+        /// can not be configured as precisely as more specialized generators can be, but it can create complex types
+        /// with minimal configuration through reflection.
+        /// </summary>
+        /// <returns>A generator for the given type.</returns>
         public static IAutoGen<T> Auto<T>() => AutoFactory().Create<T>();
     }
 }
@@ -31,8 +42,18 @@ namespace GalaxyCheck.Gens
 {
     public interface IAutoGenFactory
     {
+        /// <summary>
+        /// Registers a custom generator to the given type. The generator is applied to all <see cref="IAutoGen{T}"/>
+        /// that are created by this factory.
+        /// </summary>
+        /// <param name="gen">The generator to register at the type.</param>
+        /// <returns>A new factory with the registration applied.</returns>
         IAutoGenFactory RegisterType<T>(IGen<T> gen);
 
+        /// <summary>
+        /// Creates an auto-generator for the given type, using the configuration that was specified on this factory.
+        /// </summary>
+        /// <returns>A generator for the given type.</returns>
         IAutoGen<T> Create<T>();
     }
 
@@ -55,6 +76,7 @@ namespace GalaxyCheck.Gens
 
         public AutoGenFactory() : this(DefaultRegisteredGensByType)
         {
+            Create<(int, int)>();
         }
 
         public IAutoGenFactory RegisterType<T>(IGen<T> gen) =>
