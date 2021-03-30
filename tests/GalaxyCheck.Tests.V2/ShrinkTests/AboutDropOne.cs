@@ -11,7 +11,7 @@ namespace Tests.V2.ShrinkTests
         [Property]
         public IGen<Test> IfListIsEmpty_ItWillNotShrink() =>
             from minLength in TestGen.MinLength()
-            from list in DomainGen.AnyList().OfCount(0)
+            from list in DomainGen.AnyList().WithCount(0)
             select Property.ForThese(() =>
             {
                 var func = ShrinkFunc.DropOne<object>(minLength);

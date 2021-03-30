@@ -70,9 +70,7 @@ namespace GalaxyCheck.Gens
             IGen<TMember> memberGen);
     }
 
-    internal record AutoGenMemberOverride(
-        string Path,
-        IGen Gen);
+    internal record AutoGenMemberOverride(string Path, IGen Gen);
 
     internal class AutoGen<T> : BaseGen<T>, IAutoGen<T>
     {

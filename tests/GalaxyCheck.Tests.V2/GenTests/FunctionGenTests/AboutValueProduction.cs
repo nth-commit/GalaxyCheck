@@ -46,7 +46,7 @@ namespace Tests.V2.GenTests.FunctionGenTests
 
             [Property]
             public NebulaCheck.IGen<Test> ItIsAffectedByItsArgument() =>
-                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().OfCount(10)
+                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().WithCount(10)
                 from seed in DomainGen.Seed()
                 select Property.ForThese(() =>
                 {
@@ -78,7 +78,7 @@ namespace Tests.V2.GenTests.FunctionGenTests
             [Property]
             public NebulaCheck.IGen<Test> ItIsAffectedByItsArguments() =>
                 from control in Gen.Int32()
-                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().OfCount(10)
+                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().WithCount(10)
                 from seed in DomainGen.Seed()
                 select Property.ForThese(() =>
                 {
@@ -112,7 +112,7 @@ namespace Tests.V2.GenTests.FunctionGenTests
             [Property]
             public NebulaCheck.IGen<Test> ItIsAffectedByItsArguments() =>
                 from controls in Gen.Int32().Two()
-                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().OfCount(10)
+                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().WithCount(10)
                 from seed in DomainGen.Seed()
                 select Property.ForThese(() =>
                 {
@@ -153,7 +153,7 @@ namespace Tests.V2.GenTests.FunctionGenTests
             [Property]
             public NebulaCheck.IGen<Test> ItIsAffectedByItsArguments() =>
                 from controls in Gen.Int32().Three()
-                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().OfCount(10)
+                from variables in Gen.Int32().WithBias(Gen.Bias.None).Two().ListOf().WithCount(10)
                 from seed in DomainGen.Seed()
                 select Property.ForThese(() =>
                 {

@@ -3,6 +3,7 @@ using GalaxyCheck;
 using GalaxyCheck.Runners.Replaying;
 using NebulaCheck;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Gen = NebulaCheck.Gen;
@@ -108,7 +109,7 @@ namespace Tests.V2.RunnerTests.CheckTests
                 numberOfCalls.Should().Be(1);
             });
 
-        private static Replay CreateReplay(int replaySeed, int replaySize, ImmutableList<int> replayPath)
+        private static Replay CreateReplay(int replaySeed, int replaySize, IEnumerable<int> replayPath)
         {
             return new Replay(
                 GalaxyCheck.Gens.Parameters.GenParameters.Create(replaySeed, replaySize),
