@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
+namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 {
     internal class MemberOverrideAutoGenHandler : IAutoGenHandler
     {

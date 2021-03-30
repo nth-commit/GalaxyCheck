@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
+namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 {
     internal class DefaultConstructorAutoGenHandler : IAutoGenHandler
     {
