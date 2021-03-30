@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories
+namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 {
     internal class RegistryAutoGenHandler : IAutoGenHandler
     {

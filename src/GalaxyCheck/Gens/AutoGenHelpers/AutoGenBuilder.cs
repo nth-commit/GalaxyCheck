@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Gens.AutoGenHelpers.AutoGenFactories;
+﻿using GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +25,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
                 new MemberOverrideAutoGenHandler(memberOverrides),
                 new RegistryAutoGenHandler(registeredGensByType),
                 new ListAutoGenHandler(),
+                new ArrayAutoGenHandler(),
                 new DefaultConstructorAutoGenHandler(contextualErrorFactory),
                 new NonDefaultConstructorAutoGenHandler(contextualErrorFactory),
             };
