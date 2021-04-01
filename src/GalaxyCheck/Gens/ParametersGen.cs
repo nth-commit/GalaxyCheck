@@ -29,8 +29,6 @@ namespace GalaxyCheck.Gens
     /// <summary>
     /// TODO:
     /// 1) Validation of misplaced generation attributes
-    /// 2) More injection types
-    /// 3) Nested primitive configuration
     /// </summary>
     internal class ParametersGen : BaseGen<object[]>, IGen<object[]>
     {
@@ -50,20 +48,31 @@ namespace GalaxyCheck.Gens
                 .GetParameters()
                 .Select(parameterInfo => ResolveGen(parameterInfo));
 
-            return Gen.Zip(gens).Select(xs => xs.ToArray());
+            return Gen.Zip(gens.Select(g => g.Cast<object>())).Select(xs => xs.ToArray());
         }
 
-        private static IGen<object> ResolveGen(ParameterInfo parameterInfo)
+        private static IGen ResolveGen(ParameterInfo parameterInfo)
         {
-            var gensByType = new Dictionary<Type, Func<ParameterInfo, IGen<object>>>
-            {
-                { typeof(int), pi => CreateInt32Gen(pi) }
-            };
+            var autoGenFactory = CreateAutoGenFactory(parameterInfo);
 
-            return gensByType[parameterInfo.ParameterType](parameterInfo);
+            var createAutoGenMethodInfo = typeof(IAutoGenFactory)
+                .GetMethod(nameof(IAutoGenFactory.Create))
+                .MakeGenericMethod(parameterInfo.ParameterType);
+
+            return (IGen)createAutoGenMethodInfo.Invoke(autoGenFactory, new object[] { });
         }
 
-        private static IGen<object> CreateInt32Gen(ParameterInfo parameterInfo)
+        private static IAutoGenFactory CreateAutoGenFactory(ParameterInfo parameterInfo)
+        {
+            if (parameterInfo.ParameterType == typeof(int))
+            {
+                return Gen.AutoFactory().RegisterType(CreateInt32Gen(parameterInfo));
+            }
+
+            return Gen.AutoFactory();
+        }
+
+        private static IGen<int> CreateInt32Gen(ParameterInfo parameterInfo)
         {
             var attributes = parameterInfo
                 .GetCustomAttributes()
@@ -72,8 +81,7 @@ namespace GalaxyCheck.Gens
             return attributes
                 .Aggregate(
                     Gen.Int32(),
-                    (gen, attr) => attr.Configure(gen))
-                .Select(x => (object)x);
+                    (gen, attr) => attr.Configure(gen));
         }
     }
 }
