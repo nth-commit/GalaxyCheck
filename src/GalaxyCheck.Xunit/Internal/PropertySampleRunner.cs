@@ -12,8 +12,7 @@ namespace GalaxyCheck.Xunit.Internal
 
             parameters.Property.Advanced.Print(
                 stdout: log.Add,
-                iterations: parameters.Iterations,
-                enableLinqInference: parameters.Property.Options.EnableLinqInference);
+                iterations: parameters.Iterations);
 
             throw new SampleException(string.Join(Environment.NewLine, log));
         }

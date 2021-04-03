@@ -44,7 +44,7 @@ namespace GalaxyCheck
                 : new ReplayTransition<T>(initialState, replay);
 
             var transitions = UnfoldTransitions(initialTransition);
-            var transitionAggregation = AggregateTransitions(transitions, property.Options);
+            var transitionAggregation = AggregateTransitions(transitions);
 
             return new CheckResult<T>(
                 transitionAggregation.FinalState.CompletedIterations,
@@ -52,7 +52,7 @@ namespace GalaxyCheck
                 transitionAggregation.FinalState.Shrinks,
                 transitionAggregation.FinalState.Counterexample == null
                     ? null
-                    : FromCounterexampleState(transitionAggregation.FinalState.Counterexample, property.Options.EnableLinqInference),
+                    : FromCounterexampleState(transitionAggregation.FinalState.Counterexample),
                 transitionAggregation.Checks,
                 initialParameters,
                 transitionAggregation.FinalState.NextParameters,
@@ -89,13 +89,13 @@ namespace GalaxyCheck
             CheckState<T> FinalState,
             TerminationReason TerminationReason);
 
-        private static TransitionAggregation<T> AggregateTransitions<T>(IEnumerable<AbstractTransition<T>> transitions, PropertyOptions options)
+        private static TransitionAggregation<T> AggregateTransitions<T>(IEnumerable<AbstractTransition<T>> transitions)
         {
             var mappedTransitions = transitions
                 .ScanInParallel<AbstractTransition<T>, CheckState<T>>(null!, (acc, curr) => curr.State)
                 .Select(x => (
                     transition: x.element,
-                    check: MapTransitionToIterationOrIgnore(x.element, options.EnableLinqInference),
+                    check: MapTransitionToIterationOrIgnore(x.element),
                     state: x.state))
                 .WithDiscardCircuitBreaker(x => x.check != null, x => x.check is CheckIteration.Discard<T>)
                 .ToImmutableList();
@@ -113,8 +113,7 @@ namespace GalaxyCheck
         }
 
         private static Counterexample<T> FromCounterexampleState<T>(
-            CounterexampleState<T> counterexampleState,
-            bool enablePresentationalInference)
+            CounterexampleState<T> counterexampleState)
         {
             var replay = new Replay(counterexampleState.ReplayParameters, counterexampleState.ReplayPath);
             var replayEncoded = ReplayEncoding.Encode(replay);
@@ -127,7 +126,7 @@ namespace GalaxyCheck
                 counterexampleState.ReplayPath,
                 replayEncoded,
                 counterexampleState.Exception,
-                enablePresentationalInference
+                counterexampleState.EnableLinqInference
                     ? NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.ReplayPath)
                     : null);
         }
@@ -186,9 +185,9 @@ namespace GalaxyCheck
         /// </summary>
         private static ResizeStrategy<T> NoopResize<T>() => (info) => info.Iteration.NextParameters.Size;
 
-        private static CheckIteration<T>? MapTransitionToIterationOrIgnore<T>(AbstractTransition<T> transition, bool enablePresentationalInference)
+        private static CheckIteration<T>? MapTransitionToIterationOrIgnore<T>(AbstractTransition<T> transition)
         {
-            CheckIteration<T>? FromHandleCounterexample(CounterexampleExplorationTransition<T> transition, bool enablePresentationalInference)
+            CheckIteration<T>? FromHandleCounterexample(CounterexampleExplorationTransition<T> transition)
             {
                 if (transition.CounterexampleState == null)
                 {
@@ -197,6 +196,7 @@ namespace GalaxyCheck
 
                 var exampleSpace = transition.CounterexampleState.ExampleSpace;
 
+                var enablePresentationalInference = transition.CounterexampleExploration.ExampleSpace.Current.Value.EnableLinqInference;
                 var presentationalExampleSpace = enablePresentationalInference
                     ? NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.CounterexampleExploration.Path)
                         ?.Cast<object>()
@@ -214,12 +214,13 @@ namespace GalaxyCheck
                     IsCounterexample: true);
             }
 
-            CheckIteration<T>? FromHandleNonCounterexample(NonCounterexampleExplorationTransition<T> transition, bool enablePresentationalInference)
+            CheckIteration<T>? FromHandleNonCounterexample(NonCounterexampleExplorationTransition<T> transition)
             {
                 var inputExampleSpace = transition.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
                 var exampleSpace = transition.NonCounterexampleExploration.ExampleSpace;
 
+                var enablePresentationalInference = transition.NonCounterexampleExploration.ExampleSpace.Current.Value.EnableLinqInference;
                 var presentationalExampleSpace = enablePresentationalInference
                     ? NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.NonCounterexampleExploration.Path)
                         ?.Cast<object>()
@@ -242,8 +243,8 @@ namespace GalaxyCheck
 
             return transition switch
             {
-                CounterexampleExplorationTransition<T> t => FromHandleCounterexample(t, enablePresentationalInference),
-                NonCounterexampleExplorationTransition<T> t => FromHandleNonCounterexample(t, enablePresentationalInference),
+                CounterexampleExplorationTransition<T> t => FromHandleCounterexample(t),
+                NonCounterexampleExplorationTransition<T> t => FromHandleNonCounterexample(t),
                 DiscardExplorationTransition<T> t => ToDiscard(),
                 DiscardTransition<T> t => ToDiscard(),
                 ErrorTransition<T> t => throw new Exceptions.GenErrorException(t.Error),

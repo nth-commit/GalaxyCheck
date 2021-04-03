@@ -48,7 +48,7 @@ namespace Tests.V2.RunnerTests.PrintTests
 
             var property = Property.Nullary(() => false);
 
-            var print = PrintAndCollect(property, enableLinqInference: true);
+            var print = PrintAndCollect(property);
 
             Snapshot.Match(print);
         }
@@ -58,7 +58,7 @@ namespace Tests.V2.RunnerTests.PrintTests
         {
             var property = Gen.Int32().ForAll((_) => false);
 
-            var print = PrintAndCollect(property, enableLinqInference: true);
+            var print = PrintAndCollect(property);
 
             Snapshot.Match(print);
         }
@@ -71,7 +71,7 @@ namespace Tests.V2.RunnerTests.PrintTests
                 from y in Gen.Int32().GreaterThan(x)
                 select Property.ForThese(() => false);
 
-            var print = PrintAndCollect(property, enableLinqInference: true);
+            var print = PrintAndCollect(property);
 
             Snapshot.Match(print);
         }
@@ -81,7 +81,7 @@ namespace Tests.V2.RunnerTests.PrintTests
         {
             var property = Gen.Int32().ListOf().ForAll((_) => false);
 
-            var print = PrintAndCollect(property, enableLinqInference: true);
+            var print = PrintAndCollect(property);
 
             Snapshot.Match(print);
         }
@@ -94,19 +94,16 @@ namespace Tests.V2.RunnerTests.PrintTests
                 from ys in Gen.Int32().ListOf().WithCountGreaterThan(xs.Count)
                 select Property.ForThese(() => false);
 
-            var print = PrintAndCollect(property, enableLinqInference: true);
+            var print = PrintAndCollect(property);
 
             Snapshot.Match(print);
         }
 
-        private static string PrintAndCollect(IGen<object> gen, bool enableLinqInference = false)
+        private static string PrintAndCollect(IGen<object> gen)
         {
             var log = new List<string>();
 
-            gen.Advanced.Print(
-                seed: 0,
-                stdout: log.Add,
-                enableLinqInference: enableLinqInference);
+            gen.Advanced.Print(seed: 0, stdout: log.Add);
 
             return string.Join(Environment.NewLine, log);
         }

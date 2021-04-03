@@ -5,10 +5,9 @@ using Xunit;
 
 namespace Tests.V2.PropertyTests.LinqInferenceTests
 {
-    public class AboutTransformationWhenLinqInferenceIsEnabled
+    public class AboutLinqInference
     {
-        private static Property<object> ToProperty(IGen<Test> gen) =>
-            new Property(gen, new PropertyOptions { EnableLinqInference = true });
+        private static Property<object> ToProperty(IGen<Test> gen) => new Property(gen);
 
         [Fact]
         public void ItPopulatesThePresentationalValueWithAScopedVariable()

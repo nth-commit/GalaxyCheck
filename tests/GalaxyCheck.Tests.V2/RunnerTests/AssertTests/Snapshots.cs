@@ -31,7 +31,7 @@ namespace Tests.V2.RunnerTests.AssertTests
             // TODO: Cross-platform consistent replay encoding
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var property = Property.FromLinq(
+                var property = new Property<object[]>(
                     from x in Gen.Int32()
                     from y in Gen.Int32().GreaterThan(x)
                     select Property.ForThese(() => x < 1000));

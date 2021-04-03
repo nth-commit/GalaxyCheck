@@ -77,7 +77,8 @@ namespace GalaxyCheck
                 select new Property<object[]>.TestImpl(
                     (x) => propertyIteration.Func(x.Last()),
                     parameters.Append(propertyIteration.Input).ToArray(),
-                    parameters.Count() + propertyIteration.Arity);
+                    parameters.Count() + propertyIteration.Arity,
+                    false);
 
             return new Property<object[]>(gen);
         }
@@ -103,7 +104,7 @@ namespace GalaxyCheck
         {
             try
             {
-                return FromLinq((IGen<Test>)methodInfo.Invoke(target, new object[] { }));
+                return new Property((IGen<Test>)methodInfo.Invoke(target, new object[] { }));
             }
             catch (TargetInvocationException ex)
             {

@@ -38,7 +38,7 @@ namespace Tests.V2.RunnerTests.CheckTests
             from replayPath in Gen.Int32().ListOf().WithCountGreaterThanEqual(1)
             select Property.ForThese(() =>
             {
-                GalaxyCheck.Property<object> property = GalaxyCheck.Property.Nullary(func);
+                var property = GalaxyCheck.Property.Nullary(func);
                 var replay = ReplayEncoding.Encode(CreateReplay(replaySeed, replaySize, replayPath));
 
                 Action test = () => property.Check(replay: replay);
