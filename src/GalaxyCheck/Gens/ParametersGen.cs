@@ -11,7 +11,8 @@
         /// </summary>
         /// <param name="methodInfo">The method to generate parameters for.</param>
         /// <returns>The new generator.</returns>
-        public static IGen<object[]> Parameters(MethodInfo methodInfo) => new ParametersGen(methodInfo);
+        public static IGen<object[]> Parameters(MethodInfo methodInfo, IAutoGenFactory? autoGenFactory = null)
+            => new ParametersGen(autoGenFactory ?? AutoFactory(), methodInfo);
     }
 }
 
@@ -34,54 +35,58 @@ namespace GalaxyCheck.Gens
     {
         private readonly Lazy<IGen<object[]>> _lazyGen;
 
-        public ParametersGen(MethodInfo methodInfo)
+        public ParametersGen(IAutoGenFactory autoGenFactory, MethodInfo methodInfo)
         {
-            _lazyGen = new Lazy<IGen<object[]>>(() => CreateGen(methodInfo));
+            _lazyGen = new Lazy<IGen<object[]>>(() => CreateGen(autoGenFactory, methodInfo));
         }
 
         protected override IEnumerable<IGenIteration<object[]>> Run(GenParameters parameters) =>
             _lazyGen.Value.Advanced.Run(parameters);
 
-        private static IGen<object[]> CreateGen(MethodInfo methodInfo)
+        private static IGen<object[]> CreateGen(IAutoGenFactory autoGenFactory, MethodInfo methodInfo)
         {
             var gens = methodInfo
                 .GetParameters()
-                .Select(parameterInfo => ResolveGen(parameterInfo));
+                .Select(parameterInfo => ResolveGen(autoGenFactory, parameterInfo));
 
             return Gen.Zip(gens.Select(g => g.Cast<object>())).Select(xs => xs.ToArray());
         }
 
-        private static IGen ResolveGen(ParameterInfo parameterInfo)
+        private static IGen ResolveGen(IAutoGenFactory autoGenFactory, ParameterInfo parameterInfo)
         {
-            var autoGenFactory = CreateAutoGenFactory(parameterInfo);
+            var configuredAutoGenFactory = ConfigureAutoGenFactory(autoGenFactory, parameterInfo);
 
             var createAutoGenMethodInfo = typeof(IAutoGenFactory)
                 .GetMethod(nameof(IAutoGenFactory.Create))
                 .MakeGenericMethod(parameterInfo.ParameterType);
 
-            return (IGen)createAutoGenMethodInfo.Invoke(autoGenFactory, new object[] { });
+            return (IGen)createAutoGenMethodInfo.Invoke(configuredAutoGenFactory, new object[] { });
         }
 
-        private static IAutoGenFactory CreateAutoGenFactory(ParameterInfo parameterInfo)
+        private static IAutoGenFactory ConfigureAutoGenFactory(IAutoGenFactory autoGenFactory, ParameterInfo parameterInfo)
         {
-            if (parameterInfo.ParameterType == typeof(int))
+            if (parameterInfo.ParameterType == typeof(int) && TryCreateInt32Gen(parameterInfo, out IGen<int>? gen))
             {
-                return Gen.AutoFactory().RegisterType(CreateInt32Gen(parameterInfo));
+                return autoGenFactory.RegisterType(gen!);
             }
 
-            return Gen.AutoFactory();
+            return autoGenFactory;
         }
 
-        private static IGen<int> CreateInt32Gen(ParameterInfo parameterInfo)
+        private static bool TryCreateInt32Gen(ParameterInfo parameterInfo, out IGen<int>? gen)
         {
             var attributes = parameterInfo
                 .GetCustomAttributes()
                 .OfType<IGenInjectionConfigurationFilter<int, IInt32Gen>>();
 
-            return attributes
-                .Aggregate(
-                    Gen.Int32(),
-                    (gen, attr) => attr.Configure(gen));
+            if (attributes.Any())
+            {
+                gen = attributes.Aggregate(Gen.Int32(), (gen, attr) => attr.Configure(gen));
+                return true;
+            }
+
+            gen = null;
+            return false;
         }
     }
 }
