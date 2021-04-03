@@ -13,7 +13,6 @@ namespace GalaxyCheck
             int? iterations = null,
             int? seed = null,
             int? size = null,
-            bool? enableLinqInference = null,
             Action<string>? stdout = null)
         {
             stdout ??= Console.WriteLine;
@@ -21,8 +20,7 @@ namespace GalaxyCheck
             var sample = advanced.SamplePresentableExampleSpaceWithMetrics(
                 iterations: iterations,
                 seed: seed,
-                size: size,
-                enableLinqInference: enableLinqInference);
+                size: size);
 
             stdout($"Sampled {sample.Values.Count} values ({sample.Discards} discarded):");
             stdout("");
@@ -58,6 +56,11 @@ namespace GalaxyCheck
 
             if (example.Value is Test test)
             {
+                if (test.Arity == 0)
+                {
+                    return new ExampleViewModel.Nullary();
+                }
+
                 return ExampleViewModel.Infer(test.Input);
             }
 

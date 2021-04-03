@@ -9,6 +9,8 @@ namespace GalaxyCheck
         object Input { get; }
 
         int Arity { get; }
+
+        bool EnableLinqInference { get; }
     }
 
     public interface Test<T> : Test
@@ -18,24 +20,16 @@ namespace GalaxyCheck
         new T Input { get; }
     }
 
-    public class PropertyOptions
-    {
-        public bool EnableLinqInference { get; init; }
-    }
-
     public partial class Property : IGen<Test>
     {
-        public record TestImpl(Func<object, bool> Func, object Input, int Arity) : Test;
+        public record TestImpl(Func<object, bool> Func, object Input, int Arity, bool EnableLinqInference) : Test;
 
         private readonly IGen<Test> _gen;
 
-        public Property(IGen<Test> gen, PropertyOptions? options = null)
+        public Property(IGen<Test> gen)
         {
             _gen = gen;
-            Options = options ?? new PropertyOptions { EnableLinqInference = false };
         }
-
-        public PropertyOptions Options { get; }
 
         public IGenAdvanced<Test> Advanced => _gen.Advanced;
 
@@ -45,9 +39,9 @@ namespace GalaxyCheck
         {
             var gen =
                 from i in p
-                select new Property<object>.TestImpl(x => i.Func(x), i.Input, i.Arity);
+                select new Property<object>.TestImpl(x => i.Func(x), i.Input, i.Arity, i.EnableLinqInference);
 
-            return new Property<object>(gen, p.Options);
+            return new Property<object>(gen);
         }
 
         public class PropertyPreconditionException : Exception
@@ -65,7 +59,7 @@ namespace GalaxyCheck
 
     public class Property<T> : IGen<Test<T>>
     {
-        public record TestImpl(Func<T, bool> Func, T Input, int Arity) : Test<T>
+        public record TestImpl(Func<T, bool> Func, T Input, int Arity, bool EnableLinqInference) : Test<T>
         {
             Func<object, bool> Test.Func => x => Func((T)x);
 
@@ -74,20 +68,17 @@ namespace GalaxyCheck
 
         private readonly IGen<Test<T>> _gen;
 
-        public Property(IGen<Test<T>> gen, PropertyOptions? options = null)
+        public Property(IGen<Test<T>> gen)
         {
             _gen = gen;
-            Options = options ?? new PropertyOptions { EnableLinqInference = false };
         }
 
         public Property(IGen<T> inputGen, Func<T, bool> f, int arity)
             : this(
                 from x in inputGen
-                select new TestImpl(f, x, arity))
+                select new TestImpl(f, x, arity, x is Test test && test.EnableLinqInference)) // I don't like this code.
         {
         }
-
-        public PropertyOptions Options { get; }
 
         public IGenAdvanced<Test<T>> Advanced => _gen.Advanced;
 
@@ -97,9 +88,9 @@ namespace GalaxyCheck
         {
             var gen =
                 from i in p
-                select new Property.TestImpl(x => i.Func((T)x), i.Input, i.Arity);
+                select new Property.TestImpl(x => i.Func((T)x), i.Input, i.Arity, i.EnableLinqInference);
 
-            return new Property(gen, p.Options);
+            return new Property(gen);
         }
     }
 }
