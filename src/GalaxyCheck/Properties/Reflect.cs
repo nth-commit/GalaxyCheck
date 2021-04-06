@@ -10,7 +10,7 @@ namespace GalaxyCheck
     {
         public static ImmutableList<Type> SupportedReturnTypes => MethodPropertyHandlers.Keys.ToImmutableList();
 
-        public static Property Reflect(MethodInfo methodInfo, object? target)
+        public static IGen<Test<object[]>> Reflect(MethodInfo methodInfo, object? target)
         {
             if (!SupportedReturnTypes.Contains(methodInfo.ReturnType))
             {
@@ -22,8 +22,8 @@ namespace GalaxyCheck
             return MethodPropertyHandlers[methodInfo.ReturnType](methodInfo, target);
         }
 
-        private readonly static ImmutableDictionary<Type, Func<MethodInfo, object?, Property>> MethodPropertyHandlers =
-            new Dictionary<Type, Func<MethodInfo, object?, Property>>
+        private readonly static ImmutableDictionary<Type, Func<MethodInfo, object?, IGen<Test<object[]>>>> MethodPropertyHandlers =
+            new Dictionary<Type, Func<MethodInfo, object?, IGen<Test<object[]>>>>
             {
                 { typeof(void), ToVoidProperty },
                 { typeof(bool), ToBooleanProperty },
@@ -31,7 +31,7 @@ namespace GalaxyCheck
                 { typeof(IGen<Test>), ToPureProperty }
             }.ToImmutableDictionary();
 
-        private static Property ToVoidProperty(MethodInfo methodInfo, object? target)
+        private static IGen<Test<object[]>> ToVoidProperty(MethodInfo methodInfo, object? target)
         {
             var arity = methodInfo.GetParameters().Count();
             return GalaxyCheck.Gen
@@ -49,7 +49,7 @@ namespace GalaxyCheck
                 }, arity);
         }
 
-        private static Property ToBooleanProperty(MethodInfo methodInfo, object? target)
+        private static IGen<Test<object[]>> ToBooleanProperty(MethodInfo methodInfo, object? target)
         {
             var arity = methodInfo.GetParameters().Count();
             return GalaxyCheck.Gen
@@ -67,21 +67,16 @@ namespace GalaxyCheck
                 }, arity);
         }
 
-        private static Property ToNestedProperty(MethodInfo methodInfo, object? target)
-        {
-            var gen =
-                from parameters in GalaxyCheck.Gen.Parameters(methodInfo)
-                let property = InvokeNestedProperty(methodInfo, target, parameters)
-                where property != null
-                from propertyIteration in property
-                select new Property<object[]>.TestImpl(
-                    (x) => propertyIteration.Func(x.Last()),
-                    parameters.Append(propertyIteration.Input).ToArray(),
-                    parameters.Count() + propertyIteration.Arity,
-                    false);
-
-            return new Property<object[]>(gen);
-        }
+        private static IGen<Test<object[]>> ToNestedProperty(MethodInfo methodInfo, object? target) =>
+            from parameters in GalaxyCheck.Gen.Parameters(methodInfo)
+            let property = InvokeNestedProperty(methodInfo, target, parameters)
+            where property != null
+            from propertyIteration in property
+            select new Property<object[]>.TestImpl(
+                (x) => propertyIteration.Func(new object[] { x.Last() }),
+                Enumerable.Concat(parameters, propertyIteration.Input).ToArray(),
+                parameters.Count() + propertyIteration.Arity,
+                false);
 
         private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)
         {
@@ -100,11 +95,11 @@ namespace GalaxyCheck
             }
         }
 
-        private static Property ToPureProperty(MethodInfo methodInfo, object? target)
+        private static IGen<Test<object[]>> ToPureProperty(MethodInfo methodInfo, object? target)
         {
             try
             {
-                return new Property((IGen<Test>)methodInfo.Invoke(target, new object[] { }));
+                return (IGen<Test>)methodInfo.Invoke(target, new object[] { });
             }
             catch (TargetInvocationException ex)
             {

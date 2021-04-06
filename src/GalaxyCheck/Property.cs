@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace GalaxyCheck
 {
@@ -13,13 +14,13 @@ namespace GalaxyCheck
         bool EnableLinqInference { get; }
     }
 
-    public interface Test : Test<object>
+    public interface Test : Test<object[]>
     {
     }
 
     public partial class Property : IGen<Test>
     {
-        public record TestImpl(Func<object, bool> Func, object Input, int Arity, bool EnableLinqInference) : Test;
+        public record TestImpl(Func<object[], bool> Func, object[] Input, int Arity, bool EnableLinqInference) : Test;
 
         private readonly IGen<Test> _gen;
 
@@ -31,15 +32,6 @@ namespace GalaxyCheck
         public IGenAdvanced<Test> Advanced => _gen.Advanced;
 
         IGenAdvanced IGen.Advanced => Advanced;
-
-        public static implicit operator Property<object>(Property p)
-        {
-            var gen =
-                from i in p
-                select new Property<object>.TestImpl(x => i.Func(x), i.Input, i.Arity, i.EnableLinqInference);
-
-            return new Property<object>(gen);
-        }
 
         public class PropertyPreconditionException : Exception
         {
@@ -82,7 +74,7 @@ namespace GalaxyCheck
         {
             var gen =
                 from i in p
-                select new Property.TestImpl(x => i.Func((T)x), i.Input, i.Arity, i.EnableLinqInference);
+                select new Property.TestImpl(x => i.Func((T)x.Single()), new object[] { i.Input }, i.Arity, i.EnableLinqInference);
 
             return new Property(gen);
         }
