@@ -7,7 +7,7 @@ namespace GalaxyCheck
     {
         public static Test ForThese(Func<bool> func) => new TestImpl(
             (_) => func(),
-            null!,
+            new object[] { },
             0,
             true);
 
