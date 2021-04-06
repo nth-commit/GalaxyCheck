@@ -284,13 +284,17 @@ namespace GalaxyCheck
             var presentationalExampleSpaces =
                 from exs in tail
                 where exs.Current.Id.HashCode == head!.Current.Id.HashCode
-                where
-                    exs.Current.Value is not Test test ||
-                    test.Arity != 0
+                where IsTest(exs.Current.Value.GetType()) == false
                 select exs;
 
             return presentationalExampleSpaces.FirstOrDefault();
         }
+
+        private static bool IsTest(Type type) => (
+            from i in type.GetInterfaces()
+            where i.IsGenericType
+            select i.GetGenericTypeDefinition()
+        ).Contains(typeof(Test<>).GetGenericTypeDefinition());
 
         private static object? UnwrapBinding(object obj)
         {

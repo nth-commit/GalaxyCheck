@@ -2,22 +2,19 @@
 
 namespace GalaxyCheck
 {
-    public interface Test
+    public interface Test<T>
     {
-        Func<object, bool> Func { get; }
+        Func<T, bool> Func { get; }
 
-        object Input { get; }
+        T Input { get; }
 
         int Arity { get; }
 
         bool EnableLinqInference { get; }
     }
 
-    public interface Test<T> : Test
+    public interface Test : Test<object>
     {
-        new Func<T, bool> Func { get; }
-
-        new T Input { get; }
     }
 
     public partial class Property : IGen<Test>
@@ -61,9 +58,6 @@ namespace GalaxyCheck
     {
         public record TestImpl(Func<T, bool> Func, T Input, int Arity, bool EnableLinqInference) : Test<T>
         {
-            Func<object, bool> Test.Func => x => Func((T)x);
-
-            object Test.Input => Input!;
         }
 
         private readonly IGen<Test<T>> _gen;
