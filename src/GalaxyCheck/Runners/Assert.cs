@@ -9,7 +9,7 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static void Assert<T>(
-            this Property<T> property,
+            this IGen<Test<T>> property,
             int? iterations = null,
             int? seed = null,
             int? size = null,

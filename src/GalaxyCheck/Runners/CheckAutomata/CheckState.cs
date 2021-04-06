@@ -9,7 +9,7 @@ using System.Linq;
 namespace GalaxyCheck.Runners.CheckAutomata
 {
     internal record CheckState<T>(
-        Property<T> Property,
+        IGen<Test<T>> Property,
         int RequestedIterations,
         int ShrinkLimit,
         int CompletedIterations,
@@ -21,7 +21,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         bool DeepCheck)
     {
         public static CheckState<T> Create(
-            Property<T> property,
+            IGen<Test<T>> property,
             int requestedIterations,
             int shrinkLimit,
             GenParameters initialParameters,

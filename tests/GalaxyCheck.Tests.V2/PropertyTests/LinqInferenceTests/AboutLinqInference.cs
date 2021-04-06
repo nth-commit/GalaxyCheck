@@ -7,16 +7,14 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 {
     public class AboutLinqInference
     {
-        private static Property<object> ToProperty(IGen<Test> gen) => new Property(gen);
-
         [Fact]
         public void ItPopulatesThePresentationalValueWithAScopedVariable()
         {
             var value = 0;
 
-            var property = ToProperty(
+            var property =
                 from a in Gen.Constant(value)
-                select Property.ForThese(() => false));
+                select Property.ForThese(() => false);
 
             var result = property.Check();
 
@@ -29,10 +27,10 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
             var value0 = 0;
             var value1 = 1;
 
-            var property = ToProperty(
+            var property =
                 from a in Gen.Constant(value0)
                 from b in Gen.Constant(value1)
-                select Property.ForThese(() => false));
+                select Property.ForThese(() => false);
 
             var result = property.Check();
 
@@ -46,11 +44,11 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
             var value1 = 1;
             var value2 = 2;
 
-            var property = ToProperty(
+            var property =
                 from a in Gen.Constant(value0)
                 from b in Gen.Constant(value1)
                 from c in Gen.Constant(value2)
-                select Property.ForThese(() => false));
+                select Property.ForThese(() => false);
 
             var result = property.Check();
 
@@ -63,9 +61,9 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
             var value_ignored = 0;
             var value = 1;
 
-            var property = ToProperty(
+            var property =
                 from a in Gen.Constant(value_ignored).Select(_ => value)
-                select Property.ForThese(() => false));
+                select Property.ForThese(() => false);
 
             var result = property.Check();
 
@@ -78,9 +76,9 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
             var value_ignored = 0;
             var value = 1;
 
-            var property = ToProperty(
+            var property =
                 from a in Gen.Constant(value_ignored).SelectMany(_ => Gen.Constant(value))
-                select Property.ForThese(() => false));
+                select Property.ForThese(() => false);
 
             var result = property.Check();
 
@@ -93,11 +91,11 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
             var value0 = 0;
             var value1 = 1;
 
-            var property = ToProperty(
+            var property =
                 from a in Gen.Constant(value0)
                 let b = a
                 let c = value1
-                select Property.ForThese(() => false));
+                select Property.ForThese(() => false);
 
             var result = property.Check();
 
@@ -120,9 +118,9 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
                 var value = 0;
 
-                var property = ToProperty(
+                var property =
                     from obj in Gen.Constant(value).Select(a => new { a })
-                    select Property.ForThese(() => false));
+                    select Property.ForThese(() => false);
 
                 var result = property.Check(seed: 0);
 
@@ -137,9 +135,9 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
                 var value = 0;
 
-                var property = ToProperty(
+                var property =
                     from obj in Gen.Constant(value).SelectMany(a => Gen.Constant(new { a }))
-                    select Property.ForThese(() => false));
+                    select Property.ForThese(() => false);
 
                 var result = property.Check(seed: 0);
 
@@ -154,9 +152,9 @@ namespace Tests.V2.PropertyTests.LinqInferenceTests
 
                 var value = 0;
 
-                var property = ToProperty(
+                var property =
                     from obj in Gen.Constant(value).SelectMany(a => Gen.Constant(new { a }), (x, y) => new { x, y })
-                    select Property.ForThese(() => false));
+                    select Property.ForThese(() => false);
 
                 var result = property.Check(seed: 0);
 

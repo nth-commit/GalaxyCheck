@@ -1,5 +1,5 @@
-﻿using GalaxyCheck.ExampleSpaces;
-using GalaxyCheck.Runners;
+﻿using GalaxyCheck.Runners.Print;
+using GalaxyCheck.Runners.Sample;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,26 +9,56 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static void Print<T>(
+            this IGenAdvanced<Test<T>> advanced,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            Action<string>? stdout = null)
+        {
+            var sample = advanced.SamplePresentableWithMetrics(
+                iterations: iterations,
+                seed: seed,
+                size: size);
+
+            PrintHelpers.Print(sample.Values, sample.Discards, stdout);
+        }
+
+        public static void Print<T>(
             this IGenAdvanced<T> advanced,
             int? iterations = null,
             int? seed = null,
             int? size = null,
             Action<string>? stdout = null)
         {
-            stdout ??= Console.WriteLine;
-
-            var sample = advanced.SamplePresentableExampleSpaceWithMetrics(
+            var sample = advanced.SamplePresentableWithMetrics(
                 iterations: iterations,
                 seed: seed,
                 size: size);
 
-            stdout($"Sampled {sample.Values.Count} values ({sample.Discards} discarded):");
+            PrintHelpers.Print(sample.Values, sample.Discards, stdout);
+        }
+    }
+}
+
+namespace GalaxyCheck.Runners.Print
+{
+    internal static class PrintHelpers
+    {
+        internal static void Print<T>(
+            IReadOnlyList<PresentableValue<T>> presentableValues,
+            int discards,
+            Action<string>? stdout)
+        {
+            stdout ??= Console.WriteLine;
+
+            stdout($"Sampled {presentableValues.Count} values ({discards} discarded):");
             stdout("");
 
-            for (var i = 0; i < sample.Values.Count; i++)
+            for (var i = 0; i < presentableValues.Count; i++)
             {
-                var exampleSpace = sample.Values[i].Presentational ?? sample.Values[i].Actual;
-                var exampleViewModel = GetExampleViewModel(exampleSpace.Current);
+                var presentableValue = presentableValues[i];
+                var value = presentableValue.Presentational ?? presentableValue.Actual;
+                var exampleViewModel = GetExampleViewModel(value!, presentableValue.Arity);
 
                 var lines = ExampleRenderer.Render(exampleViewModel).ToList();
 
@@ -50,29 +80,11 @@ namespace GalaxyCheck
         /// <summary>
         /// Hacky. But it works for the test cases captured. Need to unify the arity model.
         /// </summary>
-        private static ExampleViewModel GetExampleViewModel(IExample example)
+        private static ExampleViewModel GetExampleViewModel(object value, int arity)
         {
-            var value = example.Value;
-
-            if (example.Value is Test test)
+            if (arity == 0 && value is object[] arrValue && arrValue.Length == 0)
             {
-                if (test.Arity == 0)
-                {
-                    return new ExampleViewModel.Nullary();
-                }
-
-                return ExampleViewModel.Infer(test.Input);
-            }
-
-            if (example.Value is ExampleViewModel exampleViewModel)
-            {
-                return exampleViewModel switch
-                {
-                    ExampleViewModel.Nullary nullary => nullary,
-                    ExampleViewModel.Unary unary => ExampleViewModel.Infer(unary.Value),
-                    ExampleViewModel.Multiary multiary => ExampleViewModel.Infer(multiary.Values),
-                    _ => throw new NotSupportedException()
-                };
+                return new ExampleViewModel.Nullary();
             }
 
             return ExampleViewModel.Infer(value);
