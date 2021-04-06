@@ -1,5 +1,5 @@
-﻿using GalaxyCheck.Gens.Iterations.Generic;
-using GalaxyCheck.Gens.Parameters;
+﻿using GalaxyCheck.Gens.Parameters;
+using GalaxyCheck.Gens.Parameters.Internal;
 using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Internal;
 using GalaxyCheck.Runners.Check;
@@ -9,14 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using GalaxyCheck.Gens.Parameters.Internal;
 
 namespace GalaxyCheck
 {
     public static partial class Extensions
     {
         public static CheckResult<T> Check<T>(
-             this Property<T> property,
+             this IGen<Test<T>> property,
              int? iterations = null,
              int? seed = null,
              int? size = null,
@@ -206,8 +205,8 @@ namespace GalaxyCheck
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value,
                     PresentationalValue: presentationalExampleSpace?.Current.Value,
+                    Arity: transition.CounterexampleExploration.ExampleSpace.Current.Value.Arity,
                     ExampleSpace: exampleSpace,
-                    PresentationalExampleSpace: presentationalExampleSpace,
                     Parameters: transition.CounterexampleState.ReplayParameters,
                     Path: transition.CounterexampleState.ReplayPath,
                     Exception: transition.CounterexampleState.Exception,
@@ -230,8 +229,8 @@ namespace GalaxyCheck
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value.Input,
                     PresentationalValue: presentationalExampleSpace?.Current.Value,
+                    Arity: transition.NonCounterexampleExploration.ExampleSpace.Current.Value.Arity,
                     ExampleSpace: inputExampleSpace,
-                    PresentationalExampleSpace: presentationalExampleSpace,
                     Parameters: transition.Instance.ReplayParameters,
                     Path: transition.NonCounterexampleExploration.Path,
                     Exception: null,
@@ -369,8 +368,8 @@ namespace GalaxyCheck.Runners.Check
         public record Check<T>(
             T Value,
             object? PresentationalValue,
+            int Arity,
             IExampleSpace<T> ExampleSpace,
-            IExampleSpace? PresentationalExampleSpace,
             GenParameters Parameters,
             IEnumerable<int> Path,
             bool IsCounterexample,

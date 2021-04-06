@@ -42,10 +42,6 @@ namespace Tests.V2.RunnerTests.PrintTests
         [Fact]
         public void PrintNullaryProperty()
         {
-            // TODO: This test should print "(no value)", rather than literal null (as nullary properties should be
-            // rendered in this way. This is avoiding that rendering path, which isn't a big deal, but could cause
-            // other issues / is a sign of hackiness.
-
             var property = Property.Nullary(() => false);
 
             var print = PrintAndCollect(property);
@@ -99,7 +95,16 @@ namespace Tests.V2.RunnerTests.PrintTests
             Snapshot.Match(print);
         }
 
-        private static string PrintAndCollect(IGen<object> gen)
+        private static string PrintAndCollect<T>(IGen<T> gen)
+        {
+            var log = new List<string>();
+
+            gen.Advanced.Print(seed: 0, stdout: log.Add);
+
+            return string.Join(Environment.NewLine, log);
+        }
+
+        private static string PrintAndCollect<T>(IGen<Test<T>> gen)
         {
             var log = new List<string>();
 

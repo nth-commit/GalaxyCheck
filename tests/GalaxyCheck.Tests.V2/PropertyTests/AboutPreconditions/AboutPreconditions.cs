@@ -43,7 +43,7 @@ namespace Tests.V2.PropertyTests.AboutPreconditions
                 })
                 .Sample(seed: 0);
 
-            result.Select(iteration => iteration.Input).Should().OnlyContain(x => pred(x));
+            result.Should().OnlyContain(x => pred(x));
         }
 
         private GalaxyCheck.Property NestedPrecondition(int x)
