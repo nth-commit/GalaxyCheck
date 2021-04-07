@@ -69,8 +69,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 instance.ExampleSpaceHistory,
                 replayDecoded.GenParameters,
                 replayDecoded.ExampleSpacePath,
-                counterexample.Exception,
-                counterexample.ExampleSpace.Current.Value.EnableLinqInference);
+                counterexample.Exception);
 
             return new InstanceCompleteTransition<T>(
                 state,

@@ -78,20 +78,5 @@ namespace Tests.V2.PropertyTests.BooleanPropertyTests
 
                 sample.Arity.Should().Be(4);
             });
-
-        [Property]
-        public NebulaCheck.IGen<Test> AUnaryPropertyWithAnExplicitArityHasTheGivenArity() =>
-            from arity in Gen.Int32().GreaterThanEqual(0)
-            from gen in DomainGen.Gen()
-            from func in Gen.Function<object, bool>(DomainGen.Boolean())
-            from seed in DomainGen.Seed()
-            select Property.ForThese(() =>
-            {
-                var property = GalaxyCheck.Property.ForAll<object>(gen, func, arity);
-
-                var sample = property.SampleOne(seed: seed);
-
-                sample.Arity.Should().Be(arity);
-            });
     }
 }

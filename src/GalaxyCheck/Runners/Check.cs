@@ -125,9 +125,7 @@ namespace GalaxyCheck
                 counterexampleState.ReplayPath,
                 replayEncoded,
                 counterexampleState.Exception,
-                counterexampleState.EnableLinqInference
-                    ? NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.ReplayPath)
-                    : null);
+                NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.ReplayPath));
         }
 
         /// <summary>
@@ -195,12 +193,9 @@ namespace GalaxyCheck
 
                 var exampleSpace = transition.CounterexampleState.ExampleSpace;
 
-                var enablePresentationalInference = transition.CounterexampleExploration.ExampleSpace.Current.Value.EnableLinqInference;
-                var presentationalExampleSpace = enablePresentationalInference
-                    ? NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.CounterexampleExploration.Path)
-                        ?.Cast<object>()
-                        ?.Map(x => x == null ? null : UnwrapBinding(x))
-                    : null;
+                var presentationalExampleSpace = NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.CounterexampleExploration.Path)
+                    ?.Cast<object>()
+                    ?.Map(x => x == null ? null : UnwrapBinding(x));
 
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value,
@@ -219,12 +214,9 @@ namespace GalaxyCheck
 
                 var exampleSpace = transition.NonCounterexampleExploration.ExampleSpace;
 
-                var enablePresentationalInference = transition.NonCounterexampleExploration.ExampleSpace.Current.Value.EnableLinqInference;
-                var presentationalExampleSpace = enablePresentationalInference
-                    ? NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.NonCounterexampleExploration.Path)
-                        ?.Cast<object>()
-                        ?.Map(x => x == null ? null : UnwrapBinding(x))
-                    : null;
+                var presentationalExampleSpace = NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.NonCounterexampleExploration.Path)
+                    ?.Cast<object>()
+                    ?.Map(x => x == null ? null : UnwrapBinding(x));
 
                 return new CheckIteration.Check<T>(
                     Value: exampleSpace.Current.Value.Input,
@@ -284,7 +276,7 @@ namespace GalaxyCheck
             var presentationalExampleSpaces =
                 from exs in tail
                 where exs.Current.Id.HashCode == head!.Current.Id.HashCode
-                where IsTest(exs.Current.Value.GetType()) == false
+                where exs.Current.Value == null || IsTest(exs.Current.Value.GetType()) == false
                 select exs;
 
             return presentationalExampleSpaces.FirstOrDefault();

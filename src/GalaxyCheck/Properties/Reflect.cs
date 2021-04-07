@@ -33,8 +33,7 @@ namespace GalaxyCheck
 
         private static IGen<Test<object[]>> ToVoidProperty(MethodInfo methodInfo, object? target)
         {
-            var arity = methodInfo.GetParameters().Count();
-            return GalaxyCheck.Gen
+            return Gen
                 .Parameters(methodInfo)
                 .ForAll(parameters =>
                 {
@@ -46,13 +45,16 @@ namespace GalaxyCheck
                     {
                         throw ex.InnerException;
                     }
-                }, arity);
+                })
+                .Select(test => new TestImpl<object[]>(
+                    test.Func,
+                    test.Input,
+                    parameters => parameters));
         }
 
         private static IGen<Test<object[]>> ToBooleanProperty(MethodInfo methodInfo, object? target)
         {
-            var arity = methodInfo.GetParameters().Count();
-            return GalaxyCheck.Gen
+            return Gen
                 .Parameters(methodInfo)
                 .ForAll(parameters =>
                 {
@@ -64,19 +66,22 @@ namespace GalaxyCheck
                     {
                         throw ex.InnerException;
                     }
-                }, arity);
+                })
+                .Select(test => new TestImpl<object[]>(
+                    test.Func,
+                    test.Input,
+                    parameters => parameters));
         }
 
         private static IGen<Test<object[]>> ToNestedProperty(MethodInfo methodInfo, object? target) =>
-            from parameters in GalaxyCheck.Gen.Parameters(methodInfo)
+            from parameters in Gen.Parameters(methodInfo)
             let property = InvokeNestedProperty(methodInfo, target, parameters)
             where property != null
-            from propertyIteration in property
-            select new Property<object[]>.TestImpl(
-                (x) => propertyIteration.Func(new object[] { x.Last() }),
-                Enumerable.Concat(parameters, propertyIteration.Input).ToArray(),
-                parameters.Count() + propertyIteration.Arity,
-                false);
+            from test in property
+            select new TestImpl<object[]>(
+                _ => test.Func(test.Input),
+                Enumerable.Concat(parameters, test.Input).ToArray(),
+                _ => Enumerable.Concat(parameters, test.Input).ToArray());
 
         private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)
         {

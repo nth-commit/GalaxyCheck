@@ -11,7 +11,7 @@ namespace GalaxyCheck
 
         int Arity { get; }
 
-        bool EnableLinqInference { get; }
+        Func<T, object?[]> Present { get; }
     }
 
     public interface Test : Test<object[]>
@@ -20,8 +20,6 @@ namespace GalaxyCheck
 
     public partial class Property : IGen<Test>
     {
-        public record TestImpl(Func<object[], bool> Func, object[] Input, int Arity, bool EnableLinqInference) : Test;
-
         private readonly IGen<Test> _gen;
 
         public Property(IGen<Test> gen)
@@ -48,7 +46,7 @@ namespace GalaxyCheck
 
     public class Property<T> : IGen<Test<T>>
     {
-        public record TestImpl(Func<T, bool> Func, T Input, int Arity, bool EnableLinqInference) : Test<T>
+        public record TestImpl(Func<T, bool> Func, T Input, int Arity, bool EnableLinqInference, Func<T, object?[]> Present) : Test<T>
         {
         }
 
@@ -59,24 +57,31 @@ namespace GalaxyCheck
             _gen = gen;
         }
 
-        public Property(IGen<T> inputGen, Func<T, bool> f, int arity)
-            : this(
-                from x in inputGen
-                select new TestImpl(f, x, arity, x is Test test && test.EnableLinqInference)) // I don't like this code.
-        {
-        }
-
         public IGenAdvanced<Test<T>> Advanced => _gen.Advanced;
 
         IGenAdvanced IGen.Advanced => Advanced;
 
-        public static implicit operator Property(Property<T> p)
+        public static implicit operator Property(Property<T> property)
         {
             var gen =
-                from i in p
-                select new Property.TestImpl(x => i.Func((T)x.Single()), new object[] { i.Input }, i.Arity, i.EnableLinqInference);
+                from test in property
+                select new GalaxyCheck.TestImpl(
+                    _ => test.Func(test.Input),
+                    new object[] { test.Input },
+                    _ => test.Present(test.Input));
 
             return new Property(gen);
         }
     }
+
+    internal record TestImpl<T>(Func<T, bool> Func, T Input, Func<T, object?[]> Present) : Test<T>
+    {
+        public int Arity => Present(Input).Length;
+    }
+
+    internal record TestImpl(Func<object[], bool> Func, object[] Input, Func<object[], object?[]> Present) : Test
+    {
+        public int Arity => Present(Input).Length;
+    }
+
 }
