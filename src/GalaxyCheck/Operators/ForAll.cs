@@ -11,7 +11,7 @@ namespace GalaxyCheck
         /// <param name="gen">The generator to specify a property of.</param>
         /// <param name="func">The property function.</param>
         /// <returns>The property comprised of the generator and the supplied property function.</returns>
-        public static Property<T> ForAll<T>(this IGen<T> gen, Func<T, bool> func, int? arity = null) => Property.ForAll(gen, func, arity);
+        public static Property<T> ForAll<T>(this IGen<T> gen, Func<T, bool> func) => Property.ForAll(gen, func);
 
         /// <summary>
         /// Specify a property of a generator, using the supplied property action. With this overload, the implication
@@ -21,6 +21,6 @@ namespace GalaxyCheck
         /// <param name="gen">The generator to specify a property of.</param>
         /// <param name="action">The property action.</param>
         /// <returns></returns>
-        public static Property<T> ForAll<T>(this IGen<T> gen, Action<T> action, int? arity = null) => Property.ForAll(gen, action, arity);
+        public static Property<T> ForAll<T>(this IGen<T> gen, Action<T> action) => Property.ForAll(gen, action);
     }
 }

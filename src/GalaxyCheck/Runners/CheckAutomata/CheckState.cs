@@ -117,6 +117,5 @@ namespace GalaxyCheck.Runners.CheckAutomata
         IEnumerable<IExampleSpace> ExampleSpaceHistory,
         GenParameters ReplayParameters,
         IEnumerable<int> ReplayPath,
-        Exception? Exception,
-        bool EnableLinqInference);
+        Exception? Exception);
 }

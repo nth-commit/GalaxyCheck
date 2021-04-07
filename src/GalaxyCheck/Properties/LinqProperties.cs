@@ -8,8 +8,7 @@ namespace GalaxyCheck
         public static Test ForThese(Func<bool> func) => new TestImpl(
             (_) => func(),
             new object[] { },
-            0,
-            true);
+            xs => xs);
 
         public static Test ForThese(Action func) => ForThese(func.AsTrueFunc());
     }

@@ -22,7 +22,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
             Instance.ExampleSpaceHistory,
             Instance.ReplayParameters,
             CounterexampleExploration.Path,
-            CounterexampleExploration.Exception,
-            CounterexampleExploration.ExampleSpace.Current.Value.EnableLinqInference);
+            CounterexampleExploration.Exception);
     }
 }

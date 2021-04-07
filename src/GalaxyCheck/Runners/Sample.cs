@@ -198,6 +198,6 @@ namespace GalaxyCheck.Runners.Sample
         }
 
         private static Test<T> MuteTestFailure<T>(Test<T> test) =>
-            new Property<T>.TestImpl((_) => true, test.Input, test.Arity, test.EnableLinqInference);
+            new TestImpl<T>((_) => true, test.Input, test.Present);
     }
 }
