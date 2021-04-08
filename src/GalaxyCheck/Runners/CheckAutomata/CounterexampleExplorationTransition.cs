@@ -1,6 +1,8 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.ExampleSpaces;
 using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
@@ -19,9 +21,18 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
         public CounterexampleState<T> CounterexampleState => new CounterexampleState<T>(
             CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
-            Instance.ExampleSpaceHistory,
+            ExampleSpaceHistory,
             Instance.ReplayParameters,
             CounterexampleExploration.Path,
             CounterexampleExploration.Exception);
+
+        public IExampleSpace<Test<T>> TestExampleSpace => CounterexampleExploration.ExampleSpace;
+
+        public IExampleSpace<T> InputExampleSpace => CounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
+
+        public IEnumerable<int> Path => CounterexampleExploration.Path;
+
+        public IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory => Instance.ExampleSpaceHistory.Select(
+            exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(Path)));
     }
 }

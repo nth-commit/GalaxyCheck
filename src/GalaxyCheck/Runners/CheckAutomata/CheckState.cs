@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using GalaxyCheck.Internal;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
@@ -114,8 +115,13 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
     internal record CounterexampleState<T>(
         IExampleSpace<T> ExampleSpace,
-        IEnumerable<IExampleSpace> ExampleSpaceHistory,
+        IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory,
         GenParameters ReplayParameters,
         IEnumerable<int> ReplayPath,
-        Exception? Exception);
+        Exception? Exception)
+    {
+        public T Value => ExampleSpace.Current.Value;
+
+        public object? PresentationalValue => PresentationInferrer.InferValue(ExampleSpaceHistory);
+    }
 }

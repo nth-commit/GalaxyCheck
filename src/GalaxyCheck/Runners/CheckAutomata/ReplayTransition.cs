@@ -3,6 +3,7 @@ using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Runners.Replaying;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
@@ -66,7 +67,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         {
             var counterexampleState = new CounterexampleState<T>(
                 counterexample.ExampleSpace.Map(x => x.Input),
-                instance.ExampleSpaceHistory,
+                GetNavigatedExampleSpaceHistory(instance, replayDecoded.ExampleSpacePath),
                 replayDecoded.GenParameters,
                 replayDecoded.ExampleSpacePath,
                 counterexample.Exception);
@@ -86,5 +87,10 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 "Error replaying last example, given replay string was no longer valid. Remove the replay " +
                 "parameter and run the property again. This is probably due to the generator setup changing.");
         }
+
+        private static IEnumerable<Lazy<IExampleSpace<object>?>> GetNavigatedExampleSpaceHistory(
+            IGenInstance<Test<T>> instance,
+            IEnumerable<int> path) =>
+                instance.ExampleSpaceHistory.Select(exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(path)));
     }
 }
