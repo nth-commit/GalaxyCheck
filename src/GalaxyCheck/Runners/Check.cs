@@ -125,7 +125,7 @@ namespace GalaxyCheck
                 counterexampleState.ReplayPath,
                 replayEncoded,
                 counterexampleState.Exception,
-                NavigateToPresentationalExample(counterexampleState.ExampleSpaceHistory, counterexampleState.ReplayPath));
+                counterexampleState.PresentationalValue);
         }
 
         /// <summary>
@@ -186,22 +186,11 @@ namespace GalaxyCheck
         {
             CheckIteration<T>? FromHandleCounterexample(CounterexampleExplorationTransition<T> transition)
             {
-                if (transition.CounterexampleState == null)
-                {
-                    throw new Exception("Fatal: Expected not null");
-                }
-
-                var exampleSpace = transition.CounterexampleState.ExampleSpace;
-
-                var presentationalExampleSpace = NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.CounterexampleExploration.Path)
-                    ?.Cast<object>()
-                    ?.Map(x => x == null ? null : UnwrapBinding(x));
-
                 return new CheckIteration.Check<T>(
-                    Value: exampleSpace.Current.Value,
-                    PresentationalValue: presentationalExampleSpace?.Current.Value,
-                    Arity: transition.CounterexampleExploration.ExampleSpace.Current.Value.Arity,
-                    ExampleSpace: exampleSpace,
+                    Value: transition.InputExampleSpace.Current.Value,
+                    PresentationalValue: transition.CounterexampleState.PresentationalValue,
+                    Arity: transition.TestExampleSpace.Current.Value.Arity,
+                    ExampleSpace: transition.InputExampleSpace,
                     Parameters: transition.CounterexampleState.ReplayParameters,
                     Path: transition.CounterexampleState.ReplayPath,
                     Exception: transition.CounterexampleState.Exception,
@@ -210,19 +199,11 @@ namespace GalaxyCheck
 
             CheckIteration<T>? FromHandleNonCounterexample(NonCounterexampleExplorationTransition<T> transition)
             {
-                var inputExampleSpace = transition.NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
-
-                var exampleSpace = transition.NonCounterexampleExploration.ExampleSpace;
-
-                var presentationalExampleSpace = NavigateToPresentationalExampleSpace(transition.Instance.ExampleSpaceHistory, transition.NonCounterexampleExploration.Path)
-                    ?.Cast<object>()
-                    ?.Map(x => x == null ? null : UnwrapBinding(x));
-
                 return new CheckIteration.Check<T>(
-                    Value: exampleSpace.Current.Value.Input,
-                    PresentationalValue: presentationalExampleSpace?.Current.Value,
-                    Arity: transition.NonCounterexampleExploration.ExampleSpace.Current.Value.Arity,
-                    ExampleSpace: inputExampleSpace,
+                    Value: transition.InputExampleSpace.Current.Value,
+                    PresentationalValue: PresentationInferrer.InferValue(transition.ExampleSpaceHistory),
+                    Arity: transition.TestExampleSpace.Current.Value.Arity,
+                    ExampleSpace: transition.InputExampleSpace,
                     Parameters: transition.Instance.ReplayParameters,
                     Path: transition.NonCounterexampleExploration.Path,
                     Exception: null,
@@ -241,73 +222,6 @@ namespace GalaxyCheck
                 ErrorTransition<T> t => throw new Exceptions.GenErrorException(t.Error),
                 _ => null
             };
-        }
-
-        private static object? NavigateToPresentationalExample(
-            IEnumerable<IExampleSpace> exampleSpaceHistory,
-            IEnumerable<int> navigationPath)
-        {
-            var value = NavigateToPresentationalExampleSpace(exampleSpaceHistory, navigationPath)?.Current.Value;
-            if (value == null)
-            {
-                return null;
-            }
-
-            return UnwrapBinding(value);
-        }
-
-        private static IExampleSpace? NavigateToPresentationalExampleSpace(
-            IEnumerable<IExampleSpace> exampleSpaceHistory,
-            IEnumerable<int> navigationPath)
-        {
-            var rootExampleSpace = FindPresentationalExampleSpace(exampleSpaceHistory);
-            if (rootExampleSpace == null)
-            {
-                return null;
-            }
-
-            return rootExampleSpace.Cast<object>().Navigate(navigationPath);
-        }
-
-        private static IExampleSpace? FindPresentationalExampleSpace(IEnumerable<IExampleSpace> exampleSpaceHistory)
-        {
-            var (head, tail) = exampleSpaceHistory.Reverse();
-
-            var presentationalExampleSpaces =
-                from exs in tail
-                where exs.Current.Id.HashCode == head!.Current.Id.HashCode
-                where exs.Current.Value == null || IsTest(exs.Current.Value.GetType()) == false
-                select exs;
-
-            return presentationalExampleSpaces.FirstOrDefault();
-        }
-
-        private static bool IsTest(Type type) => (
-            from i in type.GetInterfaces()
-            where i.IsGenericType
-            select i.GetGenericTypeDefinition()
-        ).Contains(typeof(Test<>).GetGenericTypeDefinition());
-
-        private static object? UnwrapBinding(object obj)
-        {
-            static object?[] UnwrapBindingRec(object? obj)
-            {
-                var type = obj?.GetType();
-
-                if (type != null && type.IsAnonymousType())
-                {
-                    return type.GetProperties().SelectMany(p => UnwrapBindingRec(p.GetValue(obj))).ToArray();
-                }
-
-                return new[] { obj };
-            }
-
-            if (obj?.GetType().IsAnonymousType() == true)
-            {
-                return UnwrapBindingRec(obj);
-            }
-
-            return obj;
         }
     }
 }
