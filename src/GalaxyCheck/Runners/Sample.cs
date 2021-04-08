@@ -188,7 +188,7 @@ namespace GalaxyCheck.Runners.Sample
         {
             try
             {
-                test.Func(test.Input);
+                var _ = test.Output.Value;
             }
             catch (Exception ex) when (ex is Property.PropertyPreconditionException)
             {
@@ -198,6 +198,6 @@ namespace GalaxyCheck.Runners.Sample
         }
 
         private static Test<T> MuteTestFailure<T>(Test<T> test) =>
-            new TestImpl<T>((_) => true, test.Input, test.Present);
+            new TestImpl<T>(test.Input, new Lazy<bool>(() => true), test.Present);
     }
 }

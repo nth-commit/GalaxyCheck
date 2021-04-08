@@ -47,8 +47,8 @@ namespace GalaxyCheck
                     }
                 })
                 .Select(test => new TestImpl<object[]>(
-                    test.Func,
                     test.Input,
+                    test.Output,
                     parameters => parameters));
         }
 
@@ -68,8 +68,8 @@ namespace GalaxyCheck
                     }
                 })
                 .Select(test => new TestImpl<object[]>(
-                    test.Func,
                     test.Input,
+                    test.Output,
                     parameters => parameters));
         }
 
@@ -79,8 +79,8 @@ namespace GalaxyCheck
             where property != null
             from test in property
             select new TestImpl<object[]>(
-                _ => test.Func(test.Input),
                 Enumerable.Concat(parameters, test.Input).ToArray(),
+                test.Output,
                 _ => Enumerable.Concat(parameters, test.Input).ToArray());
 
         private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)

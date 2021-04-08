@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Linq;
 
 namespace GalaxyCheck
 {
     public interface Test<T>
     {
-        Func<T, bool> Func { get; }
-
         T Input { get; }
+
+        Lazy<bool> Output { get; }
 
         int Arity { get; }
 
@@ -46,10 +45,6 @@ namespace GalaxyCheck
 
     public class Property<T> : IGen<Test<T>>
     {
-        public record TestImpl(Func<T, bool> Func, T Input, int Arity, bool EnableLinqInference, Func<T, object?[]> Present) : Test<T>
-        {
-        }
-
         private readonly IGen<Test<T>> _gen;
 
         public Property(IGen<Test<T>> gen)
@@ -65,23 +60,22 @@ namespace GalaxyCheck
         {
             var gen =
                 from test in property
-                select new GalaxyCheck.TestImpl(
-                    _ => test.Func(test.Input),
+                select new TestImpl(
                     new object[] { test.Input },
+                    test.Output,
                     _ => test.Present(test.Input));
 
             return new Property(gen);
         }
     }
 
-    internal record TestImpl<T>(Func<T, bool> Func, T Input, Func<T, object?[]> Present) : Test<T>
+    internal record TestImpl<T>(T Input, Lazy<bool> Output, Func<T, object?[]> Present) : Test<T>
     {
         public int Arity => Present(Input).Length;
     }
 
-    internal record TestImpl(Func<object[], bool> Func, object[] Input, Func<object[], object?[]> Present) : Test
+    internal record TestImpl(object[] Input, Lazy<bool> Output, Func<object[], object?[]> Present) : Test
     {
         public int Arity => Present(Input).Length;
     }
-
 }
