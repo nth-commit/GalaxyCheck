@@ -44,14 +44,14 @@ namespace GalaxyCheck.Runners
 
             return JsonSerializer.Serialize(
                 value,
-                    new JsonSerializerOptions(new JsonSerializerOptions()
+                new JsonSerializerOptions(new JsonSerializerOptions()
+                {
+                    Converters =
                     {
-                        Converters =
-                        {
-                            new DelegateConverterFactory(),
-                            new TupleConverterFactory()
-                        }
-                    }));
+                        new DelegateConverterFactory(),
+                        new TupleConverterFactory()
+                    }
+                }));
         }
 
         private static bool IsDelegateType(Type type) => typeof(Delegate).IsAssignableFrom(type);

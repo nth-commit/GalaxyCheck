@@ -8,7 +8,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
         {
             try
             {
-                var success = example.Value.Func(example.Value.Input);
+                var success = example.Value.Output.Value;
                 return success ? ExplorationOutcome.Success() : ExplorationOutcome.Fail(null);
             }
             catch (Property.PropertyPreconditionException)
