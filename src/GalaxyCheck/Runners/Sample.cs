@@ -32,20 +32,20 @@ namespace GalaxyCheck
             int? seed = null,
             int? size = null)
         {
-            var sample = advanced.SamplePresentableWithMetrics(iterations: 1, seed: seed, size: size);
+            var sample = advanced.SampleExampleSpacesWithMetrics(iterations: 1, seed: seed, size: size);
             return new SampleOneWithMetricsResult<T>(
-                sample.Values.Single().Actual,
+                sample.Values.Single().Current.Value,
                 sample.Discards,
                 sample.RandomnessConsumption);
         }
 
-        public static SampleWithMetricsResult<PresentableValue<T>> SamplePresentableWithMetrics<T>(
+        public static SampleWithMetricsResult<object?[]> SamplePresentableWithMetrics<T>(
             this IGenAdvanced<Test<T>> advanced,
             int? iterations = null,
             int? seed = null,
             int? size = null) => SampleHelpers.RunPresentationalValueSample(advanced, iterations: iterations, seed: seed, size: size);
 
-        public static SampleWithMetricsResult<PresentableValue<T>> SamplePresentableWithMetrics<T>(
+        public static SampleWithMetricsResult<object?[]> SamplePresentableWithMetrics<T>(
             this IGenAdvanced<T> advanced,
             int? iterations = null,
             int? seed = null,
@@ -61,7 +61,7 @@ namespace GalaxyCheck
             this IGenAdvanced<Test<T>> advanced,
             int? iterations = null,
             int? seed = null,
-            int? size = null) => advanced.SamplePresentableWithMetrics(iterations: iterations, seed: seed, size: size).Select(ex => ex.Actual);
+            int? size = null) => advanced.SampleExampleSpacesWithMetrics(iterations: iterations, seed: seed, size: size).Select(exs => exs.Current.Value.Input);
 
         public static IExampleSpace<T> SampleOneExampleSpace<T>(
             this IGenAdvanced<T> advanced,
@@ -90,11 +90,6 @@ namespace GalaxyCheck
 
 namespace GalaxyCheck.Runners.Sample
 {
-    public record PresentableValue<T>(
-        T Actual,
-        object? Presentational,
-        int Arity);
-
     public record SampleOneWithMetricsResult<T>(
         T Value,
         int Discards,
@@ -118,7 +113,7 @@ namespace GalaxyCheck.Runners.Sample
 
     internal static class SampleHelpers
     {
-        internal static SampleWithMetricsResult<PresentableValue<T>> RunPresentationalValueSample<T>(
+        internal static SampleWithMetricsResult<object?[]> RunPresentationalValueSample<T>(
             IGenAdvanced<Test<T>> advanced,
             int? iterations,
             int? seed,
@@ -133,16 +128,16 @@ namespace GalaxyCheck.Runners.Sample
 
             var values = checkResult.Checks
                 .OfType<CheckIteration.Check<T>>()
-                .Select(check => new PresentableValue<T>(check.Value, check.PresentationalValue, check.Arity))
+                .Select(check => check.PresentationalValue)
                 .ToList();
 
-            return new SampleWithMetricsResult<PresentableValue<T>>(
+            return new SampleWithMetricsResult<object?[]>(
                 values,
                 checkResult.Discards,
                 checkResult.RandomnessConsumption);
         }
 
-        internal static SampleWithMetricsResult<PresentableValue<T>> RunPresentationalValueSample<T>(
+        internal static SampleWithMetricsResult<object?[]> RunPresentationalValueSample<T>(
             IGenAdvanced<T> advanced,
             int? iterations,
             int? seed,
@@ -154,10 +149,10 @@ namespace GalaxyCheck.Runners.Sample
 
             var values = checkResult.Checks
                 .OfType<CheckIteration.Check<T>>()
-                .Select(check => new PresentableValue<T>(check.Value, check.PresentationalValue, check.Arity))
+                .Select(check => check.PresentationalValue)
                 .ToList();
 
-            return new SampleWithMetricsResult<PresentableValue<T>>(
+            return new SampleWithMetricsResult<object?[]>(
                 values,
                 checkResult.Discards,
                 checkResult.RandomnessConsumption);
@@ -198,6 +193,6 @@ namespace GalaxyCheck.Runners.Sample
         }
 
         private static Test<T> MuteTestFailure<T>(Test<T> test) =>
-            new TestImpl<T>(test.Input, new Lazy<bool>(() => true), test.Present);
+            TestFactory.Create(test.Input, new Lazy<bool>(() => true), test.PresentedInput);
     }
 }

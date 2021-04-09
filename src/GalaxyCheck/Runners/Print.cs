@@ -44,23 +44,20 @@ namespace GalaxyCheck.Runners.Print
 {
     internal static class PrintHelpers
     {
-        internal static void Print<T>(
-            IReadOnlyList<PresentableValue<T>> presentableValues,
+        internal static void Print(
+            IReadOnlyList<object?[]> presentationalValues,
             int discards,
             Action<string>? stdout)
         {
             stdout ??= Console.WriteLine;
 
-            stdout($"Sampled {presentableValues.Count} values ({discards} discarded):");
+            stdout($"Sampled {presentationalValues.Count} values ({discards} discarded):");
             stdout("");
 
-            for (var i = 0; i < presentableValues.Count; i++)
+            for (var i = 0; i < presentationalValues.Count; i++)
             {
-                var presentableValue = presentableValues[i];
-                var value = presentableValue.Presentational ?? presentableValue.Actual;
-                var exampleViewModel = GetExampleViewModel(value!, presentableValue.Arity);
-
-                var lines = ExampleRenderer.Render(exampleViewModel).ToList();
+                var presentationalValue = presentationalValues[i];
+                var lines = ExampleRenderer.Render(presentationalValue).ToList();
 
                 if (lines.Count == 1)
                 {
@@ -75,19 +72,6 @@ namespace GalaxyCheck.Runners.Print
                     stdout("");
                 }
             }
-        }
-
-        /// <summary>
-        /// Hacky. But it works for the test cases captured. Need to unify the arity model.
-        /// </summary>
-        private static ExampleViewModel GetExampleViewModel(object value, int arity)
-        {
-            if (arity == 0 && value is object[] arrValue && arrValue.Length == 0)
-            {
-                return new ExampleViewModel.Nullary();
-            }
-
-            return ExampleViewModel.Infer(value);
         }
 
         private static IEnumerable<string> FormatMultiaryLines(int sampleIndex, List<string> lines)

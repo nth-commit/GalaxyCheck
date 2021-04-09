@@ -122,11 +122,7 @@ namespace GalaxyCheck.Runners
 
         private static string CounterexampleValueLine(Counterexample<object?> counterexample)
         {
-            var example = ExampleViewModel.Infer(
-                counterexample.PresentationalValue ??
-                counterexample.Value);
-
-            var lines = ExampleRenderer.Render(example).ToList();
+            var lines = ExampleRenderer.Render(counterexample.PresentationalValue).ToList();
 
             return lines.Count switch
             {

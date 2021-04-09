@@ -9,6 +9,8 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 {
     public class AboutArity
     {
+        private static int CalculateArity<T>(Test<T> test) => test.PresentedInput?.Length ?? 0;
+
         private void AVoidMethodWithNoArguments() { }
 
         [Fact]
@@ -18,7 +20,7 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 
             var test = methodInfoProperty.SampleOne(seed: 0);
 
-            test.Arity.Should().Be(0);
+            CalculateArity(test).Should().Be(0);
         }
 
         private void AVoidMethodWithOneArgument(int x) { }
@@ -30,7 +32,7 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 
             var test = methodInfoProperty.SampleOne(seed: 0);
 
-            test.Arity.Should().Be(1);
+            CalculateArity(test).Should().Be(1);
         }
 
         private bool ABooleanMethodWithNoArguments() => true;
@@ -42,7 +44,7 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 
             var test = methodInfoProperty.SampleOne(seed: 0);
 
-            test.Arity.Should().Be(0);
+            CalculateArity(test).Should().Be(0);
         }
 
         private bool ABooleanMethodWithOneArgument(int x) => true;
@@ -54,7 +56,7 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 
             var test = methodInfoProperty.SampleOne(seed: 0);
 
-            test.Arity.Should().Be(1);
+            CalculateArity(test).Should().Be(1);
         }
 
         private Property AMethodWithOneArgumentReturningAPropertyWithOneArgument(int x) => Gen.Int32().ForAll(y => { });
@@ -66,7 +68,7 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
 
             var test = methodInfoProperty.SampleOne(seed: 0);
 
-            test.Arity.Should().Be(2);
+            CalculateArity(test).Should().Be(2);
         }
 
         private static MethodInfo GetMethod(string name)

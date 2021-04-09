@@ -15,7 +15,7 @@ namespace Tests.V2.RendererTests
             from value in Gen.Choose(DomainGen.Any(), DomainGen.AnyList())
             select Property.ForThese(() =>
             {
-                var rendering = ExampleRenderer.Render(new ExampleViewModel.Unary(value));
+                var rendering = ExampleRenderer.Render(new object[] { value });
 
                 rendering.Should().ContainSingle();
             });
@@ -41,7 +41,7 @@ namespace Tests.V2.RendererTests
         [MemberData(nameof(Values))]
         public void Examples(object value, string expectedRendering)
         {
-            var rendering = ExampleRenderer.Render(new ExampleViewModel.Unary(value)).Single();
+            var rendering = ExampleRenderer.Render(new object[] { value }).Single();
 
             rendering.Should().Be(expectedRendering);
         }

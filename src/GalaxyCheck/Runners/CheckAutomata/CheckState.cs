@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using GalaxyCheck.Internal;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
@@ -122,6 +121,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
     {
         public T Value => ExampleSpace.Current.Value;
 
-        public object? PresentationalValue => PresentationInferrer.InferValue(ExampleSpaceHistory);
+        public object?[] PresentationalValue => PresentationInferrer.InferValue(ExampleSpaceHistory);
     }
 }

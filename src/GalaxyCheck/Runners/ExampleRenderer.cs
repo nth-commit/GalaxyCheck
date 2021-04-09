@@ -6,33 +6,13 @@ using System.Text.Json.Serialization;
 
 namespace GalaxyCheck.Runners
 {
-    public abstract record ExampleViewModel
-    {
-        public record Nullary : ExampleViewModel;
-
-        public record Unary(object? Value) : ExampleViewModel;
-
-        public record Multiary(object[] Values) : ExampleViewModel;
-
-        public static ExampleViewModel Infer(object? value)
-        {
-            if (value is Array arr)
-            {
-                return new Multiary(arr.Cast<object>().ToArray());
-            }
-
-            return new Unary(value);
-        }
-    }
-
     public static class ExampleRenderer
     {
-        public static IEnumerable<string> Render(ExampleViewModel example) => example switch
+        public static IEnumerable<string> Render(object?[] example) => example.Length switch
         {
-            ExampleViewModel.Nullary _ => new string[] { "(no value)" },
-            ExampleViewModel.Unary unary => new string[] { RenderValue(unary.Value) },
-            ExampleViewModel.Multiary multiary => multiary.Values.Select((value, index) => $"[{index}] = {RenderValue(value)}"),
-            _ => throw new NotSupportedException("Unhandled switch")
+            0 => new string[] { "(no value)" },
+            1 => new string[] { RenderValue(example.Single()) },
+            _ => example.Select((value, index) => $"[{index}] = {RenderValue(value)}"),
         };
 
         private static string RenderValue(object? value)

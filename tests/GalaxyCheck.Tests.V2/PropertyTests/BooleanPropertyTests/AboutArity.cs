@@ -10,6 +10,8 @@ namespace Tests.V2.PropertyTests.BooleanPropertyTests
 {
     public class AboutArity
     {
+        private static int CalculateArity<T>(GalaxyCheck.Test<T> test) => test.PresentedInput?.Length ?? 0;
+
         [Property]
         public NebulaCheck.IGen<Test> ANullaryPropertyHasAnArityOfZero() =>
             from func in Gen.Function(DomainGen.Boolean())
@@ -20,7 +22,7 @@ namespace Tests.V2.PropertyTests.BooleanPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(0);
+                CalculateArity(sample).Should().Be(0);
             });
 
         [Property]
@@ -34,7 +36,7 @@ namespace Tests.V2.PropertyTests.BooleanPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(1);
+                CalculateArity(sample).Should().Be(1);
             });
 
         [Property]
@@ -48,7 +50,7 @@ namespace Tests.V2.PropertyTests.BooleanPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(2);
+                CalculateArity(sample).Should().Be(2);
             });
 
         [Property]
@@ -62,7 +64,7 @@ namespace Tests.V2.PropertyTests.BooleanPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(3);
+                CalculateArity(sample).Should().Be(3);
             });
 
         [Property]
@@ -76,7 +78,7 @@ namespace Tests.V2.PropertyTests.BooleanPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(4);
+                CalculateArity(sample).Should().Be(4);
             });
     }
 }

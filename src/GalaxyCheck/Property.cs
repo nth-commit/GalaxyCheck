@@ -2,19 +2,34 @@
 
 namespace GalaxyCheck
 {
-    public interface Test<T>
+    public interface Test<out T>
     {
         T Input { get; }
 
         Lazy<bool> Output { get; }
 
-        int Arity { get; }
-
-        Func<T, object?[]> Present { get; }
+        object?[]? PresentedInput { get; }
     }
 
     public interface Test : Test<object[]>
     {
+    }
+
+    internal static class TestFactory
+    {
+        private record TestImpl<T>(T Input, Lazy<bool> Output, object?[]? PresentedInput) : Test<T>;
+
+        private record TestImpl(object[] Input, Lazy<bool> Output, object?[]? PresentedInput) : Test;
+
+        public static Test<T> Create<T>(T Input, Lazy<bool> Output, object?[]? PresentedInput)
+        {
+            return new TestImpl<T>(Input, Output, PresentedInput);
+        }
+
+        public static Test Create(object[] Input, Lazy<bool> Output, object?[]? PresentedInput)
+        {
+            return new TestImpl(Input, Output, PresentedInput);
+        }
     }
 
     public partial class Property : IGen<Test>
@@ -56,26 +71,8 @@ namespace GalaxyCheck
 
         IGenAdvanced IGen.Advanced => Advanced;
 
-        public static implicit operator Property(Property<T> property)
-        {
-            var gen =
-                from test in property
-                select new TestImpl(
-                    new object[] { test.Input },
-                    test.Output,
-                    _ => test.Present(test.Input));
-
-            return new Property(gen);
-        }
-    }
-
-    internal record TestImpl<T>(T Input, Lazy<bool> Output, Func<T, object?[]> Present) : Test<T>
-    {
-        public int Arity => Present(Input).Length;
-    }
-
-    internal record TestImpl(object[] Input, Lazy<bool> Output, Func<object[], object?[]> Present) : Test
-    {
-        public int Arity => Present(Input).Length;
+        public static implicit operator Property(Property<T> property) => new Property(
+            from test in property
+            select TestFactory.Create(new object[] { test.Input }, test.Output, test.PresentedInput));
     }
 }
