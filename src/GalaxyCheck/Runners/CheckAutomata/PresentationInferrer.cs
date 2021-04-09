@@ -8,12 +8,12 @@ namespace GalaxyCheck.Runners.CheckAutomata
 {
     public static class PresentationInferrer
     {
-        public static object? InferValue(IEnumerable<Lazy<IExampleSpace<object>?>> exampleSpaceHistory)
+        public static object?[] InferValue(IEnumerable<Lazy<IExampleSpace<object>?>> exampleSpaceHistory)
         {
-            return InferExampleSpace(exampleSpaceHistory)?.Current.Value;
+            return InferExampleSpace(exampleSpaceHistory)?.Current.Value ?? new object?[] { };
         }
 
-        public static IExampleSpace<object?>? InferExampleSpace(IEnumerable<Lazy<IExampleSpace<object>?>> exampleSpaceHistory)
+        public static IExampleSpace<object?[]>? InferExampleSpace(IEnumerable<Lazy<IExampleSpace<object>?>> exampleSpaceHistory)
         {
             var (head, tail) = exampleSpaceHistory.Reverse();
 
@@ -41,7 +41,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             select i.GetGenericTypeDefinition()
         ).Contains(typeof(Test<>).GetGenericTypeDefinition());
 
-        private static object? UnwrapBinding(object? obj)
+        private static object?[] UnwrapBinding(object? obj)
         {
             static object?[] UnwrapBindingRec(object? obj)
             {
@@ -60,7 +60,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 return UnwrapBindingRec(obj);
             }
 
-            return obj;
+            return new object?[] { obj };
         }
     }
 }

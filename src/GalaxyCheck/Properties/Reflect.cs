@@ -46,10 +46,10 @@ namespace GalaxyCheck
                         throw ex.InnerException;
                     }
                 })
-                .Select(test => new TestImpl<object[]>(
+                .Select(test => TestFactory.Create<object[]>(
                     test.Input,
                     test.Output,
-                    parameters => parameters));
+                    test.Input));
         }
 
         private static IGen<Test<object[]>> ToBooleanProperty(MethodInfo methodInfo, object? target)
@@ -67,10 +67,10 @@ namespace GalaxyCheck
                         throw ex.InnerException;
                     }
                 })
-                .Select(test => new TestImpl<object[]>(
+                .Select(test => TestFactory.Create<object[]>(
                     test.Input,
                     test.Output,
-                    parameters => parameters));
+                    test.Input));
         }
 
         private static IGen<Test<object[]>> ToNestedProperty(MethodInfo methodInfo, object? target) =>
@@ -78,10 +78,10 @@ namespace GalaxyCheck
             let property = InvokeNestedProperty(methodInfo, target, parameters)
             where property != null
             from test in property
-            select new TestImpl<object[]>(
+            select TestFactory.Create<object[]>(
                 Enumerable.Concat(parameters, test.Input).ToArray(),
                 test.Output,
-                _ => Enumerable.Concat(parameters, test.Input).ToArray());
+                Enumerable.Concat(parameters, test.Input).ToArray());
 
         private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)
         {

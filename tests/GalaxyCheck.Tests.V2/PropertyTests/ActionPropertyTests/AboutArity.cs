@@ -3,13 +3,14 @@ using FluentAssertions;
 using NebulaCheck;
 using System.Linq;
 using Test = NebulaCheck.Test;
-using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
 
 namespace Tests.V2.PropertyTests.ActionPropertyTests
 {
     public class AboutArity
     {
+        private static int CalculateArity<T>(GalaxyCheck.Test<T> test) => test.PresentedInput?.Length ?? 0;
+
         [Property]
         public NebulaCheck.IGen<Test> ANullaryPropertyHasAnArityOfZero() =>
             from action in DomainGen.Action()
@@ -20,7 +21,7 @@ namespace Tests.V2.PropertyTests.ActionPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(0);
+                CalculateArity(sample).Should().Be(0);
             });
 
         [Property]
@@ -34,7 +35,7 @@ namespace Tests.V2.PropertyTests.ActionPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(1);
+                CalculateArity(sample).Should().Be(1);
             });
 
         [Property]
@@ -48,7 +49,7 @@ namespace Tests.V2.PropertyTests.ActionPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(2);
+                CalculateArity(sample).Should().Be(2);
             });
 
         [Property]
@@ -62,7 +63,7 @@ namespace Tests.V2.PropertyTests.ActionPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(3);
+                CalculateArity(sample).Should().Be(3);
             });
 
         [Property]
@@ -76,7 +77,7 @@ namespace Tests.V2.PropertyTests.ActionPropertyTests
 
                 var sample = property.SampleOne(seed: seed);
 
-                sample.Arity.Should().Be(4);
+                CalculateArity(sample).Should().Be(4);
             });
     }
 }

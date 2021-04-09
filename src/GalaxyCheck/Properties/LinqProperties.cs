@@ -5,11 +5,11 @@ namespace GalaxyCheck
 {
     public partial class Property
     {
-        public static Test ForThese(Func<bool> func) => new TestImpl(
+        public static Test<object[]> ForThese(Func<bool> func) => TestFactory.Create(
             new object[] { },
             new Lazy<bool>(() => func()),
-            xs => xs);
+            null);
 
-        public static Test ForThese(Action func) => ForThese(func.AsTrueFunc());
+        public static Test<object[]> ForThese(Action func) => ForThese(func.AsTrueFunc());
     }
 }

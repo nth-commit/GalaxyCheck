@@ -188,8 +188,9 @@ namespace GalaxyCheck
             {
                 return new CheckIteration.Check<T>(
                     Value: transition.InputExampleSpace.Current.Value,
-                    PresentationalValue: transition.CounterexampleState.PresentationalValue,
-                    Arity: transition.TestExampleSpace.Current.Value.Arity,
+                    PresentationalValue:
+                        transition.TestExampleSpace.Current.Value.PresentedInput ??
+                        PresentationInferrer.InferValue(transition.ExampleSpaceHistory),
                     ExampleSpace: transition.InputExampleSpace,
                     Parameters: transition.CounterexampleState.ReplayParameters,
                     Path: transition.CounterexampleState.ReplayPath,
@@ -201,8 +202,9 @@ namespace GalaxyCheck
             {
                 return new CheckIteration.Check<T>(
                     Value: transition.InputExampleSpace.Current.Value,
-                    PresentationalValue: PresentationInferrer.InferValue(transition.ExampleSpaceHistory),
-                    Arity: transition.TestExampleSpace.Current.Value.Arity,
+                    PresentationalValue:
+                        transition.TestExampleSpace.Current.Value.PresentedInput ??
+                        PresentationInferrer.InferValue(transition.ExampleSpaceHistory),
                     ExampleSpace: transition.InputExampleSpace,
                     Parameters: transition.Instance.ReplayParameters,
                     Path: transition.NonCounterexampleExploration.Path,
@@ -217,8 +219,8 @@ namespace GalaxyCheck
             {
                 CounterexampleExplorationTransition<T> t => FromHandleCounterexample(t),
                 NonCounterexampleExplorationTransition<T> t => FromHandleNonCounterexample(t),
-                DiscardExplorationTransition<T> t => ToDiscard(),
-                DiscardTransition<T> t => ToDiscard(),
+                DiscardExplorationTransition<T> _ => ToDiscard(),
+                DiscardTransition<T> _ => ToDiscard(),
                 ErrorTransition<T> t => throw new Exceptions.GenErrorException(t.Error),
                 _ => null
             };
@@ -277,8 +279,7 @@ namespace GalaxyCheck.Runners.Check
     {
         public record Check<T>(
             T Value,
-            object? PresentationalValue,
-            int Arity,
+            object?[] PresentationalValue,
             IExampleSpace<T> ExampleSpace,
             GenParameters Parameters,
             IEnumerable<int> Path,
@@ -296,7 +297,7 @@ namespace GalaxyCheck.Runners.Check
         IEnumerable<int> ReplayPath,
         string Replay,
         Exception? Exception,
-        object? PresentationalValue);
+        object?[] PresentationalValue);
 
     public enum TerminationReason
     {

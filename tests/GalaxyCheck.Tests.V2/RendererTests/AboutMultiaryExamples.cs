@@ -9,14 +9,14 @@ namespace Tests.V2.RendererTests
     {
         [Property]
         public IGen<Test> ItRendersLikeUnary() =>
-            from values in DomainGen.AnyList()
+            from values in DomainGen.AnyList().WithCountGreaterThan(1)
             select Property.ForThese(() =>
             {
-                var unaryRenderings = values
-                    .Select(value => new ExampleViewModel.Unary(value))
-                    .SelectMany((vm, index) => ExampleRenderer.Render(vm).Select(line => $"[{index}] = {line}"));
+                var unaryRenderings = values.SelectMany((value, index) => ExampleRenderer
+                    .Render(new object[] { value })
+                    .Select(line => $"[{index}] = {line}"));
 
-                var multiaryRendering = ExampleRenderer.Render(new ExampleViewModel.Multiary(values.ToArray()));
+                var multiaryRendering = ExampleRenderer.Render(values.ToArray());
 
                 multiaryRendering.Should().BeEquivalentTo(unaryRenderings);
             });

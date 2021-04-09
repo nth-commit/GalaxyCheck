@@ -9,7 +9,7 @@ namespace Tests.V2.RendererTests
         [Fact]
         public void ItRendersOneLineIndicatingNoValue()
         {
-            var rendering = ExampleRenderer.Render(new ExampleViewModel.Nullary());
+            var rendering = ExampleRenderer.Render(new object[] { });
 
             rendering.Should().ContainSingle().Subject.Should().Be("(no value)");
         }
