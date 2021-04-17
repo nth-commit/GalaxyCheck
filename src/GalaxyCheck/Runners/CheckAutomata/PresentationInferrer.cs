@@ -29,17 +29,11 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 let exs = lazyExs.Value
                 where exs != null
                 where exs.Current.Id.HashCode == lastHashCode
-                where exs.Current.Value == null || IsTest(exs.Current.Value.GetType()) == false
+                where exs.Current.Value == null || exs.Current.Value is not Test test
                 select exs;
 
             return presentationalExampleSpaces.FirstOrDefault()?.Map(UnwrapBinding);
         }
-
-        private static bool IsTest(Type type) => (
-            from i in type.GetInterfaces()
-            where i.IsGenericType
-            select i.GetGenericTypeDefinition()
-        ).Contains(typeof(Test<>).GetGenericTypeDefinition());
 
         private static object?[] UnwrapBinding(object? obj)
         {

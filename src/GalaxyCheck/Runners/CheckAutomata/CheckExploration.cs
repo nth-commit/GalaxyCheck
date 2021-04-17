@@ -6,19 +6,14 @@ namespace GalaxyCheck.Runners.CheckAutomata
     {
         public static AnalyzeExploration<Test<T>> Impl<T>() => (example) =>
         {
-            try
+            var testOutput = example.Value.Output.Value;
+            return testOutput.Result switch
             {
-                var success = example.Value.Output.Value;
-                return success ? ExplorationOutcome.Success() : ExplorationOutcome.Fail(null);
-            }
-            catch (Property.PropertyPreconditionException)
-            {
-                return ExplorationOutcome.Discard();
-            }
-            catch (Exception ex)
-            {
-                return ExplorationOutcome.Fail(ex);
-            }
+                TestResult.Succeeded => ExplorationOutcome.Success(),
+                TestResult.FailedPrecondition => ExplorationOutcome.Discard(),
+                TestResult.Failed => ExplorationOutcome.Fail(testOutput.Exception),
+                _ => throw new Exception("Fatal: Unhandled case")
+            };
         };
     }
 }

@@ -63,7 +63,7 @@ namespace GalaxyCheck.Xunit.Internal
                 return Task.FromResult(new RunSummary() { Skipped = 1 });
             }
 
-            PropertyInitializationResult? propertyInitResult = null;
+            PropertyInitializationResult? propertyInitResult;
             try
             {
                 propertyInitResult = PropertyInitializer.Initialize(
