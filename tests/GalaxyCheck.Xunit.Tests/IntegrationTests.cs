@@ -79,7 +79,7 @@ namespace Tests
             testResult.Outcome.Should().Be("Passed");
         }
 
-        [Fact(Skip = "Broken")]
+        [Fact]
         public void FallibleNestedProperty()
         {
             var testResult = _fixture.FindTestResult(nameof(FallibleNestedProperty));

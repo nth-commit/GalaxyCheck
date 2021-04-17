@@ -20,7 +20,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             IsFirstExplorationStage: false);
 
         public CounterexampleState<T> CounterexampleState => new CounterexampleState<T>(
-            CounterexampleExploration.ExampleSpace.Map(ex => ex.Input),
+            CounterexampleExploration.ExampleSpace,
             ExampleSpaceHistory,
             Instance.ReplayParameters,
             CounterexampleExploration.Path,

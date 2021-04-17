@@ -29,7 +29,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 let exs = lazyExs.Value
                 where exs != null
                 where exs.Current.Id.HashCode == lastHashCode
-                where exs.Current.Value == null || exs.Current.Value is not Test test
+                where exs.Current.Value == null || exs.Current.Value is not Test
                 select exs;
 
             return presentationalExampleSpaces.FirstOrDefault()?.Map(UnwrapBinding);

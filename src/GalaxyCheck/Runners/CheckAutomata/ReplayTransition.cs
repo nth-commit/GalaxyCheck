@@ -66,7 +66,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             ExplorationStage<Test<T>>.Counterexample counterexample)
         {
             var counterexampleState = new CounterexampleState<T>(
-                counterexample.ExampleSpace.Map(x => x.Input),
+                counterexample.ExampleSpace,
                 GetNavigatedExampleSpaceHistory(instance, replayDecoded.ExampleSpacePath),
                 replayDecoded.GenParameters,
                 replayDecoded.ExampleSpacePath,
