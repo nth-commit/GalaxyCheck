@@ -60,7 +60,7 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
             var forAllPropertyInput = forAllProperty.Select(x => new object[] { x.Input.Item1, x.Input.Item2 });
 
             var methodInfoProperty = Property.Reflect(GetMethod(nameof(ARecursiveProperty)), this);
-            var methodInfoPropertyInput = methodInfoProperty.Select(x => x.Input);
+            var methodInfoPropertyInput = methodInfoProperty.Select(x => x.PresentedInput);
 
             GenAssert.Equal(forAllPropertyInput, methodInfoPropertyInput, 0, 1);
         }

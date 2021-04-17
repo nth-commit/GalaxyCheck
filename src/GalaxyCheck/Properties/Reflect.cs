@@ -10,7 +10,7 @@ namespace GalaxyCheck
     {
         public static ImmutableList<Type> SupportedReturnTypes => MethodPropertyHandlers.Keys.ToImmutableList();
 
-        public static IGen<Test<object[]>> Reflect(MethodInfo methodInfo, object? target)
+        public static IGen<Test<object>> Reflect(MethodInfo methodInfo, object? target)
         {
             if (!SupportedReturnTypes.Contains(methodInfo.ReturnType))
             {
@@ -22,8 +22,8 @@ namespace GalaxyCheck
             return MethodPropertyHandlers[methodInfo.ReturnType](methodInfo, target);
         }
 
-        private readonly static ImmutableDictionary<Type, Func<MethodInfo, object?, IGen<Test<object[]>>>> MethodPropertyHandlers =
-            new Dictionary<Type, Func<MethodInfo, object?, IGen<Test<object[]>>>>
+        private readonly static ImmutableDictionary<Type, Func<MethodInfo, object?, IGen<Test<object>>>> MethodPropertyHandlers =
+            new Dictionary<Type, Func<MethodInfo, object?, IGen<Test<object>>>>
             {
                 { typeof(void), ToVoidProperty },
                 { typeof(bool), ToBooleanProperty },
@@ -31,7 +31,7 @@ namespace GalaxyCheck
                 { typeof(IGen<Test>), ToPureProperty }
             }.ToImmutableDictionary();
 
-        private static IGen<Test<object[]>> ToVoidProperty(MethodInfo methodInfo, object? target)
+        private static IGen<Test<object>> ToVoidProperty(MethodInfo methodInfo, object? target)
         {
             return Gen
                 .Parameters(methodInfo)
@@ -46,13 +46,13 @@ namespace GalaxyCheck
                         throw ex.InnerException;
                     }
                 })
-                .Select(test => TestFactory.Create<object[]>(
+                .Select(test => TestFactory.Create<object>(
                     test.Input,
                     test.Output,
                     test.Input));
         }
 
-        private static IGen<Test<object[]>> ToBooleanProperty(MethodInfo methodInfo, object? target)
+        private static IGen<Test<object>> ToBooleanProperty(MethodInfo methodInfo, object? target)
         {
             return Gen
                 .Parameters(methodInfo)
@@ -67,21 +67,21 @@ namespace GalaxyCheck
                         throw ex.InnerException;
                     }
                 })
-                .Select(test => TestFactory.Create<object[]>(
+                .Select(test => TestFactory.Create<object>(
                     test.Input,
                     test.Output,
                     test.Input));
         }
 
-        private static IGen<Test<object[]>> ToNestedProperty(MethodInfo methodInfo, object? target) =>
+        private static IGen<Test<object>> ToNestedProperty(MethodInfo methodInfo, object? target) =>
             from parameters in Gen.Parameters(methodInfo)
             let property = InvokeNestedProperty(methodInfo, target, parameters)
             where property != null
             from test in property
-            select TestFactory.Create<object[]>(
-                Enumerable.Concat(parameters, test.Input).ToArray(),
+            select TestFactory.Create(
+                test.Input,
                 test.Output,
-                Enumerable.Concat(parameters, test.Input).ToArray());
+                Enumerable.Concat(parameters, test.PresentedInput).ToArray());
 
         private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)
         {
@@ -100,11 +100,11 @@ namespace GalaxyCheck
             }
         }
 
-        private static IGen<Test<object[]>> ToPureProperty(MethodInfo methodInfo, object? target)
+        private static IGen<Test<object>> ToPureProperty(MethodInfo methodInfo, object? target)
         {
             try
             {
-                return (IGen<Test>)methodInfo.Invoke(target, new object[] { });
+                return ((IGen<Test>)methodInfo.Invoke(target, new object[] { })).Select(test => test.Cast<object>());
             }
             catch (TargetInvocationException ex)
             {

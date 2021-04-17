@@ -61,7 +61,7 @@ namespace GalaxyCheck
             this IGenAdvanced<Test<T>> advanced,
             int? iterations = null,
             int? seed = null,
-            int? size = null) => advanced.SampleExampleSpacesWithMetrics(iterations: iterations, seed: seed, size: size).Select(exs => exs.Current.Value.Input);
+            int? size = null) => advanced.SampleExampleSpacesWithMetrics(iterations: iterations, seed: seed, size: size).Select(exs => exs.Current.Value);
 
         public static IExampleSpace<T> SampleOneExampleSpace<T>(
             this IGenAdvanced<T> advanced,
@@ -80,7 +80,7 @@ namespace GalaxyCheck
             int? seed = null,
             int? size = null) => SampleHelpers.RunExampleSpaceSample(advanced, iterations: iterations, seed: seed, size: size);
 
-        public static SampleWithMetricsResult<IExampleSpace<Test<T>>> SampleExampleSpacesWithMetrics<T>(
+        public static SampleWithMetricsResult<IExampleSpace<T>> SampleExampleSpacesWithMetrics<T>(
             this IGenAdvanced<Test<T>> advanced,
             int? iterations = null,
             int? seed = null,
@@ -179,17 +179,33 @@ namespace GalaxyCheck.Runners.Sample
                 checkResult.RandomnessConsumption);
         }
 
+        internal static SampleWithMetricsResult<IExampleSpace<T>> RunExampleSpaceSample<T>(
+            IGenAdvanced<Test<T>> advanced,
+            int? iterations,
+            int? seed,
+            int? size)
+        {
+            var property = advanced
+                .AsGen()
+                .Where(TestMeetsPrecondition)
+                .Select(MuteTestFailure);
+
+            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
+
+            var values = checkResult.Checks
+                .OfType<CheckIteration.Check<T>>()
+                .Select(check => check.ExampleSpace)
+                .ToList();
+
+            return new SampleWithMetricsResult<IExampleSpace<T>>(
+                values,
+                checkResult.Discards,
+                checkResult.RandomnessConsumption);
+        }
+
         private static bool TestMeetsPrecondition<T>(Test<T> test)
         {
-            try
-            {
-                var _ = test.Output.Value;
-            }
-            catch (Exception ex) when (ex is Property.PropertyPreconditionException)
-            {
-                return false;
-            }
-            return true;
+            return test.Output.Value.Result != TestResult.FailedPrecondition;
         }
 
         private static Test<T> MuteTestFailure<T>(Test<T> test) =>

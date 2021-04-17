@@ -7,7 +7,7 @@ namespace GalaxyCheck.Xunit.Internal
     {
         public void Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper)
         {
-            parameters.Property.Assert(
+            parameters.Property.Select(test => test.Cast<object>()).Assert(
                 replay: parameters.Replay,
                 iterations: parameters.Iterations,
                 shrinkLimit: parameters.ShrinkLimit,
