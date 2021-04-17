@@ -113,14 +113,24 @@ namespace GalaxyCheck.Runners.CheckAutomata
     internal delegate Size ResizeStrategy<T>(ResizeStrategyInformation<T> info);
 
     internal record CounterexampleState<T>(
-        IExampleSpace<T> ExampleSpace,
+        IExampleSpace<Test<T>> TestExampleSpace,
         IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory,
         GenParameters ReplayParameters,
         IEnumerable<int> ReplayPath,
         Exception? Exception)
     {
+        public IExampleSpace<T> ExampleSpace => TestExampleSpace.Map(ex => ex.Input);
+
         public T Value => ExampleSpace.Current.Value;
 
-        public object?[] PresentationalValue => PresentationInferrer.InferValue(ExampleSpaceHistory);
+        public object?[] PresentationalValue
+        {
+            get
+            {
+                var test = TestExampleSpace.Current.Value;
+                var arity = test.PresentedInput?.Length;
+                return arity > 0 ? test.PresentedInput! : PresentationInferrer.InferValue(ExampleSpaceHistory);
+            }
+        }
     }
 }
