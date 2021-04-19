@@ -1,4 +1,5 @@
 ﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Properties;
 using GalaxyCheck.Runners.Check;
 using System;
 using System.Collections.Generic;
@@ -203,12 +204,10 @@ namespace GalaxyCheck.Runners.Sample
                 checkResult.RandomnessConsumption);
         }
 
-        private static bool TestMeetsPrecondition<T>(Test<T> test)
-        {
-            return test.Output.Value.Result != TestResult.FailedPrecondition;
-        }
+        private static bool TestMeetsPrecondition<T>(Test<T> test) =>
+            test.Output.Value.Result != TestResult.FailedPrecondition;
 
         private static Test<T> MuteTestFailure<T>(Test<T> test) =>
-            TestFactory.Create(test.Input, new Lazy<bool>(() => true), test.PresentedInput);
+            TestFactory.Create(test.Input, () => true, test.PresentedInput);
     }
 }

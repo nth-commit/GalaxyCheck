@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GalaxyCheck.Properties;
+using System;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
