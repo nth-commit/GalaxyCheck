@@ -26,6 +26,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
                 new RegistryAutoGenHandler(registeredGensByType),
                 new ListAutoGenHandler(),
                 new ArrayAutoGenHandler(),
+                new EnumAutoGenHandler(),
                 new DefaultConstructorAutoGenHandler(contextualErrorFactory),
                 new NonDefaultConstructorAutoGenHandler(contextualErrorFactory),
             };
