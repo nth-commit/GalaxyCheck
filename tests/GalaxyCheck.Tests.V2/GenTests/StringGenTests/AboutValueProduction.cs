@@ -24,6 +24,7 @@ namespace Tests.V2.GenTests.StringGenTests
                 var gen0 = GalaxyCheck.Gen
                     .String()
                     .FromCharacters(charType);
+
                 var gen1 = GalaxyCheck.Gen
                     .Char(charType)
                     .ListOf()
@@ -51,7 +52,7 @@ namespace Tests.V2.GenTests.StringGenTests
                     .FromCharacters(chars);
 
                 var gen1 = GalaxyCheck.Gen
-                    .Element<char>(chars)
+                    .Element(chars)
                     .ListOf()
                     .WithCountBetween(0, 100)
                     .Select(cs => new string(cs.ToArray()));
