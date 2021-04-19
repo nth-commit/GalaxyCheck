@@ -20,7 +20,7 @@ namespace Tests.V2.GenTests.AutoGenTests
                     .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
                     .Create<(int x, int y)>();
 
-                var instance = gen.SampleOne(seed: 0);
+                var instance = gen.SampleOne(seed: seed, size: size);
 
                 instance.Should().NotBeNull();
                 instance.x.Should().NotBe(0);
