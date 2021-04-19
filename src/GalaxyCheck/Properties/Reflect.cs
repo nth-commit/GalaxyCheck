@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GalaxyCheck.Properties;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -91,7 +92,7 @@ namespace GalaxyCheck
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException.GetType() == typeof(Property.PropertyPreconditionException))
+                if (ex.InnerException.GetType() == typeof(PropertyPreconditionException))
                 {
                     return null;
                 }

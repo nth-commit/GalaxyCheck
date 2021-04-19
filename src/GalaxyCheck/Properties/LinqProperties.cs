@@ -7,7 +7,7 @@ namespace GalaxyCheck
     {
         public static Test<object> ForThese(Func<bool> func) => TestFactory.Create<object>(
             null!,
-            new Lazy<bool>(() => func()),
+            () => func(),
             null);
 
         public static Test<object> ForThese(Action func) => ForThese(func.AsTrueFunc());
