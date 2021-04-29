@@ -15,7 +15,7 @@ namespace GalaxyCheck
             int? size = null,
             Action<string>? stdout = null)
         {
-            var sample = advanced.SamplePresentableWithMetrics(
+            var sample = advanced.SamplePresentationalWithMetrics(
                 iterations: iterations,
                 seed: seed,
                 size: size);
@@ -30,7 +30,7 @@ namespace GalaxyCheck
             int? size = null,
             Action<string>? stdout = null)
         {
-            var sample = advanced.SamplePresentableWithMetrics(
+            var sample = advanced.SamplePresentationalWithMetrics(
                 iterations: iterations,
                 seed: seed,
                 size: size);

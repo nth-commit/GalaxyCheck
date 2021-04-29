@@ -40,18 +40,6 @@ namespace GalaxyCheck
                 sample.RandomnessConsumption);
         }
 
-        public static SampleWithMetricsResult<object?[]> SamplePresentableWithMetrics<T>(
-            this IGenAdvanced<Test<T>> advanced,
-            int? iterations = null,
-            int? seed = null,
-            int? size = null) => SampleHelpers.RunPresentationalValueSample(advanced, iterations: iterations, seed: seed, size: size);
-
-        public static SampleWithMetricsResult<object?[]> SamplePresentableWithMetrics<T>(
-            this IGenAdvanced<T> advanced,
-            int? iterations = null,
-            int? seed = null,
-            int? size = null) => SampleHelpers.RunPresentationalValueSample(advanced, iterations: iterations, seed: seed, size: size);
-
         public static SampleWithMetricsResult<T> SampleWithMetrics<T>(
             this IGenAdvanced<T> advanced,
             int? iterations = null,
@@ -114,51 +102,6 @@ namespace GalaxyCheck.Runners.Sample
 
     internal static class SampleHelpers
     {
-        internal static SampleWithMetricsResult<object?[]> RunPresentationalValueSample<T>(
-            IGenAdvanced<Test<T>> advanced,
-            int? iterations,
-            int? seed,
-            int? size)
-        {
-            var property = advanced
-                .AsGen()
-                .Where(TestMeetsPrecondition)
-                .Select(MuteTestFailure);
-
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
-
-            var values = checkResult.Checks
-                .OfType<CheckIteration.Check<T>>()
-                .Select(check => check.PresentationalValue)
-                .ToList();
-
-            return new SampleWithMetricsResult<object?[]>(
-                values,
-                checkResult.Discards,
-                checkResult.RandomnessConsumption);
-        }
-
-        internal static SampleWithMetricsResult<object?[]> RunPresentationalValueSample<T>(
-            IGenAdvanced<T> advanced,
-            int? iterations,
-            int? seed,
-            int? size)
-        {
-            var property = advanced.AsGen().ForAll(_ => true);
-
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
-
-            var values = checkResult.Checks
-                .OfType<CheckIteration.Check<T>>()
-                .Select(check => check.PresentationalValue)
-                .ToList();
-
-            return new SampleWithMetricsResult<object?[]>(
-                values,
-                checkResult.Discards,
-                checkResult.RandomnessConsumption);
-        }
-
         internal static SampleWithMetricsResult<IExampleSpace<T>> RunExampleSpaceSample<T>(
             IGenAdvanced<T> advanced,
             int? iterations,
