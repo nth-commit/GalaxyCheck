@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Tests.V2.PropertyTests.LinqInferenceTests
 {
-    public class AboutLinqInference
+    public class AboutPresentation
     {
         [Fact]
         public void ItPopulatesThePresentationalValueWithAScopedVariable()

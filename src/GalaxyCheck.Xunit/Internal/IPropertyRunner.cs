@@ -3,7 +3,7 @@
 namespace GalaxyCheck.Xunit.Internal
 {
     internal record PropertyRunParameters(
-        IGen<Test> Property,
+        IGen<Test<object>> Property,
         int Iterations,
         int ShrinkLimit,
         string? Replay);
