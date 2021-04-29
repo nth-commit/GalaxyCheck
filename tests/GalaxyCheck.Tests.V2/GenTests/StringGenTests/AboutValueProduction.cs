@@ -13,7 +13,7 @@ namespace Tests.V2.GenTests.StringGenTests
     {
         [Property]
         public NebulaCheck.IGen<Test> IfTheCharacterSelectionStrategyIsCharType_ItProducesValuesLikeListOfChar() =>
-            from charType in TestGen.CharType()
+            from charType in Gen.Enum<GalaxyCheck.Gen.CharType>()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
@@ -123,27 +123,5 @@ namespace Tests.V2.GenTests.StringGenTests
             .Traverse()
             .Take(100)
             .ToList();
-
-        private static class TestGen
-        {
-            public static NebulaCheck.IGen<GalaxyCheck.Gen.CharType> CharType()
-            {
-                var allCharTypes = new[]
-                {
-                    GalaxyCheck.Gen.CharType.Whitespace,
-                    GalaxyCheck.Gen.CharType.Alphabetical,
-                    GalaxyCheck.Gen.CharType.Numeric,
-                    GalaxyCheck.Gen.CharType.Symbol,
-                    GalaxyCheck.Gen.CharType.Extended,
-                    GalaxyCheck.Gen.CharType.Control
-                };
-
-                return Gen
-                    .Element(allCharTypes)
-                    .ListOf()
-                    .WithCountGreaterThan(0)
-                    .Select(xs => xs.Aggregate((GalaxyCheck.Gen.CharType)0, (acc, curr) => acc | curr));
-            }
-        }
     }
 }
