@@ -1,13 +1,4 @@
-﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Gens.AutoGenHelpers;
-using GalaxyCheck.Gens.Internal;
-using GalaxyCheck.Gens.Iterations.Generic;
-using GalaxyCheck.Gens.Parameters;
-using GalaxyCheck.Internal;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq.Expressions;
+﻿
 
 /// <summary>
 /// TODO:
@@ -18,6 +9,8 @@ using System.Linq.Expressions;
 /// </summary>
 namespace GalaxyCheck
 {
+    using GalaxyCheck.Gens;
+
     public static partial class Gen
     {
         /// <summary>
@@ -54,6 +47,16 @@ namespace GalaxyCheck
 
 namespace GalaxyCheck.Gens
 {
+    using GalaxyCheck.Gens.AutoGenHelpers;
+    using GalaxyCheck.Gens.Internal;
+    using GalaxyCheck.Gens.Iterations.Generic;
+    using GalaxyCheck.Gens.Parameters;
+    using GalaxyCheck.Internal;
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq.Expressions;
+
     public interface IAutoGenFactory
     {
         /// <summary>
@@ -154,7 +157,9 @@ namespace GalaxyCheck.Gens
         {
             if (errorExpression != null)
             {
-                return Error($"expression '{errorExpression}' was invalid, an overridding expression may only contain member access");
+                return Error(
+                    $"expression '{errorExpression}' was invalid, an overridding expression may only contain member access",
+                    new { });
             }
 
             var context = AutoGenHandlerContext.Create(typeof(T));
@@ -163,6 +168,11 @@ namespace GalaxyCheck.Gens
                 .Cast<T>();
         }
 
-        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message);
+        private static IGen<T> Error(string message, object error) =>
+            Gen.Advanced.Error<T>(nameof(AutoGen<T>), message, error);
     }
+
+    internal record AutoGenTypeRegistrationMismatchError(
+        Type GenTypeArgument,
+        Type RegisteredType);
 }

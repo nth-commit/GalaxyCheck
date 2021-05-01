@@ -117,7 +117,8 @@ namespace GalaxyCheck
                                     iteration.ReplayParameters,
                                     innerIteration.NextParameters,
                                     innerError.GenName,
-                                    innerError.Message),
+                                    innerError.Message,
+                                    innerError.Error),
                                 onDiscard: innerDiscard => GenIterationFactory.Discard<TResult>(
                                     iteration.ReplayParameters,
                                     innerIteration.NextParameters));

@@ -95,53 +95,5 @@ namespace Tests.Gen.Parameters
                 });
             }
         }
-
-        public class AboutShrinkTowards
-        {
-            private static void ShrinkTowards5Example([ShrinkTowards(5)] int _) { }
-            private static void ShrinkTowards10Example([ShrinkTowards(10)] int _) { }
-
-            [Theory]
-            [InlineData(nameof(ShrinkTowards5Example), 5)]
-            [InlineData(nameof(ShrinkTowards10Example), 10)]
-            public void ItIsSupportedViaAnAttribute(string methodName, int expectedOrigin)
-            {
-                TestWithSeed(seed =>
-                {
-                    var methodInfo = typeof(AboutShrinkTowards).GetMethod(
-                        methodName,
-                        BindingFlags.Static | BindingFlags.NonPublic)!;
-
-                    var gen = GC.Gen.Parameters(methodInfo);
-
-                    var expectedGen = GC.Gen.Int32().ShrinkTowards(expectedOrigin);
-                    GenAssert.Equal(expectedGen.Select(x => new object[] { x }), gen, seed);
-                });
-            }
-        }
-
-        public class AboutWithBias
-        {
-            private static void WithBiasNoneExample([WithBias(GC.Gen.Bias.None)] int _) { }
-            private static void WithBiasExponentialExample([WithBias(GC.Gen.Bias.WithSize)] int _) { }
-
-            [Theory]
-            [InlineData(nameof(WithBiasNoneExample), GC.Gen.Bias.None)]
-            [InlineData(nameof(WithBiasExponentialExample), GC.Gen.Bias.WithSize)]
-            public void ItIsSupportedViaAnAttribute(string methodName, GC.Gen.Bias expectedBias)
-            {
-                TestWithSeed(seed =>
-                {
-                    var methodInfo = typeof(AboutWithBias).GetMethod(
-                        methodName,
-                        BindingFlags.Static | BindingFlags.NonPublic)!;
-
-                    var gen = GC.Gen.Parameters(methodInfo);
-
-                    var expectedGen = GC.Gen.Int32().WithBias(expectedBias);
-                    GenAssert.Equal(expectedGen.Select(x => new object[] { x }), gen, seed);
-                });
-            }
-        }
     }
 }

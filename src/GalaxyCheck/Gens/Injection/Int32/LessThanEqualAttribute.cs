@@ -3,15 +3,16 @@
 namespace GalaxyCheck.Gens.Injection.Int32
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    public class LessThanEqualAttribute : BaseInt32Attribute
+    public class LessThanEqualAttribute : GenProviderAttribute
     {
         public int Max { get; }
+
 
         public LessThanEqualAttribute(int max)
         {
             Max = max;
         }
 
-        public override IInt32Gen Configure(IInt32Gen gen) => gen.LessThanEqual(Max);
+        public override IGen Get => GalaxyCheck.Gen.Int32().LessThanEqual(Max);
     }
 }

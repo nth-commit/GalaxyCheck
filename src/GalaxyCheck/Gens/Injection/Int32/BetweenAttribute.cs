@@ -3,11 +3,12 @@
 namespace GalaxyCheck.Gens.Injection.Int32
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    public class BetweenAttribute : BaseInt32Attribute
+    public class BetweenAttribute : GenProviderAttribute
     {
         public int X { get; }
 
         public int Y { get; }
+
 
         public BetweenAttribute(int x, int y)
         {
@@ -15,6 +16,6 @@ namespace GalaxyCheck.Gens.Injection.Int32
             Y = y;
         }
 
-        public override IInt32Gen Configure(IInt32Gen gen) => gen.Between(X, Y);
+        public override IGen Get => GalaxyCheck.Gen.Int32().Between(X, Y);
     }
 }

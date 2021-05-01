@@ -18,19 +18,15 @@
 
 namespace GalaxyCheck.Gens
 {
-    using GalaxyCheck.Gens.Injection;
     using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
+    using GalaxyCheck.Internal;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
 
-    /// <summary>
-    /// TODO:
-    /// 1) Validation of misplaced generation attributes
-    /// </summary>
     internal class ParametersGen : BaseGen<object[]>, IGen<object[]>
     {
         private readonly Lazy<IGen<object[]>> _lazyGen;
@@ -49,10 +45,10 @@ namespace GalaxyCheck.Gens
                 .GetParameters()
                 .Select(parameterInfo => ResolveGen(autoGenFactory, parameterInfo));
 
-            return Gen.Zip(gens.Select(g => g.Cast<object>())).Select(xs => xs.ToArray());
+            return Gen.Zip(gens).Select(xs => xs.ToArray());
         }
 
-        private static IGen ResolveGen(IAutoGenFactory autoGenFactory, ParameterInfo parameterInfo)
+        private static IGen<object> ResolveGen(IAutoGenFactory autoGenFactory, ParameterInfo parameterInfo)
         {
             var configuredAutoGenFactory = ConfigureAutoGenFactory(autoGenFactory, parameterInfo);
 
@@ -60,33 +56,65 @@ namespace GalaxyCheck.Gens
                 .GetMethod(nameof(IAutoGenFactory.Create))
                 .MakeGenericMethod(parameterInfo.ParameterType);
 
-            return (IGen)createAutoGenMethodInfo.Invoke(configuredAutoGenFactory, new object[] { });
+            var gen = (IGen)createAutoGenMethodInfo.Invoke(configuredAutoGenFactory, new object[] { });
+
+            return gen
+                .Cast<object>()
+                .SelectError(error => SelectParameterError(parameterInfo, error));
         }
 
         private static IAutoGenFactory ConfigureAutoGenFactory(IAutoGenFactory autoGenFactory, ParameterInfo parameterInfo)
         {
-            if (parameterInfo.ParameterType == typeof(int) && TryCreateInt32Gen(parameterInfo, out IGen<int>? gen))
+            if (TryCreateGenFromAttribute(parameterInfo, out IGen? gen))
             {
-                return autoGenFactory.RegisterType(gen!);
+                return autoGenFactory.RegisterType(parameterInfo.ParameterType, gen!);
             }
 
             return autoGenFactory;
         }
 
-        private static bool TryCreateInt32Gen(ParameterInfo parameterInfo, out IGen<int>? gen)
+        private static bool TryCreateGenFromAttribute(ParameterInfo parameterInfo, out IGen? gen)
         {
-            var attributes = parameterInfo
+            var genProviderAttributes = parameterInfo
                 .GetCustomAttributes()
-                .OfType<IGenInjectionConfigurationFilter<int, IInt32Gen>>();
+                .OfType<GenProviderAttribute>();
 
-            if (attributes.Any())
+            var (genProviderAttribute, otherGenProviderAttributes) = genProviderAttributes;
+
+            if (genProviderAttribute == null)
             {
-                gen = attributes.Aggregate(Gen.Int32(), (gen, attr) => attr.Configure(gen));
+                gen = null;
+                return false;
+            }
+
+            if (otherGenProviderAttributes.Any())
+            {
+                gen = Gen.Advanced.Error(
+                    parameterInfo.ParameterType,
+                    nameof(ParametersGen),
+                    $"parameter '{parameterInfo.Name}' has multiple {nameof(GenProviderAttribute)}s (unsupported)",
+                    new { });
                 return true;
             }
 
-            gen = null;
-            return false;
+            gen = genProviderAttribute.Get;
+            return true;
+        }
+
+        private static Iterations.IGenErrorData SelectParameterError(ParameterInfo parameterInfo, Iterations.IGenErrorData error)
+        {
+            return error.Error switch
+            {
+                AutoGenTypeRegistrationMismatchError typeRegistrationMismatchError => new GenErrorData(
+                    nameof(ParametersGen),
+                    $"unable to generate value for parameter '{parameterInfo.Name}', '{typeRegistrationMismatchError.GenTypeArgument}' is not assignable to '{typeRegistrationMismatchError.RegisteredType}'",
+                    new ParametersGenTypeMismatchError(typeRegistrationMismatchError.GenTypeArgument, typeRegistrationMismatchError.GenTypeArgument)),
+                _ => error
+            };
         }
     }
+
+    internal record ParametersGenTypeMismatchError(
+        Type GenTypeArgument,
+        Type RegisteredType);
 }
