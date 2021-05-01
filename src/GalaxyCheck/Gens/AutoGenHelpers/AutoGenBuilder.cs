@@ -23,7 +23,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
             var genFactoriesByPriority = new List<IAutoGenHandler>
             {
                 new MemberOverrideAutoGenHandler(memberOverrides),
-                new RegistryAutoGenHandler(registeredGensByType),
+                new RegistryAutoGenHandler(registeredGensByType, contextualErrorFactory),
                 new ListAutoGenHandler(),
                 new ArrayAutoGenHandler(),
                 new EnumAutoGenHandler(),

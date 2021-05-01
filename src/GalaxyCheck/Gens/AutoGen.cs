@@ -36,6 +36,20 @@ namespace GalaxyCheck
         /// <returns>A generator for the given type.</returns>
         public static IAutoGen<T> Auto<T>() => AutoFactory().Create<T>();
     }
+
+    public static partial class Extensions
+    {
+        /// <summary>
+        /// Registers a custom generator to the given type. The generator is applied to all <see cref="IAutoGen{T}"/>
+        /// that are created by this factory.
+        /// </summary>
+        /// <param name="gen">The generator to register at the type.</param>
+        /// <returns>A new factory with the registration applied.</returns>
+        public static IAutoGenFactory RegisterType<T>(this IAutoGenFactory factory, IGen<T> gen)
+        {
+            return factory.RegisterType(typeof(T), gen);
+        }
+    }
 }
 
 namespace GalaxyCheck.Gens
@@ -46,9 +60,10 @@ namespace GalaxyCheck.Gens
         /// Registers a custom generator to the given type. The generator is applied to all <see cref="IAutoGen{T}"/>
         /// that are created by this factory.
         /// </summary>
+        /// <param name="type">The type to register the generator against.</param>
         /// <param name="gen">The generator to register at the type.</param>
         /// <returns>A new factory with the registration applied.</returns>
-        IAutoGenFactory RegisterType<T>(IGen<T> gen);
+        IAutoGenFactory RegisterType(Type type, IGen gen);
 
         /// <summary>
         /// Creates an auto-generator for the given type, using the configuration that was specified on this factory.
@@ -79,8 +94,8 @@ namespace GalaxyCheck.Gens
             Create<(int, int)>();
         }
 
-        public IAutoGenFactory RegisterType<T>(IGen<T> gen) =>
-            new AutoGenFactory(_registeredGensByType.SetItem(typeof(T), gen));
+        public IAutoGenFactory RegisterType(Type type, IGen gen) =>
+            new AutoGenFactory(_registeredGensByType.SetItem(type, gen));
 
         public IAutoGen<T> Create<T>() => new AutoGen<T>(_registeredGensByType);
     }
@@ -139,19 +154,15 @@ namespace GalaxyCheck.Gens
         {
             if (errorExpression != null)
             {
-                return Gen.Advanced.Error<T>(
-                    nameof(AutoGen<T>),
-                    $"expression '{errorExpression}' was invalid, an overridding expression may only contain member access");
+                return Error($"expression '{errorExpression}' was invalid, an overridding expression may only contain member access");
             }
 
+            var context = AutoGenHandlerContext.Create(typeof(T));
             return AutoGenBuilder
-                .Build(
-                    typeof(T),
-                    registeredGensByType,
-                    memberOverrides,
-                    message => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message),
-                    AutoGenHandlerContext.Create(typeof(T)))
+                .Build(typeof(T), registeredGensByType, memberOverrides, AutoGen<T>.Error, context)
                 .Cast<T>();
         }
+
+        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message);
     }
 }
