@@ -30,7 +30,7 @@ namespace GalaxyCheck.Gens.Internal.Iterations
 
             IGenData IGenIteration.Data => Data.Match<IGenData>(
                 onInstance: instanceData => GenData.InstanceData(instanceData.ExampleSpace, instanceData.ExampleSpaceHistory),
-                onError: errorData => GenData.ErrorData(errorData.GenName, errorData.Message),
+                onError: errorData => GenData.ErrorData(errorData.GenName, errorData.Message, errorData.Error),
                 onDiscard: discardData => GenData.DiscardData());
 
             public TResult Match<TResult>(
@@ -71,6 +71,8 @@ namespace GalaxyCheck.Gens.Internal.Iterations
                 public string GenName => Data.Error!.GenName;
 
                 public string Message => Data.Error!.Message;
+
+                public object Error => Data.Error!.Error;
             }
 
             private record GenDiscard<U> : GenIteration<U>, IGenDiscard<U>
@@ -114,8 +116,11 @@ namespace GalaxyCheck.Gens.Internal.Iterations
             GenParameters replayParameters,
             GenParameters nextParameters,
             string genName,
-            string message) =>
-                new GenIteration<T>(replayParameters, nextParameters, GenData<T>.ErrorData(genName, message));
+            string message,
+            object error) => new GenIteration<T>(
+                replayParameters,
+                nextParameters,
+                GenData<T>.ErrorData(genName, message, error));
 
         public static IGenIteration<T> Discard<T>(
             GenParameters replayParameters,

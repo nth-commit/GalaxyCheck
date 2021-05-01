@@ -11,13 +11,13 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
             Type type,
             IReadOnlyDictionary<Type, IGen> registeredGensByType,
             IReadOnlyList<AutoGenMemberOverride> memberOverrides,
-            Func<string, IGen> errorFactory,
+            ErrorFactory errorFactory,
             AutoGenHandlerContext context)
         {
-            Func<string, AutoGenHandlerContext, IGen> contextualErrorFactory = (message, context) =>
+            ContextualErrorFactory contextualErrorFactory = (message, error, context) =>
             {
                 var suffix = context.Members.Count() == 1 ? "" : $" at path '{context.MemberPath}'";
-                return errorFactory(message + suffix);
+                return errorFactory(message + suffix, error);
             };
 
             var genFactoriesByPriority = new List<IAutoGenHandler>

@@ -6,9 +6,9 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 {
     internal class NonDefaultConstructorAutoGenHandler : IAutoGenHandler
     {
-        private readonly Func<string, AutoGenHandlerContext, IGen> _errorFactory;
+        private readonly ContextualErrorFactory _errorFactory;
 
-        public NonDefaultConstructorAutoGenHandler(Func<string, AutoGenHandlerContext, IGen> errorFactory)
+        public NonDefaultConstructorAutoGenHandler(ContextualErrorFactory errorFactory)
         {
             _errorFactory = errorFactory;
         }
@@ -38,7 +38,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
                     {
                         var innerEx = ex.InnerException;
                         var message = $"'{innerEx.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
-                        return _errorFactory(message, context).Cast<object>();
+                        return _errorFactory(message, new { }, context).Cast<object>();
                     }
                 });
         }

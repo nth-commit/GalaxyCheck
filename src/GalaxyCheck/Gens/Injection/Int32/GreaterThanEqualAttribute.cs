@@ -3,7 +3,7 @@
 namespace GalaxyCheck.Gens.Injection.Int32
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    public class GreaterThanEqualAttribute : BaseInt32Attribute
+    public class GreaterThanEqualAttribute : GenProviderAttribute
     {
         public int Min { get; }
 
@@ -12,6 +12,6 @@ namespace GalaxyCheck.Gens.Injection.Int32
             Min = min;
         }
 
-        public override IInt32Gen Configure(IInt32Gen gen) => gen.GreaterThanEqual(Min);
+        public override IGen Get => GalaxyCheck.Gen.Int32().GreaterThanEqual(Min);
     }
 }

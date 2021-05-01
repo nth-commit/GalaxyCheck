@@ -1,6 +1,7 @@
 ﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
+    using System;
 
     public static partial class Gen
     {
@@ -14,9 +15,20 @@
             /// </summary>
             /// <param name="genName">The name of the generator where the error was detected.</param>
             /// <param name="message">A message explaining what this error is, and what it might have been caused by.
+            /// <param name="error">An optional object representing the error.</param>
             /// </param>
             /// <returns>A new generator that errors when it runs.</returns>
-            public static IGen<T> Error<T>(string genName, string message) => new ErrorGen<T>(genName, message);
+            public static IGen<T> Error<T>(string genName, string message, object? error = null) =>
+                new ErrorGen<T>(genName, message, error ?? new object());
+
+            internal static IGen Error(Type type, string genName, string message, object? error = null)
+            {
+                var genericErrorGen = typeof(Advanced)
+                    .GetMethod(nameof(Advanced.Error))
+                    .MakeGenericMethod(type);
+
+                return (IGen)genericErrorGen.Invoke(null, new object?[] { genName, message, error });
+            }
         }
     }
 }
@@ -33,18 +45,20 @@ namespace GalaxyCheck.Gens
     {
         private readonly string _genName;
         private readonly string _message;
+        private readonly object _error;
 
-        public ErrorGen(string genName, string message)
+        public ErrorGen(string genName, string message, object error)
         {
             _genName = genName;
             _message = message;
+            _error = error;
         }
 
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters)
         {
             while (true)
             {
-                yield return GenIterationFactory.Error<T>(parameters, parameters, _genName, _message);
+                yield return GenIterationFactory.Error<T>(parameters, parameters, _genName, _message, _error);
             }
         }
     }

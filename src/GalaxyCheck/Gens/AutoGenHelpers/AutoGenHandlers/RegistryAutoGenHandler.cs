@@ -7,11 +7,11 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
     internal class RegistryAutoGenHandler : IAutoGenHandler
     {
         private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
-        private readonly Func<string, AutoGenHandlerContext, IGen> _errorFactory;
+        private readonly ContextualErrorFactory _errorFactory;
 
         public RegistryAutoGenHandler(
             IReadOnlyDictionary<Type, IGen> registeredGensByType,
-            Func<string, AutoGenHandlerContext, IGen> errorFactory)
+            ContextualErrorFactory errorFactory)
         {
             _registeredGensByType = registeredGensByType;
             _errorFactory = errorFactory;
@@ -25,12 +25,13 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
             foreach (var kvp in _registeredGensByType)
             {
                 var registeredType = kvp.Key;
-                var reflectedTypeArgument = ReflectGenTypeArgument(kvp.Value);
+                var genTypeArgument = ReflectGenTypeArgument(kvp.Value);
 
-                if (registeredType.IsAssignableFrom(reflectedTypeArgument) == false)
+                if (registeredType.IsAssignableFrom(genTypeArgument) == false)
                 {
                     return _errorFactory(
-                        $"type '{reflectedTypeArgument}' was not assignable to the type it was registered to, '{registeredType}'",
+                        $"type '{genTypeArgument}' was not assignable to the type it was registered to, '{registeredType}'",
+                        new AutoGenTypeRegistrationMismatchError(genTypeArgument, registeredType),
                         context);
                 }
             }
