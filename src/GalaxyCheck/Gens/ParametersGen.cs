@@ -92,8 +92,7 @@ namespace GalaxyCheck.Gens
                 gen = Gen.Advanced.Error(
                     parameterInfo.ParameterType,
                     nameof(ParametersGen),
-                    $"parameter '{parameterInfo.Name}' has multiple {nameof(GenProviderAttribute)}s (unsupported)",
-                    new { });
+                    $"multiple {nameof(GenProviderAttribute)}s is unsupported");
                 return true;
             }
 
@@ -103,18 +102,9 @@ namespace GalaxyCheck.Gens
 
         private static Iterations.IGenErrorData SelectParameterError(ParameterInfo parameterInfo, Iterations.IGenErrorData error)
         {
-            return error.Error switch
-            {
-                AutoGenTypeRegistrationMismatchError typeRegistrationMismatchError => new GenErrorData(
-                    nameof(ParametersGen),
-                    $"unable to generate value for parameter '{parameterInfo.Name}', '{typeRegistrationMismatchError.GenTypeArgument}' is not assignable to '{typeRegistrationMismatchError.RegisteredType}'",
-                    new ParametersGenTypeMismatchError(typeRegistrationMismatchError.GenTypeArgument, typeRegistrationMismatchError.GenTypeArgument)),
-                _ => error
-            };
+            return new GenErrorData(
+                nameof(ParametersGen),
+                $"unable to generate value for parameter '{parameterInfo.Name}', {error.Message}");
         }
     }
-
-    internal record ParametersGenTypeMismatchError(
-        Type GenTypeArgument,
-        Type RegisteredType);
 }

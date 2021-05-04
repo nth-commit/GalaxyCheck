@@ -15,8 +15,13 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
         private static void PropertyWhereTypeOfGenIsNotAssignableToTypeOfParameter([StringGen] int x) { }
 
+        /// <summary>
+        /// ParametersGen uses AutoGen to generate individual parameters. We should just check that one error message
+        /// that we know originates in AutoGen is routed through correctly. Then we can assume that all errors from
+        /// AutoGen are handled in the same fashion.
+        /// </summary>
         [Fact]
-        public void ItErrorsWhenTypeOfGenIsNotAssignableToTypeOfParameter()
+        public void ItErrorsWhenTheAutoGenMightHaveErrored()
         {
             var gen = Gen.Parameters(GetMethod(nameof(PropertyWhereTypeOfGenIsNotAssignableToTypeOfParameter)));
 
@@ -24,7 +29,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
             test.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', 'System.String' is not assignable to 'System.Int32'");
+                .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', type 'System.String' was not assignable to the type it was registered to, 'System.Int32'");
         }
 
         private class AnotherStringGenAttribute : GenProviderAttribute
@@ -43,7 +48,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
             test.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ParametersGen: parameter 'x' has multiple GenProviderAttributes (unsupported)");
+                .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', multiple GenProviderAttributes is unsupported");
         }
 
         private static MethodInfo GetMethod(string name)

@@ -18,7 +18,7 @@ namespace GalaxyCheck
                 value,
                 shrinkValue.Invoke,
                 measureValue == null ? MeasureFunc.Unmeasured<T>() : measureValue!.Invoke,
-                identifyValue == null ? IdentifyFuncs.Default<T>() : value0 => ExampleId.Primitive(identifyValue(value0))));
+                identifyValue == null ? IdentifyFuncs.Default<T>() : value0 => ExampleId.Primitive(identifyValue!(value0))));
         }
 
         public static IGen<T> Unfold<T>(

@@ -17,8 +17,7 @@ namespace GalaxyCheck
                     error.ReplayParameters,
                     error.NextParameters,
                     selectedErrorData.GenName,
-                    selectedErrorData.Message,
-                    selectedErrorData.Error);
+                    selectedErrorData.Message);
             }
 
             GenIterationTransformation<T, T> transformation = (iteration) =>

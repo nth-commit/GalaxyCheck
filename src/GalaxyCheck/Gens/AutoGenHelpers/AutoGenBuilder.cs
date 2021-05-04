@@ -14,10 +14,10 @@ namespace GalaxyCheck.Gens.AutoGenHelpers
             ErrorFactory errorFactory,
             AutoGenHandlerContext context)
         {
-            ContextualErrorFactory contextualErrorFactory = (message, error, context) =>
+            ContextualErrorFactory contextualErrorFactory = (message, context) =>
             {
                 var suffix = context.Members.Count() == 1 ? "" : $" at path '{context.MemberPath}'";
-                return errorFactory(message + suffix, error);
+                return errorFactory(message + suffix);
             };
 
             var genFactoriesByPriority = new List<IAutoGenHandler>

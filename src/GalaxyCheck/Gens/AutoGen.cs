@@ -158,8 +158,7 @@ namespace GalaxyCheck.Gens
             if (errorExpression != null)
             {
                 return Error(
-                    $"expression '{errorExpression}' was invalid, an overridding expression may only contain member access",
-                    new { });
+                    $"expression '{errorExpression}' was invalid, an overridding expression may only contain member access");
             }
 
             var context = AutoGenHandlerContext.Create(typeof(T));
@@ -168,11 +167,6 @@ namespace GalaxyCheck.Gens
                 .Cast<T>();
         }
 
-        private static IGen<T> Error(string message, object error) =>
-            Gen.Advanced.Error<T>(nameof(AutoGen<T>), message, error);
+        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message);
     }
-
-    internal record AutoGenTypeRegistrationMismatchError(
-        Type GenTypeArgument,
-        Type RegisteredType);
 }

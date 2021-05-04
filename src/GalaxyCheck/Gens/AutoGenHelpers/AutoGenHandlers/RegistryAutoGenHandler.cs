@@ -31,7 +31,6 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
                 {
                     return _errorFactory(
                         $"type '{genTypeArgument}' was not assignable to the type it was registered to, '{registeredType}'",
-                        new AutoGenTypeRegistrationMismatchError(genTypeArgument, registeredType),
                         context);
                 }
             }
