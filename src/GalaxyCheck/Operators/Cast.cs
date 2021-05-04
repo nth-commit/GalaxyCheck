@@ -20,8 +20,7 @@ namespace GalaxyCheck
                         iteration.ReplayParameters,
                         iteration.NextParameters,
                         error.GenName,
-                        error.Message,
-                        error.Error),
+                        error.Message),
                     onDiscard: discard => GenIterationFactory.Discard<T>(
                         iteration.ReplayParameters,
                         iteration.NextParameters))));

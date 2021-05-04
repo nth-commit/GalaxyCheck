@@ -24,7 +24,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
         {
             if (context.TypeHistory.Skip(1).Any(t => t == type))
             {
-                return _errorFactory($"detected circular reference on type '{type}'", new { }, context);
+                return _errorFactory($"detected circular reference on type '{type}'", context);
             }
 
             var gen = _genHandlersByPriority
@@ -34,13 +34,10 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 
             if (gen == null)
             {
-                return _errorFactory($"could not resolve type '{type}'", new { }, context);
+                return _errorFactory($"could not resolve type '{type}'", context);
             }
 
             return gen;
         }
-
-        private static string RenderPathDiagnostics(AutoGenHandlerContext context) =>
-            context.Members.Count() == 1 ? "" : $" at path '{context.MemberPath}'";
     }
 }
