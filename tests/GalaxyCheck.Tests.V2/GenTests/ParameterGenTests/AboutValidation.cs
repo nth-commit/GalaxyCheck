@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
 using System;
-using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -19,10 +18,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
         [Fact]
         public void ItErrorsWhenTypeOfGenIsNotAssignableToTypeOfParameter()
         {
-            var gen = Gen
-                .Parameters(GetMethod(nameof(PropertyWhereTypeOfGenIsNotAssignableToTypeOfParameter)))
-                .Select(x => x.Single())
-                .Cast<int>();
+            var gen = Gen.Parameters(GetMethod(nameof(PropertyWhereTypeOfGenIsNotAssignableToTypeOfParameter)));
 
             Action test = () => gen.SampleOne();
 
@@ -41,10 +37,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
         [Fact]
         public void ItErrorsWhenMultipleGenAttributesAreProvided()
         {
-            var gen = Gen
-                .Parameters(GetMethod(nameof(PropertyWithMultipleGenAttributes)))
-                .Select(x => x.Single())
-                .Cast<string>();
+            var gen = Gen.Parameters(GetMethod(nameof(PropertyWithMultipleGenAttributes)));
 
             Action test = () => gen.SampleOne();
 
