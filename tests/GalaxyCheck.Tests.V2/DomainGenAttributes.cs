@@ -5,23 +5,28 @@ namespace Tests.V2
 {
     public static class DomainGenAttributes
     {
-        public class IterationsAttribute : BetweenAttribute
+        public class IterationsAttribute : GenProviderAttribute
         {
+            public int MinIterations { get; }
+
             public IterationsAttribute() : this(1) { }
 
-            public IterationsAttribute(int minIterations) : base(minIterations, 200) { }
-        }
-
-        public class SeedAttribute : WithBiasAttribute
-        {
-            public SeedAttribute() : base(Gen.Bias.None)
+            public IterationsAttribute(int minIterations)
             {
+                MinIterations = minIterations;
             }
+
+            public override IGen Get => Gen.Int32().Between(MinIterations, 200);
         }
 
-        public class SizeAttribute : BetweenAttribute
+        public class SeedAttribute : GenProviderAttribute
         {
-            public SizeAttribute() : base(0, 100) { }
+            public override IGen Get => DomainGen.Seed();
+        }
+
+        public class SizeAttribute : GenProviderAttribute
+        {
+            public override IGen Get => DomainGen.Size();
         }
     }
 }
