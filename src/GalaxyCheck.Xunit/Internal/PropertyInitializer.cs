@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GalaxyCheck.Gens;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -14,12 +15,19 @@ namespace GalaxyCheck.Xunit.Internal
 
     internal static class PropertyInitializer
     {
-        public static PropertyInitializationResult Initialize(Type testClassType, MethodInfo testMethodInfo, object[] constructorArguments)
+        public static PropertyInitializationResult Initialize(
+            Type testClassType,
+            MethodInfo testMethodInfo,
+            object[] constructorArguments,
+            IPropertyFactory propertyFactory)
         {
             var testClassInstance = Activator.CreateInstance(testClassType, constructorArguments);
-            var property = Property.Reflect(testMethodInfo, testClassInstance);
 
+            var propertiesAttribute = testClassType.GetCustomAttributes<PropertiesAttribute>(inherit: true).FirstOrDefault();
             var propertyAttribute = testMethodInfo.GetCustomAttributes<PropertyAttribute>(inherit: true).Single();
+
+            var genFactory = TryResolveGenFactory(propertyAttribute, propertiesAttribute);
+            var property = propertyFactory.CreateProperty(testMethodInfo, testClassInstance, genFactory);
             var replay = testMethodInfo.GetCustomAttributes<ReplayAttribute>().SingleOrDefault()?.Replay;
 
             var propertyRunParameters = new PropertyRunParameters(
@@ -32,6 +40,33 @@ namespace GalaxyCheck.Xunit.Internal
                 propertyAttribute.Runner,
                 propertyRunParameters,
                 propertyAttribute.Skip?.Length > 0 ? propertyAttribute.Skip : null);
+        }
+
+        private static IAutoGenFactory? TryResolveGenFactory(PropertyAttribute propertyAttribute, PropertiesAttribute? propertiesAttribute)
+        {
+            Type? factoryType = propertyAttribute.Factory ?? propertiesAttribute?.Factory;
+
+            if (factoryType == null)
+            {
+                return null;
+            }
+
+            var factoryInterfaces = factoryType.GetInterfaces();
+            if (factoryInterfaces.Any(i => i == typeof(IAutoGenFactory)) == false)
+            {
+                throw new PropertyConfigurationException($"Factory must implement '{typeof(IAutoGenFactory)}' but '{factoryType}' did not.");
+            }
+
+            var factoryConstructor = factoryType
+                .GetConstructors()
+                .Where(c => c.IsPublic && c.GetParameters().Any() == false)
+                .SingleOrDefault();
+            if (factoryConstructor == null)
+            {
+                throw new PropertyConfigurationException($"Factory must have a default constructor, but '{factoryType}' did not.");
+            }
+
+            return (IAutoGenFactory)factoryConstructor.Invoke(new object[] { });
         }
     }
 }

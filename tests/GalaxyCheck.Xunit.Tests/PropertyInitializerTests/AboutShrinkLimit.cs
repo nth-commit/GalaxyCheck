@@ -9,44 +9,49 @@ namespace Tests.PropertyInitializerTests
 {
     public class AboutShrinkLimit
     {
-        [Property(Skip = "Intentionally skipped for testing purposes")]
-        private void PropertyWithDefaultShrinkLimit()
-        {
-        }
+#pragma warning disable xUnit1000 // Test classes must be public
+        private class Properties
+#pragma warning restore xUnit1000 // Test classes must be public
+        { 
+            [Property]
+            public void PropertyWithDefaultShrinkLimit()
+            {
+            }
 
-        [Property(Skip = "Intentionally skipped for testing purposes", ShrinkLimit = 10)]
-        private void PropertyWith10ShrinkLimit()
-        {
-        }
+            [Property(ShrinkLimit = 10)]
+            public void PropertyWith10ShrinkLimit()
+            {
+            }
 
-        [Sample(Skip = "Intentionally skipped for testing purposes")]
-        private void SampleWithDefaultShrinkLimit()
-        {
-        }
+            [Sample]
+            public void SampleWithDefaultShrinkLimit()
+            {
+            }
 
-        [Sample(Skip = "Intentionally skipped for testing purposes", ShrinkLimit = 10)]
-        private void SampleWith10ShrinkLimit()
-        {
+            [Sample(ShrinkLimit = 10)]
+            public void SampleWith10ShrinkLimit()
+            {
+            }
         }
 
         [Theory]
-        [InlineData(nameof(PropertyWithDefaultShrinkLimit), 500)]
-        [InlineData(nameof(PropertyWith10ShrinkLimit), 10)]
-        [InlineData(nameof(SampleWithDefaultShrinkLimit), 500)]
-        [InlineData(nameof(SampleWith10ShrinkLimit), 10)]
+        [InlineData(nameof(Properties.PropertyWithDefaultShrinkLimit), 500)]
+        [InlineData(nameof(Properties.PropertyWith10ShrinkLimit), 10)]
+        [InlineData(nameof(Properties.SampleWithDefaultShrinkLimit), 500)]
+        [InlineData(nameof(Properties.SampleWith10ShrinkLimit), 10)]
         public void ItPassesThroughShrinkLimit(string testMethodName, int expectedShrinkLimit)
         {
-            var testClassType = typeof(AboutShrinkLimit);
+            var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { });
+            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
 
             result.Parameters.ShrinkLimit.Should().Be(expectedShrinkLimit);
         }
 
         private static MethodInfo GetMethod(string name)
         {
-            var methodInfo = typeof(AboutShrinkLimit).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var methodInfo = typeof(Properties).GetMethod(name, BindingFlags.Instance | BindingFlags.Public);
 
             if (methodInfo == null)
             {

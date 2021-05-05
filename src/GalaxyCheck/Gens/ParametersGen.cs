@@ -10,6 +10,8 @@
         /// method or a delegate.
         /// </summary>
         /// <param name="methodInfo">The method to generate parameters for.</param>
+        /// <param name="autoGenFactory">The <see cref="IAutoGenFactory"/> to use to create generators from parameter
+        /// types. If null, it uses the default factory.</param>
         /// <returns>The new generator.</returns>
         public static IGen<object[]> Parameters(MethodInfo methodInfo, IAutoGenFactory? autoGenFactory = null)
             => new ParametersGen(autoGenFactory ?? AutoFactory(), methodInfo);

@@ -89,6 +89,14 @@ namespace Tests
         }
 
         [Fact]
+        public void APropertyOfTheseIntIsThatItIsNonNegative()
+        {
+            var testResult = _fixture.FindTestResult(nameof(APropertyOfTheseIntIsThatItIsNonNegative));
+
+            testResult.Outcome.Should().Be("Passed");
+        }
+
+        [Fact]
         public void Sample()
         {
             var testResult = _fixture.FindTestResult(nameof(Sample));

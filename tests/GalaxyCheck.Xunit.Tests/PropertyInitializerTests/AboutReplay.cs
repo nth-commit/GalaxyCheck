@@ -9,46 +9,51 @@ namespace Tests.PropertyInitializerTests
 {
     public class AboutReplay
     {
-        [Property(Skip = "Intentionally skipped for testing purposes")]
-        private void PropertyWithNoReplay()
+#pragma warning disable xUnit1000 // Test classes must be public
+        private class Properties
+#pragma warning restore xUnit1000 // Test classes must be public
         {
-        }
+            [Property]
+            public void PropertyWithNoReplay()
+            {
+            }
 
-        [Property(Skip = "Intentionally skipped for testing purposes")]
-        [Replay("Re-re-rewiiiind")]
-        private void PropertyWithReplay()
-        {
-        }
+            [Property]
+            [Replay("Re-re-rewiiiind")]
+            public void PropertyWithReplay()
+            {
+            }
 
-        [Sample(Skip = "Intentionally skipped for testing purposes")]
-        private void SampleWithNoReplay()
-        {
-        }
+            [Sample]
+            public void SampleWithNoReplay()
+            {
+            }
 
-        [Sample(Skip = "Intentionally skipped for testing purposes")]
-        [Replay("Re-re-rewiiiiiiiiind")]
-        private void SampleWithReplay()
-        {
+            [Sample]
+            [Replay("Re-re-rewiiiiiiiiind")]
+            public void SampleWithReplay()
+            {
+            }
         }
 
         [Theory]
-        [InlineData(nameof(PropertyWithNoReplay), null)]
-        [InlineData(nameof(PropertyWithReplay), "Re-re-rewiiiind")]
-        [InlineData(nameof(SampleWithNoReplay), null)]
-        [InlineData(nameof(SampleWithReplay), "Re-re-rewiiiiiiiiind")]
+        [InlineData(nameof(Properties.PropertyWithNoReplay), null)]
+        [InlineData(nameof(Properties.PropertyWithReplay), "Re-re-rewiiiind")]
+        [InlineData(nameof(Properties.SampleWithNoReplay), null)]
+        [InlineData(nameof(Properties.SampleWithReplay), "Re-re-rewiiiiiiiiind")]
         public void ItPassesThroughReplay(string testMethodName, string? expectedReplay)
         {
-            var testClassType = typeof(AboutReplay);
+            var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { });
+            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
 
             result.Parameters.Replay.Should().Be(expectedReplay);
         }
 
         private static MethodInfo GetMethod(string name)
         {
-            var methodInfo = typeof(AboutReplay).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var methodInfo = typeof(Properties).GetMethod(name, BindingFlags.Instance | BindingFlags.Public);
 
             if (methodInfo == null)
             {
