@@ -83,6 +83,24 @@ namespace Tests.V2.GenTests.AutoGenTests
                 sample0.Should().BeEquivalentTo(sample1);
             });
 
+        [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateIReadOnlyCollections() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                List<IReadOnlyCollection<int>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyCollection<int>> gen) =>
+                    AboutGeneratingLists.SampleTraversal(gen, seed, size);
+
+                var gen0 = GalaxyCheck.Gen.Auto<IReadOnlyCollection<int>>();
+                var gen1 = GalaxyCheck.Gen.Int32().ListOf();
+
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
+            });
+
         private static List<T> SampleTraversal<T>(GalaxyCheck.IGen<T> gen, int seed, int size) => gen.Advanced
             .SampleOneExampleSpace(seed: seed, size: size)
             .Traverse()
