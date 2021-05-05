@@ -69,7 +69,8 @@ namespace GalaxyCheck.Xunit.Internal
                 propertyInitResult = PropertyInitializer.Initialize(
                     TestMethod.TestClass.Class.ToRuntimeType(),
                     TestMethod.Method.ToRuntimeMethod(),
-                    constructorArguments);
+                    constructorArguments,
+                    new DefaultPropertyFactory());
             }
             catch (Exception exception)
             {

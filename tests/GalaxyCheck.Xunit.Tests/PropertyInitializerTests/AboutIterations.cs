@@ -9,44 +9,49 @@ namespace Tests.PropertyInitializerTests
 {
     public class AboutIterations
     {
-        [Property(Skip = "Intentionally skipped for testing purposes")]
-        private void PropertyWithDefaultIterations()
+#pragma warning disable xUnit1000 // Test classes must be public
+        private class Properties
+#pragma warning restore xUnit1000 // Test classes must be public
         {
-        }
+            [Property]
+            public void PropertyWithDefaultIterations()
+            {
+            }
 
-        [Property(Skip = "Intentionally skipped for testing purposes", Iterations = 10)]
-        private void PropertyWith10Iterations()
-        {
-        }
+            [Property(Iterations = 10)]
+            public void PropertyWith10Iterations()
+            {
+            }
 
-        [Sample(Skip = "Intentionally skipped for testing purposes")]
-        private void SampleWithDefaultIterations()
-        {
-        }
+            [Sample]
+            public void SampleWithDefaultIterations()
+            {
+            }
 
-        [Sample(Skip = "Intentionally skipped for testing purposes", Iterations = 10)]
-        private void SampleWith10Iterations()
-        {
+            [Sample(Iterations = 10)]
+            public void SampleWith10Iterations()
+            {
+            }
         }
 
         [Theory]
-        [InlineData(nameof(PropertyWithDefaultIterations), 100)]
-        [InlineData(nameof(PropertyWith10Iterations), 10)]
-        [InlineData(nameof(SampleWithDefaultIterations), 100)]
-        [InlineData(nameof(SampleWith10Iterations), 10)]
+        [InlineData(nameof(Properties.PropertyWithDefaultIterations), 100)]
+        [InlineData(nameof(Properties.PropertyWith10Iterations), 10)]
+        [InlineData(nameof(Properties.SampleWithDefaultIterations), 100)]
+        [InlineData(nameof(Properties.SampleWith10Iterations), 10)]
         public void ItPassesThroughIterations(string testMethodName, int expectedIterations)
         {
-            var testClassType = typeof(AboutIterations);
+            var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { });
+            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
 
             result.Parameters.Iterations.Should().Be(expectedIterations);
         }
 
         private static MethodInfo GetMethod(string name)
         {
-            var methodInfo = typeof(AboutIterations).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var methodInfo = typeof(Properties).GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
 
             if (methodInfo == null)
             {

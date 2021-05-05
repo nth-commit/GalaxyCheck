@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using GalaxyCheck.Gens;
+using Xunit.Abstractions;
 
 namespace GalaxyCheck.Xunit.Internal
 {

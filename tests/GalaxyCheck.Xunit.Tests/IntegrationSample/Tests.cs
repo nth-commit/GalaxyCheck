@@ -1,7 +1,9 @@
 using GalaxyCheck;
+using GalaxyCheck.Gens;
 using GalaxyCheck.Gens.Injection.Int32;
 using Newtonsoft.Json;
 using System;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IntegrationSample
@@ -70,6 +72,21 @@ namespace IntegrationSample
         {
             AnnounceTestInvocation(nameof(FallibleNestedProperty));
             return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
+        }
+
+        public class GenFactoryWhereIntsAreNonNegative : AutoGenFactory
+        {
+            public GenFactoryWhereIntsAreNonNegative()
+            {
+                this.RegisterType(Gen.Int32().GreaterThanEqual(0));
+            }
+        }
+
+        [Property(Factory = typeof(GenFactoryWhereIntsAreNonNegative))]
+        public void APropertyOfTheseIntIsThatItIsNonNegative(int x)
+        {
+            AnnounceTestInvocation(nameof(APropertyOfTheseIntIsThatItIsNonNegative));
+            Assert.True(x >= 0);
         }
 
         [Sample]

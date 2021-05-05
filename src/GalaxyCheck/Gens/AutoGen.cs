@@ -55,6 +55,7 @@ namespace GalaxyCheck.Gens
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Linq;
     using System.Linq.Expressions;
 
     public interface IAutoGenFactory
@@ -75,30 +76,32 @@ namespace GalaxyCheck.Gens
         IAutoGen<T> Create<T>();
     }
 
-    internal class AutoGenFactory : IAutoGenFactory
+    public class AutoGenFactory : IAutoGenFactory
     {
-        private static readonly ImmutableDictionary<Type, IGen> DefaultRegisteredGensByType =
+        private static readonly IReadOnlyDictionary<Type, IGen> DefaultRegisteredGensByType =
             new Dictionary<Type, IGen>
             {
                 { typeof(int), Gen.Int32() },
                 { typeof(char), Gen.Char() },
                 { typeof(string), Gen.String() }
-            }.ToImmutableDictionary();
+            };
 
-        private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
+        private readonly Dictionary<Type, IGen> _registeredGensByType;
 
-        private AutoGenFactory(ImmutableDictionary<Type, IGen> registeredGensByType)
+        private AutoGenFactory(Dictionary<Type, IGen> registeredGensByType)
         {
             _registeredGensByType = registeredGensByType;
         }
 
-        public AutoGenFactory() : this(DefaultRegisteredGensByType)
+        public AutoGenFactory() : this(DefaultRegisteredGensByType.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
         {
-            Create<(int, int)>();
         }
 
-        public IAutoGenFactory RegisterType(Type type, IGen gen) =>
-            new AutoGenFactory(_registeredGensByType.SetItem(type, gen));
+        public IAutoGenFactory RegisterType(Type type, IGen gen)
+        {
+            _registeredGensByType[type] = gen;
+            return this;
+        }
 
         public IAutoGen<T> Create<T>() => new AutoGen<T>(_registeredGensByType);
     }
@@ -114,12 +117,12 @@ namespace GalaxyCheck.Gens
 
     internal class AutoGen<T> : BaseGen<T>, IAutoGen<T>
     {
-        private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
+        private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
         private readonly ImmutableList<AutoGenMemberOverride> _memberOverrides;
         private readonly string? _errorExpression;
 
         private AutoGen(
-            ImmutableDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyDictionary<Type, IGen> registeredGensByType,
             ImmutableList<AutoGenMemberOverride> memberOverrides,
             string? errorExpression)
         {
@@ -128,7 +131,7 @@ namespace GalaxyCheck.Gens
             _errorExpression = errorExpression;
         }
 
-        public AutoGen(ImmutableDictionary<Type, IGen> registeredGensByType)
+        public AutoGen(IReadOnlyDictionary<Type, IGen> registeredGensByType)
             : this(registeredGensByType, ImmutableList.Create<AutoGenMemberOverride>(), null)
         {
         }
