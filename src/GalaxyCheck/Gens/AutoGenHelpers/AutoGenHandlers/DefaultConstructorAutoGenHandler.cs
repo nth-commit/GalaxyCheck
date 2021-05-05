@@ -19,22 +19,33 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 
         public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
         {
-            object instance;
+            var methodInfo = typeof(DefaultConstructorAutoGenHandler).GetMethod(
+                nameof(CreateGenGeneric),
+                BindingFlags.Static | BindingFlags.NonPublic)!;
+
+            var genericMethodInfo = methodInfo.MakeGenericMethod(type);
+
+            return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory });
+        }
+
+        private static IGen<T> CreateGenGeneric<T>(IAutoGenHandler innerHandler, AutoGenHandlerContext context, ContextualErrorFactory errorFactory)
+        {
+            T instance;
             try
             {
-                instance = Activator.CreateInstance(type);
+                instance = (T)Activator.CreateInstance(typeof(T));
             }
             catch (TargetInvocationException ex)
             {
                 var innerEx = ex.InnerException;
                 var message = $"'{innerEx.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
-                return _errorFactory(message, context);
+                return errorFactory(message, context).Cast<T>();
             }
 
             return Gen
                 .Zip(
-                    Gen.Zip(CreateSetPropertyActionGens(innerHandler, type, context)),
-                    Gen.Zip(CreateSetFieldActionGens(innerHandler, type, context)))
+                    Gen.Zip(CreateSetPropertyActionGens(innerHandler, typeof(T), context)),
+                    Gen.Zip(CreateSetFieldActionGens(innerHandler, typeof(T), context)))
                 .SelectMany((x) =>
                 {
                     foreach (var setPropertyAction in x.Item1)
@@ -47,7 +58,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
                         {
                             var innerEx = ex.InnerException;
                             var message = $"'{innerEx.GetType()}' was thrown while setting property with message '{innerEx.Message}'";
-                            return _errorFactory(message, context).Cast<object>();
+                            return errorFactory(message, context).Cast<T>();
                         }
                     }
 
