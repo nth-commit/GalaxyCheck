@@ -38,6 +38,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 
         private static readonly IReadOnlyDictionary<Type, string> GenMethodByGenericTypeDefinition = new Dictionary<Type, string>
         {
+            { typeof(IReadOnlyCollection<>), nameof(CreateListGen) },
             { typeof(IReadOnlyList<>), nameof(CreateListGen) },
             { typeof(List<>), nameof(CreateListGen) },
             { typeof(ImmutableList<>), nameof(CreateImmutableListGen) },
