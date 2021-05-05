@@ -12,24 +12,6 @@ namespace Tests.V2.GenTests.AutoGenTests
     public class AboutGeneratingLists
     {
         [Property]
-        public NebulaCheck.IGen<Test> ItCanGenerateIReadOnlyLists() =>
-            from seed in DomainGen.Seed()
-            from size in DomainGen.Size()
-            select Property.ForThese(() =>
-            {
-                List<IReadOnlyList<int>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyList<int>> gen) =>
-                    AboutGeneratingLists.SampleTraversal(gen, seed, size);
-
-                var gen0 = GalaxyCheck.Gen.Auto<IReadOnlyList<int>>();
-                var gen1 = GalaxyCheck.Gen.Int32().ListOf();
-
-                var sample0 = SampleTraversal(gen0);
-                var sample1 = SampleTraversal(gen1);
-
-                sample0.Should().BeEquivalentTo(sample1);
-            });
-
-        [Property]
         public NebulaCheck.IGen<Test> ItCanGenerateLists() =>
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
@@ -40,6 +22,24 @@ namespace Tests.V2.GenTests.AutoGenTests
 
                 var gen0 = GalaxyCheck.Gen.Auto<List<int>>();
                 var gen1 = GalaxyCheck.Gen.Int32().ListOf().Select(x => x.ToList());
+
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
+            });
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateIReadOnlyLists() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                List<IReadOnlyList<int>> SampleTraversal(GalaxyCheck.IGen<IReadOnlyList<int>> gen) =>
+                    AboutGeneratingLists.SampleTraversal(gen, seed, size);
+
+                var gen0 = GalaxyCheck.Gen.Auto<IReadOnlyList<int>>();
+                var gen1 = GalaxyCheck.Gen.Int32().ListOf();
 
                 var sample0 = SampleTraversal(gen0);
                 var sample1 = SampleTraversal(gen1);
@@ -94,6 +94,49 @@ namespace Tests.V2.GenTests.AutoGenTests
 
                 var gen0 = GalaxyCheck.Gen.Auto<IReadOnlyCollection<int>>();
                 var gen1 = GalaxyCheck.Gen.Int32().ListOf();
+
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
+            });
+
+        private class ClassWithOneProperty
+        {
+            public int Property { get; set; }
+        }
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateListsOfAnObjectWithDefaultConstructor() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                List<List<ClassWithOneProperty>> SampleTraversal(GalaxyCheck.IGen<List<ClassWithOneProperty>> gen) =>
+                    AboutGeneratingLists.SampleTraversal(gen, seed, size);
+
+                var gen0 = GalaxyCheck.Gen.Auto<List<ClassWithOneProperty>>();
+                var gen1 = GalaxyCheck.Gen.Auto<ClassWithOneProperty>().ListOf().Select(x => x.ToList());
+
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
+            });
+
+        private record RecordWithOneProperty(int Property);
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateListsOfAnObjectWithNonDefaultConstructor() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                List<List<RecordWithOneProperty>> SampleTraversal(GalaxyCheck.IGen<List<RecordWithOneProperty>> gen) =>
+                    AboutGeneratingLists.SampleTraversal(gen, seed, size);
+
+                var gen0 = GalaxyCheck.Gen.Auto<List<RecordWithOneProperty>>();
+                var gen1 = GalaxyCheck.Gen.Auto<RecordWithOneProperty>().ListOf().Select(x => x.ToList());
 
                 var sample0 = SampleTraversal(gen0);
                 var sample1 = SampleTraversal(gen1);

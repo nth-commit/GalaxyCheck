@@ -18,7 +18,18 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
 
         public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
         {
-            var constructor = TryFindConstructor(type)!;
+            var methodInfo = typeof(NonDefaultConstructorAutoGenHandler).GetMethod(
+                nameof(CreateGenGeneric),
+                BindingFlags.Static | BindingFlags.NonPublic)!;
+
+            var genericMethodInfo = methodInfo.MakeGenericMethod(type);
+
+            return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory });
+        }
+
+        private static IGen<T> CreateGenGeneric<T>(IAutoGenHandler innerHandler, AutoGenHandlerContext context, ContextualErrorFactory errorFactory)
+        {
+            var constructor = TryFindConstructor(typeof(T))!;
 
             var parameterGens = constructor
                 .GetParameters()
@@ -32,18 +43,18 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
                 {
                     try
                     {
-                        return Gen.Constant(constructor.Invoke(parameters.ToArray()));
+                        return Gen.Constant((T)constructor.Invoke(parameters.ToArray()));
                     }
                     catch (TargetInvocationException ex)
                     {
                         var innerEx = ex.InnerException;
                         var message = $"'{innerEx.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
-                        return _errorFactory(message, context).Cast<object>();
+                        return errorFactory(message, context).Cast<T>();
                     }
                 });
         }
 
-        private ConstructorInfo? TryFindConstructor(Type type) => (
+        private static ConstructorInfo? TryFindConstructor(Type type) => (
             from constructor in type.GetConstructors()
             where constructor.IsPublic
             let parameters = constructor.GetParameters()
