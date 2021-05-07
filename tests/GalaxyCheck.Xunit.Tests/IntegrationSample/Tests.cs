@@ -74,11 +74,11 @@ namespace IntegrationSample
             return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
         }
 
-        public class GenFactoryWhereIntsAreNonNegative : AutoGenFactory
+        public class GenFactoryWhereIntsAreNonNegative : GenFactory
         {
             public GenFactoryWhereIntsAreNonNegative()
             {
-                this.RegisterType(Gen.Int32().GreaterThanEqual(0));
+                RegisterType(Gen.Int32().GreaterThanEqual(0));
             }
         }
 

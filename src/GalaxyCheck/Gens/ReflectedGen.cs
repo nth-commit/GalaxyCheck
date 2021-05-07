@@ -1,11 +1,8 @@
-﻿
-
-/// <summary>
+﻿/// <summary>
 /// TODO:
 ///     - Docs
 ///     - Plugin-able strategies for handling nullables, ienumerables etc.
 ///     - Render ctor params in path more sensibly
-///     - Use in parameter gen
 /// </summary>
 namespace GalaxyCheck
 {
@@ -14,43 +11,29 @@ namespace GalaxyCheck
     public static partial class Gen
     {
         /// <summary>
-        /// Creates a factory for <see cref="IAutoGen{T}"/>. The factory allows you to assign specific generators to
+        /// Creates a factory for <see cref="ITypedGen{T}"/>. The factory allows you to assign specific generators to
         /// types, and then be able to share that configuration across many auto-generators, see
-        /// <see cref="IAutoGenFactory"/>.
+        /// <see cref="IGenFactory"/>.
         /// </summary>
         /// <returns>A factory for auto-generators.</returns>
-        public static IAutoGenFactory AutoFactory() => new AutoGenFactory();
+        public static IGenFactory Factory() => new GenFactory();
 
         /// <summary>
-        /// Generates instances of the given type, using the default <see cref="IAutoGenFactory"/>. The auto-generator
+        /// Generates instances of the given type, using the default <see cref="IGenFactory"/>. The auto-generator
         /// can not be configured as precisely as more specialized generators can be, but it can create complex types
         /// with minimal configuration through reflection.
         /// </summary>
         /// <returns>A generator for the given type.</returns>
-        public static IAutoGen<T> Auto<T>() => AutoFactory().Create<T>();
-    }
-
-    public static partial class Extensions
-    {
-        /// <summary>
-        /// Registers a custom generator to the given type. The generator is applied to all <see cref="IAutoGen{T}"/>
-        /// that are created by this factory.
-        /// </summary>
-        /// <param name="gen">The generator to register at the type.</param>
-        /// <returns>A new factory with the registration applied.</returns>
-        public static IAutoGenFactory RegisterType<T>(this IAutoGenFactory factory, IGen<T> gen)
-        {
-            return factory.RegisterType(typeof(T), gen);
-        }
+        public static IReflectedGen<T> Create<T>() => Factory().Create<T>();
     }
 }
 
 namespace GalaxyCheck.Gens
 {
-    using GalaxyCheck.Gens.AutoGenHelpers;
     using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
+    using GalaxyCheck.Gens.ReflectedGenHelpers;
     using GalaxyCheck.Internal;
     using System;
     using System.Collections.Generic;
@@ -58,25 +41,33 @@ namespace GalaxyCheck.Gens
     using System.Linq;
     using System.Linq.Expressions;
 
-    public interface IAutoGenFactory
+    public interface IGenFactory
     {
         /// <summary>
-        /// Registers a custom generator to the given type. The generator is applied to all <see cref="IAutoGen{T}"/>
+        /// Registers a custom generator to the given type. The generator is applied to all <see cref="ITypedGen{T}"/>
         /// that are created by this factory.
         /// </summary>
         /// <param name="type">The type to register the generator against.</param>
         /// <param name="gen">The generator to register at the type.</param>
         /// <returns>A new factory with the registration applied.</returns>
-        IAutoGenFactory RegisterType(Type type, IGen gen);
+        IGenFactory RegisterType(Type type, IGen gen);
+
+        /// <summary>
+        /// Registers a custom generator to the given type. The generator is applied to all <see cref="ITypedGen{T}"/>
+        /// that are created by this factory.
+        /// </summary>
+        /// <param name="gen">The generator to register at the type.</param>
+        /// <returns>A new factory with the registration applied.</returns>
+        IGenFactory RegisterType<T>(IGen<T> gen);
 
         /// <summary>
         /// Creates an auto-generator for the given type, using the configuration that was specified on this factory.
         /// </summary>
         /// <returns>A generator for the given type.</returns>
-        IAutoGen<T> Create<T>();
+        IReflectedGen<T> Create<T>();
     }
 
-    public class AutoGenFactory : IAutoGenFactory
+    public class GenFactory : IGenFactory
     {
         private static readonly IReadOnlyDictionary<Type, IGen> DefaultRegisteredGensByType =
             new Dictionary<Type, IGen>
@@ -88,42 +79,46 @@ namespace GalaxyCheck.Gens
 
         private readonly Dictionary<Type, IGen> _registeredGensByType;
 
-        private AutoGenFactory(Dictionary<Type, IGen> registeredGensByType)
+        private GenFactory(Dictionary<Type, IGen> registeredGensByType)
         {
             _registeredGensByType = registeredGensByType;
         }
 
-        public AutoGenFactory() : this(DefaultRegisteredGensByType.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
+        public GenFactory() : this(DefaultRegisteredGensByType.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
         {
         }
 
-        public IAutoGenFactory RegisterType(Type type, IGen gen)
+        public IGenFactory RegisterType(Type type, IGen gen)
         {
             _registeredGensByType[type] = gen;
             return this;
         }
+        public IGenFactory RegisterType<T>(IGen<T> gen)
+        {
+            return RegisterType(typeof(T), gen);
+        }
 
-        public IAutoGen<T> Create<T>() => new AutoGen<T>(_registeredGensByType);
+        public IReflectedGen<T> Create<T>() => new ReflectedGen<T>(_registeredGensByType);
     }
 
-    public interface IAutoGen<T> : IGen<T>
+    public interface IReflectedGen<T> : IGen<T>
     {
-        IAutoGen<T> OverrideMember<TMember>(
+        IReflectedGen<T> OverrideMember<TMember>(
             Expression<Func<T, TMember>> memberSelector,
             IGen<TMember> memberGen);
     }
 
-    internal record AutoGenMemberOverride(string Path, IGen Gen);
+    internal record ReflectedGenMemberOverride(string Path, IGen Gen);
 
-    internal class AutoGen<T> : BaseGen<T>, IAutoGen<T>
+    internal class ReflectedGen<T> : BaseGen<T>, IReflectedGen<T>
     {
         private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
-        private readonly ImmutableList<AutoGenMemberOverride> _memberOverrides;
+        private readonly ImmutableList<ReflectedGenMemberOverride> _memberOverrides;
         private readonly string? _errorExpression;
 
-        private AutoGen(
+        private ReflectedGen(
             IReadOnlyDictionary<Type, IGen> registeredGensByType,
-            ImmutableList<AutoGenMemberOverride> memberOverrides,
+            ImmutableList<ReflectedGenMemberOverride> memberOverrides,
             string? errorExpression)
         {
             _registeredGensByType = registeredGensByType;
@@ -131,20 +126,20 @@ namespace GalaxyCheck.Gens
             _errorExpression = errorExpression;
         }
 
-        public AutoGen(IReadOnlyDictionary<Type, IGen> registeredGensByType)
-            : this(registeredGensByType, ImmutableList.Create<AutoGenMemberOverride>(), null)
+        public ReflectedGen(IReadOnlyDictionary<Type, IGen> registeredGensByType)
+            : this(registeredGensByType, ImmutableList.Create<ReflectedGenMemberOverride>(), null)
         {
         }
 
-        public IAutoGen<T> OverrideMember<TMember>(Expression<Func<T, TMember>> memberSelector, IGen<TMember> fieldGen)
+        public IReflectedGen<T> OverrideMember<TMember>(Expression<Func<T, TMember>> memberSelector, IGen<TMember> fieldGen)
         {
             var pathResult = PathResolver.FromExpression(memberSelector);
-            return pathResult.Match<string, string, IAutoGen<T>>(
-                fromLeft: path => new AutoGen<T>(
+            return pathResult.Match<string, string, IReflectedGen<T>>(
+                fromLeft: path => new ReflectedGen<T>(
                     _registeredGensByType,
-                    _memberOverrides.Add(new AutoGenMemberOverride(path, fieldGen)),
+                    _memberOverrides.Add(new ReflectedGenMemberOverride(path, fieldGen)),
                     _errorExpression),
-                fromRight: error => new AutoGen<T>(
+                fromRight: error => new ReflectedGen<T>(
                     _registeredGensByType,
                     _memberOverrides,
                     error));
@@ -155,7 +150,7 @@ namespace GalaxyCheck.Gens
 
         private static IGen<T> BuildGen(
             IReadOnlyDictionary<Type, IGen> registeredGensByType,
-            IReadOnlyList<AutoGenMemberOverride> memberOverrides,
+            IReadOnlyList<ReflectedGenMemberOverride> memberOverrides,
             string? errorExpression)
         {
             if (errorExpression != null)
@@ -164,12 +159,12 @@ namespace GalaxyCheck.Gens
                     $"expression '{errorExpression}' was invalid, an overridding expression may only contain member access");
             }
 
-            var context = AutoGenHandlerContext.Create(typeof(T));
-            return AutoGenBuilder
-                .Build(typeof(T), registeredGensByType, memberOverrides, AutoGen<T>.Error, context)
+            var context = ReflectedGenHandlerContext.Create(typeof(T));
+            return ReflectedGenBuilder
+                .Build(typeof(T), registeredGensByType, memberOverrides, Error, context)
                 .Cast<T>();
         }
 
-        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(AutoGen<T>), message);
+        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
     }
 }

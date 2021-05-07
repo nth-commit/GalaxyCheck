@@ -6,7 +6,7 @@ using System.Linq;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutGeneratingDeepObjects
     {
@@ -28,7 +28,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .Auto<ClassWithOneNestedProperty>()
+                    .Create<ClassWithOneNestedProperty>()
                     .OverrideMember(x => x.Property.Property, GalaxyCheck.Gen.Constant(value));
 
                 var instance = gen.SampleOne(seed: seed, size: size);
@@ -50,13 +50,13 @@ namespace Tests.V2.GenTests.AutoGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = GalaxyCheck.Gen.Auto<ClassWithRecursiveProperty>();
+                var gen = GalaxyCheck.Gen.Create<ClassWithRecursiveProperty>();
 
                 Action action = () => gen.SampleOne(seed: seed, size: size);
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator AutoGen: detected circular reference on type '*ClassWithRecursiveProperty' at path '$.Property'");
+                    .WithMessage("Error while running generator ReflectedGen: detected circular reference on type '*ClassWithRecursiveProperty' at path '$.Property'");
             });
     }
 }

@@ -4,11 +4,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class ListAutoGenHandler : IAutoGenHandler
+    internal class ListReflectedGenHandler : IReflectedGenHandler
     {
-        public bool CanHandleGen(Type type, AutoGenHandlerContext context)
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context)
         {
             if (type.IsGenericType)
             {
@@ -19,7 +19,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
             return false;
         }
 
-        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             var elementType = type.GetGenericArguments().Single();
             var elementGen = innerHandler.CreateGen(elementType, context);
@@ -27,7 +27,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
             var genericTypeDefinition = type.GetGenericTypeDefinition();
             var methodName = GenMethodByGenericTypeDefinition[genericTypeDefinition];
 
-            var methodInfo = typeof(ListAutoGenHandler).GetMethod(
+            var methodInfo = typeof(ListReflectedGenHandler).GetMethod(
                 methodName,
                 BindingFlags.Static | BindingFlags.NonPublic)!;
 

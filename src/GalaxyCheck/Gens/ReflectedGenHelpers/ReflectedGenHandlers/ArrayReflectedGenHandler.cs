@@ -2,18 +2,18 @@
 using System.Linq;
 using System.Reflection;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class ArrayAutoGenHandler : IAutoGenHandler
+    internal class ArrayReflectedGenHandler : IReflectedGenHandler
     {
-        public bool CanHandleGen(Type type, AutoGenHandlerContext context) => type.IsArray;
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) => type.IsArray;
 
-        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             var elementType = type.GetElementType();
             var elementGen = innerHandler.CreateGen(elementType, context);
 
-            var methodInfo = typeof(ArrayAutoGenHandler).GetMethod(
+            var methodInfo = typeof(ArrayReflectedGenHandler).GetMethod(
                 nameof(CreateArrayGen),
                 BindingFlags.Static | BindingFlags.NonPublic)!;
 

@@ -6,7 +6,7 @@ using Xunit;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutGeneratingObjects
     {
@@ -15,7 +15,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItCanGenerateAnEmptyObject()
         {
-            var gen = GalaxyCheck.Gen.Auto<EmptyClass>();
+            var gen = GalaxyCheck.Gen.Create<EmptyClass>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -34,7 +34,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .AutoFactory()
+                    .Factory()
                     .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
                     .Create<ClassWithOneProperty>();
 
@@ -60,7 +60,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .AutoFactory()
+                    .Factory()
                     .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
                     .Create<ClassWithTwoProperties>();
 
@@ -85,7 +85,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .AutoFactory()
+                    .Factory()
                     .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
                     .Create<ClassWithOneField>();
 
@@ -103,7 +103,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItAvoidsGenerationOfReadOnlyProperties()
         {
-            var gen = GalaxyCheck.Gen.Auto<ClassWithOneReadOnlyProperty>();
+            var gen = GalaxyCheck.Gen.Create<ClassWithOneReadOnlyProperty>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -118,7 +118,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItAvoidsGenerationOfPropertiesWithPrivateSetter()
         {
-            var gen = GalaxyCheck.Gen.Auto<ClassWithOnePropertyWithPrivateSetter>();
+            var gen = GalaxyCheck.Gen.Create<ClassWithOnePropertyWithPrivateSetter>();
 
             var instance = gen.SampleOne(seed: 0);
 

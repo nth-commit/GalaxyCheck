@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers
 {
     internal class PathResolver
     {

@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class DefaultConstructorAutoGenHandler : IAutoGenHandler
+    internal class DefaultConstructorReflectedGenHandler : IReflectedGenHandler
     {
         private readonly ContextualErrorFactory _errorFactory;
 
-        public DefaultConstructorAutoGenHandler(ContextualErrorFactory errorFactory)
+        public DefaultConstructorReflectedGenHandler(ContextualErrorFactory errorFactory)
         {
             _errorFactory = errorFactory;
         }
 
-        public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) =>
             type.GetConstructors().Any(constructor => constructor.GetParameters().Any() == false);
 
-        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
-            var methodInfo = typeof(DefaultConstructorAutoGenHandler).GetMethod(
+            var methodInfo = typeof(DefaultConstructorReflectedGenHandler).GetMethod(
                 nameof(CreateGenGeneric),
                 BindingFlags.Static | BindingFlags.NonPublic)!;
 
@@ -28,7 +28,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
             return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory });
         }
 
-        private static IGen<T> CreateGenGeneric<T>(IAutoGenHandler innerHandler, AutoGenHandlerContext context, ContextualErrorFactory errorFactory)
+        private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context, ContextualErrorFactory errorFactory)
         {
             T instance;
             try
@@ -71,7 +71,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
                 });
         }
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             return type
                 .GetProperties()
@@ -82,7 +82,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
                     .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));
         }
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             return type
                 .GetFields()

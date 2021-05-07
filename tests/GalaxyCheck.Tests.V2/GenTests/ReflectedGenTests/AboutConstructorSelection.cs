@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using Xunit;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutConstructorSelection
     {
@@ -17,7 +17,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void WhenThereIsAnImplicitDefaultConstructor_ItUsesTheDefaultConstructor()
         {
             var gen = Gen
-                .AutoFactory()
+                .Factory()
                 .RegisterType(Gen.Int32().Where(x => x != 0))
                 .Create<ImplicitDefaultConstructor>();
 
@@ -40,7 +40,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void WhenThereIsAnExplicitDefaultConstructor_ItUsesTheDefaultConstructor()
         {
             var gen = Gen
-                .AutoFactory()
+                .Factory()
                 .RegisterType(Gen.Int32().Where(x => x != 0))
                 .Create<ExplicitDefaultConstructor>();
 
@@ -63,7 +63,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void WhenThereIsAConstructorWithOneArgument_ItUsesTheDefaultConstructor()
         {
-            var gen = Gen.Auto<ConstructorWithOneArgument>();
+            var gen = Gen.Create<ConstructorWithOneArgument>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -87,7 +87,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void WhenThereIsADefaultConstructorAndAnotherWithOneArgument_ItUsesTheDefaultConstructor()
         {
-            var gen = Gen.Auto<DefaultConstructorAndAnotherWithOneArgument>();
+            var gen = Gen.Create<DefaultConstructorAndAnotherWithOneArgument>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -116,7 +116,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void WhenThereIsAConstructorWithOneArgumentAndAnotherWithTwoArguments_ItUsesTheConstructorWithTwoArguments()
         {
-            var gen = Gen.Auto<ConstructorWithOneArgumentAndAnotherWithTwoArguments>();
+            var gen = Gen.Create<ConstructorWithOneArgumentAndAnotherWithTwoArguments>();
 
             var instance = gen.SampleOne(seed: 0);
 
@@ -135,13 +135,13 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItErrorsWhenThereIsNoPublicConstructor()
         {
-            var gen = Gen.Auto<ClassWithNoPublicConstructor>();
+            var gen = Gen.Create<ClassWithNoPublicConstructor>();
 
             Action action = () => gen.SampleOne(seed: 0);
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator AutoGen: could not resolve type '*ClassWithNoPublicConstructor'");
+                .WithMessage("Error while running generator ReflectedGen: could not resolve type '*ClassWithNoPublicConstructor'");
         }
     }
 }

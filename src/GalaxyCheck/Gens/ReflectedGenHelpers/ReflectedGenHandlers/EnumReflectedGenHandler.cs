@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Reflection;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class EnumAutoGenHandler : IAutoGenHandler
+    internal class EnumReflectedGenHandler : IReflectedGenHandler
     {
-        public bool CanHandleGen(Type type, AutoGenHandlerContext context) => type.IsEnum;
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) => type.IsEnum;
 
-        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             var genMethodInfo = typeof(Gen).GetMethod(nameof(Gen.Enum), BindingFlags.Public | BindingFlags.Static);
             var genericGenMethodInfo = genMethodInfo.MakeGenericMethod(type);

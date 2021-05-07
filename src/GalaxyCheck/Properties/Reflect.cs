@@ -13,11 +13,11 @@ namespace GalaxyCheck
         private delegate IGen<Test<object>> ReflectedPropertyHandler(
             MethodInfo methodInfo,
             object? target,
-            IAutoGenFactory? autoGenFactory);
+            IGenFactory? genFactory);
 
         public static ImmutableList<Type> SupportedReturnTypes => MethodPropertyHandlers.Keys.ToImmutableList();
 
-        public static IGen<Test<object>> Reflect(MethodInfo methodInfo, object? target, IAutoGenFactory? autoGenFactory = null)
+        public static IGen<Test<object>> Reflect(MethodInfo methodInfo, object? target, IGenFactory? genFactory = null)
         {
             if (!SupportedReturnTypes.Contains(methodInfo.ReturnType))
             {
@@ -26,7 +26,7 @@ namespace GalaxyCheck
                 throw new Exception(message);
             }
 
-            return MethodPropertyHandlers[methodInfo.ReturnType](methodInfo, target, autoGenFactory);
+            return MethodPropertyHandlers[methodInfo.ReturnType](methodInfo, target, genFactory);
         }
 
         private readonly static ImmutableDictionary<Type, ReflectedPropertyHandler> MethodPropertyHandlers =
@@ -38,10 +38,10 @@ namespace GalaxyCheck
                 { typeof(IGen<Test>), ToPureProperty }
             }.ToImmutableDictionary();
 
-        private static ReflectedPropertyHandler ToVoidProperty => (methodInfo, target, autoGenFactory) =>
+        private static ReflectedPropertyHandler ToVoidProperty => (methodInfo, target, genFactory) =>
         {
             return Gen
-                .Parameters(methodInfo, autoGenFactory)
+                .Parameters(methodInfo, genFactory)
                 .ForAll(parameters =>
                 {
                     try
@@ -59,10 +59,10 @@ namespace GalaxyCheck
                     test.Input));
         };
 
-        private static ReflectedPropertyHandler ToBooleanProperty => (methodInfo, target, autoGenFactory) =>
+        private static ReflectedPropertyHandler ToBooleanProperty => (methodInfo, target, genFactory) =>
         {
             return Gen
-                .Parameters(methodInfo, autoGenFactory)
+                .Parameters(methodInfo, genFactory)
                 .ForAll(parameters =>
                 {
                     try
@@ -80,8 +80,8 @@ namespace GalaxyCheck
                     test.Input));
         };
 
-        private static ReflectedPropertyHandler ToNestedProperty => (methodInfo, target, autoGenFactory) =>
-            from parameters in Gen.Parameters(methodInfo, autoGenFactory)
+        private static ReflectedPropertyHandler ToNestedProperty => (methodInfo, target, genFactory) =>
+            from parameters in Gen.Parameters(methodInfo, genFactory)
             let property = InvokeNestedProperty(methodInfo, target, parameters)
             where property != null
             from test in property

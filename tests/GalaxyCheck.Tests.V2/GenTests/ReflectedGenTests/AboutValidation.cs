@@ -3,7 +3,7 @@ using GalaxyCheck;
 using System;
 using Xunit;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutValidation
     {
@@ -11,7 +11,7 @@ namespace Tests.V2.GenTests.AutoGenTests
         public void ItErrorsWhenTypeOfRegisteredGeneratorIsNotAssignableToGivenType()
         {
             var gen = Gen
-                .AutoFactory()
+                .Factory()
                 .RegisterType(typeof(string), Gen.Int32())
                 .Create<string>();
 
@@ -19,7 +19,7 @@ namespace Tests.V2.GenTests.AutoGenTests
 
             test.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator AutoGen: type 'System.Int32' was not assignable to the type it was registered to, 'System.String'");
+                .WithMessage("Error while running generator ReflectedGen: type 'System.Int32' was not assignable to the type it was registered to, 'System.String'");
         }
     }
 }

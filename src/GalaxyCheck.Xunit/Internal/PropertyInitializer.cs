@@ -42,7 +42,7 @@ namespace GalaxyCheck.Xunit.Internal
                 propertyAttribute.Skip?.Length > 0 ? propertyAttribute.Skip : null);
         }
 
-        private static IAutoGenFactory? TryResolveGenFactory(PropertyAttribute propertyAttribute, PropertiesAttribute? propertiesAttribute)
+        private static IGenFactory? TryResolveGenFactory(PropertyAttribute propertyAttribute, PropertiesAttribute? propertiesAttribute)
         {
             Type? factoryType = propertyAttribute.Factory ?? propertiesAttribute?.Factory;
 
@@ -52,9 +52,9 @@ namespace GalaxyCheck.Xunit.Internal
             }
 
             var factoryInterfaces = factoryType.GetInterfaces();
-            if (factoryInterfaces.Any(i => i == typeof(IAutoGenFactory)) == false)
+            if (factoryInterfaces.Any(i => i == typeof(IGenFactory)) == false)
             {
-                throw new PropertyConfigurationException($"Factory must implement '{typeof(IAutoGenFactory)}' but '{factoryType}' did not.");
+                throw new PropertyConfigurationException($"Factory must implement '{typeof(IGenFactory)}' but '{factoryType}' did not.");
             }
 
             var factoryConstructor = factoryType
@@ -66,7 +66,7 @@ namespace GalaxyCheck.Xunit.Internal
                 throw new PropertyConfigurationException($"Factory must have a default constructor, but '{factoryType}' did not.");
             }
 
-            return (IAutoGenFactory)factoryConstructor.Invoke(new object[] { });
+            return (IGenFactory)factoryConstructor.Invoke(new object[] { });
         }
     }
 }

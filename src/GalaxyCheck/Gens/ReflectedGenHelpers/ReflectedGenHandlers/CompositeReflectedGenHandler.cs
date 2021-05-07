@@ -2,25 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class CompositeAutoGenHandler : IAutoGenHandler
+    internal class CompositeReflectedGenHandler : IReflectedGenHandler
     {
-        private readonly IReadOnlyList<IAutoGenHandler> _genHandlersByPriority;
+        private readonly IReadOnlyList<IReflectedGenHandler> _genHandlersByPriority;
         private readonly ContextualErrorFactory _errorFactory;
 
-        public CompositeAutoGenHandler(
-            IReadOnlyList<IAutoGenHandler> genHandlersByPriority,
+        public CompositeReflectedGenHandler(
+            IReadOnlyList<IReflectedGenHandler> genHandlersByPriority,
             ContextualErrorFactory errorFactory)
         {
             _genHandlersByPriority = genHandlersByPriority;
             _errorFactory = errorFactory;
         }
 
-        public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) =>
             _genHandlersByPriority.Any(genFactory => genFactory.CanHandleGen(type, context));
 
-        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             if (context.TypeHistory.Skip(1).Any(t => t == type))
             {

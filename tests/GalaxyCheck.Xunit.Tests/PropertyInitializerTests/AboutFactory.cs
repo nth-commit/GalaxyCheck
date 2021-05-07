@@ -27,9 +27,9 @@ namespace Tests.PropertyInitializerTests
         }
 
         [Theory]
-        [InlineData(nameof(PropertiesWithoutFactoryConfig.PropertyWithFactoryConfigThatIsNotAnAutoGenFactory))]
-        [InlineData(nameof(PropertiesWithoutFactoryConfig.SampleWithFactoryConfigThatIsNotAnAutoGenFactory))]
-        public void WhenFactoryTypeIsNotAnIAutoGenFactory_ItThrows(string testMethodName)
+        [InlineData(nameof(PropertiesWithoutFactoryConfig.PropertyWithFactoryConfigThatIsNotAnGenFactory))]
+        [InlineData(nameof(PropertiesWithoutFactoryConfig.SampleWithFactoryConfigThatIsNotAnGenFactory))]
+        public void WhenFactoryTypeIsNotAnIGenFactory_ItThrows(string testMethodName)
         {
             var testClassType = typeof(PropertiesWithoutFactoryConfig);
             var testMethodInfo = GetMethod(testMethodName);
@@ -38,7 +38,7 @@ namespace Tests.PropertyInitializerTests
 
             test.Should()
                 .Throw<PropertyConfigurationException>()
-                .WithMessage("Factory must implement 'GalaxyCheck.Gens.IAutoGenFactory' but 'Tests.PropertyInitializerTests.AboutFactory+NotAnAutoGenFactory' did not.");
+                .WithMessage("Factory must implement 'GalaxyCheck.Gens.IGenFactory' but 'Tests.PropertyInitializerTests.AboutFactory+NotAnGenFactory' did not.");
         }
 
         [Theory]
@@ -53,7 +53,7 @@ namespace Tests.PropertyInitializerTests
 
             test.Should()
                 .Throw<PropertyConfigurationException>()
-                .WithMessage("Factory must have a default constructor, but 'Tests.PropertyInitializerTests.AboutFactory+AutoGenFactoryWithoutDefaultConstructor' did not.");
+                .WithMessage("Factory must have a default constructor, but 'Tests.PropertyInitializerTests.AboutFactory+GenFactoryWithoutDefaultConstructor' did not.");
         }
 
         [Theory]
@@ -67,7 +67,7 @@ namespace Tests.PropertyInitializerTests
 
             PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
 
-            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidAutoGenFactory1));
+            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidGenFactory1));
         }
 
         [Theory]
@@ -81,7 +81,7 @@ namespace Tests.PropertyInitializerTests
 
             PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
 
-            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidAutoGenFactory2));
+            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidGenFactory2));
         }
 
         [Theory]
@@ -95,7 +95,7 @@ namespace Tests.PropertyInitializerTests
 
             PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
 
-            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidAutoGenFactory1));
+            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidGenFactory1));
         }
 
         private static Mock<IPropertyFactory> MockPropertyFactory()
@@ -111,7 +111,7 @@ namespace Tests.PropertyInitializerTests
                 x => x.CreateProperty(
                     It.IsAny<MethodInfo>(),
                     It.IsAny<object?>(),
-                    It.Is<IAutoGenFactory?>(factory => factory!.GetType() == expectedFactoryType)),
+                    It.Is<IGenFactory?>(factory => factory!.GetType() == expectedFactoryType)),
                 Times.Once);
         }
 
@@ -121,48 +121,63 @@ namespace Tests.PropertyInitializerTests
                 x => x.CreateProperty(
                     It.IsAny<MethodInfo>(),
                     It.IsAny<object?>(),
-                    It.Is<IAutoGenFactory?>(x => x == null)),
+                    It.Is<IGenFactory?>(x => x == null)),
                 Times.Once);
         }
 
-        private class NotAnAutoGenFactory { }
+        private class NotAnGenFactory { }
 
-        private class AutoGenFactoryWithoutDefaultConstructor : IAutoGenFactory
+        private class GenFactoryWithoutDefaultConstructor : IGenFactory
         {
-            private AutoGenFactoryWithoutDefaultConstructor() { }
+            private GenFactoryWithoutDefaultConstructor() { }
 
-            public IAutoGen<T> Create<T>()
+            public IReflectedGen<T> Create<T>()
             {
                 throw new NotImplementedException();
             }
 
-            public IAutoGenFactory RegisterType(Type type, IGen gen)
+            public IGenFactory RegisterType(Type type, IGen gen)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IGenFactory RegisterType<T>(IGen<T> gen)
             {
                 throw new NotImplementedException();
             }
         }
 
-        private class ValidAutoGenFactory1 : IAutoGenFactory
+        private class ValidGenFactory1 : IGenFactory
         {
-            public IAutoGen<T> Create<T>()
+            public IReflectedGen<T> Create<T>()
             {
                 throw new NotImplementedException();
             }
 
-            public IAutoGenFactory RegisterType(Type type, IGen gen)
+            public IGenFactory RegisterType(Type type, IGen gen)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IGenFactory RegisterType<T>(IGen<T> gen)
             {
                 throw new NotImplementedException();
             }
         }
 
-        private class ValidAutoGenFactory2 : IAutoGenFactory
+        private class ValidGenFactory2 : IGenFactory
         {
-            public IAutoGen<T> Create<T>()
+            public IReflectedGen<T> Create<T>()
             {
                 throw new NotImplementedException();
             }
 
-            public IAutoGenFactory RegisterType(Type type, IGen gen)
+            public IGenFactory RegisterType(Type type, IGen gen)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IGenFactory RegisterType<T>(IGen<T> gen)
             {
                 throw new NotImplementedException();
             }
@@ -172,32 +187,32 @@ namespace Tests.PropertyInitializerTests
         private class PropertiesWithoutFactoryConfig
 #pragma warning restore xUnit1000 // Test classes must be public
         {
-            [Property(Factory = typeof(NotAnAutoGenFactory))]
-            public void PropertyWithFactoryConfigThatIsNotAnAutoGenFactory()
+            [Property(Factory = typeof(NotAnGenFactory))]
+            public void PropertyWithFactoryConfigThatIsNotAnGenFactory()
             {
             }
 
-            [Sample(Factory = typeof(NotAnAutoGenFactory))]
-            public void SampleWithFactoryConfigThatIsNotAnAutoGenFactory()
+            [Sample(Factory = typeof(NotAnGenFactory))]
+            public void SampleWithFactoryConfigThatIsNotAnGenFactory()
             {
             }
 
-            [Property(Factory = typeof(AutoGenFactoryWithoutDefaultConstructor))]
+            [Property(Factory = typeof(GenFactoryWithoutDefaultConstructor))]
             public void PropertyWithFactoryConfigThatDoesNotHaveDefaultConstructor()
             {
             }
 
-            [Sample(Factory = typeof(AutoGenFactoryWithoutDefaultConstructor))]
+            [Sample(Factory = typeof(GenFactoryWithoutDefaultConstructor))]
             public void SampleWithFactoryConfigThatThatDoesNotHaveDefaultConstructor()
             {
             }
 
-            [Property(Factory = typeof(ValidAutoGenFactory1))]
+            [Property(Factory = typeof(ValidGenFactory1))]
             public void PropertyWithFactoryConfig()
             {
             }
 
-            [Sample(Factory = typeof(ValidAutoGenFactory1))]
+            [Sample(Factory = typeof(ValidGenFactory1))]
             public void SampleWithFactoryConfig()
             {
             }
@@ -213,17 +228,17 @@ namespace Tests.PropertyInitializerTests
             }
         }
 
-        [Properties(Factory = typeof(ValidAutoGenFactory2))]
+        [Properties(Factory = typeof(ValidGenFactory2))]
 #pragma warning disable xUnit1000 // Test classes must be public
         private class PropertiesWithFactoryConfig
 #pragma warning restore xUnit1000 // Test classes must be public
         {
-            [Property(Factory = typeof(ValidAutoGenFactory1))]
+            [Property(Factory = typeof(ValidGenFactory1))]
             public void PropertyWithFactoryConfig()
             {
             }
 
-            [Sample(Factory = typeof(ValidAutoGenFactory1))]
+            [Sample(Factory = typeof(ValidGenFactory1))]
             public void SampleWithFactoryConfig()
             {
             }
