@@ -3,11 +3,10 @@ using GalaxyCheck;
 using NebulaCheck;
 using System;
 using System.Linq;
-using Xunit;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutOverridingMembers
     {
@@ -31,7 +30,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .Auto<RecordWithOneProperty>()
+                    .Create<RecordWithOneProperty>()
                     .OverrideMember(x => x.Property, GalaxyCheck.Gen.Constant(value));
 
                 var instance = gen.SampleOne(seed: seed, size: size);
@@ -50,7 +49,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .Auto<RecordWithOneNestedProperty>()
+                    .Create<RecordWithOneNestedProperty>()
                     .OverrideMember(x => x.Property.Property, GalaxyCheck.Gen.Constant(value));
 
                 var instance = gen.SampleOne(seed: seed, size: size);
@@ -72,14 +71,14 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .Auto<RecordWithAMethod>()
+                    .Create<RecordWithAMethod>()
                     .OverrideMember(x => x.Method(), memberGen);
 
                 Action action = () => gen.SampleOne(seed: seed, size: size);
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator AutoGen: expression 'x => x.Method()' was invalid, an overridding expression may only contain member access");
+                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overridding expression may only contain member access");
             });
 
         [Property]
@@ -90,7 +89,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .Auto<RecordWithAMethod>()
+                    .Create<RecordWithAMethod>()
                     .OverrideMember(x => x.Method(), memberGen)
                     .OverrideMember(x => x.Property, memberGen);
 
@@ -98,7 +97,7 @@ namespace Tests.V2.GenTests.AutoGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator AutoGen: expression 'x => x.Method()' was invalid, an overridding expression may only contain member access");
+                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overridding expression may only contain member access");
             });
 
         private class ClassWithNonDefaultConstructor
@@ -119,14 +118,14 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .Auto<ClassWithNonDefaultConstructor>()
+                    .Create<ClassWithNonDefaultConstructor>()
                     .OverrideMember(x => x.Property, memberGen);
 
                 Action action = () => gen.SampleOne(seed: seed, size: size);
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator AutoGen: expression 'x => x.Property' targeted a valid member, but the type did not have a default constructor, so the member override would be ignored");
+                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Property' targeted a valid member, but the type did not have a default constructor, so the member override would be ignored");
             });
     }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static Tests.V2.DomainGenAttributes;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutGeneratingFromASubType
     {
@@ -17,7 +17,7 @@ namespace Tests.V2.GenTests.AutoGenTests
 
             var gen0 = GalaxyCheck.Gen.String();
             var gen1 = GalaxyCheck.Gen
-                .AutoFactory()
+                .Factory()
                 .RegisterType(typeof(object), gen0)
                 .Create<object>();
 

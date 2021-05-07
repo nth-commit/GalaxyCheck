@@ -5,7 +5,7 @@ using System.Linq;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutGeneratingTuples
     {
@@ -16,7 +16,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .AutoFactory()
+                    .Factory()
                     .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
                     .Create<(int x, int y)>();
 

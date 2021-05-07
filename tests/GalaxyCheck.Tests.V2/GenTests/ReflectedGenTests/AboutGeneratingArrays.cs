@@ -6,7 +6,7 @@ using System.Linq;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutGeneratingArrays
     {
@@ -19,7 +19,7 @@ namespace Tests.V2.GenTests.AutoGenTests
                 List<int[]> SampleTraversal(GalaxyCheck.IGen<int[]> gen) =>
                     AboutGeneratingArrays.SampleTraversal(gen, seed, size);
 
-                var gen0 = GalaxyCheck.Gen.Auto<int[]>();
+                var gen0 = GalaxyCheck.Gen.Create<int[]>();
                 var gen1 = GalaxyCheck.Gen.Int32().ListOf().Select(x => x.ToArray());
 
                 var sample0 = SampleTraversal(gen0);

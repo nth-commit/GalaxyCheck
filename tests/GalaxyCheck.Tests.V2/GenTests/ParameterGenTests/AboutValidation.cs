@@ -16,12 +16,12 @@ namespace Tests.V2.GenTests.ParameterGenTests
         private static void PropertyWhereTypeOfGenIsNotAssignableToTypeOfParameter([StringGen] int x) { }
 
         /// <summary>
-        /// ParametersGen uses AutoGen to generate individual parameters. We should just check that one error message
-        /// that we know originates in AutoGen is routed through correctly. Then we can assume that all errors from
-        /// AutoGen are handled in the same fashion.
+        /// ParametersGen uses ReflectedGen to generate individual parameters. We should just check that one error message
+        /// that we know originates in ReflectedGen is routed through correctly. Then we can assume that all errors from
+        /// ReflectedGen are handled in the same fashion.
         /// </summary>
         [Fact]
-        public void ItErrorsWhenTheAutoGenMightHaveErrored()
+        public void ItErrorsWhenTheReflectedGenMightHaveErrored()
         {
             var gen = Gen.Parameters(GetMethod(nameof(PropertyWhereTypeOfGenIsNotAssignableToTypeOfParameter)));
 

@@ -2,12 +2,8 @@
 using GalaxyCheck;
 using NebulaCheck;
 using NebulaCheck.Gens.Injection.Int32;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using static Tests.V2.DomainGenAttributes;
 
 namespace Tests.V2.GenTests.ParameterGenTests
@@ -19,12 +15,12 @@ namespace Tests.V2.GenTests.ParameterGenTests
         [Property]
         public void ItGeneratesInt32sWithTheOverriddenGen([Seed] int seed, [Size] int size, int constantInt32Override)
         {
-            var autoGenFactory = GalaxyCheck.Gen
-                .AutoFactory()
+            var genFactory = GalaxyCheck.Gen
+                .Factory()
                 .RegisterType(GalaxyCheck.Gen.Constant(constantInt32Override));
 
             var gen = GalaxyCheck.Gen
-                .Parameters(GetMethod(nameof(MethodWithInt32Parameter)), autoGenFactory)
+                .Parameters(GetMethod(nameof(MethodWithInt32Parameter)), genFactory)
                 .Select(x => x.Single())
                 .Cast<int>();
 
@@ -41,12 +37,12 @@ namespace Tests.V2.GenTests.ParameterGenTests
             [Size] int size,
             [GreaterThanEqual(0)] int constantInt32Override)
         {
-            var autoGenFactory = GalaxyCheck.Gen
-                .AutoFactory()
+            var genFactory = GalaxyCheck.Gen
+                .Factory()
                 .RegisterType(GalaxyCheck.Gen.Constant(constantInt32Override));
 
             var gen = GalaxyCheck.Gen
-                .Parameters(GetMethod(nameof(MethodWithInt32ParameterAndConstrainingAttribute)), autoGenFactory)
+                .Parameters(GetMethod(nameof(MethodWithInt32ParameterAndConstrainingAttribute)), genFactory)
                 .Select(x => x.Single())
                 .Cast<int>();
 

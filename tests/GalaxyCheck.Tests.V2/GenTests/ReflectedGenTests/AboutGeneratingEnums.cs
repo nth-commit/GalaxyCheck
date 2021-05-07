@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static Tests.V2.DomainGenAttributes;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutGeneratingEnums
     {
@@ -29,7 +29,7 @@ namespace Tests.V2.GenTests.AutoGenTests
                 AboutGeneratingEnums.SampleTraversal(gen, seed, size);
 
             var gen0 = GalaxyCheck.Gen.Enum<AllowedOperations>();
-            var gen1 = GalaxyCheck.Gen.Auto<AllowedOperations>();
+            var gen1 = GalaxyCheck.Gen.Create<AllowedOperations>();
 
             var sample0 = SampleTraversal(gen0);
             var sample1 = SampleTraversal(gen1);
@@ -53,7 +53,7 @@ namespace Tests.V2.GenTests.AutoGenTests
                 AboutGeneratingEnums.SampleTraversal(gen, seed, size);
 
             var gen0 = GalaxyCheck.Gen.Enum<NgāTae>();
-            var gen1 = GalaxyCheck.Gen.Auto<NgāTae>();
+            var gen1 = GalaxyCheck.Gen.Create<NgāTae>();
 
             var sample0 = SampleTraversal(gen0);
             var sample1 = SampleTraversal(gen1);

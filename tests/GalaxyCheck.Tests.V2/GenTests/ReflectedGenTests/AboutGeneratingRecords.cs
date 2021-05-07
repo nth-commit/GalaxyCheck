@@ -5,7 +5,7 @@ using System.Linq;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutGeneratingRecords
     {
@@ -18,7 +18,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = GalaxyCheck.Gen.Auto<EmptyRecord>();
+                var gen = GalaxyCheck.Gen.Create<EmptyRecord>();
 
                 var instance = gen.SampleOne(seed: seed, size: size);
 
@@ -34,7 +34,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .AutoFactory()
+                    .Factory()
                     .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
                     .Create<RecordWithOneProperty>();
 
@@ -53,7 +53,7 @@ namespace Tests.V2.GenTests.AutoGenTests
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen
-                    .AutoFactory()
+                    .Factory()
                     .RegisterType(GalaxyCheck.Gen.Int32().Where(x => x != 0))
                     .Create<RecordWithTwoProperties>();
 

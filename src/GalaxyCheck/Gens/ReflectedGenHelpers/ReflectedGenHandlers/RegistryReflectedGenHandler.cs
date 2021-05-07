@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class RegistryAutoGenHandler : IAutoGenHandler
+    internal class RegistryReflectedGenHandler : IReflectedGenHandler
     {
         private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
         private readonly ContextualErrorFactory _errorFactory;
 
-        public RegistryAutoGenHandler(
+        public RegistryReflectedGenHandler(
             IReadOnlyDictionary<Type, IGen> registeredGensByType,
             ContextualErrorFactory errorFactory)
         {
@@ -17,10 +17,10 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
             _errorFactory = errorFactory;
         }
 
-        public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) =>
             _registeredGensByType.ContainsKey(type);
 
-        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             foreach (var kvp in _registeredGensByType)
             {

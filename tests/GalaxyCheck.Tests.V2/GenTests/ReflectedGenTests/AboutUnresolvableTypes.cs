@@ -5,20 +5,20 @@ using System;
 using System.Collections.Immutable;
 using Xunit;
 
-namespace Tests.V2.GenTests.AutoGenTests
+namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutUnresolvableTypes
     {
         [Fact]
         public void ItErrorsWhenPrimitiveIsUnresolvable()
         {
-            var gen = new AutoGen<int>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new ReflectedGen<int>(ImmutableDictionary.Create<Type, IGen>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator AutoGen: could not resolve type 'System.Int32'");
+                .WithMessage("Error while running generator ReflectedGen: could not resolve type 'System.Int32'");
         }
 
         private class ClassWithOneProperty
@@ -29,13 +29,13 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItErrorsWhenPropertyTypeIsUnresolvable()
         {
-            var gen = new AutoGen<ClassWithOneProperty>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new ReflectedGen<ClassWithOneProperty>(ImmutableDictionary.Create<Type, IGen>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator AutoGen: could not resolve type 'System.Int32' at path '$.Property'");
+                .WithMessage("Error while running generator ReflectedGen: could not resolve type 'System.Int32' at path '$.Property'");
         }
 
         private class ClassWithOneNestedProperty
@@ -46,13 +46,13 @@ namespace Tests.V2.GenTests.AutoGenTests
         [Fact]
         public void ItErrorsWhenNestedPropertyTypeIsUnresolvable()
         {
-            var gen = new AutoGen<ClassWithOneNestedProperty>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new ReflectedGen<ClassWithOneNestedProperty>(ImmutableDictionary.Create<Type, IGen>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator AutoGen: could not resolve type 'System.Int32' at path '$.Property.Property'");
+                .WithMessage("Error while running generator ReflectedGen: could not resolve type 'System.Int32' at path '$.Property.Property'");
         }
     }
 }

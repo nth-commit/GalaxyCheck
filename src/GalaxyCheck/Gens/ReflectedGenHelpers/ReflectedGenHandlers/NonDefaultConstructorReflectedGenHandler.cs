@@ -2,23 +2,23 @@
 using System.Linq;
 using System.Reflection;
 
-namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
+namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class NonDefaultConstructorAutoGenHandler : IAutoGenHandler
+    internal class NonDefaultConstructorReflectedGenHandler : IReflectedGenHandler
     {
         private readonly ContextualErrorFactory _errorFactory;
 
-        public NonDefaultConstructorAutoGenHandler(ContextualErrorFactory errorFactory)
+        public NonDefaultConstructorReflectedGenHandler(ContextualErrorFactory errorFactory)
         {
             _errorFactory = errorFactory;
         }
 
-        public bool CanHandleGen(Type type, AutoGenHandlerContext context) =>
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) =>
             TryFindConstructor(type) != null;
 
-        public IGen CreateGen(IAutoGenHandler innerHandler, Type type, AutoGenHandlerContext context)
+        public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
-            var methodInfo = typeof(NonDefaultConstructorAutoGenHandler).GetMethod(
+            var methodInfo = typeof(NonDefaultConstructorReflectedGenHandler).GetMethod(
                 nameof(CreateGenGeneric),
                 BindingFlags.Static | BindingFlags.NonPublic)!;
 
@@ -27,7 +27,7 @@ namespace GalaxyCheck.Gens.AutoGenHelpers.AutoGenHandlers
             return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory });
         }
 
-        private static IGen<T> CreateGenGeneric<T>(IAutoGenHandler innerHandler, AutoGenHandlerContext context, ContextualErrorFactory errorFactory)
+        private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context, ContextualErrorFactory errorFactory)
         {
             var constructor = TryFindConstructor(typeof(T))!;
 
