@@ -72,6 +72,7 @@ namespace GalaxyCheck.Gens
         private static readonly IReadOnlyDictionary<Type, IGen> DefaultRegisteredGensByType =
             new Dictionary<Type, IGen>
             {
+                { typeof(short), Gen.Int16() },
                 { typeof(int), Gen.Int32() },
                 { typeof(char), Gen.Char() },
                 { typeof(string), Gen.String() },

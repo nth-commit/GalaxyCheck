@@ -11,6 +11,23 @@ namespace Tests.V2.GenTests.ReflectedGenTests
     public class AboutGeneratingPrimitives
     {
         [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateInt16s() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                List<short> SampleTraversal(GalaxyCheck.IGen<short> gen) => gen.SampleOneTraversal(seed, size);
+
+                var gen0 = GalaxyCheck.Gen.Create<short>();
+                var gen1 = GalaxyCheck.Gen.Int16();
+
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
+            });
+
+        [Property]
         public NebulaCheck.IGen<Test> ItCanGenerateInt32s() =>
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
