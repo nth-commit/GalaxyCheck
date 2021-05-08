@@ -103,7 +103,9 @@ namespace GalaxyCheck.Gens
                 gen = gen.WithBias(config.Bias.Value);
             }
 
-            return gen.Select(x => (byte)x);
+            return gen
+                .Select(x => (byte)x)
+                .SelectError(error => new GenErrorData(nameof(ByteGen), error.Message));
         }
     }
 }
