@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Xunit
+namespace GalaxyCheck
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class PropertiesAttribute : Attribute
