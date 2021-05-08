@@ -62,17 +62,10 @@ namespace GalaxyCheck.Gens
 
         private static IGen<byte> CreateGen(ByteGenConfig config)
         {
-            var gen = Gen.Int32();
-
-            if (config.Min != null)
-            {
-                gen = gen.GreaterThanEqual(config.Min.Value);
-            }
-
-            if (config.Max != null)
-            {
-                gen = gen.LessThanEqual(config.Max.Value);
-            }
+            var gen = Gen
+                .Int32()
+                .GreaterThanEqual(config.Min ?? 0)
+                .LessThanEqual(config.Max ?? byte.MaxValue);
 
             if (config.Origin != null)
             {
