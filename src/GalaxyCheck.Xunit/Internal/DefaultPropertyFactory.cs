@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace GalaxyCheck.Xunit.Internal
 {
-    public class DefaultPropertyFactory : IPropertyFactory
+    internal class DefaultPropertyFactory : IPropertyFactory
     {
         public IGen<Test<object>> CreateProperty(MethodInfo methodInfo, object? target, IGenFactory? genFactory)
         {
