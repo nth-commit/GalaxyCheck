@@ -60,9 +60,9 @@ namespace Tests.V2.GenTests.ByteGenTests
                 mockGen.Verify(gen => gen.LessThanEqual((byte)(maxExclusive - 1)), Times.Once);
             });
 
-        private static Mock<IIntegerGen<byte>> SetupMock()
+        private static Mock<IIntGen<byte>> SetupMock()
         {
-            var mockGen = new Mock<IIntegerGen<byte>>();
+            var mockGen = new Mock<IIntGen<byte>>();
             mockGen.Setup((gen) => gen.GreaterThanEqual(It.IsAny<byte>())).Returns(mockGen.Object);
             mockGen.Setup((gen) => gen.LessThanEqual(It.IsAny<byte>())).Returns(mockGen.Object);
             return mockGen;
