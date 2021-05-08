@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Text;
-
-namespace GalaxyCheck
+﻿namespace GalaxyCheck
 {
-    using GalaxyCheck.Properties;
+    using System;
 
     public partial class Property
     {
@@ -14,14 +11,9 @@ namespace GalaxyCheck
                 throw new PropertyPreconditionException();
             }
         }
-    }
-}
 
-namespace GalaxyCheck.Properties
-{
-    using System;
-
-    public class PropertyPreconditionException : Exception
-    {
+        public class PropertyPreconditionException : Exception
+        {
+        }
     }
 }

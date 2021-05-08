@@ -10,6 +10,20 @@ namespace GalaxyCheck
         Lazy<TestOutput> Output { get; }
 
         object?[]? PresentedInput { get; }
+
+        public interface TestOutput
+        {
+            TestResult Result { get; }
+
+            Exception? Exception { get; }
+        }
+
+        public enum TestResult
+        {
+            Succeeded = 1,
+            Failed = 2,
+            FailedPrecondition = 3
+        }
     }
 
     public interface Test<out T> : Test
@@ -20,22 +34,5 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static Test<T> Cast<T>(this Test test) => TestFactory.Create((T)test.Input!, test.Output, test.PresentedInput);
-    }
-}
-
-namespace GalaxyCheck.Properties
-{
-    public enum TestResult
-    {
-        Succeeded = 1,
-        Failed = 2,
-        FailedPrecondition = 3
-    }
-
-    public interface TestOutput
-    {
-        TestResult Result { get; }
-
-        Exception? Exception { get; }
     }
 }
