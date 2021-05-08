@@ -1,12 +1,8 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
 using NebulaCheck;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
@@ -20,8 +16,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) =>
-                    AboutGeneratingPrimitives.SampleTraversal(gen, seed, size);
+                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => gen.SampleOneTraversal(seed, size);
 
                 var gen0 = GalaxyCheck.Gen.Create<int>();
                 var gen1 = GalaxyCheck.Gen.Int32();
@@ -38,8 +33,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<char> SampleTraversal(GalaxyCheck.IGen<char> gen) =>
-                    AboutGeneratingPrimitives.SampleTraversal(gen, seed, size);
+                List<char> SampleTraversal(GalaxyCheck.IGen<char> gen) => gen.SampleOneTraversal(seed, size);
 
                 var gen0 = GalaxyCheck.Gen.Create<char>();
                 var gen1 = GalaxyCheck.Gen.Char();
@@ -56,8 +50,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<string> SampleTraversal(GalaxyCheck.IGen<string> gen) =>
-                    AboutGeneratingPrimitives.SampleTraversal(gen, seed, size);
+                List<string> SampleTraversal(GalaxyCheck.IGen<string> gen) => gen.SampleOneTraversal(seed, size);
 
                 var gen0 = GalaxyCheck.Gen.Create<string>();
                 var gen1 = GalaxyCheck.Gen.String();
@@ -68,10 +61,21 @@ namespace Tests.V2.GenTests.ReflectedGenTests
                 sample0.Should().BeEquivalentTo(sample1);
             });
 
-        private static List<T> SampleTraversal<T>(GalaxyCheck.IGen<T> gen, int seed, int size) => gen.Advanced
-            .SampleOneExampleSpace(seed: seed, size: size)
-            .Traverse()
-            .Take(100)
-            .ToList();
+        [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateBytes() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                List<byte> SampleTraversal(GalaxyCheck.IGen<byte> gen) => gen.SampleOneTraversal(seed, size);
+
+                var gen0 = GalaxyCheck.Gen.Create<byte>();
+                var gen1 = GalaxyCheck.Gen.Byte();
+
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
+            });
     }
 }

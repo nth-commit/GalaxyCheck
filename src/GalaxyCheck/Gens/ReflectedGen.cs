@@ -74,7 +74,8 @@ namespace GalaxyCheck.Gens
             {
                 { typeof(int), Gen.Int32() },
                 { typeof(char), Gen.Char() },
-                { typeof(string), Gen.String() }
+                { typeof(string), Gen.String() },
+                { typeof(byte), Gen.Byte() }
             };
 
         private readonly Dictionary<Type, IGen> _registeredGensByType;
