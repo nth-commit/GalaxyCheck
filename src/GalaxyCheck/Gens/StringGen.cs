@@ -5,7 +5,7 @@
     public static partial class Gen
     {
         /// <summary>
-        /// Generates strings of increasing complexity. By default, the generator producess strings of lengths 0 - 20,
+        /// Generates strings of increasing complexity. By default, the generator produces strings of lengths 0 - 20,
         /// using the full ASCII character set (including control characters). Aspects of string generation can be
         /// refined using the builder methods on <see cref="IStringGen" />.
         /// </summary>
