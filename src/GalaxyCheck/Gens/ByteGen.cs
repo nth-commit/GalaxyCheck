@@ -4,7 +4,37 @@
 
     public static partial class Gen
     {
-        public static IByteGen Byte() => new ByteGen();
+        public static IIntegerGen<byte> Byte() => new ByteGen();
+    }
+
+    public static partial class Extensions
+    {
+        /// <summary>
+        /// Constrains the generator so that it only produces values between the supplied range (inclusive).
+        /// </summary>
+        /// <param name="x">The first bound of the range.</param>
+        /// <param name="y">The second bound of the range.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IIntegerGen<byte> Between(this IIntegerGen<byte> gen, byte x, byte y)
+        {
+            var min = x > y ? y : x;
+            var max = x > y ? x : y;
+            return gen.GreaterThanEqual(min).LessThanEqual(max);
+        }
+
+        /// <summary>
+        /// Constrains the generator so that it only produces values less than the supplied maximum. 
+        /// </summary>
+        /// <param name="maxExclusive">The maximum byte to generate (exclusive).</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IIntegerGen<byte> LessThan(this IIntegerGen<byte> gen, byte maxExclusive) => gen.LessThanEqual((byte)(maxExclusive - 1));
+
+        /// <summary>
+        /// Constrains the generator so that it only produces values greater than the supplied minimum.
+        /// </summary>
+        /// <param name="minExclusive">The minimum integer to generate (exclusive).</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static IIntegerGen<byte> GreaterThan(this IIntegerGen<byte> gen, int minExclusive) => gen.GreaterThanEqual((byte)(minExclusive + 1));
     }
 }
 
@@ -26,11 +56,7 @@ namespace GalaxyCheck.Gens
         IIntegerGen<T> WithBias(Gen.Bias bias);
     }
 
-    public interface IByteGen : IIntegerGen<byte>
-    {
-    }
-
-    internal class ByteGen : BaseGen<byte>, IByteGen
+    internal class ByteGen : BaseGen<byte>, IIntegerGen<byte>
     {
         private readonly ByteGenConfig _config;
 
