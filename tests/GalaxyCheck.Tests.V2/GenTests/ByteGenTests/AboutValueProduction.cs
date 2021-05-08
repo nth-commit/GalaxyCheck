@@ -32,5 +32,33 @@ namespace Tests.V2.GenTests.ByteGenTests
 
                 sample0.Should().BeEquivalentTo(sample1);
             });
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItProducesValuesGreaterThanOrEqualMinimum() =>
+            from min in Gen.Int32().Between(0, byte.MaxValue)
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = GalaxyCheck.Gen.Byte().GreaterThanEqual((byte)min);
+
+                var sample = gen.SampleOne(seed: seed, size: size);
+
+                sample.Should().BeGreaterOrEqualTo((byte)min);
+            });
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItProducesValuesLessThanOrEqualMaximum() =>
+            from max in Gen.Int32().Between(0, byte.MaxValue)
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = GalaxyCheck.Gen.Byte().LessThanEqual((byte)max);
+
+                var sample = gen.SampleOne(seed: seed, size: size);
+
+                sample.Should().BeLessOrEqualTo((byte)max);
+            });
     }
 }
