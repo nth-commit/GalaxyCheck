@@ -13,8 +13,8 @@ namespace Tests.V2.GenTests.ByteGenTests
     {
         [Property]
         public NebulaCheck.IGen<Test> ItProducesValuesLikeInt32() =>
-            from min in Gen.Byte().Between(0, byte.MaxValue)
-            from max in Gen.Byte().Between(min, byte.MaxValue)
+            from min in Gen.Byte()
+            from max in Gen.Byte().GreaterThanEqual(min)
             from origin in Gen.Byte().Between(min, max)
             from bias in DomainGen.Bias()
             from seed in DomainGen.Seed()
@@ -35,7 +35,7 @@ namespace Tests.V2.GenTests.ByteGenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItProducesValuesGreaterThanOrEqualMinimum() =>
-            from min in Gen.Byte().Between(0, byte.MaxValue)
+            from min in Gen.Byte()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
@@ -49,7 +49,7 @@ namespace Tests.V2.GenTests.ByteGenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItProducesValuesLessThanOrEqualMaximum() =>
-            from max in Gen.Byte().Between(0, byte.MaxValue)
+            from max in Gen.Byte()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
