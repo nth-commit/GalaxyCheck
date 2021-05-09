@@ -41,6 +41,13 @@ namespace GalaxyCheck.Gens
     using System.Linq;
     using System.Linq.Expressions;
 
+    public interface IReflectedGen<T> : IGen<T>
+    {
+        IReflectedGen<T> OverrideMember<TMember>(
+            Expression<Func<T, TMember>> memberSelector,
+            IGen<TMember> memberGen);
+    }
+
     public interface IGenFactory
     {
         /// <summary>
@@ -67,7 +74,7 @@ namespace GalaxyCheck.Gens
         IReflectedGen<T> Create<T>();
     }
 
-    public class GenFactory : IGenFactory
+    internal class GenFactory : IGenFactory
     {
         private static readonly IReadOnlyDictionary<Type, IGen> DefaultRegisteredGensByType =
             new Dictionary<Type, IGen>
@@ -79,35 +86,24 @@ namespace GalaxyCheck.Gens
                 { typeof(byte), Gen.Byte() }
             };
 
-        private readonly Dictionary<Type, IGen> _registeredGensByType;
+        private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
 
-        private GenFactory(Dictionary<Type, IGen> registeredGensByType)
+        private GenFactory(ImmutableDictionary<Type, IGen> registeredGensByType)
         {
             _registeredGensByType = registeredGensByType;
         }
 
-        public GenFactory() : this(DefaultRegisteredGensByType.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
+        public GenFactory() : this(DefaultRegisteredGensByType.ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value))
         {
         }
 
-        public IGenFactory RegisterType(Type type, IGen gen)
-        {
-            _registeredGensByType[type] = gen;
-            return this;
-        }
-        public IGenFactory RegisterType<T>(IGen<T> gen)
-        {
-            return RegisterType(typeof(T), gen);
-        }
+        public IGenFactory RegisterType(Type type, IGen gen) =>
+            new GenFactory(_registeredGensByType.SetItem(type, gen));
+
+        public IGenFactory RegisterType<T>(IGen<T> gen) =>
+            RegisterType(typeof(T), gen);
 
         public IReflectedGen<T> Create<T>() => new ReflectedGen<T>(_registeredGensByType);
-    }
-
-    public interface IReflectedGen<T> : IGen<T>
-    {
-        IReflectedGen<T> OverrideMember<TMember>(
-            Expression<Func<T, TMember>> memberSelector,
-            IGen<TMember> memberGen);
     }
 
     internal record ReflectedGenMemberOverride(string Path, IGen Gen);

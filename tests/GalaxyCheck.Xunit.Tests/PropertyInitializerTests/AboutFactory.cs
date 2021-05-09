@@ -1,7 +1,5 @@
-﻿using FluentAssertions;
-using GalaxyCheck;
+﻿using GalaxyCheck;
 using GalaxyCheck.Gens;
-using GalaxyCheck.Xunit;
 using GalaxyCheck.Xunit.Internal;
 using Moq;
 using System;
@@ -27,36 +25,6 @@ namespace Tests.PropertyInitializerTests
         }
 
         [Theory]
-        [InlineData(nameof(PropertiesWithoutFactoryConfig.PropertyWithFactoryConfigThatIsNotAnGenFactory))]
-        [InlineData(nameof(PropertiesWithoutFactoryConfig.SampleWithFactoryConfigThatIsNotAnGenFactory))]
-        public void WhenFactoryTypeIsNotAnIGenFactory_ItThrows(string testMethodName)
-        {
-            var testClassType = typeof(PropertiesWithoutFactoryConfig);
-            var testMethodInfo = GetMethod(testMethodName);
-
-            Action test = () => PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
-
-            test.Should()
-                .Throw<PropertyConfigurationException>()
-                .WithMessage("Factory must implement 'GalaxyCheck.Gens.IGenFactory' but 'Tests.PropertyInitializerTests.AboutFactory+NotAnGenFactory' did not.");
-        }
-
-        [Theory]
-        [InlineData(nameof(PropertiesWithoutFactoryConfig.PropertyWithFactoryConfigThatDoesNotHaveDefaultConstructor))]
-        [InlineData(nameof(PropertiesWithoutFactoryConfig.SampleWithFactoryConfigThatThatDoesNotHaveDefaultConstructor))]
-        public void WhenFactoryTypeDoesNotHaveDefaultConstructor_ItThrows(string testMethodName)
-        {
-            var testClassType = typeof(PropertiesWithoutFactoryConfig);
-            var testMethodInfo = GetMethod(testMethodName);
-
-            Action test = () => PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
-
-            test.Should()
-                .Throw<PropertyConfigurationException>()
-                .WithMessage("Factory must have a default constructor, but 'Tests.PropertyInitializerTests.AboutFactory+GenFactoryWithoutDefaultConstructor' did not.");
-        }
-
-        [Theory]
         [InlineData(nameof(PropertiesWithoutFactoryConfig.PropertyWithFactoryConfig))]
         [InlineData(nameof(PropertiesWithoutFactoryConfig.SampleWithFactoryConfig))]
         public void ItPassesThroughTheFactoryFromTheMethod(string testMethodName)
@@ -67,7 +35,7 @@ namespace Tests.PropertyInitializerTests
 
             PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
 
-            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidGenFactory1));
+            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(GenFactory1));
         }
 
         [Theory]
@@ -81,7 +49,7 @@ namespace Tests.PropertyInitializerTests
 
             PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
 
-            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidGenFactory2));
+            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(GenFactory2));
         }
 
         [Theory]
@@ -95,7 +63,7 @@ namespace Tests.PropertyInitializerTests
 
             PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
 
-            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(ValidGenFactory1));
+            VerifyFactoryPassedThrough(mockPropertyFactory, typeof(GenFactory1));
         }
 
         private static Mock<IPropertyFactory> MockPropertyFactory()
@@ -125,29 +93,7 @@ namespace Tests.PropertyInitializerTests
                 Times.Once);
         }
 
-        private class NotAnGenFactory { }
-
-        private class GenFactoryWithoutDefaultConstructor : IGenFactory
-        {
-            private GenFactoryWithoutDefaultConstructor() { }
-
-            public IReflectedGen<T> Create<T>()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IGenFactory RegisterType(Type type, IGen gen)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IGenFactory RegisterType<T>(IGen<T> gen)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class ValidGenFactory1 : IGenFactory
+        private class GenFactory1 : IGenFactory
         {
             public IReflectedGen<T> Create<T>()
             {
@@ -165,7 +111,12 @@ namespace Tests.PropertyInitializerTests
             }
         }
 
-        private class ValidGenFactory2 : IGenFactory
+        private class GenFactory1Attribute : GenFactoryAttribute
+        {
+            public override IGenFactory Get => new GenFactory1();
+        }
+
+        private class GenFactory2 : IGenFactory
         {
             public IReflectedGen<T> Create<T>()
             {
@@ -181,38 +132,25 @@ namespace Tests.PropertyInitializerTests
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private class GenFactory2Attribute : GenFactoryAttribute
+        {
+            public override IGenFactory Get => new GenFactory2();
         }
 
 #pragma warning disable xUnit1000 // Test classes must be public
         private class PropertiesWithoutFactoryConfig
 #pragma warning restore xUnit1000 // Test classes must be public
         {
-            [Property(Factory = typeof(NotAnGenFactory))]
-            public void PropertyWithFactoryConfigThatIsNotAnGenFactory()
-            {
-            }
-
-            [Sample(Factory = typeof(NotAnGenFactory))]
-            public void SampleWithFactoryConfigThatIsNotAnGenFactory()
-            {
-            }
-
-            [Property(Factory = typeof(GenFactoryWithoutDefaultConstructor))]
-            public void PropertyWithFactoryConfigThatDoesNotHaveDefaultConstructor()
-            {
-            }
-
-            [Sample(Factory = typeof(GenFactoryWithoutDefaultConstructor))]
-            public void SampleWithFactoryConfigThatThatDoesNotHaveDefaultConstructor()
-            {
-            }
-
-            [Property(Factory = typeof(ValidGenFactory1))]
+            [Property]
+            [GenFactory1]
             public void PropertyWithFactoryConfig()
             {
             }
 
-            [Sample(Factory = typeof(ValidGenFactory1))]
+            [Sample]
+            [GenFactory1]
             public void SampleWithFactoryConfig()
             {
             }
@@ -228,17 +166,19 @@ namespace Tests.PropertyInitializerTests
             }
         }
 
-        [Properties(Factory = typeof(ValidGenFactory2))]
+        [GenFactory2]
 #pragma warning disable xUnit1000 // Test classes must be public
         private class PropertiesWithFactoryConfig
 #pragma warning restore xUnit1000 // Test classes must be public
         {
-            [Property(Factory = typeof(ValidGenFactory1))]
+            [Property]
+            [GenFactory1]
             public void PropertyWithFactoryConfig()
             {
             }
 
-            [Sample(Factory = typeof(ValidGenFactory1))]
+            [Sample]
+            [GenFactory1]
             public void SampleWithFactoryConfig()
             {
             }
