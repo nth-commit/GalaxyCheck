@@ -13,8 +13,6 @@ namespace GalaxyCheck
 
         public int Iterations { get; set; } = 100;
 
-        public Type? Factory { get; set; } = null;
-
         internal virtual IPropertyRunner Runner => new PropertyAssertRunner();
     }
 }

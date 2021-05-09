@@ -74,15 +74,13 @@ namespace IntegrationSample
             return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
         }
 
-        public class GenFactoryWhereIntsAreNonNegative : GenFactory
+        public class GenFactoryWhereIntsAreNonNegativeAttribute : GenFactoryAttribute
         {
-            public GenFactoryWhereIntsAreNonNegative()
-            {
-                RegisterType(Gen.Int32().GreaterThanEqual(0));
-            }
+            public override IGenFactory Get => Gen.Factory().RegisterType(Gen.Int32().GreaterThanEqual(0));
         }
 
-        [Property(Factory = typeof(GenFactoryWhereIntsAreNonNegative))]
+        [Property]
+        [GenFactoryWhereIntsAreNonNegativeAttribute]
         public void APropertyOfTheseIntIsThatItIsNonNegative(int x)
         {
             AnnounceTestInvocation(nameof(APropertyOfTheseIntIsThatItIsNonNegative));
