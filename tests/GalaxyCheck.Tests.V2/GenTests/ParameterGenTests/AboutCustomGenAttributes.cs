@@ -8,7 +8,7 @@ using static Tests.V2.DomainGenAttributes;
 
 namespace Tests.V2.GenTests.ParameterGenTests
 {
-    public class AboutCustomGenProviderAttributes
+    public class AboutCustomGenAttributes
     {
         private static readonly GalaxyCheck.IGen<string> SnakeDialogueGen = GalaxyCheck.Gen
             .String()
@@ -17,7 +17,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
             .ListOf()
             .Select(words => string.Join(' ', words));
 
-        private class SnakeDialogueAttribute : GalaxyCheck.GenProviderAttribute
+        private class SnakeDialogueAttribute : GalaxyCheck.GenAttribute
         {
             public override GalaxyCheck.IGen Get => SnakeDialogueGen;
         }
@@ -31,7 +31,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
         public void ItUsesTheProvidedGenToGenerateTheParameter([Seed] int seed, [Size] int size)
         {
             List<string> SampleTraversal(GalaxyCheck.IGen<string> gen) =>
-                AboutCustomGenProviderAttributes.SampleTraversal(gen, seed: seed, size: size);
+                AboutCustomGenAttributes.SampleTraversal(gen, seed: seed, size: size);
 
             var gen = GalaxyCheck.Gen
                 .Parameters(GetMethod(nameof(PropertyOfSnakeDialog)))
@@ -46,7 +46,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
         private static MethodInfo GetMethod(string name)
         {
-            return typeof(AboutCustomGenProviderAttributes).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static)!;
+            return typeof(AboutCustomGenAttributes).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static)!;
         }
 
         private static List<T> SampleTraversal<T>(GalaxyCheck.IGen<T> gen, int seed, int size) => gen.Advanced

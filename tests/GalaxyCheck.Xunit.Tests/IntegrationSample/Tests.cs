@@ -80,7 +80,7 @@ namespace IntegrationSample
         }
 
         [Property]
-        [GenFactoryWhereIntsAreNonNegativeAttribute]
+        [GenFactoryWhereIntsAreNonNegative]
         public void APropertyOfTheseIntIsThatItIsNonNegative(int x)
         {
             AnnounceTestInvocation(nameof(APropertyOfTheseIntIsThatItIsNonNegative));

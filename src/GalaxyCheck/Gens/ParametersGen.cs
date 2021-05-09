@@ -77,28 +77,28 @@ namespace GalaxyCheck.Gens
 
         private static bool TryCreateGenFromAttribute(ParameterInfo parameterInfo, out IGen? gen)
         {
-            var genProviderAttributes = parameterInfo
+            var genAttributes = parameterInfo
                 .GetCustomAttributes()
-                .OfType<GenProviderAttribute>();
+                .OfType<GenAttribute>();
 
-            var (genProviderAttribute, otherGenProviderAttributes) = genProviderAttributes;
+            var (genAttribute, otherGenAttributes) = genAttributes;
 
-            if (genProviderAttribute == null)
+            if (genAttribute == null)
             {
                 gen = null;
                 return false;
             }
 
-            if (otherGenProviderAttributes.Any())
+            if (otherGenAttributes.Any())
             {
                 gen = Gen.Advanced.Error(
                     parameterInfo.ParameterType,
                     nameof(ParametersGen),
-                    $"multiple {nameof(GenProviderAttribute)}s is unsupported");
+                    $"multiple {nameof(GenAttribute)}s is unsupported");
                 return true;
             }
 
-            gen = genProviderAttribute.Get;
+            gen = genAttribute.Get;
             return true;
         }
 

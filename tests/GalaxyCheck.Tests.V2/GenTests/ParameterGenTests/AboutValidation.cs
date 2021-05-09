@@ -8,7 +8,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 {
     public class AboutValidation
     {
-        private class StringGenAttribute : GenProviderAttribute
+        private class StringGenAttribute : GenAttribute
         {
             public override IGen Get => Gen.String();
         }
@@ -32,7 +32,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
                 .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', type 'System.String' was not assignable to the type it was registered to, 'System.Int32'");
         }
 
-        private class AnotherStringGenAttribute : GenProviderAttribute
+        private class AnotherStringGenAttribute : GenAttribute
         {
             public override IGen Get => Gen.String();
         }
@@ -48,7 +48,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
             test.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', multiple GenProviderAttributes is unsupported");
+                .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', multiple GenAttributes is unsupported");
         }
 
         private static MethodInfo GetMethod(string name)
