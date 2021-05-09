@@ -10,7 +10,7 @@ using FluentAssertions;
 
 namespace Tests.V2.GenTests.ParameterGenTests
 {
-    public class AboutInt32GenProviderAttributes
+    public class AboutInt32GenAttributes
     {
         private static void GreaterThanEqual0Example([GreaterThanEqual(0)] int _) { }
         private static void GreaterThanEqual10Example([GreaterThanEqual(10)] int _) { }
@@ -26,7 +26,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
                 select Property.ForThese(() =>
                 {
                     List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) =>
-                        AboutInt32GenProviderAttributes.SampleTraversal(gen, seed: seed, size: size);
+                        AboutInt32GenAttributes.SampleTraversal(gen, seed: seed, size: size);
 
                     var gen0 = GalaxyCheck.Gen
                         .Parameters(GetMethod(methodName))
@@ -57,7 +57,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
                 select Property.ForThese(() =>
                 {
                     List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) =>
-                        AboutInt32GenProviderAttributes.SampleTraversal(gen, seed: seed, size: size);
+                        AboutInt32GenAttributes.SampleTraversal(gen, seed: seed, size: size);
 
                     var gen0 = GalaxyCheck.Gen
                         .Parameters(GetMethod(methodName))
@@ -88,7 +88,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
                 select Property.ForThese(() =>
                 {
                     List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) =>
-                        AboutInt32GenProviderAttributes.SampleTraversal(gen, seed: seed, size: size);
+                        AboutInt32GenAttributes.SampleTraversal(gen, seed: seed, size: size);
 
                     var gen0 = GalaxyCheck.Gen
                         .Parameters(GetMethod(methodName))
@@ -107,7 +107,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
         private static MethodInfo GetMethod(string name)
         {
-            return typeof(AboutInt32GenProviderAttributes).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static)!;
+            return typeof(AboutInt32GenAttributes).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static)!;
         }
 
         private static List<T> SampleTraversal<T>(GalaxyCheck.IGen<T> gen, int seed, int size) => gen.Advanced

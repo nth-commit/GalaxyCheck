@@ -3,7 +3,7 @@
 namespace GalaxyCheck.Gens.Injection.Int32
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    public class BetweenAttribute : GenProviderAttribute
+    public class BetweenAttribute : GenAttribute
     {
         public int X { get; }
 

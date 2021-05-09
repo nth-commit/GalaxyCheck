@@ -3,7 +3,7 @@
 namespace GalaxyCheck.Gens.Injection.Int32
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-    public class GreaterThanEqualAttribute : GenProviderAttribute
+    public class GreaterThanEqualAttribute : GenAttribute
     {
         public int Min { get; }
 
