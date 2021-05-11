@@ -17,14 +17,6 @@ namespace GalaxyCheck
         /// </summary>
         /// <returns>A factory for auto-generators.</returns>
         public static IGenFactory Factory() => new GenFactory();
-
-        /// <summary>
-        /// Generates instances of the given type, using the default <see cref="IGenFactory"/>. The auto-generator
-        /// can not be configured as precisely as more specialized generators can be, but it can create complex types
-        /// with minimal configuration through reflection.
-        /// </summary>
-        /// <returns>A generator for the given type.</returns>
-        public static IReflectedGen<T> Create<T>() => Factory().Create<T>();
     }
 }
 

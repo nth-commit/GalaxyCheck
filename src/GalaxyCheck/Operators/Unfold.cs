@@ -9,12 +9,12 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static IGen<T> Unfold<T>(
-            this IGenAdvanced<T> advanced,
+            this IGen<T> gen,
             Func<T, IEnumerable<T>> shrinkValue,
             Func<T, decimal>? measureValue = null,
             Func<T, int>? identifyValue = null)
         {
-            return advanced.Unfold(value => ExampleSpaceFactory.Unfold(
+            return gen.Unfold(value => ExampleSpaceFactory.Unfold(
                 value,
                 shrinkValue.Invoke,
                 measureValue == null ? MeasureFunc.Unmeasured<T>() : measureValue!.Invoke,
@@ -22,7 +22,7 @@ namespace GalaxyCheck
         }
 
         public static IGen<T> Unfold<T>(
-            this IGenAdvanced<T> advanced,
+            this IGen<T> gen,
             Func<T, IExampleSpace<T>> unfolder)
         {
             GenInstanceTransformation<T, T> transformation = (instance) =>
@@ -34,9 +34,7 @@ namespace GalaxyCheck
                     instance.ExampleSpaceHistory);
             };
 
-            return advanced
-                .AsGen()
-                .TransformInstances(transformation);
+            return gen.TransformInstances(transformation);
         }
     }
 }
