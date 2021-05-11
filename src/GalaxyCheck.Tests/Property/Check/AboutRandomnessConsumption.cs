@@ -5,6 +5,7 @@ using Xunit;
 using GalaxyCheck;
 using GC = GalaxyCheck;
 using static Tests.TestUtils;
+using System.Linq;
 
 namespace Tests.Property.Check
 {
@@ -14,14 +15,13 @@ namespace Tests.Property.Check
         [Property(Arbitrary = new[] { typeof(ArbitraryGen) }, EndSize = 50)]
         public FsCheck.Property ItConsumesRandomnessLikeSample(Iterations iterations, int randomnessConsumptionPerIteration, object value)
         {
-            var gen = GC.Gen.Advanced.Primitive<object>((useNextInt, _) =>
+            var gen = GC.Gen.Create(parameters =>
             {
-                for (int i = 0; i < randomnessConsumptionPerIteration; i++)
-                {
-                    useNextInt(0, 0);
-                }
+                var nextRng = Enumerable
+                    .Range(0, randomnessConsumptionPerIteration)
+                    .Aggregate(parameters.Rng, (rng, _) => rng.Next());
 
-                return value;
+                return (value, GC.Gens.Parameters.GenParameters.Create(nextRng, parameters.Size));
             });
 
             Action test = () => TestWithSeed(seed =>
@@ -34,7 +34,7 @@ namespace Tests.Property.Check
                 Assert.Equal(sample.RandomnessConsumption, check.RandomnessConsumption);
             });
 
-            return test.When(iterations.Value > 0);
+            return test.When(iterations.Value > 0 && randomnessConsumptionPerIteration >= 0);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Tests.V2.RunnerTests.MinimumTests
             select Property.ForThese(() =>
             {
                 var minimum = gen
-                    .Advanced.Unfold(x => UnfoldToNumberOfShrinks(x, numberOfShrinks))
+                    .Unfold(x => UnfoldToNumberOfShrinks(x, numberOfShrinks))
                     .Advanced.MinimumWithMetrics(seed: seed);
 
                 minimum.Shrinks.Should().Be(numberOfShrinks);

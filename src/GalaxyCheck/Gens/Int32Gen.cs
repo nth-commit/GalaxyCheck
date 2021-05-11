@@ -49,10 +49,11 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
-    using GalaxyCheck.Gens.Parameters.Internal;
     using GalaxyCheck.ExampleSpaces;
     using System;
     using System.Collections.Generic;
+    using static GalaxyCheck.Gen;
+    using GalaxyCheck.Gens.Parameters.Internal;
 
     public interface IInt32Gen : IGen<int>
     {
@@ -144,40 +145,36 @@ namespace GalaxyCheck.Gens
             var origin = config.Origin ?? InferOrigin(min, max);
             var bias = config.Bias ?? Gen.Bias.WithSize;
 
-            var statefulGen = bias == Gen.Bias.WithSize
+            var genFunc = bias == Gen.Bias.WithSize
                 ? CreateBiasedStatefulGen(min, max, origin)
                 : CreateUnbiasedStatefulGen(min, max);
 
             return Gen
-                .Advanced.Primitive(statefulGen)
-                .Advanced.Unfold(value =>
-                    ExampleSpaceFactory.Int32Optimized(value: value, origin: origin, min: min, max: max));
+                .Create(genFunc.Invoke)
+                .Unfold(value => ExampleSpaceFactory.Int32Optimized(value: value, origin: origin, min: min, max: max));
         }
 
-        private static StatefulGenFunc<int> CreateUnbiasedStatefulGen(int min, int max) =>
-            (useNextInt, _) => useNextInt(min, max);
+        private static Int32GenFunc CreateUnbiasedStatefulGen(int min, int max) => (parameters) => ConsumeNextInt(parameters, min, max);
 
-        private static StatefulGenFunc<int> CreateBiasedStatefulGen(int min, int max, int origin)
+        private static Int32GenFunc CreateBiasedStatefulGen(int min, int max, int origin)
         {
             var sizeToBounds = SizingToBounds.Exponential(min, max, origin);
             int? extremeMinimum = min == origin ? null : min;
             int? extremeMaximum = max == origin ? null : max;
+            Int32GenFunc inextreme = FromBounds(sizeToBounds);
 
-            StatefulGenFunc<int> inextreme = FromBounds(sizeToBounds);
+            Int32GenFunc CreateExtremeGenFunc(int inextremeFrequency, int extremeFrequency) =>
+                OrExtreme(inextreme, extremeMinimum, extremeMaximum, inextremeFrequency, extremeFrequency);
 
-            StatefulGenFunc<int> withExtreme1 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 16, 1);
+            Int32GenFunc withExtreme1 = CreateExtremeGenFunc(16, 1);
+            Int32GenFunc withExtreme2 = CreateExtremeGenFunc(8, 1);
+            Int32GenFunc withExtreme3 = CreateExtremeGenFunc(4, 1);
+            Int32GenFunc withExtreme4 = CreateExtremeGenFunc(2, 1);
+            Int32GenFunc withExtreme5 = CreateExtremeGenFunc(1, 1);
 
-            StatefulGenFunc<int> withExtreme2 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 8, 1);
-
-            StatefulGenFunc<int> withExtreme3 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 4, 1);
-
-            StatefulGenFunc<int> withExtreme4 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 2, 1);
-
-            StatefulGenFunc<int> withExtreme5 = OrExtreme(inextreme, extremeMinimum, extremeMaximum, 1, 1);
-
-            return (useNextInt, size) =>
+            Int32GenFunc genFunc = (parameters) =>
             {
-                var innerGenFunc = size.Value switch
+                var innerGenFunc = parameters.Size.Value switch
                 {
                     <= 50 => inextreme,
                     <= 60 => withExtreme1,
@@ -187,21 +184,23 @@ namespace GalaxyCheck.Gens
                     _ => withExtreme5
                 };
 
-                return innerGenFunc(useNextInt, size);
+                return innerGenFunc(parameters);
             };
+
+            return genFunc;
         }
 
-        private static StatefulGenFunc<int> FromBounds(SizeToBoundsFunc sizeToBounds) => (useNextInt, size) =>
+        private static Int32GenFunc FromBounds(SizeToBoundsFunc sizeToBounds) => (parameters) =>
         {
-            var (min, max) = sizeToBounds(size);
-            return useNextInt(min, max);
+            var (min, max) = sizeToBounds(parameters.Size);
+            return ConsumeNextInt(parameters, min, max);
         };
 
         /// <summary>
         /// Creates a stateful generator function which favours the extreme of the generator by a given frequency.
         /// </summary>
-        private static StatefulGenFunc<int> OrExtreme(
-            StatefulGenFunc<int> inextremeGenerator,
+        private static Int32GenFunc OrExtreme(
+            Int32GenFunc inextremeGenerator,
             int? extremeMinimum,
             int? extremeMaximum,
             int inextremeFrequency,
@@ -227,14 +226,15 @@ namespace GalaxyCheck.Gens
 
             var weightedList = new WeightedList<BoundsOrExtremeSource>(weightedElements);
 
-            return (useNextInt, size) =>
+            return (parameters) =>
             {
-                var source = weightedList[useNextInt(0, weightedList.Count - 1)];
+                var (weightedIndex, parameters0) = ConsumeNextInt(parameters, 0, weightedList.Count - 1);
+                var source = weightedList[weightedIndex];
                 return source switch
                 {
-                    BoundsOrExtremeSource.Bounds => inextremeGenerator(useNextInt, size),
-                    BoundsOrExtremeSource.ExtremeMinimum => extremeMinimum!.Value,
-                    BoundsOrExtremeSource.ExtremeMaximum => extremeMaximum!.Value,
+                    BoundsOrExtremeSource.Bounds => inextremeGenerator(parameters0),
+                    BoundsOrExtremeSource.ExtremeMinimum => (extremeMinimum!.Value, parameters0),
+                    BoundsOrExtremeSource.ExtremeMaximum => (extremeMaximum!.Value, parameters0),
                     _ => throw new NotSupportedException("Fatal: Unhandled switch")
                 };
             };
@@ -269,5 +269,14 @@ namespace GalaxyCheck.Gens
             // Else, 0 definitely is within the bounds of min/max.
             return 0;
         }
+
+        public static (int, GenParameters) ConsumeNextInt(GenParameters parameters, int min, int max)
+        {
+            var value = parameters.Rng.Value(min, max);
+            var nextRng = parameters.Rng.Next();
+            return (value, parameters with { Rng = nextRng });
+        }
+
+        private delegate (int value, GenParameters nextParameters) Int32GenFunc(GenParameters parameters);
     }
 }

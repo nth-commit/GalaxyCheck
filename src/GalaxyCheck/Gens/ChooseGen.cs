@@ -54,6 +54,7 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
+    using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
@@ -107,16 +108,27 @@ namespace GalaxyCheck.Gens
                 return Gen.Advanced.Error<T>(nameof(ChooseGen<T>), "'choices' must contain at least one generator with a weight greater than zero");
             }
 
-            var weightedIndexes = new WeightedList<int>(choices.Select((c, i) => new WeightedElement<int>(c.Weight, i)));
+            var weightedIndices = new WeightedList<int>(choices.Select((c, i) => new WeightedElement<int>(c.Weight, i)));
 
-            return Gen
-                .Advanced.Primitive((useNextInt, _) => useNextInt(0, weightedIndexes.Count - 1))
-                .Advanced.Unfold(weightedIndex =>
-                {
-                    var unweightedIndex = weightedIndexes[weightedIndex];
-                    return ExampleSpaceFactory.Int32Optimized(unweightedIndex, 0, 0, choices.Count - 1);
-                })
+            return GenIndexWeighted(weightedIndices)
+                .Select(LookupUnweightedIndex(weightedIndices))
+                .Unfold(unweightedIndex => UnfoldUnweightedIndex(choices.Count, unweightedIndex))
                 .SelectMany(unweightedIndex => choices[unweightedIndex].Gen);
         }
+
+        private static IGen<int> GenIndexWeighted(IReadOnlyList<int> weightedIndices)
+        {
+            return Gen
+                .Int32()
+                .Between(0, weightedIndices.Count - 1)
+                .WithBias(Gen.Bias.None)
+                .NoShrink();
+        }
+
+        private static Func<int, int> LookupUnweightedIndex(IReadOnlyList<int> weightedIndices) =>
+            (weightedIndex) => weightedIndices[weightedIndex];
+
+        private static IExampleSpace<int> UnfoldUnweightedIndex(int unweightedCount, int unweightedIndex) =>
+            ExampleSpaceFactory.Int32Optimized(unweightedIndex, 0, 0, unweightedCount - 1);
     }
 }

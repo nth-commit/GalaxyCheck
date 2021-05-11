@@ -46,7 +46,7 @@ namespace Tests.Gen.GenericOperators
         {
             TestWithSeed(seed =>
             {
-                var gen = GC.Gen.Advanced.Primitive((useNextInt, size) => size.Value).Where(size => size > 10);
+                var gen = GC.Gen.Create(parameters => (parameters.Size.Value, parameters)).Where(size => size > 10);
 
                 var values = gen.Sample(
                     seed: seed,

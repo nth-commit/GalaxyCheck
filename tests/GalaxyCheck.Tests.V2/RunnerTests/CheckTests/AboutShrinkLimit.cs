@@ -12,7 +12,7 @@ namespace Tests.V2.RunnerTests.CheckTests
     public class AboutShrinkLimit
     {
         private static readonly GalaxyCheck.IGen<int> InfinitelyShrinkableGen =
-            GalaxyCheck.Gen.Constant(0).Advanced.Unfold((x) => new[] { x + 1 });
+            GalaxyCheck.Gen.Constant(0).Unfold((x) => new[] { x + 1 });
 
         [Property]
         public NebulaCheck.IGen<Test> IfTheShrinkLimitIsZero_ThePropertyCanStillBeFalsified() =>
