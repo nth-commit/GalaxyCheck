@@ -19,8 +19,8 @@ namespace GalaxyCheck.Benchmarks
         [Arguments(0, 10)]
         [Arguments(0, 100)]
         [Arguments(0, 1000)]
-        [Arguments(int.MinValue, int.MaxValue)]
-        public void RandomIntInRange(int MinValue, int MaxValue)
+        [Arguments(long.MinValue, long.MaxValue)]
+        public void RandomLong(long MinValue, long MaxValue)
         {
             for (var seed = _seed; seed < (_seed + OperationsPerInvoke); seed++)
             {

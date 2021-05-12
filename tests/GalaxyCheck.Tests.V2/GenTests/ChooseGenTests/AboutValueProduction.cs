@@ -30,9 +30,8 @@ namespace Tests.V2.GenTests.ChooseGenTests
             });
 
         [Property]
-        public NebulaCheck.IGen<Test> IfChoicesAreEvenlyWeighted_ItProducesValuesLikeANonBiasedInt32Gen() =>
+        public NebulaCheck.IGen<Test> IfChoicesWeightsAreOne_ItProducesValuesLikeANonBiasedInt32Gen() =>
             from numberOfChoices in Gen.Int32().Between(1, 20) 
-            from choiceWeight in Gen.Int32().Between(1, 20)
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
@@ -44,7 +43,7 @@ namespace Tests.V2.GenTests.ChooseGenTests
 
                 var gen = GalaxyCheck.Gen
                     .Choose(range
-                        .Select(x => (GalaxyCheck.Gen.Constant(x), choiceWeight))
+                        .Select(x => (GalaxyCheck.Gen.Constant(x), 1))
                         .ToArray());
 
                 var int32Gen = GalaxyCheck.Gen.Int32()

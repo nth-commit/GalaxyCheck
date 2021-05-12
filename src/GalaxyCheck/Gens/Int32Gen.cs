@@ -143,14 +143,13 @@ namespace GalaxyCheck.Gens
             }
 
             var origin = config.Origin ?? InferOrigin(min, max);
-            var bias = config.Bias ?? Gen.Bias.WithSize;
+            var bias = config.Bias ?? Bias.WithSize;
 
-            var genFunc = bias == Gen.Bias.WithSize
+            var genFunc = bias == Bias.WithSize
                 ? CreateBiasedStatefulGen(min, max, origin)
                 : CreateUnbiasedStatefulGen(min, max);
 
-            return Gen
-                .Create(genFunc.Invoke)
+            return Create(genFunc.Invoke)
                 .Unfold(value => ExampleSpaceFactory.Int32Optimized(value: value, origin: origin, min: min, max: max));
         }
 
@@ -274,7 +273,7 @@ namespace GalaxyCheck.Gens
         {
             var value = parameters.Rng.Value(min, max);
             var nextRng = parameters.Rng.Next();
-            return (value, parameters with { Rng = nextRng });
+            return ((int)value, parameters with { Rng = nextRng });
         }
 
         private delegate (int value, GenParameters nextParameters) Int32GenFunc(GenParameters parameters);

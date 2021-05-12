@@ -36,13 +36,13 @@ namespace GalaxyCheck.Gens.Parameters.Internal
 
         public IRng Fork() => Create((Family + 1) * -1521134295 + Order);
 
-        public int Value(int min, int max)
+        public long Value(long min, long max)
         {
             if (min > max) throw new ArgumentOutOfRangeException(nameof(min), "'min' cannot be greater than 'max'");
 
-            var maxOffset = max == int.MaxValue ? max : max + 1;
+            var maxOffset = max == long.MaxValue ? max : max + 1;
 
-            return Random.Next(min, maxOffset);
+            return Random.NextLong(min, maxOffset);
         }
     }
 }
