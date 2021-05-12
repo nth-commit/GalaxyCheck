@@ -1,7 +1,7 @@
 ﻿namespace GalaxyCheck.Gens.Parameters
 {
     /// <summary>
-    /// A side-effectless random number generator for 32-bit integers.
+    /// A side-effectless random number generator for integers.
     /// </summary>
     public interface IRng
     {
@@ -37,12 +37,12 @@
         IRng Fork();
 
         /// <summary>
-        /// Generates a random integer, based off of the seed, and some given boundaries. This is a pure function and
-        /// will always return the same integer, given the same boundaries.
+        /// Generates a random 64-bit integer, based off of the seed, and some given boundaries. This is a pure
+        /// function and will always return the same integer, given the same boundaries.
         /// </summary>
         /// <param name="min">The minimum integer to generate.</param>
         /// <param name="max">The maximum integer to generate.</param>
         /// <returns>A new, random integer.</returns>
-        int Value(int min, int max);
+        long Value(long min, long max);
     }
 }

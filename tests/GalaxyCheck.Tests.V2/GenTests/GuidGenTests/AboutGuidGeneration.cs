@@ -34,7 +34,7 @@ namespace Tests.V2.GenTests.GuidGenTests
         [Fact]
         public void Snapshots()
         {
-            var seeds = Enumerable.Range(0, 3);
+            var seeds = Enumerable.Range(0, 1);
 
             foreach (var seed in seeds)
             {
