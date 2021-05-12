@@ -65,6 +65,55 @@ namespace GalaxyCheck.ExampleSpaces
             return Halves(difference).Select(smallerDifference => value - smallerDifference).Select(x => (int)x);
         };
 
+        public static ShrinkFunc<long> Towards(long target) => (value) =>
+        {
+            if (value == target) return Enumerable.Empty<long>();
+
+            // To represent the distance between two signed longs, we need to use something bigger than an long32,
+            // because the difference between long.MinValue and long.MaxValue is (approx) long.MaxValue * 2 (which is not
+            // representable). We'll need to come up with a better strategy when generating longs.
+            var difference = CalculateWidthSafe(value, target);
+            var sign = value > target ? -1 : 1;
+
+            return Halves(difference).Select(smallerDifference =>
+            {
+                if (sign == -1)
+                {
+                    return value - (long)smallerDifference;
+                }
+                else
+                {
+                    return value + (long)smallerDifference;
+                }
+            });
+        };
+
+        private static ulong CalculateWidthSafe(long from, long to)
+        {
+            var fromSign = Math.Sign(from);
+            var toSign = Math.Sign(to);
+
+            if (fromSign >= 0 && toSign >= 0)
+            {
+                return SafeNegate(to - from);
+            }
+            else if (toSign <= 0 && fromSign <= 0)
+            {
+                return SafeNegate(to - from);
+            }
+            else
+            {
+                var fromToZero = SafeNegate(from);
+                var toToZero = SafeNegate(to);
+                return fromToZero + toToZero;
+            }
+        }
+
+        private static ulong SafeNegate(long x)
+        {
+            return x == long.MinValue ? (ulong)(long.MaxValue) + 1 : (ulong)Math.Abs(x);
+        }
+
         /// <summary>
         /// Creates a shrink function that shrinks a source list towards a target count, like
         /// <see cref="Towards(int)"/>. Whilst shrinking the enumerable, it will generate combinations for a count from
@@ -271,6 +320,14 @@ namespace GalaxyCheck.ExampleSpaces
                     return x0 > 0 ? new Option.Some<long>(x0) : new Option.None<long>();
                 })
                 .Select(x => Math.Sign(value) == -1 ? -x : x);
+
+        private static IEnumerable<ulong> Halves(ulong value) =>
+            EnumerableExtensions
+                .Unfold(value, x =>
+                {
+                    var x0 = x / 2;
+                    return x0 > 0 ? new Option.Some<ulong>(x0) : new Option.None<ulong>();
+                });
 
 
         private class NoopContextualShrinker<T> : ContextualShrinker<T, NoContext>

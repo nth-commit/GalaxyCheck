@@ -179,5 +179,58 @@ namespace GalaxyCheck.ExampleSpaces
                 return ShrinkFunc.Towards(previousEncounteredValues.First() + difference)(value);
             }
         }
+
+        public static IExampleSpace<long> Int64Optimized(long value, long origin, long min, long max) => Unfold(
+            value,
+            new Int64OptimizedContextualShrinker(origin),
+            MeasureFunc.DistanceFromOrigin(origin, min, max),
+            IdentifyFuncs.Default<long>());
+
+        private record Int64OptimizedContext(
+            ImmutableStack<long> EncounteredValues,
+            bool IsRoot);
+
+        private class Int64OptimizedContextualShrinker : ContextualShrinker<long, Int64OptimizedContext>
+        {
+            private readonly long _origin;
+
+            public Int64OptimizedContextualShrinker(long origin)
+            {
+                _origin = origin;
+            }
+
+            public Int64OptimizedContext RootContext => new Int64OptimizedContext(ImmutableStack.Create<long>(), IsRoot: true);
+
+            public ContextualShrinkFunc<long, Int64OptimizedContext> ContextualShrink => (value, context) =>
+            {
+                var nextContext = new Int64OptimizedContext(ImmutableStack.Create<long>(), IsRoot: false);
+                var shrinks = ShrinkInt64Optimized(value, _origin, context);
+                return (nextContext, shrinks);
+            };
+
+            public NextContextFunc<long, Int64OptimizedContext> ContextualTraverse => (value, context) =>
+            {
+                return new Int64OptimizedContext(context.EncounteredValues.Push(value), IsRoot: context.IsRoot);
+            };
+
+            private static IEnumerable<long> ShrinkInt64Optimized(long value, long origin, Int64OptimizedContext context)
+            {
+                if (context.IsRoot)
+                {
+                    // Just shrink to the origin, regardless
+                    return ShrinkFunc.Towards(origin)(value);
+                }
+
+                var previousEncounteredValues = context.EncounteredValues.Skip(1);
+                if (previousEncounteredValues.Any() == false)
+                {
+                    // There are no shrinks left
+                    return Enumerable.Empty<long>();
+                }
+
+                var difference = value >= origin ? 1 : -1;
+                return ShrinkFunc.Towards(previousEncounteredValues.First() + difference)(value);
+            }
+        }
     }
 }
