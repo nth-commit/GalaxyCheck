@@ -20,20 +20,14 @@ namespace Tests.V2.ExampleSpaceTests
             _fixture = fixture;
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void Snapshots(bool isOptimized)
+        [Fact]
+        public void Snapshots()
         {
             var tests = _fixture
                 .Scenarios
                 .Select(scenario =>
                 {
-                    Func<int, int, int, int, IExampleSpace<int>> exampleSpaceFactory = isOptimized
-                        ? ExampleSpaceFactory.Int32Optimized
-                        : ExampleSpaceFactory.Int32;
-
-                    var exampleSpace = exampleSpaceFactory(
+                    var exampleSpace = ExampleSpaceFactory.Int32(
                         scenario.Value,
                         scenario.Origin,
                         scenario.Min,
@@ -51,9 +45,7 @@ namespace Tests.V2.ExampleSpaceTests
 
             foreach (var test in tests)
             {
-                var nameExtensionBase = $"Value={test.Input.Value};Origin={test.Input.Origin}Min={test.Input.Min};Max={test.Input.Max}";
-                var nameExtension = isOptimized ? nameExtensionBase : nameExtensionBase + $";Unoptimized";
-                var input = test.Input;
+                var nameExtension = $"Value={test.Input.Value};Origin={test.Input.Origin}Min={test.Input.Min};Max={test.Input.Max}";
                 Snapshot.Match(test.Output, SnapshotNameExtension.Create(nameExtension));
             }
         }

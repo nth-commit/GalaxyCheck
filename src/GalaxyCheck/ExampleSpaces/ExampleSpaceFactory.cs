@@ -54,80 +54,11 @@ namespace GalaxyCheck.ExampleSpaces
             return new ExampleSpace<T>(rootExample, DelayEnumeration(delayedSubspace));
         }
 
-        public static IExampleSpace<TResult> Merge<T, TResult>(
-            List<IExampleSpace<T>> exampleSpaces,
-            Func<List<T>, TResult> mergeValues,
-            ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<List<IExampleSpace<T>>> measureMerge) =>
-                MergeInternal(
-                    exampleSpaces,
-                    mergeValues,
-                    shrinkExampleSpaces,
-                    measureMerge,
-                    ImmutableHashSet.Create<ExampleId>());
+        
 
-        private static IExampleSpace<TResult> MergeInternal<T, TResult>(
-            List<IExampleSpace<T>> exampleSpaces,
-            Func<List<T>, TResult> mergeValues,
-            ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<List<IExampleSpace<T>>> measureMerge,
-            ImmutableHashSet<ExampleId> encountered)
-        {
-            IExampleSpace<TResult> GenerateNextExampleSpace(
-                IEnumerable<IExampleSpace<T>> exampleSpaces,
-                ImmutableHashSet<ExampleId> encountered)
-            {
-                return MergeInternal(exampleSpaces.ToList(), mergeValues, shrinkExampleSpaces, measureMerge, encountered);
-            }
-
-            var mergedId = exampleSpaces.Aggregate(
-                ExampleId.Primitive(exampleSpaces.Count()),
-                (acc, curr) => ExampleId.Combine(acc, curr.Current.Id));
-
-            var mergedValue = mergeValues(exampleSpaces.Select(es => es.Current.Value).ToList());
-
-            var mergedDistance = measureMerge(exampleSpaces);
-
-            var current = new Example<TResult>(
-                mergedId,
-                mergedValue,
-                mergedDistance);
-
-            var exampleSpaceCullingShrinks = shrinkExampleSpaces(exampleSpaces);
-
-            var subspaceMergingShrinks = exampleSpaces
-                .Select((exampleSpace, index) => LiftAndInsertSubspace(exampleSpaces, exampleSpace.Subspace, index))
-                .SelectMany(exampleSpaces => exampleSpaces);
-
-            var shrinks = TraverseUnencountered(
-                Enumerable.Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks),
-                encountered,
-                GenerateNextExampleSpace);
-
-            return new ExampleSpace<TResult>(current, shrinks);
-        }
-
-        private static IEnumerable<IEnumerable<IExampleSpace<T>>> LiftAndInsertSubspace<T>(
-            IEnumerable<IExampleSpace<T>> exampleSpaces,
-            IEnumerable<IExampleSpace<T>> subspace,
-            int index)
-        {
-            var leftExampleSpaces = exampleSpaces.Take(index);
-            var rightExampleSpaces = exampleSpaces.Skip(index + 1);
-
-            return subspace.Select(exampleSpace =>
-                Enumerable.Concat(
-                    leftExampleSpaces,
-                    Enumerable.Concat(new[] { exampleSpace }, rightExampleSpaces)));
-        }
+        
 
         public static IExampleSpace<int> Int32(int value, int origin, int min, int max) => Unfold(
-            value,
-            ShrinkFunc.Towards(origin),
-            MeasureFunc.DistanceFromOrigin(origin, min, max),
-            IdentifyFuncs.Default<int>());
-
-        public static IExampleSpace<int> Int32Optimized(int value, int origin, int min, int max) => Unfold(
             value,
             new Int32OptimizedContextualShrinker(origin),
             MeasureFunc.DistanceFromOrigin(origin, min, max),
@@ -180,7 +111,7 @@ namespace GalaxyCheck.ExampleSpaces
             }
         }
 
-        public static IExampleSpace<long> Int64Optimized(long value, long origin, long min, long max) => Unfold(
+        public static IExampleSpace<long> Int64(long value, long origin, long min, long max) => Unfold(
             value,
             new Int64OptimizedContextualShrinker(origin),
             MeasureFunc.DistanceFromOrigin(origin, min, max),

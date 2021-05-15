@@ -95,7 +95,7 @@ namespace GalaxyCheck.ExampleSpaces
             {
                 return analyze(exampleSpace.Current).Match(
                     onSuccess: () => ExplorationStage<T>.Factory.NonCounterexample(exampleSpace, path),
-                    onDiscard: () => ExplorationStage<T>.Factory.Discard(),
+                    onDiscard: () => ExplorationStage<T>.Factory.Discard(exampleSpace),
                     onFail: exception => ExplorationStage<T>.Factory.Counterexample(exampleSpace, path, exception));
             }
 
@@ -114,8 +114,8 @@ namespace GalaxyCheck.ExampleSpaces
                         {
                             var maybeCounterexampleSubspace = curr.explorationStage.Match<CounterexampleSubspace<T>?>(
                                 onCounterexampleExploration: (counterexample) => new CounterexampleSubspace<T>(counterexample.ExampleSpace, counterexample.Path),
-                                onNonCounterexampleExploration: (_) => null,
-                                onDiscardExploration: () => null);
+                                onNonCounterexampleExploration: _ => null,
+                                onDiscardExploration: _ => null);
 
                             return new SubspaceExploration<T>(
                                 maybeCounterexampleSubspace,
@@ -141,7 +141,7 @@ namespace GalaxyCheck.ExampleSpaces
                             onCounterexampleExploration: counterexampleExploration =>
                                 new CounterexampleSubspace<T>(counterexampleExploration.ExampleSpace, counterexampleExploration.Path),
                             onNonCounterexampleExploration: _ => null,
-                            onDiscardExploration: () => null);
+                            onDiscardExploration: _ => null);
                     }
                 }
             }
@@ -195,6 +195,17 @@ namespace GalaxyCheck.ExampleSpaces
             }
 
             return NavigateRec(exampleSpace, path);
+        }
+
+        public static IEnumerable<ExplorationStage<T>> ExploreCounterexamples<T>(
+            this IExampleSpace<T> exampleSpace,
+            Func<T, bool> pred)
+        {
+            AnalyzeExploration<T> analyze = (explorationStage) => pred(explorationStage.Value)
+                ? ExplorationOutcome.Success()
+                : ExplorationOutcome.Fail(null);
+
+            return exampleSpace.Explore(analyze);
         }
     }
 }

@@ -129,6 +129,6 @@ namespace GalaxyCheck.Gens
             (weightedIndex) => weightedIndices[weightedIndex];
 
         private static IExampleSpace<int> UnfoldUnweightedIndex(int unweightedCount, int unweightedIndex) =>
-            ExampleSpaceFactory.Int32Optimized(unweightedIndex, 0, 0, unweightedCount - 1);
+            ExampleSpaceFactory.Int32(unweightedIndex, 0, 0, unweightedCount - 1);
     }
 }

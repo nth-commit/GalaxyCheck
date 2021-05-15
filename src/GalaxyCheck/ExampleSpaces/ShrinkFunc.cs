@@ -69,22 +69,15 @@ namespace GalaxyCheck.ExampleSpaces
         {
             if (value == target) return Enumerable.Empty<long>();
 
-            // To represent the distance between two signed longs, we need to use something bigger than an long32,
-            // because the difference between long.MinValue and long.MaxValue is (approx) long.MaxValue * 2 (which is not
-            // representable). We'll need to come up with a better strategy when generating longs.
             var difference = CalculateWidthSafe(value, target);
             var sign = value > target ? -1 : 1;
+            var halves = Halves(difference);
 
-            return Halves(difference).Select(smallerDifference =>
+            return halves.Select(smallerDifference => sign switch
             {
-                if (sign == -1)
-                {
-                    return value - (long)smallerDifference;
-                }
-                else
-                {
-                    return value + (long)smallerDifference;
-                }
+                1 => value + (long)smallerDifference,
+                -1 => value - (long)smallerDifference,
+                _ => throw new NotSupportedException("Fatal: Unrecognised case")
             });
         };
 

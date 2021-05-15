@@ -46,6 +46,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                         Instance,
                         tail,
                         counterexampleExploration),
+
                 onNonCounterexampleExploration: (nonCounterexampleExploration) =>
                     new NonCounterexampleExplorationTransition<T>(
                         state,
@@ -53,7 +54,8 @@ namespace GalaxyCheck.Runners.CheckAutomata
                         tail,
                         nonCounterexampleExploration,
                         CounterexampleState),
-                onDiscardExploration: () => IsFirstExplorationStage
+
+                onDiscardExploration: (_) => IsFirstExplorationStage
                     ? new InstanceCompleteTransition<T>(state, Instance, CounterexampleState: null, WasDiscard: true, WasReplay: false)
                     : new DiscardExplorationTransition<T>(state, Instance, tail, CounterexampleState));
         }

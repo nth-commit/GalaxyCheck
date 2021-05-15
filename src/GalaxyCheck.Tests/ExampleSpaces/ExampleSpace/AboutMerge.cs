@@ -28,11 +28,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         public void Snapshots_ArrayConcat_NoMergeShrink(int[] values)
         {
             var exampleSpaces = values
-                .Select(value => ES.ExampleSpaceFactory.Unfold(
-                    value,
-                    ES.ShrinkFunc.Towards(0),
-                    ES.MeasureFunc.Unmeasured<int>(),
-                    ES.IdentifyFuncs.Default<int>()))
+                .Select(value => ES.ExampleSpaceFactory.Int32(value, 0, int.MinValue, int.MaxValue))
                 .ToList();
 
             var mergedExampleSpace = ES.ExampleSpaceFactory.Merge(
@@ -55,11 +51,7 @@ namespace Tests.ExampleSpaces.ExampleSpace
         public void Snapshots_ArrayConcat_TowardsCountShrink(int[] values)
         {
             var exampleSpaces = values
-                .Select(value => ES.ExampleSpaceFactory.Unfold(
-                    value,
-                    ES.ShrinkFunc.Towards(0),
-                    ES.MeasureFunc.Unmeasured<int>(),
-                    ES.IdentifyFuncs.Default<int>()))
+                .Select(value => ES.ExampleSpaceFactory.Int32(value, 0, int.MinValue, int.MaxValue))
                 .ToList();
 
             var mergedExampleSpace = ES.ExampleSpaceFactory.Merge(
