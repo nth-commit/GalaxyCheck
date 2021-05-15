@@ -21,7 +21,7 @@
         /// <param name="x">The first bound of the range.</param>
         /// <param name="y">The second bound of the range.</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<long> Between(this IIntGen<long> gen, int x, int y)
+        public static IIntGen<long> Between(this IIntGen<long> gen, long x, long y)
         {
             var min = x > y ? y : x;
             var max = x > y ? x : y;
@@ -33,14 +33,14 @@
         /// </summary>
         /// <param name="maxExclusive">The maximum integer to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<long> LessThan(this IIntGen<long> gen, int maxExclusive) => gen.LessThanEqual(maxExclusive - 1);
+        public static IIntGen<long> LessThan(this IIntGen<long> gen, long maxExclusive) => gen.LessThanEqual(maxExclusive - 1);
 
         /// <summary>
         /// Constrains the generator so that it only produces values greater than the supplied minimum.
         /// </summary>
         /// <param name="minExclusive">The minimum integer to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<long> GreaterThan(this IIntGen<long> gen, int minExclusive) => gen.GreaterThanEqual(minExclusive + 1);
+        public static IIntGen<long> GreaterThan(this IIntGen<long> gen, long minExclusive) => gen.GreaterThanEqual(minExclusive + 1);
     }
 }
 
