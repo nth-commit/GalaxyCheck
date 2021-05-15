@@ -1,9 +1,8 @@
-﻿using GalaxyCheck.Properties;
-using System;
+﻿using System;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public static class AnalyzeExplorationForCheck
+    internal static class AnalyzeExplorationForCheck
     {
         public static AnalyzeExploration<Test<T>> Impl<T>() => (example) =>
         {

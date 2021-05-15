@@ -13,15 +13,15 @@ namespace GalaxyCheck.ExampleSpaces
     /// <typeparam name="T">The type of the value to be shrunk.</typeparam>
     /// <param name="value">The value which should be shrunk.</param>
     /// <returns>A sample of smaller values, or an empty enumerable if the value cannot shrink.</returns>
-    public delegate IEnumerable<T> ShrinkFunc<T>(T value);
+    internal delegate IEnumerable<T> ShrinkFunc<T>(T value);
 
-    public delegate (TContext, IEnumerable<T>) ContextualShrinkFunc<T, TContext>(T value, TContext ctx);
+    internal delegate (TContext, IEnumerable<T>) ContextualShrinkFunc<T, TContext>(T value, TContext ctx);
 
-    public delegate TContext NextContextFunc<T, TContext>(T value, TContext ctx);
+    internal delegate TContext NextContextFunc<T, TContext>(T value, TContext ctx);
 
-    public record NoContext;
+    internal record NoContext;
 
-    public interface ContextualShrinker<T, TContext>
+    internal interface ContextualShrinker<T, TContext>
     {
         TContext RootContext { get; }
 
@@ -30,7 +30,7 @@ namespace GalaxyCheck.ExampleSpaces
         NextContextFunc<T, TContext> ContextualTraverse { get; }
     }
 
-    public static class ShrinkFunc
+    internal static class ShrinkFunc
     {
         public static ShrinkFunc<TResult> Map<T, TResult>(
             this ShrinkFunc<T> shrink,

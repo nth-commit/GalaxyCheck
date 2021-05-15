@@ -1,6 +1,6 @@
 ﻿using System;
 
-public record ExplorationOutcome
+internal record ExplorationOutcome
 {
     public record SuccessData;
 

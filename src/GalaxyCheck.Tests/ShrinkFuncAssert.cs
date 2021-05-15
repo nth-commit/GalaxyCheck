@@ -7,7 +7,7 @@ using ES = GalaxyCheck.ExampleSpaces;
 
 namespace Tests
 {
-    public static class ShrinkFuncAssert
+    internal static class ShrinkFuncAssert
     {
         public static void CanShrink<T>(ES.ShrinkFunc<T> shrink, T value)
         {

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace GalaxyCheck.ExampleSpaces
 {
-    public static partial class ExampleSpaceFactory
+    internal static partial class ExampleSpaceFactory
     {
         private record ExampleSpace<T> : IExampleSpace<T>
         {

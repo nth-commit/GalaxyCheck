@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace GalaxyCheck.ExampleSpaces
 {
-    public static class ExampleSpaceExtensions
+    internal static class ExampleSpaceExtensions
     {
         public static IExampleSpace<T> Cast<T>(this IExampleSpace exampleSpace)
         {

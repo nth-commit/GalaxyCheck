@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace GalaxyCheck.ExampleSpaces
 {
-    public static partial class ExampleSpaceFactory
+    internal static partial class ExampleSpaceFactory
     {
         public static IExampleSpace<TResult> Merge<T, TResult>(
             List<IExampleSpace<T>> exampleSpaces,
