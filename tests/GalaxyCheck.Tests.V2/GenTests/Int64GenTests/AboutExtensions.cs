@@ -7,14 +7,14 @@ using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.Int32GenTests
+namespace Tests.V2.GenTests.Int64GenTests
 {
     public class AboutExtensions
     {
         [Property]
         public NebulaCheck.IGen<Test> BetweenDefersToUnderlyingMethods() =>
-            from min in Gen.Int32()
-            from max in Gen.Int32().GreaterThanEqual(min)
+            from min in Gen.Int64()
+            from max in Gen.Int64().GreaterThanEqual(min)
             select Property.ForThese(() =>
             {
                 {
@@ -38,7 +38,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> GreaterThanDefersToUnderlyingMethod() =>
-            from minExclusive in Gen.Int32()
+            from minExclusive in Gen.Int64()
             select Property.ForThese(() =>
             {
                 var mockGen = SetupMock();
@@ -50,7 +50,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> LessThanDefersToUnderlyingMethod() =>
-            from maxExclusive in Gen.Int32()
+            from maxExclusive in Gen.Int64()
             select Property.ForThese(() =>
             {
                 var mockGen = SetupMock();
@@ -60,11 +60,11 @@ namespace Tests.V2.GenTests.Int32GenTests
                 mockGen.Verify(gen => gen.LessThanEqual(maxExclusive - 1), Times.Once);
             });
 
-        private static Mock<IIntGen<int>> SetupMock()
+        private static Mock<IIntGen<long>> SetupMock()
         {
-            var mockGen = new Mock<IIntGen<int>>();
-            mockGen.Setup((gen) => gen.GreaterThanEqual(It.IsAny<int>())).Returns(mockGen.Object);
-            mockGen.Setup((gen) => gen.LessThanEqual(It.IsAny<int>())).Returns(mockGen.Object);
+            var mockGen = new Mock<IIntGen<long>>();
+            mockGen.Setup((gen) => gen.GreaterThanEqual(It.IsAny<long>())).Returns(mockGen.Object);
+            mockGen.Setup((gen) => gen.LessThanEqual(It.IsAny<long>())).Returns(mockGen.Object);
             return mockGen;
         }
     }

@@ -6,18 +6,18 @@ using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.Int32GenTests
+namespace Tests.V2.GenTests.Int64GenTests
 {
     public class AboutConstraints
     {
         [Property]
         public NebulaCheck.IGen<Test> ItProducesValuesGreaterThanOrEqualMinimum() =>
-            from min in Gen.Int32()
+            from min in Gen.Int64()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = GalaxyCheck.Gen.Int32().GreaterThanEqual(min);
+                var gen = GalaxyCheck.Gen.Int64().GreaterThanEqual(min);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 
@@ -26,12 +26,12 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> ItProducesValuesLessThanOrEqualMaximum() =>
-            from max in Gen.Int32()
+            from max in Gen.Int64()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                var gen = GalaxyCheck.Gen.Int32().LessThanEqual(max);
+                var gen = GalaxyCheck.Gen.Int64().LessThanEqual(max);
 
                 var exampleSpace = gen.Advanced.SampleOneExampleSpace(seed: seed, size: size);
 

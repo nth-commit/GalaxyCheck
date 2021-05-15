@@ -9,8 +9,8 @@ namespace Tests.V2.ExampleSpaces
     {
         [Property]
         public IGen<Test> ItShrinksToTheOrigin() =>
-            from origin in Gen.Int32().Select(x => (long)x)
-            from root in Gen.Int32().Select(x => (long)x)
+            from origin in Gen.Int64()
+            from root in Gen.Int64()
             select Property.ForThese(() =>
             {
                 var exampleSpace = ExampleSpaceFactory.Int64(root, origin, long.MinValue, long.MaxValue);
@@ -25,8 +25,8 @@ namespace Tests.V2.ExampleSpaces
 
         [Property]
         public IGen<Test> ForAPositiveRoot_ItShrinksToTheLocalMinimum() =>
-            from localMin in Gen.Int32().GreaterThanEqual(0).Select(x => (long)x)
-            from root in Gen.Int32().GreaterThanEqual((int)localMin).Select(x => (long)x)
+            from localMin in Gen.Int64().GreaterThanEqual(0)
+            from root in Gen.Int64().GreaterThanEqual(localMin)
             select Property.ForThese(() =>
             {
                 var exampleSpace = ExampleSpaceFactory.Int64(root, 0, long.MinValue, long.MaxValue);
@@ -41,8 +41,8 @@ namespace Tests.V2.ExampleSpaces
 
         [Property]
         public IGen<Test> ForANegativeRoot_ItShrinksToTheLocalMaximum() =>
-            from localMax in Gen.Int32().LessThan(0).GreaterThan(int.MinValue).Select(x => (long)x)
-            from root in Gen.Int32().LessThan((int)localMax).Select(x => (long)x)
+            from localMax in Gen.Int64().LessThan(0).GreaterThan(int.MinValue)
+            from root in Gen.Int64().LessThan(localMax)
             select Property.ForThese(() =>
             {
                 var exampleSpace = ExampleSpaceFactory.Int64(root, 0, long.MinValue, long.MaxValue);

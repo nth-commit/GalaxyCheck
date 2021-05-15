@@ -4,7 +4,7 @@ namespace Tests.V2
 {
     public static class DomainGenAttributes
     {
-        public class IterationsAttribute : GenProviderAttribute
+        public class IterationsAttribute : GenAttribute
         {
             public int MinIterations { get; }
 
@@ -18,12 +18,12 @@ namespace Tests.V2
             public override IGen Get => Gen.Int32().Between(MinIterations, 200);
         }
 
-        public class SeedAttribute : GenProviderAttribute
+        public class SeedAttribute : GenAttribute
         {
             public override IGen Get => DomainGen.Seed();
         }
 
-        public class SizeAttribute : GenProviderAttribute
+        public class SizeAttribute : GenAttribute
         {
             public override IGen Get => DomainGen.Size();
         }

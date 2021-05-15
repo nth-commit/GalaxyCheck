@@ -1,8 +1,0 @@
-﻿7 (Id = 7, Distance = 70.0)
-├> 0 (Id = 0, Distance = 0)
-├> 4 (Id = 4, Distance = 40.0)
-|  ├> 1 (Id = 1, Distance = 10.0)
-|  └> 3 (Id = 3, Distance = 30.0)
-|     └> 2 (Id = 2, Distance = 20.0)
-└> 6 (Id = 6, Distance = 60.0)
-   └> 5 (Id = 5, Distance = 50.0)

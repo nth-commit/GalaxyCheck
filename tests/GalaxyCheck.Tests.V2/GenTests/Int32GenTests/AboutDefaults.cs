@@ -17,12 +17,15 @@ namespace Tests.V2.GenTests.Int32GenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
+                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => gen.SampleOneTraversal(seed: seed, size: size);
 
                 var gen0 = GalaxyCheck.Gen.Int32();
                 var gen1 = gen0.GreaterThanEqual(int.MinValue);
 
-                SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
             });
 
         [Property]
@@ -31,12 +34,15 @@ namespace Tests.V2.GenTests.Int32GenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
+                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => gen.SampleOneTraversal(seed: seed, size: size);
 
                 var gen0 = GalaxyCheck.Gen.Int32();
                 var gen1 = gen0.LessThanEqual(int.MaxValue);
 
-                SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
             });
 
         [Property]
@@ -47,12 +53,15 @@ namespace Tests.V2.GenTests.Int32GenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
+                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => gen.SampleOneTraversal(seed: seed, size: size);
 
                 var gen0 = GalaxyCheck.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max);
                 var gen1 = gen0.ShrinkTowards(0);
 
-                SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
             });
 
         [Property]
@@ -63,12 +72,15 @@ namespace Tests.V2.GenTests.Int32GenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
+                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => gen.SampleOneTraversal(seed: seed, size: size);
 
                 var gen0 = GalaxyCheck.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max);
                 var gen1 = gen0.ShrinkTowards(min);
 
-                SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
             });
 
         [Property]
@@ -79,12 +91,15 @@ namespace Tests.V2.GenTests.Int32GenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
+                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => gen.SampleOneTraversal(seed: seed, size: size);
 
                 var gen0 = GalaxyCheck.Gen.Int32().GreaterThanEqual(min).LessThanEqual(max);
                 var gen1 = gen0.ShrinkTowards(max);
 
-                SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
             });
 
         [Property]
@@ -93,18 +108,15 @@ namespace Tests.V2.GenTests.Int32GenTests
             from size in DomainGen.Size()
             select Property.ForThese(() =>
             {
-                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => AboutDefaults.SampleTraversal(gen, seed: seed, size: size);
+                List<int> SampleTraversal(GalaxyCheck.IGen<int> gen) => gen.SampleOneTraversal(seed: seed, size: size);
 
                 var gen0 = GalaxyCheck.Gen.Int32();
                 var gen1 = gen0.WithBias(GalaxyCheck.Gen.Bias.WithSize);
 
-                SampleTraversal(gen0).Should().BeEquivalentTo(SampleTraversal(gen1));
-            });
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
 
-        private static List<int> SampleTraversal(GalaxyCheck.IGen<int> gen, int seed, int size) => gen.Advanced
-            .SampleOneExampleSpace(seed: seed, size: size)
-            .Traverse()
-            .Take(100)
-            .ToList();
+                sample0.Should().BeEquivalentTo(sample1);
+            });
     }
 }
