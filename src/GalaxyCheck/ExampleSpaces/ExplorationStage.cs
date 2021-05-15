@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace GalaxyCheck.ExampleSpaces
 {
-    public record ExplorationStage<T>
+    internal record ExplorationStage<T>
     {
         public record NonCounterexample(IExampleSpace<T> ExampleSpace, IEnumerable<int> Path);
 
@@ -64,7 +64,7 @@ namespace GalaxyCheck.ExampleSpaces
         }
     }
 
-    public static class ExplorationStageExtensions
+    internal static class ExplorationStageExtensions
     {
         public static bool IsCounterexample<T>(this ExplorationStage<T> explorationStage) =>
             explorationStage.Match(

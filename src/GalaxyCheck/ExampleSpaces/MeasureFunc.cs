@@ -2,9 +2,9 @@
 
 namespace GalaxyCheck.ExampleSpaces
 {
-    public delegate decimal MeasureFunc<T>(T value);
+    internal delegate decimal MeasureFunc<T>(T value);
 
-    public static class MeasureFunc
+    internal static class MeasureFunc
     {
         public static MeasureFunc<T> Unmeasured<T>() => (_) => 0;
 

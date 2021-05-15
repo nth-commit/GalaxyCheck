@@ -33,7 +33,7 @@
     }
 
     /// <inheritdoc/>
-    public record Example<T> : IExample<T>
+    internal record Example<T> : IExample<T>
     {
         public ExampleId Id { get; init; }
 
