@@ -34,6 +34,19 @@ namespace Tests.V2
             from x in NebulaCheck.Gen.Int32().Between(0, 1).WithBias(NebulaCheck.Gen.Bias.None)
             select (x == 1);
 
+        public static NebulaCheck.IGen<DateTime> DateTime(
+            DateTime? minDateTime = null,
+            DateTime? maxDateTime = null)
+        {
+            minDateTime ??= System.DateTime.MinValue;
+            maxDateTime ??= System.DateTime.MaxValue;
+            
+            return NebulaCheck.Gen
+                .Int64()
+                .Between(minDateTime.Value.Ticks, maxDateTime.Value.Ticks)
+                .Select(ticks => new DateTime(ticks));
+        }
+
         public static NebulaCheck.IGen<object> Any() => NebulaCheck.Gen.Choose(
             NebulaCheck.Gen.Int32().Cast<object>(),
             Boolean().Cast<object>());

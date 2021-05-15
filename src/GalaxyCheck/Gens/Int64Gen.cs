@@ -5,7 +5,7 @@
     public static partial class Gen
     {
         /// <summary>
-        /// Creates a generator that produces 32-bit integers. By default, it will generate integers in the full range
+        /// Creates a generator that produces 64-bit integers. By default, it will generate integers in the full range
         /// (<see cref="long.MinValue"/> to <see cref="long.MaxValue"/>), but the generator returned contains
         /// configuration methods to constrain the produced integers further.
         /// </summary>
