@@ -5,7 +5,7 @@ using System.Linq;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
-namespace Tests.V2.GenTests.Int32GenTests
+namespace Tests.V2.GenTests.Int64GenTests
 {
     public class AboutRandomnessConsumption
     {
@@ -16,7 +16,7 @@ namespace Tests.V2.GenTests.Int32GenTests
             from size in DomainGen.Size(allowChaos: false)
             select Property.ForThese(() =>
             {
-                var gen = GalaxyCheck.Gen.Int32();
+                var gen = GalaxyCheck.Gen.Int64();
 
                 var sample = gen.Advanced.SampleWithMetrics(iterations: iterations, seed: seed, size: size);
 
