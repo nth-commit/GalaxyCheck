@@ -25,5 +25,23 @@ namespace Tests.V2.GenTests.DateTimeGenTests
                 Snapshot.Match(sample, SnapshotNameExtension.Create(nameExtension));
             }
         }
+
+        [Fact]
+        public void ExampleSpaces()
+        {
+            var seeds = Enumerable.Range(0, 5);
+
+            foreach (var seed in seeds)
+            {
+                var sample = Gen.DateTime().RenderOneTraversal(seed: seed, size: 75);
+
+                var nameExtension = string.Join("_", new[]
+                {
+                    $"Seed_{seed}"
+                });
+
+                Snapshot.Match(sample, SnapshotNameExtension.Create(nameExtension));
+            }
+        }
     }
 }

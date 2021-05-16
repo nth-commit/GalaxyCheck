@@ -75,11 +75,89 @@ namespace GalaxyCheck.Gens
                     return Error("'from' datetime cannot be after 'to' datetime");
                 }
 
-                return Gen
-                    .Int64()
-                    .Between(minDateTime.Ticks, maxDateTime.Ticks)
-                    .Select(ticks => new DateTime(ticks, DateTimeKind.Unspecified));
+                return
+                    from date in DateGen(minDateTime, maxDateTime)
+                    from time in TimeGen(minDateTime, maxDateTime, date)
+                    select date.Add(time);
             }
+        }
+
+        private static IGen<DateTime> DateGen(DateTime minDateTime, DateTime maxDateTime) =>
+            from year in Gen.Int32().Between(minDateTime.Year, maxDateTime.Year)
+            from month in MonthGen(minDateTime, maxDateTime, year)
+            from day in DayGen(minDateTime, maxDateTime, year, month)
+            select new DateTime(
+                year: year,
+                month: month,
+                day: day,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                kind: DateTimeKind.Unspecified);
+
+        private static IGen<int> MonthGen(DateTime minDateTime, DateTime maxDateTime, int year)
+        {
+            var shouldConstrainMinMonth = year == minDateTime.Year;
+            var minMonth = shouldConstrainMinMonth ? minDateTime.Month : 1;
+
+            var shoulConstrainMaxMonth = year == maxDateTime.Year;
+            var maxMonth = shoulConstrainMaxMonth ? maxDateTime.Month : 12;
+
+            return Gen.Int32().Between(minMonth, maxMonth);
+        }
+
+        private static IGen<int> DayGen(DateTime minDateTime, DateTime maxDateTime, int year, int month)
+        {
+            var shouldConstrainMinDay = year == minDateTime.Year && month == minDateTime.Month;
+            var minDay = shouldConstrainMinDay ? minDateTime.Day : 1;
+
+            var shouldConstrainMaxDay = year == maxDateTime.Year && month == maxDateTime.Month;
+            var daysInMonth = DateTime.DaysInMonth(year: year, month: month);
+            var maxDay = shouldConstrainMaxDay ? maxDateTime.Day : daysInMonth;
+
+            return Gen.Int32().Between(minDay, maxDay);
+        }
+
+        private static IGen<TimeSpan> TimeGen(DateTime minDateTime, DateTime maxDateTime, DateTime date)
+        {
+            // It's much more digestible, and probably a solid perf shortcut (reduces number of shrinks), if we just
+            // generate whole seconds. However, we might need to generate dates that have significant ticks - for
+            // example, if the minimum date and maximum date have literally a single tick between them. Let's just
+            // roughly approximate if we might need ticks. If neither of the constraints are the date we generated,
+            // then ticks vs. seconds is ineffectual in terms of violating either of those constraints. There's a
+            // much more precise way to distinguish if ticks matter, but this is good enough for now.
+
+            var timeRequiresTicksResolution = minDateTime.Date == date.Date || maxDateTime.Date == date.Date;
+            return timeRequiresTicksResolution
+                ? TimeGenWithTicksResolution(minDateTime, maxDateTime, date)
+                : TimeGenWithSecondsResolution(minDateTime, maxDateTime, date);
+        }
+
+        private static IGen<TimeSpan> TimeGenWithTicksResolution(DateTime minDateTime, DateTime maxDateTime, DateTime date)
+        {
+            var shouldConstrainMinTime = minDateTime.Date == date;
+            var minTicks = shouldConstrainMinTime ? minDateTime.TimeOfDay.Ticks : 0;
+
+            var shouldConstrainMaxTime = maxDateTime.Date == date;
+            var ticksInDay = TimeSpan.FromHours(24).Ticks - 1;
+            var maxTicks = shouldConstrainMaxTime ? maxDateTime.TimeOfDay.Ticks : ticksInDay;
+
+            return Gen.Int64().Between(minTicks, maxTicks).Select(ticks => TimeSpan.FromTicks(ticks));
+        }
+
+        private static IGen<TimeSpan> TimeGenWithSecondsResolution(DateTime minDateTime, DateTime maxDateTime, DateTime date)
+        {
+            var shouldConstrainMinTime = minDateTime.Date == date;
+            var minSeconds = shouldConstrainMinTime ? (int)minDateTime.TimeOfDay.TotalSeconds : 0;
+
+            var shouldConstrainMaxTime = maxDateTime.Date == date;
+            var ticksInDay = (int)(TimeSpan.FromHours(24).TotalSeconds - 1);
+            var maxSeconds = shouldConstrainMaxTime ? (int)maxDateTime.TimeOfDay.TotalSeconds : ticksInDay;
+
+            return Gen
+                .Int32()
+                .Between(minSeconds, maxSeconds)
+                .Select(seconds => TimeSpan.FromSeconds(seconds));
         }
 
         private static IGen<DateTime> Error(string message) =>

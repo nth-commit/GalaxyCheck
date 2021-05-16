@@ -4,8 +4,6 @@ using NebulaCheck;
 using System;
 using System.Linq;
 using static Tests.V2.DomainGenAttributes;
-using GenAttribute = NebulaCheck.GenAttribute;
-using IGen = NebulaCheck.IGen;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
@@ -13,11 +11,6 @@ namespace Tests.V2.GenTests.DateTimeGenTests
 {
     public class AboutConstraints
     {
-        public class DateTimeAttribute : GenAttribute
-        {
-            public override IGen Get => DomainGen.DateTime();
-        }
-
         [Property]
         public void ItProducesValuesFromTheGivenDate(
             [Seed] int seed,
