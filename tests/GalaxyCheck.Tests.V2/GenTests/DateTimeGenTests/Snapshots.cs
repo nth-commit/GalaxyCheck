@@ -15,7 +15,31 @@ namespace Tests.V2.GenTests.DateTimeGenTests
 
             foreach (var seed in seeds)
             {
-                var sample = Gen.DateTime().Sample(seed: seed);
+                var sample = Gen
+                    .DateTime()
+                    .Select(x => x.ToString("s"))
+                    .Sample(seed: seed);
+
+                var nameExtension = string.Join("_", new[]
+                {
+                    $"Seed_{seed}"
+                });
+
+                Snapshot.Match(sample, SnapshotNameExtension.Create(nameExtension));
+            }
+        }
+
+        [Fact]
+        public void ExampleSpaces()
+        {
+            var seeds = Enumerable.Range(0, 5);
+
+            foreach (var seed in seeds)
+            {
+                var sample = Gen.DateTime().RenderOneTraversal(
+                    seed: seed,
+                    size: 75,
+                    renderer: x => x.ToString("s"));
 
                 var nameExtension = string.Join("_", new[]
                 {
