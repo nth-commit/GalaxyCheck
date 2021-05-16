@@ -44,7 +44,8 @@ namespace Tests.V2
             return NebulaCheck.Gen
                 .Int64()
                 .Between(minDateTime.Value.Ticks, maxDateTime.Value.Ticks)
-                .Select(ticks => new DateTime(ticks));
+                .Select(ticks => new DateTime(ticks, DateTimeKind.Unspecified))
+                .NoShrink();
         }
 
         public static NebulaCheck.IGen<object> Any() => NebulaCheck.Gen.Choose(

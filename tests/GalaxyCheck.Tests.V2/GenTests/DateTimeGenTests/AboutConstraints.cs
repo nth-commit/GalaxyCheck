@@ -4,8 +4,6 @@ using NebulaCheck;
 using System;
 using System.Linq;
 using static Tests.V2.DomainGenAttributes;
-using GenAttribute = NebulaCheck.GenAttribute;
-using IGen = NebulaCheck.IGen;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
@@ -13,11 +11,6 @@ namespace Tests.V2.GenTests.DateTimeGenTests
 {
     public class AboutConstraints
     {
-        public class DateTimeAttribute : GenAttribute
-        {
-            public override IGen Get => DomainGen.DateTime();
-        }
-
         [Property]
         public void ItProducesValuesFromTheGivenDate(
             [Seed] int seed,
@@ -37,7 +30,7 @@ namespace Tests.V2.GenTests.DateTimeGenTests
             [Size] int size,
             [DateTime] DateTime dateTime)
         {
-            var gen = GalaxyCheck.Gen.DateTime().To(dateTime);
+            var gen = GalaxyCheck.Gen.DateTime().Until(dateTime);
 
             var sample = gen.SampleOneTraversal(seed: seed, size: size);
 
@@ -52,7 +45,7 @@ namespace Tests.V2.GenTests.DateTimeGenTests
             from maxDateTime in DomainGen.DateTime(minDateTime: minDateTime)
             select Property.ForThese(() =>
             {
-                var gen = GalaxyCheck.Gen.DateTime().From(minDateTime).To(maxDateTime);
+                var gen = GalaxyCheck.Gen.DateTime().From(minDateTime).Until(maxDateTime);
 
                 var sample = gen.SampleOneTraversal(seed: seed, size: size);
 

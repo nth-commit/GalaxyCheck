@@ -27,5 +27,15 @@ namespace Tests.V2
         {
             public override IGen Get => DomainGen.Size();
         }
+
+        public class DateTimeAttribute : GenAttribute
+        {
+            public override IGen Get => DomainGen.DateTime();
+        }
+
+        public class DateAttribute : GenAttribute
+        {
+            public override IGen Get => DomainGen.DateTime().Select(x => x.Date);
+        }
     }
 }
