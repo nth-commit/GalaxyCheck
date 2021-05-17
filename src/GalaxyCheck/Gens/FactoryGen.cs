@@ -72,11 +72,16 @@ namespace GalaxyCheck.Gens
             new Dictionary<Type, IGen>
             {
                 { typeof(short), Gen.Int16() },
+                { typeof(ushort), Gen.Int16().Select(x => (ushort)x) },
                 { typeof(int), Gen.Int32() },
+                { typeof(uint), Gen.Int32().Select(x => (uint)x) },
                 { typeof(long), Gen.Int64() },
+                { typeof(ulong), Gen.Int64().Select(x => (ulong)x) },
                 { typeof(char), Gen.Char() },
                 { typeof(string), Gen.String() },
-                { typeof(byte), Gen.Byte() }
+                { typeof(byte), Gen.Byte() },
+                { typeof(Guid), Gen.Guid() },
+                { typeof(DateTime), Gen.DateTime() }
             };
 
         private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
