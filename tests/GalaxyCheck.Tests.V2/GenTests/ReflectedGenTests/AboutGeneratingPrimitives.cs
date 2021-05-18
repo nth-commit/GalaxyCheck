@@ -197,5 +197,22 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 sample0.Should().BeEquivalentTo(sample1);
             });
+
+        [Property]
+        public NebulaCheck.IGen<Test> ItCanGenerateBooleans() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                List<bool> SampleTraversal(GalaxyCheck.IGen<bool> gen) => gen.SampleOneTraversal(seed, size);
+
+                var gen0 = GalaxyCheck.Gen.Create<bool>();
+                var gen1 = GalaxyCheck.Gen.Boolean();
+
+                var sample0 = SampleTraversal(gen0);
+                var sample1 = SampleTraversal(gen1);
+
+                sample0.Should().BeEquivalentTo(sample1);
+            });
     }
 }
