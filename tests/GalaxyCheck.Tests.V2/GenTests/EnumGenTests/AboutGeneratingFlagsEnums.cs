@@ -39,7 +39,7 @@ namespace Tests.V2.GenTests.EnumGenTests
         {
             // Should demonstrate the combinatorial factor when generating a flags enum
 
-            var seeds = Enumerable.Range(0, 5);
+            var seeds = Enumerable.Range(0, 3);
 
             var gen = GalaxyCheck.Gen.Enum<AllowedOperations>();
 

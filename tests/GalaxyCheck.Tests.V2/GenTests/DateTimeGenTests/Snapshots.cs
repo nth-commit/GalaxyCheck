@@ -11,28 +11,23 @@ namespace Tests.V2.GenTests.DateTimeGenTests
         [Fact]
         public void Values()
         {
-            var seeds = Enumerable.Range(0, 5);
+            var sample = Gen
+                .DateTime()
+                .Select(x => x.ToString("s"))
+                .Sample(seed: 0);
 
-            foreach (var seed in seeds)
+            var nameExtension = string.Join("_", new[]
             {
-                var sample = Gen
-                    .DateTime()
-                    .Select(x => x.ToString("s"))
-                    .Sample(seed: seed);
+                $"Seed_{0}"
+            });
 
-                var nameExtension = string.Join("_", new[]
-                {
-                    $"Seed_{seed}"
-                });
-
-                Snapshot.Match(sample, SnapshotNameExtension.Create(nameExtension));
-            }
+            Snapshot.Match(sample, SnapshotNameExtension.Create(nameExtension));
         }
 
         [Fact]
         public void ExampleSpaces()
         {
-            var seeds = Enumerable.Range(0, 5);
+            var seeds = Enumerable.Range(0, 3);
 
             foreach (var seed in seeds)
             {

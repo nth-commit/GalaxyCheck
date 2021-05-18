@@ -12,7 +12,7 @@ namespace Tests.V2.GenTests.InfiniteGenTests
         [Fact]
         public void Snapshot_Infinite_Of_0_To_10_Taken_3_Times()
         {
-            var seeds = Enumerable.Range(0, 5);
+            var seeds = Enumerable.Range(0, 3);
 
             var gen = Gen
                 .Int32()
