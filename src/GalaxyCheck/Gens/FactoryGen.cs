@@ -81,7 +81,8 @@ namespace GalaxyCheck.Gens
                 { typeof(string), Gen.String() },
                 { typeof(byte), Gen.Byte() },
                 { typeof(Guid), Gen.Guid() },
-                { typeof(DateTime), Gen.DateTime() }
+                { typeof(DateTime), Gen.DateTime() },
+                { typeof(bool), Gen.Boolean() }
             };
 
         private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
