@@ -17,7 +17,7 @@ namespace Tests.V2.RunnerTests.CheckTests
         [Property]
         public NebulaCheck.IGen<Test> IfTheReplayIsInAnInvalidFormat_ItThrows() =>
             from gen in DomainGen.Gen()
-            from func in Gen.Function<object, bool>(DomainGen.Boolean())
+            from func in Gen.Function<object, bool>(Gen.Boolean())
             from replay in Gen.Constant("0")
             select Property.ForThese(() =>
             {
@@ -32,7 +32,7 @@ namespace Tests.V2.RunnerTests.CheckTests
 
         [Property]
         public NebulaCheck.IGen<Test> IfTheReplayEncodesAnInvalidShrinkPath_ItThrows() =>
-            from func in Gen.Function(DomainGen.Boolean())
+            from func in Gen.Function(Gen.Boolean())
             from replaySeed in Gen.Int32()
             from replaySize in Gen.Int32().Between(0, 100)
             from replayPath in Gen.Int32().ListOf().WithCountGreaterThanEqual(1)
@@ -50,7 +50,7 @@ namespace Tests.V2.RunnerTests.CheckTests
 
         [Property]
         public NebulaCheck.IGen<Test> IfTheReplayEncodesAGenError_ItThrows() =>
-            from func in Gen.Function<object, bool>(DomainGen.Boolean())
+            from func in Gen.Function<object, bool>(Gen.Boolean())
             from replaySeed in Gen.Int32()
             from replaySize in Gen.Int32().Between(0, 100)
             from replayPath in Gen.Int32().ListOf()
@@ -90,7 +90,7 @@ namespace Tests.V2.RunnerTests.CheckTests
         [Property]
         public NebulaCheck.IGen<Test> ItOnlyCallsThePropertyFunctionOnce() =>
             from gen in DomainGen.Gen()
-            from func in Gen.Function<object, bool>(DomainGen.Boolean())
+            from func in Gen.Function<object, bool>(Gen.Boolean())
             from seed in Gen.Int32()
             let property0 = gen.ForAll(func)
             let result0 = property0.Check(seed: seed)

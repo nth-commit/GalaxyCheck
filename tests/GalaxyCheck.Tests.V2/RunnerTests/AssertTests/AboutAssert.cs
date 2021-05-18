@@ -7,6 +7,7 @@ using Xunit;
 using GalaxyCheck;
 using DevGen = GalaxyCheck.Gen;
 using static Tests.V2.DomainGenAttributes;
+using Gen = NebulaCheck.Gen;
 
 namespace Tests.V2.RunnerTests.AssertTests
 {
@@ -94,21 +95,17 @@ namespace Tests.V2.RunnerTests.AssertTests
         }
 
         [Property]
-        public Property WhenIterationsIsZero_ItPasses(
+        public void WhenIterationsIsZero_ItPasses(
             [Seed] int seed,
-            [Size] int size)
+            [Size] int size,
+            bool isPropertyFallible)
         {
-            // TODO: Inject bool when it is supported natively
+            Action action = () => DevGen
+                .Int32()
+                .ForAll(_ => isPropertyFallible)
+                .Assert(iterations: 0, seed: seed, size: size);
 
-            return DomainGen.Boolean().ForAll(isPropertyFallible =>
-            {
-                Action action = () => DevGen
-                    .Int32()
-                    .ForAll(_ => isPropertyFallible)
-                    .Assert(iterations: 0, seed: seed, size: size);
-
-                action.Should().NotThrow();
-            });
+            action.Should().NotThrow();
         }
     }
 }

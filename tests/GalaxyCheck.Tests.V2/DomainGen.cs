@@ -30,46 +30,28 @@ namespace Tests.V2
 
         public static NebulaCheck.IGen<(T, T, T, T)> Four<T>(this NebulaCheck.IGen<T> gen) => NebulaCheck.Gen.Zip(gen, gen, gen, gen    );
 
-        public static NebulaCheck.IGen<bool> Boolean() =>   
-            from x in NebulaCheck.Gen.Int32().Between(0, 1).WithBias(NebulaCheck.Gen.Bias.None)
-            select (x == 1);
-
-        public static NebulaCheck.IGen<DateTime> DateTime(
-            DateTime? minDateTime = null,
-            DateTime? maxDateTime = null)
-        {
-            minDateTime ??= System.DateTime.MinValue;
-            maxDateTime ??= System.DateTime.MaxValue;
-            
-            return NebulaCheck.Gen
-                .Int64()
-                .Between(minDateTime.Value.Ticks, maxDateTime.Value.Ticks)
-                .Select(ticks => new DateTime(ticks, DateTimeKind.Unspecified))
-                .NoShrink();
-        }
-
         public static NebulaCheck.IGen<object> Any() => NebulaCheck.Gen.Choose(
             NebulaCheck.Gen.Int32().Cast<object>(),
-            Boolean().Cast<object>());
+            NebulaCheck.Gen.Boolean().Cast<object>());
 
         public static NebulaCheck.Gens.IListGen<object> AnyList() => Any().ListOf();
 
         public static NebulaCheck.IGen<Action> Action() =>
-            Boolean().Select<bool, Action>(b => () => IfTrueThenThrow(b));
+            NebulaCheck.Gen.Boolean().Select<bool, Action>(b => () => IfTrueThenThrow(b));
 
         public static NebulaCheck.IGen<Action<T0>> Action<T0>() =>
-            Boolean().Select<bool, Action<T0>>(b => (_) => IfTrueThenThrow(b));
+            NebulaCheck.Gen.Boolean().Select<bool, Action<T0>>(b => (_) => IfTrueThenThrow(b));
 
         public static NebulaCheck.IGen<Action<T0, T1>> Action<T0, T1>() =>
-            Boolean().Select<bool, Action<T0, T1>>(b => (_, __) => IfTrueThenThrow(b));
+            NebulaCheck.Gen.Boolean().Select<bool, Action<T0, T1>>(b => (_, __) => IfTrueThenThrow(b));
 
         public static NebulaCheck.IGen<Action<T0, T1, T2>> Action<T0, T1, T2>() =>
-            Boolean().Select<bool, Action<T0, T1, T2>>(b => (_, __, ___) => IfTrueThenThrow(b));
+            NebulaCheck.Gen.Boolean().Select<bool, Action<T0, T1, T2>>(b => (_, __, ___) => IfTrueThenThrow(b));
 
         public static NebulaCheck.IGen<Action<T0, T1, T2, T3>> Action<T0, T1, T2, T3>() =>
-            Boolean().Select<bool, Action<T0, T1, T2, T3>>(b => (_, __, ___, ____) => IfTrueThenThrow(b));
+            NebulaCheck.Gen.Boolean().Select<bool, Action<T0, T1, T2, T3>>(b => (_, __, ___, ____) => IfTrueThenThrow(b));
 
-        public static NebulaCheck.IGen<Func<T, bool>> Predicate<T>() => NebulaCheck.Gen.Function<T, bool>(Boolean());
+        public static NebulaCheck.IGen<Func<T, bool>> Predicate<T>() => NebulaCheck.Gen.Function<T, bool>(NebulaCheck.Gen.Boolean());
 
         private static void IfTrueThenThrow(bool b)
         {

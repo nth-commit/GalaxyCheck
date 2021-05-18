@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Test = NebulaCheck.Test;
 using Property = NebulaCheck.Property;
+using Gen = NebulaCheck.Gen;
 
 namespace Tests.V2.GenTests.DateTimeGenTests
 {
@@ -14,8 +15,8 @@ namespace Tests.V2.GenTests.DateTimeGenTests
         public NebulaCheck.IGen<Test> ItErrorsWhenFromIsAfterUntil() =>
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
-            from fromDateTime in DomainGen.DateTime(minDateTime: DateTime.MinValue.AddMilliseconds(1))
-            from untilDateTime in DomainGen.DateTime(maxDateTime: fromDateTime.AddMilliseconds(-1))
+            from fromDateTime in Gen.DateTime().From(DateTime.MinValue.AddMilliseconds(1))
+            from untilDateTime in Gen.DateTime().Until(fromDateTime.AddMilliseconds(-1))
             select Property.ForThese(() =>
             {
                 var gen = GalaxyCheck.Gen.DateTime().From(fromDateTime).Until(untilDateTime);

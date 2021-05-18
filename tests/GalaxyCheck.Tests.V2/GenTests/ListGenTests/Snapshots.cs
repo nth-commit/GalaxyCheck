@@ -14,8 +14,6 @@ namespace Tests.V2.GenTests.ListGenTests
         [Fact]
         public void Values()
         {
-            var seeds = Enumerable.Range(0, 5);
-
             var gens = new Dictionary<string, IListGen<int>>
             {
                 { "Between_Counts_1_And_4_And_Elements_0_And_10", Gen.Int32().Between(0, 10).ListOf().WithCountBetween(1, 4) },
@@ -26,19 +24,18 @@ namespace Tests.V2.GenTests.ListGenTests
 
             var biases = new[] { Gen.Bias.None, Gen.Bias.WithSize };
 
-            foreach (var seed in seeds)
             foreach (var (betweenDescription, gen) in gens)
             foreach (var bias in biases)
             {
                 var gen0 = gen.WithCountBias(bias);
 
-                var sample = gen.Sample(seed: seed);
+                var sample = gen.Sample(seed: 0);
 
                 var nameExtension = string.Join("_", new[]
                 {
                     betweenDescription,
                     $"Bias_{bias}",
-                    $"Seed_{seed}"
+                    $"Seed_{0}"
                 });
 
                 Snapshot.Match(sample, SnapshotNameExtension.Create(nameExtension));
@@ -46,9 +43,9 @@ namespace Tests.V2.GenTests.ListGenTests
         }
 
         [Fact]
-        public void ExampleSpaces()
+        public void ExampleSpaces_Int32()
         {
-            var seeds = Enumerable.Range(0, 5);
+            var seeds = Enumerable.Range(0, 3);
 
             var gens = new Dictionary<string, IListGen<int>>
             {
