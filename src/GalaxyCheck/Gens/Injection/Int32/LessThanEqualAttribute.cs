@@ -13,6 +13,6 @@ namespace GalaxyCheck.Gens.Injection.Int32
             Max = max;
         }
 
-        public override IGen Get => GalaxyCheck.Gen.Int32().LessThanEqual(Max);
+        public override IGen Value => GalaxyCheck.Gen.Int32().LessThanEqual(Max);
     }
 }

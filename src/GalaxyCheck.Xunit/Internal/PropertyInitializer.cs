@@ -46,7 +46,7 @@ namespace GalaxyCheck.Xunit.Internal
                 testMethodInfo.GetCustomAttributes<GenFactoryAttribute>(inherit: true).FirstOrDefault() ??
                 testClassType.GetCustomAttributes<GenFactoryAttribute>(inherit: true).FirstOrDefault();
 
-            return genFactoryAttribute?.Get;
+            return genFactoryAttribute?.Value;
         }
     }
 }

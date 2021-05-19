@@ -19,7 +19,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
         private class SnakeDialogueAttribute : GalaxyCheck.GenAttribute
         {
-            public override GalaxyCheck.IGen Get => SnakeDialogueGen;
+            public override GalaxyCheck.IGen Value => SnakeDialogueGen;
         }
 
         private static void PropertyOfSnakeDialog([SnakeDialogue] string snekSpek)

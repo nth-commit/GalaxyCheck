@@ -76,7 +76,7 @@ namespace IntegrationSample
 
         public class GenFactoryWhereIntsAreNonNegativeAttribute : GenFactoryAttribute
         {
-            public override IGenFactory Get => Gen.Factory().RegisterType(Gen.Int32().GreaterThanEqual(0));
+            public override IGenFactory Value => Gen.Factory().RegisterType(Gen.Int32().GreaterThanEqual(0));
         }
 
         [Property]

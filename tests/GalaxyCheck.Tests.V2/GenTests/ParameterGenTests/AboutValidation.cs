@@ -10,7 +10,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
     {
         private class StringGenAttribute : GenAttribute
         {
-            public override IGen Get => Gen.String();
+            public override IGen Value => Gen.String();
         }
 
         private static void PropertyWhereTypeOfGenIsNotAssignableToTypeOfParameter([StringGen] int x) { }
@@ -34,7 +34,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
         private class AnotherStringGenAttribute : GenAttribute
         {
-            public override IGen Get => Gen.String();
+            public override IGen Value => Gen.String();
         }
 
         private static void PropertyWithMultipleGenAttributes([StringGen][AnotherStringGen] string x) { }

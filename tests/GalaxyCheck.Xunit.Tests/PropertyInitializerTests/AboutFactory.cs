@@ -113,7 +113,7 @@ namespace Tests.PropertyInitializerTests
 
         private class GenFactory1Attribute : GenFactoryAttribute
         {
-            public override IGenFactory Get => new GenFactory1();
+            public override IGenFactory Value => new GenFactory1();
         }
 
         private class GenFactory2 : IGenFactory
@@ -136,7 +136,7 @@ namespace Tests.PropertyInitializerTests
 
         private class GenFactory2Attribute : GenFactoryAttribute
         {
-            public override IGenFactory Get => new GenFactory2();
+            public override IGenFactory Value => new GenFactory2();
         }
 
 #pragma warning disable xUnit1000 // Test classes must be public
