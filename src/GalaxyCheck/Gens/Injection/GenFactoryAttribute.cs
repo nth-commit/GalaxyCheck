@@ -6,6 +6,6 @@ namespace GalaxyCheck
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public abstract class GenFactoryAttribute : Attribute
     {
-        public abstract IGenFactory Get { get; }
+        public abstract IGenFactory Value { get; }
     }
 }

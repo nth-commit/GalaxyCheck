@@ -12,6 +12,6 @@ namespace GalaxyCheck.Gens.Injection.Int32
             Min = min;
         }
 
-        public override IGen Get => GalaxyCheck.Gen.Int32().GreaterThanEqual(Min);
+        public override IGen Value => GalaxyCheck.Gen.Int32().GreaterThanEqual(Min);
     }
 }

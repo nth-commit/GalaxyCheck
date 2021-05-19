@@ -16,6 +16,6 @@ namespace GalaxyCheck.Gens.Injection.Int32
             Y = y;
         }
 
-        public override IGen Get => GalaxyCheck.Gen.Int32().Between(X, Y);
+        public override IGen Value => GalaxyCheck.Gen.Int32().Between(X, Y);
     }
 }

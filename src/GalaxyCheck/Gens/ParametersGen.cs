@@ -98,7 +98,7 @@ namespace GalaxyCheck.Gens
                 return true;
             }
 
-            gen = genAttribute.Get;
+            gen = genAttribute.Value;
             return true;
         }
 
