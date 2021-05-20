@@ -27,5 +27,10 @@ namespace Tests.V2
         {
             public override IGen Get => DomainGen.Size();
         }
+
+        public class PickGenAttribute : GenAttribute
+        {
+            public override IGen Get => DomainGen.Gen();
+        }
     }
 }
