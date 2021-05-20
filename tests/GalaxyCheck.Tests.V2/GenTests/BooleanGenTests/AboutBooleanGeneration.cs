@@ -34,7 +34,7 @@ namespace Tests.V2.GenTests.BooleanGenTests
             Property.Precondition(sample.First() == true);
 
             sample.Should().HaveCount(2);
-            sample.Skip(1).Single().Should().BeFalse();
+            sample.Should().EndWith(false);
         }
 
         [Fact]
