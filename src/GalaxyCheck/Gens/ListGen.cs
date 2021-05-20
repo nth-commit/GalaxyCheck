@@ -1,6 +1,7 @@
 ﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
+    using GalaxyCheck.Gens.Internal;
 
     public static partial class Gen
     {
@@ -11,7 +12,7 @@
         /// </summary>
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
         /// <returns>The new generator.</returns>
-        public static IListGen<T> List<T>(IGen<T> elementGen) => new ListGen<T>(elementGen);
+        public static IListGen<T> List<T>(IGen<T> elementGen) => new ListGen<T>(elementGen, RangeIntention.Unspecified());
     }
 
     public static partial class Extensions
@@ -117,40 +118,20 @@ namespace GalaxyCheck.Gens
         IListGen<T> DisableCountLimitUnsafe();
     }
 
-    internal abstract record ListGenCountConfig
-    {
-        public record Specific(int Count) : ListGenCountConfig;
-
-        public record Ranged(int? MinCount, int? MaxCount) : ListGenCountConfig;
-    }
-
     internal record ListGen<T>(
         IGen<T> ElementGen,
-        ListGenCountConfig? CountConfig = null,
+        RangeIntention Count,
         Gen.Bias? Bias = null,
         bool? EnableCountLimit = null) : GenProvider<IReadOnlyList<T>>, IListGen<T>
     {
-        public IListGen<T> WithCount(int count) => this with { CountConfig = new ListGenCountConfig.Specific(count) };
+        public IListGen<T> WithCount(int count) =>
+            this with { Count = RangeIntention.Exact(count) };
 
         public IListGen<T> WithCountGreaterThanEqual(int minCount) =>
-            this with
-            {
-                CountConfig = new ListGenCountConfig.Ranged(
-                    MinCount: minCount,
-                    MaxCount: CountConfig is ListGenCountConfig.Ranged rangedCountConfig
-                        ? rangedCountConfig.MaxCount
-                        : null)
-            };
+            this with { Count = Count.WithMinimum(minCount) };
 
         public IListGen<T> WithCountLessThanEqual(int maxCount) =>
-            this with
-            {
-                CountConfig = new ListGenCountConfig.Ranged(
-                    MinCount: CountConfig is ListGenCountConfig.Ranged rangedCountConfig
-                        ? rangedCountConfig.MinCount
-                        : null,
-                    MaxCount: maxCount)
-            };
+            this with { Count = Count.WithMaximum(maxCount) };
 
         public IListGen<T> WithCountBias(Gen.Bias bias) => this with { Bias = bias };
 
@@ -160,97 +141,25 @@ namespace GalaxyCheck.Gens
         {
             get
             {
-                var (minCount, maxCount, countGen) = CountGen();
+                var (minCount, maxCount, countGen) = CountGen(Count, Bias ?? Gen.Bias.WithSize, EnableCountLimit ?? true);
                 var shrink = ShrinkTowardsCount(minCount);
-
                 return
                     from count in countGen
-                    from list in GenOfCount(count, minCount, maxCount, shrink)
+                    from list in GenListOfCount(ElementGen, count, minCount, maxCount, shrink)
                     select list;
             }
         }
 
-        private (int minCount, int maxCount, IGen<int> gen) CountGen()
+        private static (int minCount, int maxCount, IGen<int> gen) CountGen(RangeIntention count, Gen.Bias bias, bool enableCountLimit)
         {
-            static (int minCount, int maxCount, IGen<int> gen) CountError(string message) =>
-                (-1, -1, Gen.Advanced.Error<int>(nameof(ListGen<T>), message));
-
-            static (int minCount, int maxCount, IGen<int> gen) CountLimitError() =>
-                CountError($"Count limit exceeded. This is a built-in safety mechanism to prevent hanging tests. If generating a list with over 1000 elements was intended, relax this constraint by calling {nameof(IListGen<T>)}.{nameof(IListGen<T>.DisableCountLimitUnsafe)}().");
-
-            static (int minCount, int maxCount, IGen<int> gen) SpecificCountGen(int count, bool enableCountLimit)
-            {
-                if (count < 0)
-                {
-                    return CountError("'count' cannot be negative");
-                }
-
-                if (enableCountLimit && count > 1000)
-                {
-                    return CountLimitError();
-                }
-
-                return (count, count, Gen.Constant(count));
-            }
-
-            static (int minCount, int maxCount, IGen<int> gen) RangedCountGen(int? minCount, int? maxCount, Gen.Bias? bias, bool enableCountLimit)
-            {
-                var resolvedMinCount = minCount ?? 0;
-                var resolvedMaxCount = maxCount ?? resolvedMinCount + 20;
-                var resolvedBias = bias ?? Gen.Bias.WithSize;
-
-                if (resolvedMinCount < 0)
-                {
-                    return CountError("'minCount' cannot be negative");
-                }
-
-                if (resolvedMaxCount < 0)
-                {
-                    return CountError("'maxCount' cannot be negative");
-                }
-
-                if (resolvedMinCount > resolvedMaxCount)
-                {
-                    return CountError("'minCount' cannot be greater than 'maxCount'");
-                }
-
-                if (enableCountLimit && (resolvedMinCount > 1000 || resolvedMaxCount > 1000))
-                {
-                    return CountLimitError();
-                }
-
-                // TODO: If minCount == maxCount, defer to SpecificCountGen
-
-                var gen = Gen
-                    .Int32()
-                    .GreaterThanEqual(resolvedMinCount)
-                    .LessThanEqual(resolvedMaxCount)
-                    .WithBias(resolvedBias)
-                    .NoShrink();
-
-                return (resolvedMinCount, resolvedMaxCount, gen);
-            }
-
-            return CountConfig switch
-            {
-                ListGenCountConfig.Specific specificCountConfig => SpecificCountGen(
-                    count: specificCountConfig.Count,
-                    enableCountLimit: EnableCountLimit ?? true),
-                ListGenCountConfig.Ranged rangedCountConfig => RangedCountGen(
-                    minCount: rangedCountConfig.MinCount,
-                    maxCount: rangedCountConfig.MaxCount,
-                    bias: Bias,
-                    enableCountLimit: EnableCountLimit ?? true),
-                null => RangedCountGen(
-                    minCount: null,
-                    maxCount: null,
-                    bias: Bias,
-                    enableCountLimit: EnableCountLimit ?? true),
-                _ => throw new NotSupportedException()
-            };
+            return count.Match(
+                onExact: count => ConstantCountGen(count, enableCountLimit),
+                onBounded: (minCount, maxCount) => RangedCountGen(minCount, maxCount, bias, enableCountLimit),
+                onUnspecified: () => RangedCountGen(null, null, bias, enableCountLimit));
         }
 
-        private IGen<ImmutableList<T>> GenOfCount(
+        private static IGen<ImmutableList<T>> GenListOfCount(
+            IGen<T> elementGen,
             int count,
             int minCount,
             int maxCount,
@@ -260,7 +169,7 @@ namespace GalaxyCheck.Gens
             {
                 var instances = ImmutableList<IGenInstance<T>>.Empty;
 
-                var elementIterationEnumerator = ElementGen.Advanced.Run(parameters).GetEnumerator();
+                var elementIterationEnumerator = elementGen.Advanced.Run(parameters).GetEnumerator();
 
                 while (instances.Count < count)
                 {
@@ -314,6 +223,65 @@ namespace GalaxyCheck.Gens
             });
         }
 
+        private static (int minCount, int maxCount, IGen<int> gen) ConstantCountGen(int count, bool enableCountLimit)
+        {
+            if (count < 0)
+            {
+                return CountError("'count' cannot be negative");
+            }
+
+            if (enableCountLimit && count > 1000)
+            {
+                return CountLimitError();
+            }
+
+            return (count, count, Gen.Constant(count));
+        }
+
+        private static (int minCount, int maxCount, IGen<int> gen) RangedCountGen(
+            int? minCount,
+            int? maxCount,
+            Gen.Bias bias,
+            bool enableCountLimit)
+        {
+            var resolvedMinCount = minCount ?? 0;
+            var resolvedMaxCount = maxCount ?? resolvedMinCount + 20;
+
+            if (resolvedMinCount < 0)
+            {
+                return CountError("'minCount' cannot be negative");
+            }
+
+            if (resolvedMaxCount < 0)
+            {
+                return CountError("'maxCount' cannot be negative");
+            }
+
+            if (resolvedMinCount > resolvedMaxCount)
+            {
+                return CountError("'minCount' cannot be greater than 'maxCount'");
+            }
+
+            if (enableCountLimit && (resolvedMinCount > 1000 || resolvedMaxCount > 1000))
+            {
+                return CountLimitError();
+            }
+
+            var gen = Gen
+                .Int32()
+                .GreaterThanEqual(resolvedMinCount)
+                .LessThanEqual(resolvedMaxCount)
+                .WithBias(bias)
+                .NoShrink();
+
+            return (resolvedMinCount, resolvedMaxCount, gen);
+        }
+
         private static IGen<ImmutableList<T>> Error(string message) => Gen.Advanced.Error<ImmutableList<T>>(nameof(ListGen<T>), message);
-    }
+
+        private static (int minCount, int maxCount, IGen<int> gen) CountError(string message) =>
+            (-1, -1, Gen.Advanced.Error<int>(nameof(ListGen<T>), message));
+
+        private static (int minCount, int maxCount, IGen<int> gen) CountLimitError() =>
+            CountError($"Count limit exceeded. This is a built-in safety mechanism to prevent hanging tests. If generating a list with over 1000 elements was intended, relax this constraint by calling {nameof(IListGen<T>)}.{nameof(IListGen<T>.DisableCountLimitUnsafe)}().");    }
 }
