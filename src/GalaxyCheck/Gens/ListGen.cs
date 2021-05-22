@@ -137,26 +137,32 @@ namespace GalaxyCheck.Gens
 
         public IListGen<T> DisableCountLimitUnsafe() => this with { EnableCountLimit = false };
 
-        protected override IGen<IReadOnlyList<T>> Get
+        protected override IGen<IReadOnlyList<T>> Get => TryGetCountRange(Count).Match(
+            fromLeft: range => GenList( ElementGen, range, Bias ?? Gen.Bias.WithSize, EnableCountLimit ?? true),
+            fromRight: gen => gen);
+
+        private static IGen<IReadOnlyList<T>> GenList(
+            IGen<T> elementGen,
+            (int minCount, int maxCount) range,
+            Gen.Bias bias,
+            bool enableCountLimit)
         {
-            get
+            var (minCount, maxCount) = range;
+
+            if (enableCountLimit && (minCount > 1000 || maxCount > 1000))
             {
-                var (minCount, maxCount, countGen) = CountGen(Count, Bias ?? Gen.Bias.WithSize, EnableCountLimit ?? true);
-                var shrink = ShrinkTowardsCount(minCount);
-                return
-                    from count in countGen
-                    from list in GenListOfCount(ElementGen, count, minCount, maxCount, shrink)
-                    select list;
+                return CountLimitError();
             }
+
+            var shrink = ShrinkTowardsCount(minCount);
+            return
+                from count in GenCount(minCount, maxCount, bias)
+                from list in GenListOfCount(elementGen, count, minCount, maxCount, shrink)
+                select list;
         }
 
-        private static (int minCount, int maxCount, IGen<int> gen) CountGen(RangeIntention count, Gen.Bias bias, bool enableCountLimit)
-        {
-            return count.Match(
-                onExact: count => ConstantCountGen(count, enableCountLimit),
-                onBounded: (minCount, maxCount) => RangedCountGen(minCount, maxCount, bias, enableCountLimit),
-                onUnspecified: () => RangedCountGen(null, null, bias, enableCountLimit));
-        }
+        private static IGen<int> GenCount(int minCount, int maxCount, Gen.Bias bias) =>
+            Gen.Int32().GreaterThanEqual(minCount).LessThanEqual(maxCount).WithBias(bias).NoShrink();
 
         private static IGen<IReadOnlyList<T>> GenListOfCount(
             IGen<T> elementGen,
@@ -223,65 +229,48 @@ namespace GalaxyCheck.Gens
             });
         }
 
-        private static (int minCount, int maxCount, IGen<int> gen) ConstantCountGen(int count, bool enableCountLimit)
+        private static Either<(int minCount, int maxCount), IGen<IReadOnlyList<T>>> TryGetCountRange(RangeIntention count)
         {
-            if (count < 0)
+            Either<(int minCount, int maxCount), IGen<IReadOnlyList<T>>> CountError(string message) =>
+                new Right<(int minCount, int maxCount), IGen<IReadOnlyList<T>>>(Error(message));
+
+            Either<(int minCount, int maxCount), IGen<IReadOnlyList<T>>> FromUnspecified() => (0, 20);
+
+            Either<(int minCount, int maxCount), IGen<IReadOnlyList<T>>> FromExact(int count) =>
+                count < 0 ? CountError("'count' cannot be negative") : (count, count);
+
+            Either<(int minCount, int maxCount), IGen<IReadOnlyList<T>>> FromBounded(int? minCount, int? maxCount)
             {
-                return CountError("'count' cannot be negative");
+                var resolvedMinCount = minCount ?? 0;
+                var resolvedMaxCount = maxCount ?? resolvedMinCount + 20;
+
+                if (resolvedMinCount < 0)
+                {
+                    return CountError("'minCount' cannot be negative");
+                }
+
+                if (resolvedMaxCount < 0)
+                {
+                    return CountError("'maxCount' cannot be negative");
+                }
+
+                if (resolvedMinCount > resolvedMaxCount)
+                {
+                    return CountError("'minCount' cannot be greater than 'maxCount'");
+                }
+
+                return (resolvedMinCount, resolvedMaxCount);
             }
 
-            if (enableCountLimit && count > 1000)
-            {
-                return CountLimitError();
-            }
-
-            return (count, count, Gen.Constant(count));
-        }
-
-        private static (int minCount, int maxCount, IGen<int> gen) RangedCountGen(
-            int? minCount,
-            int? maxCount,
-            Gen.Bias bias,
-            bool enableCountLimit)
-        {
-            var resolvedMinCount = minCount ?? 0;
-            var resolvedMaxCount = maxCount ?? resolvedMinCount + 20;
-
-            if (resolvedMinCount < 0)
-            {
-                return CountError("'minCount' cannot be negative");
-            }
-
-            if (resolvedMaxCount < 0)
-            {
-                return CountError("'maxCount' cannot be negative");
-            }
-
-            if (resolvedMinCount > resolvedMaxCount)
-            {
-                return CountError("'minCount' cannot be greater than 'maxCount'");
-            }
-
-            if (enableCountLimit && (resolvedMinCount > 1000 || resolvedMaxCount > 1000))
-            {
-                return CountLimitError();
-            }
-
-            var gen = Gen
-                .Int32()
-                .GreaterThanEqual(resolvedMinCount)
-                .LessThanEqual(resolvedMaxCount)
-                .WithBias(bias)
-                .NoShrink();
-
-            return (resolvedMinCount, resolvedMaxCount, gen);
+            return count.Match(
+                onUnspecified: () => FromUnspecified(),
+                onExact: count => FromExact(count),
+                onBounded: (minCount, maxCount) => FromBounded(minCount, maxCount));
         }
 
         private static IGen<IReadOnlyList<T>> Error(string message) => Gen.Advanced.Error<IReadOnlyList<T>>(nameof(ListGen<T>), message);
 
-        private static (int minCount, int maxCount, IGen<int> gen) CountError(string message) =>
-            (-1, -1, Gen.Advanced.Error<int>(nameof(ListGen<T>), message));
-
-        private static (int minCount, int maxCount, IGen<int> gen) CountLimitError() =>
-            CountError($"Count limit exceeded. This is a built-in safety mechanism to prevent hanging tests. If generating a list with over 1000 elements was intended, relax this constraint by calling {nameof(IListGen<T>)}.{nameof(IListGen<T>.DisableCountLimitUnsafe)}().");    }
+        private static IGen<IReadOnlyList<T>> CountLimitError() =>
+            Error($"Count limit exceeded. This is a built-in safety mechanism to prevent hanging tests. If generating a list with over 1000 elements was intended, relax this constraint by calling {nameof(IListGen<T>)}.{nameof(IListGen<T>.DisableCountLimitUnsafe)}().");
+    }
 }

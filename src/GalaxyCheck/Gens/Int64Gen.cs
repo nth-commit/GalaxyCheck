@@ -49,11 +49,10 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
+    using GalaxyCheck.Gens.Parameters.Internal;
     using GalaxyCheck.ExampleSpaces;
     using System;
     using System.Collections.Generic;
-    using static GalaxyCheck.Gen;
-    using GalaxyCheck.Gens.Parameters.Internal;
 
     internal class Int64Gen : BaseGen<long>, IIntGen<long>
     {
@@ -109,15 +108,21 @@ namespace GalaxyCheck.Gens
                 return Error("'origin' must be between 'min' and 'max'");
             }
 
-            var origin = config.Origin ?? InferOrigin(min, max);
-            var bias = config.Bias ?? Bias.WithSize;
+            if (min == max)
+            {
+                return Gen.Constant(min);
+            }
 
-            var genFunc = bias == Bias.WithSize
+            var origin = config.Origin ?? InferOrigin(min, max);
+            var bias = config.Bias ?? Gen.Bias.WithSize;
+
+            var genFunc = bias == Gen.Bias.WithSize
                 ? CreateBiasedStatefulGen(min, max, origin)
                 : CreateUnbiasedStatefulGen(min, max);
 
-            return Create(genFunc.Invoke).Unfold(value =>
-                ExampleSpaceFactory.Int64(value: value, origin: origin, min: min, max: max));
+            return Gen
+                .Create(genFunc.Invoke)
+                .Unfold(value => ExampleSpaceFactory.Int64(value: value, origin: origin, min: min, max: max));
         }
 
         private static Int64GenFunc CreateUnbiasedStatefulGen(long min, long max) => (parameters) => ConsumeNextLong(parameters, min, max);
