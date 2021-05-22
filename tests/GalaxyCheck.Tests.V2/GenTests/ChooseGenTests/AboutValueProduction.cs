@@ -14,7 +14,7 @@ namespace Tests.V2.GenTests.ChooseGenTests
         [Property]
         public NebulaCheck.IGen<Test> IfThereIsOneChoice_ItProducesValuesLikeTheSource() =>
             from choiceGen in DomainGen.Gen()
-            from choiceWeight in Gen.Int32().GreaterThan(0)
+            from choiceWeight in Gen.Int32().GreaterThan(1)
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
