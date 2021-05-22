@@ -158,14 +158,14 @@ namespace GalaxyCheck.Gens
                 onUnspecified: () => RangedCountGen(null, null, bias, enableCountLimit));
         }
 
-        private static IGen<ImmutableList<T>> GenListOfCount(
+        private static IGen<IReadOnlyList<T>> GenListOfCount(
             IGen<T> elementGen,
             int count,
             int minCount,
             int maxCount,
             ShrinkFunc<List<IExampleSpace<T>>> shrink)
         {
-            IEnumerable<IGenIteration<ImmutableList<T>>> Run(GenParameters parameters)
+            IEnumerable<IGenIteration<IReadOnlyList<T>>> Run(GenParameters parameters)
             {
                 var instances = ImmutableList<IGenInstance<T>>.Empty;
 
@@ -207,7 +207,7 @@ namespace GalaxyCheck.Gens
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
             }
 
-            return new FunctionalGen<ImmutableList<T>>(Run).Repeat();
+            return new FunctionalGen<IReadOnlyList<T>>(Run).Repeat();
         }
 
         private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsCount(int count)
@@ -277,7 +277,7 @@ namespace GalaxyCheck.Gens
             return (resolvedMinCount, resolvedMaxCount, gen);
         }
 
-        private static IGen<ImmutableList<T>> Error(string message) => Gen.Advanced.Error<ImmutableList<T>>(nameof(ListGen<T>), message);
+        private static IGen<IReadOnlyList<T>> Error(string message) => Gen.Advanced.Error<IReadOnlyList<T>>(nameof(ListGen<T>), message);
 
         private static (int minCount, int maxCount, IGen<int> gen) CountError(string message) =>
             (-1, -1, Gen.Advanced.Error<int>(nameof(ListGen<T>), message));
