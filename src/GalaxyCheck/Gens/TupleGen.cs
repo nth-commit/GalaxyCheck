@@ -4,7 +4,7 @@
     {
         /// <summary>
         /// <para>
-        /// Generates a tuple of two elements, where the value of the elements are sourced from the given generator.
+        /// Generates a tuple of two elements, where the values of the elements are sourced from the given generator.
         /// </para>
         /// <para>
         /// <code>
@@ -21,7 +21,7 @@
 
         /// <summary>
         /// <para>
-        /// Generates a tuple of three elements, where the value of the elements are sourced from the given generator.
+        /// Generates a tuple of three elements, where the values of the elements are sourced from the given generator.
         /// </para>
         /// <para>
         /// <code>
@@ -39,7 +39,7 @@
 
         /// <summary>
         /// <para>
-        /// Generates a tuple of foure elements, where the value of the elements are sourced from the given generator.
+        /// Generates a tuple of four elements, where the values of the elements are sourced from the given generator.
         /// </para>
         /// <para>
         /// <code>
