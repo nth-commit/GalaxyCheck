@@ -159,9 +159,10 @@ namespace GalaxyCheck.Gens
             }
 
             var shrink = ShrinkTowardsCount(minCount);
+            var measureCount = MeasureFunc.DistanceFromOrigin(minCount, minCount, maxCount);
             return
                 from count in GenCount(minCount, maxCount, bias)
-                from list in GenListOfCount(elementGen, count, minCount, maxCount, shrink)
+                from list in GenListOfCount(elementGen, count, shrink, measureCount)
                 select list;
         }
 
@@ -171,9 +172,8 @@ namespace GalaxyCheck.Gens
         private static IGen<IReadOnlyList<T>> GenListOfCount(
             IGen<T> elementGen,
             int count,
-            int minCount,
-            int maxCount,
-            ShrinkFunc<List<IExampleSpace<T>>> shrink)
+            ShrinkFunc<List<IExampleSpace<T>>> shrink,
+            MeasureFunc<int> measureCount)
         {
             IEnumerable<IGenIteration<IReadOnlyList<T>>> Run(GenParameters parameters)
             {
@@ -206,13 +206,11 @@ namespace GalaxyCheck.Gens
 
                 var nextParameters = instances.Any() ? instances.Last().NextParameters : parameters;
 
-                var measureListCount = MeasureFunc.DistanceFromOrigin(minCount, minCount, maxCount);
-
                 var exampleSpace = ExampleSpaceFactory.Merge(
                     instances.Select(instance => instance.ExampleSpace).ToList(),
                     values => values.ToImmutableList(),
                     shrink,
-                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureListCount(exampleSpaces.Count));
+                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count));
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
             }
