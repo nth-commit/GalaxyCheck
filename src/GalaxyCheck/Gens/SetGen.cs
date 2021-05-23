@@ -11,7 +11,43 @@
 
     public static partial class Extensions
     {
-        public static IGen<IReadOnlyCollection<T>> SetOf<T>(this IGen<T> elementGen) => Gen.Set(elementGen);
+        /// <summary>
+        /// Creates a generator that produces sets, the elements of which are produced by the given generator. By
+        /// default, the generator produces sets ranging from count 0 to 20 - but this can be configured using the
+        /// builder methods on <see cref="ISetGen{T}"/>.
+        /// </summary>
+        /// <param name="elementGen">The generator used to produce the elements of the set.</param>
+        /// <returns>The new generator.</returns>
+        public static ISetGen<T> SetOf<T>(this IGen<T> gen) => Gen.Set(gen);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces sets with counts within the supplied range (inclusive).
+        /// </summary>
+        /// <param name="x">The first bound of the range.</param>
+        /// <param name="y">The second bound of the range.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static ISetGen<T> WithCountBetween<T>(this ISetGen<T> gen, int x, int y)
+        {
+            var minCount = x > y ? y : x;
+            var maxCount = x > y ? x : y;
+            return gen.WithCountGreaterThanEqual(minCount).WithCountLessThanEqual(maxCount);
+        }
+
+        /// <summary>
+        /// Constrains the generator so that it only produces sets with greater than the given count.
+        /// </summary>
+        /// <param name="exclusiveMinCount">The minimum count that generated sets should be constrained to.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static ISetGen<T> WithCountGreaterThan<T>(this ISetGen<T> gen, int exclusiveMinCount) =>
+            gen.WithCountGreaterThanEqual(exclusiveMinCount + 1);
+
+        /// <summary>
+        /// Constrains the generator so that it only produces sets less than the given count.
+        /// </summary>
+        /// <param name="exclusiveMaxCount">The maximum count that generated sets should be constrained to.</param>
+        /// <returns>A new generator with the constraint applied.</returns>
+        public static ISetGen<T> WithCountLessThan<T>(this ISetGen<T> gen, int exclusiveMaxCount) =>
+            gen.WithCountLessThanEqual(exclusiveMaxCount - 1);
     }
 }
 
