@@ -12,7 +12,11 @@
         /// </summary>
         /// <param name="elementGen">The generator used to produce the elements of the list.</param>
         /// <returns>The new generator.</returns>
-        public static IListGen<T> List<T>(IGen<T> elementGen) => new ListGen<T>(elementGen, RangeIntention.Unspecified());
+        public static IListGen<T> List<T>(IGen<T> elementGen) => new ListGen<T>(
+            ElementGen: elementGen,
+            Count: RangeIntention.Unspecified(),
+            Bias: null,
+            EnableCountLimit: null);
     }
 
     public static partial class Extensions
@@ -114,15 +118,15 @@ namespace GalaxyCheck.Gens
         /// </code>
         /// </para>
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A new generator with the limit disabled.</returns>
         IListGen<T> DisableCountLimitUnsafe();
     }
 
     internal record ListGen<T>(
         IGen<T> ElementGen,
         RangeIntention Count,
-        Gen.Bias? Bias = null,
-        bool? EnableCountLimit = null) : GenProvider<IReadOnlyList<T>>, IListGen<T>
+        Gen.Bias? Bias,
+        bool? EnableCountLimit) : GenProvider<IReadOnlyList<T>>, IListGen<T>
     {
         public IListGen<T> WithCount(int count) =>
             this with { Count = RangeIntention.Exact(count) };
