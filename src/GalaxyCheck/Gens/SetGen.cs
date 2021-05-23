@@ -7,8 +7,7 @@
     {
         public static ISetGen<T> Set<T>(IGen<T> elementGen) => new SetGen<T>(
             ElementGen: elementGen,
-            Count: RangeIntention.Unspecified(),
-            EnableCountLimit: null);
+            Count: RangeIntention.Unspecified());
     }
 
     public static partial class Extensions
@@ -55,9 +54,16 @@
 
 namespace GalaxyCheck.Gens
 {
+    using GalaxyCheck.ExampleSpaces;
     using GalaxyCheck.Gens.Internal;
+    using GalaxyCheck.Gens.Internal.Iterations;
+    using GalaxyCheck.Gens.Iterations.Generic;
+    using GalaxyCheck.Gens.Parameters;
     using GalaxyCheck.Internal;
+    using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
 
     public interface ISetGen<T> : IGen<IReadOnlyCollection<T>>
     {
@@ -87,30 +93,11 @@ namespace GalaxyCheck.Gens
         /// </summary>
         /// <returns>A new generator with the biasing effect applied.</returns>
         ISetGen<T> WithCountBias(Gen.Bias bias);
-
-        /// <summary>
-        /// <para>
-        /// By default, trying to generate a set with a count greater than 1000 is disabled. This is a built-in
-        /// safety mechanism to prevent confusing test failures or hangs. Huge sets can potentially blow out the
-        /// performance footprint of a test to unattainable levels, because the generation performance for sets is
-        /// O(n).
-        /// </para>
-        /// <para>
-        /// It's quite easy to accidentally create a set generator for huge sets. For example, the following code
-        /// might otherwise attempt to generate a list with count int.MaxValue:
-        /// <code>
-        /// Gen.Int32().GreaterThanEqual(0).SelectMany(count => Gen.Int32().SetOf().WithCount(count));
-        /// </code>
-        /// </para>
-        /// </summary>
-        /// <returns>A new generator with the limit disabled.</returns>
-        ISetGen<T> DisableCountLimitUnsafe();
     }
 
     internal record SetGen<T>(
         IGen<T> ElementGen,
-        RangeIntention Count,
-        bool? EnableCountLimit) : GenProvider<IReadOnlyCollection<T>>, ISetGen<T>
+        RangeIntention Count) : GenProvider<IReadOnlyCollection<T>>, ISetGen<T>
     {
         public ISetGen<T> WithCount(int count) => this with { Count = RangeIntention.Exact(count) };
 
@@ -123,28 +110,89 @@ namespace GalaxyCheck.Gens
             throw new System.NotImplementedException();
         }
 
-        public ISetGen<T> DisableCountLimitUnsafe() => this with { EnableCountLimit = false };
-
         protected override IGen<IReadOnlyCollection<T>> Get => TryGetCountRange(Count).Match(
             fromLeft: range => range == null
                 ? GenSetOfUnspecifiedCount(ElementGen, (0, 0), Gen.Bias.WithSize)
-                : GenSetOfSpecifiedCount(ElementGen, range.Value, Gen.Bias.WithSize, EnableCountLimit ?? true),
+                : GenSetOfSpecifiedCount(ElementGen, range.Value, Gen.Bias.WithSize),
             fromRight: gen => gen);
 
         private static IGen<IReadOnlyCollection<T>> GenSetOfSpecifiedCount(
             IGen<T> elementGen,
             (int minCount, int maxCount) range,
-            Gen.Bias bias,
-            bool enableCountLimit)
+            Gen.Bias bias)
         {
             var (minCount, maxCount) = range;
 
-            if (enableCountLimit && (minCount > 1000 || maxCount > 1000))
+            var shrink = ShrinkTowardsCount(minCount);
+            var measureCount = MeasureFunc.DistanceFromOrigin(minCount, minCount, maxCount);
+            return
+                from count in GenCount(minCount, maxCount, bias)
+                from list in GenSetOfCount(elementGen, count, minCount, shrink, measureCount)
+                select list;
+        }
+
+        private static IGen<int> GenCount(int minCount, int maxCount, Gen.Bias bias) =>
+            Gen.Int32().GreaterThanEqual(minCount).LessThanEqual(maxCount).WithBias(bias).NoShrink();
+
+        private static IGen<IReadOnlyCollection<T>> GenSetOfCount(
+            IGen<T> elementGen,
+            int count,
+            int minCount,
+            ShrinkFunc<List<IExampleSpace<T>>> shrink,
+            MeasureFunc<int> measureCount)
+        {
+            IEnumerable<IGenIteration<IReadOnlyCollection<T>>> Run(GenParameters parameters)
             {
-                return CountLimitError();
+                var nextParameters = parameters;
+                var values = ImmutableHashSet<T>.Empty;
+                var instances = ImmutableList<IGenInstance<T>>.Empty;
+
+                while (instances.Count < count)
+                {
+                    var elementIterationEnumerator = elementGen
+                        .Where(value => values.Contains(value) == false)
+                        .Advanced.Run(nextParameters).GetEnumerator();
+
+                    while (true)
+                    {
+                        if (!elementIterationEnumerator.MoveNext())
+                        {
+                            throw new Exception("Fatal: Element generator exhausted");
+                        }
+
+                        var either = elementIterationEnumerator.Current.ToEither<T, ImmutableList<T>>();
+
+                        if (either.IsLeft(out IGenInstance<T> instance))
+                        {
+                            instances = instances.Add(instance);
+                            values = values.Add(instance.ExampleSpace.Current.Value);
+                            nextParameters = instance.NextParameters;
+                            break;
+                        }
+                        else if (either.IsRight(out IGenIteration<ImmutableList<T>> right))
+                        {
+                            yield return right;
+                        }
+                        else
+                        {
+                            throw new Exception("Fatal: Unhandled branch");
+                        }
+
+                    }
+                }
+
+                var exampleSpace = ExampleSpaceFactory
+                    .Merge(
+                        instances.Select(instance => instance.ExampleSpace).ToList(),
+                        values => new HashSet<T>(values),
+                        shrink,
+                        exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count))
+                    .Filter(set => set.Count >= minCount);
+
+                yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace!);
             }
 
-            return Gen.Constant(new List<T>());
+            return new FunctionalGen<IReadOnlyCollection<T>>(Run).Repeat();
         }
 
         private static IGen<IReadOnlyCollection<T>> GenSetOfUnspecifiedCount(
@@ -153,6 +201,19 @@ namespace GalaxyCheck.Gens
             Gen.Bias bias)
         {
             return Gen.Constant(new List<T>());
+        }
+
+        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsCount(int count)
+        {
+            // If the value type is a collection, that is, this generator is building a "collection of collections",
+            // it is "less complex" to order the inner collections by descending count. It also lets us find the
+            // minimal shrink a lot more efficiently in some examples,
+            // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
+
+            return ShrinkFunc.TowardsCountOptimized<IExampleSpace<T>, decimal>(count, exampleSpace =>
+            {
+                return -exampleSpace.Current.Distance;
+            });
         }
 
         private static Either<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>> TryGetCountRange(RangeIntention count)
@@ -197,8 +258,5 @@ namespace GalaxyCheck.Gens
 
         private static IGen<IReadOnlyCollection<T>> Error(string message) =>
             Gen.Advanced.Error<IReadOnlyCollection<T>>(nameof(SetGen<T>), message);
-
-        private static IGen<IReadOnlyCollection<T>> CountLimitError() =>
-            Error($"Count limit exceeded. This is a built-in safety mechanism to prevent hanging tests. If generating a list with over 1000 elements was intended, relax this constraint by calling {nameof(ISetGen<T>)}.{nameof(ISetGen<T>.DisableCountLimitUnsafe)}().");
     }
 }
