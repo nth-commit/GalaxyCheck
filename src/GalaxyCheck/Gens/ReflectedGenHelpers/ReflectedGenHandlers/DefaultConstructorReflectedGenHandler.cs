@@ -30,24 +30,24 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
         private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context, ContextualErrorFactory errorFactory)
         {
-            T instance;
-            try
-            {
-                instance = (T)Activator.CreateInstance(typeof(T));
-            }
-            catch (TargetInvocationException ex)
-            {
-                var innerEx = ex.InnerException;
-                var message = $"'{innerEx.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
-                return errorFactory(message, context).Cast<T>();
-            }
-
             return Gen
                 .Zip(
                     Gen.Zip(CreateSetPropertyActionGens(innerHandler, typeof(T), context)),
                     Gen.Zip(CreateSetFieldActionGens(innerHandler, typeof(T), context)))
                 .SelectMany((x) =>
                 {
+                    T instance;
+                    try
+                    {
+                        instance = (T)Activator.CreateInstance(typeof(T));
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        var innerEx = ex.InnerException;
+                        var message = $"'{innerEx.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
+                        return errorFactory(message, context).Cast<T>();
+                    }
+
                     foreach (var setPropertyAction in x.Item1)
                     {
                         try
