@@ -110,7 +110,7 @@ namespace GalaxyCheck.Runners.Sample
         {
             var property = advanced.AsGen().ForAll(_ => true);
 
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
+            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, deepCheck: false);
 
             var values = checkResult.Checks
                 .OfType<CheckIteration.Check<T>>()
@@ -134,7 +134,7 @@ namespace GalaxyCheck.Runners.Sample
                 .Where(TestMeetsPrecondition)
                 .Select(MuteTestFailure);
 
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
+            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, deepCheck: false);
 
             var values = checkResult.Checks
                 .OfType<CheckIteration.Check<T>>()
