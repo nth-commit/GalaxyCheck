@@ -112,7 +112,7 @@ namespace GalaxyCheck.Gens
 
         protected override IGen<IReadOnlyCollection<T>> Get => TryGetCountRange(Count).Match(
             fromLeft: range => range == null
-                ? GenSetOfUnspecifiedCount(ElementGen, (0, 0), Gen.Bias.WithSize)
+                ? GenSetOfUnspecifiedCount(ElementGen, Gen.Bias.WithSize)
                 : GenSetOfSpecifiedCount(ElementGen, range.Value, Gen.Bias.WithSize),
             fromRight: gen => gen);
 
@@ -127,8 +127,8 @@ namespace GalaxyCheck.Gens
             var measureCount = MeasureFunc.DistanceFromOrigin(minCount, minCount, maxCount);
             return
                 from count in GenCount(minCount, maxCount, bias)
-                from list in GenSetOfCount(elementGen, count, minCount, shrink, measureCount)
-                select list;
+                from set in GenSetOfCount(elementGen, count, minCount, shrink, measureCount)
+                select set;
         }
 
         private static IGen<int> GenCount(int minCount, int maxCount, Gen.Bias bias) =>
@@ -197,23 +197,85 @@ namespace GalaxyCheck.Gens
 
         private static IGen<IReadOnlyCollection<T>> GenSetOfUnspecifiedCount(
             IGen<T> elementGen,
-            (int minCount, int maxCount) range,
             Gen.Bias bias)
         {
-            return Gen.Constant(new List<T>());
+            var minAttempts = 0;
+            var maxAttempts = 100;
+
+            var shrink = ShrinkTowardsCount(0);
+            var measureCount = MeasureFunc.DistanceFromOrigin(minAttempts, minAttempts, maxAttempts);
+
+            return
+                from attempts in Gen.Int32().Between(minAttempts, maxAttempts).WithBias(bias).NoShrink()
+                from set in GenSetOfAttempts(elementGen, attempts, shrink, measureCount)
+                select set;
+        }
+
+        private static IGen<IReadOnlyCollection<T>> GenSetOfAttempts(
+            IGen<T> elementGen,
+            int attempts,
+            ShrinkFunc<List<IExampleSpace<T>>> shrink,
+            MeasureFunc<int> measureCount)
+        {
+            IEnumerable<IGenIteration<IReadOnlyCollection<T>>> Run(GenParameters parameters)
+            {
+                var nextParameters = parameters;
+                var values = ImmutableHashSet<T>.Empty;
+                var instances = ImmutableList<IGenInstance<T>>.Empty;
+                var numberOfAttempts = 0;
+
+                while (numberOfAttempts < attempts)
+                {
+                    var elementIterationEnumerator = elementGen
+                        .Where(value => values.Contains(value) == false)
+                        .Advanced.Run(nextParameters).GetEnumerator();
+
+                    while (numberOfAttempts < attempts)
+                    {
+                        if (!elementIterationEnumerator.MoveNext())
+                        {
+                            throw new Exception("Fatal: Element generator exhausted");
+                        }
+
+                        var either = elementIterationEnumerator.Current.ToEither<T, ImmutableList<T>>();
+
+                        if (either.IsLeft(out IGenInstance<T> instance))
+                        {
+                            numberOfAttempts++;
+                            instances = instances.Add(instance);
+                            values = values.Add(instance.ExampleSpace.Current.Value);
+                            nextParameters = instance.NextParameters;
+                            break;
+                        }
+                        else if (either.IsRight(out IGenIteration<ImmutableList<T>> right))
+                        {
+                            numberOfAttempts++;
+                            yield return right;
+                        }
+                        else
+                        {
+                            throw new Exception("Fatal: Unhandled branch");
+                        }
+                    }
+                }
+
+                var exampleSpace = ExampleSpaceFactory.Merge(
+                    instances.Select(instance => instance.ExampleSpace).ToList(),
+                    values => new HashSet<T>(values),
+                    shrink,
+                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count));
+
+                yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace!);
+            }
+
+            return new FunctionalGen<IReadOnlyCollection<T>>(Run).Repeat();
         }
 
         private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsCount(int count)
         {
-            // If the value type is a collection, that is, this generator is building a "collection of collections",
-            // it is "less complex" to order the inner collections by descending count. It also lets us find the
-            // minimal shrink a lot more efficiently in some examples,
-            // e.g. https://github.com/jlink/shrinking-challenge/blob/main/challenges/large_union_list.md
-
-            return ShrinkFunc.TowardsCountOptimized<IExampleSpace<T>, decimal>(count, exampleSpace =>
-            {
-                return -exampleSpace.Current.Distance;
-            });
+            // Order of sets should not be important, so don't provide a variable order function. This cuts down the
+            // number of shrinks.
+            return ShrinkFunc.TowardsCountOptimized<IExampleSpace<T>, decimal>(count, exampleSpace => 0);
         }
 
         private static Either<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>> TryGetCountRange(RangeIntention count)
