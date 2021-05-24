@@ -30,14 +30,16 @@ namespace GalaxyCheck.Gens.Enum
 
     internal static class EnumGenHelpers
     {
-        // TODO: This will shrink more efficiently in the future if we use Gen.Set (currently non-existent API). Then,
-        // we won't need to witness the shrinks for duplicate enum values that get erased in the aggregation.
-        public static IGen<T> GenFlagsEnum<T>() => Gen
-            .Element(System.Enum.GetValues(typeof(T)).Cast<int>())
-            .ListOf()
-            .WithCountGreaterThan(0)
-            .Select(xs => xs.Aggregate(0, (acc, curr) => acc | curr))
-            .Cast<T>();
+        public static IGen<T> GenFlagsEnum<T>()
+        {
+            var values = System.Enum.GetValues(typeof(T)).Cast<int>();
+            return Gen
+                .Element(values)
+                .SetOf()
+                .WithCountBetween(1, values.Count())
+                .Select(xs => xs.Aggregate(0, (acc, curr) => acc | curr))
+                .Cast<T>();
+        }
 
         public static IGen<T> GenNonFlagsEnum<T>() => Gen.Element(System.Enum.GetValues(typeof(T)).Cast<T>());
     }
