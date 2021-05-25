@@ -15,24 +15,24 @@ namespace Tests.V2
                 MinIterations = minIterations;
             }
 
-            public override IGen Get => Gen.Int32().Between(MinIterations, 200);
+            public override IGen Value => Gen.Int32().Between(MinIterations, 200);
         }
 
         public class SeedAttribute : GenAttribute
         {
-            public override IGen Get => DomainGen.Seed();
+            public override IGen Value => DomainGen.Seed();
         }
 
         public class SizeAttribute : GenAttribute
         {
             public bool AllowChaos { get; set; } = true;
 
-            public override IGen Get => DomainGen.Size(AllowChaos);
+            public override IGen Value => DomainGen.Size(AllowChaos);
         }
 
         public class PickGenAttribute : GenAttribute
         {
-            public override IGen Get => DomainGen.Gen();
+            public override IGen Value => DomainGen.Gen();
         }
     }
 }
