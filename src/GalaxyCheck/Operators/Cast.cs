@@ -24,5 +24,11 @@ namespace GalaxyCheck
                     onDiscard: discard => GenIterationFactory.Discard<T>(
                         iteration.ReplayParameters,
                         iteration.NextParameters))));
+
+        public static IGen<T> Cast<T>(this IGen<T> gen)
+        {
+            IGen gen0 = gen;
+            return gen0.Cast<T>();
+        }
     }
 }
