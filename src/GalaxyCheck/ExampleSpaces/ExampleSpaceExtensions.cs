@@ -10,10 +10,17 @@ namespace GalaxyCheck.ExampleSpaces
     {
         public static IExampleSpace<T> Cast<T>(this IExampleSpace exampleSpace)
         {
-            var example = new Example<T>(
-                exampleSpace.Current.Id,
-                (T)exampleSpace.Current.Value,
-                exampleSpace.Current.Distance);
+            T newValue;
+            try
+            {
+                newValue = (T)exampleSpace.Current.Value;
+            }
+            catch
+            {
+                newValue = (T)Convert.ChangeType(exampleSpace.Current.Value, typeof(T));
+            }
+
+            var example = new Example<T>(exampleSpace.Current.Id, newValue, exampleSpace.Current.Distance);
 
             var subspace = exampleSpace.Subspace.Select(child => Cast<T>(child));
 

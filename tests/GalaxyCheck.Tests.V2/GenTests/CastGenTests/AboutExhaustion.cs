@@ -2,17 +2,17 @@
 using GalaxyCheck;
 using NebulaCheck;
 using System;
+using System.Linq;
 using static Tests.V2.DomainGenAttributes;
 
-namespace Tests.V2.GenTests.SetGenTests
+namespace Tests.V2.GenTests.CastGenTests
 {
     public class AboutExhaustion
     {
         [Property(Iterations = 1)]
-        public void ItExhaustsWhenGeneratingASetOfAnImpossibleSize([Seed] int seed, [Size] int size)
+        public void IfTheSourceGeneratorExhaustsThenTheCastGeneratorExhausts([Seed] int seed, [Size] int size)
         {
-            var elementGen = GalaxyCheck.Gen.Boolean();
-            var gen = GalaxyCheck.Gen.Set(elementGen).WithCount(3);
+            var gen = GalaxyCheck.Gen.Int32().Where(x => false).Cast<object>();
 
             Action test = () => gen.SampleOne(seed: seed, size: size);
 

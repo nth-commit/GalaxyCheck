@@ -25,7 +25,9 @@ namespace Tests.V2
 
         public class SizeAttribute : GenAttribute
         {
-            public override IGen Get => DomainGen.Size();
+            public bool AllowChaos { get; set; } = true;
+
+            public override IGen Get => DomainGen.Size(AllowChaos);
         }
 
         public class PickGenAttribute : GenAttribute

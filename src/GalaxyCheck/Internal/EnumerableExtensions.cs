@@ -167,7 +167,7 @@ namespace GalaxyCheck.Internal
                 {
                     var (element, consecutiveDiscardCount) = x;
 
-                    if (consecutiveDiscardCount > 100)
+                    if (consecutiveDiscardCount > 500)
                     {
                         throw new Exceptions.GenExhaustionException();
                     }

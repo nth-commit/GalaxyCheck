@@ -15,10 +15,11 @@ namespace GalaxyCheck
             int? size = null,
             int? shrinkLimit = null,
             string? replay = null,
+            bool deepCheck = true,
             Func<string, string>? formatReproduction = null,
             Func<string, string>? formatMessage = null)
         {
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, shrinkLimit: shrinkLimit, replay: replay);
+            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, shrinkLimit: shrinkLimit, replay: replay, deepCheck: deepCheck);
 
             if (checkResult.Falsified)
             {
