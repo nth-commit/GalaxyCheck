@@ -29,7 +29,8 @@ namespace GalaxyCheck.Runners
                     Converters =
                     {
                         new DelegateConverterFactory(),
-                        new TupleConverterFactory()
+                        new TupleConverterFactory(),
+                        new DictionaryConverterFactory(),
                     }
                 }));
         }
@@ -97,6 +98,46 @@ namespace GalaxyCheck.Runners
                     }
 
                     writer.WriteEndObject();
+                }
+            }
+        }
+
+        private class DictionaryConverterFactory : JsonConverterFactory
+        {
+            public override bool CanConvert(Type typeToConvert) =>
+                typeToConvert.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+
+            public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+            {
+                var genericArgs = typeToConvert.GetGenericArguments();
+                var genericDictionaryConvertor = typeof(DictionaryConverter<,>).MakeGenericType(genericArgs);
+
+                return (JsonConverter)Activator.CreateInstance(genericDictionaryConvertor);
+            }
+
+            private class DictionaryConverter<TKey, TValue> : JsonConverter<IDictionary<TKey, TValue>>
+            {
+                public override IDictionary<TKey, TValue>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+                    throw new NotImplementedException();
+
+                public override void Write(Utf8JsonWriter writer, IDictionary<TKey, TValue> dictionary, JsonSerializerOptions options)
+                {
+                    if (typeof(TKey) == typeof(string) || typeof(TKey) == typeof(int))
+                    {
+                        JsonSerializer.Serialize(writer, dictionary, options);
+                    }
+                    else
+                    {
+                        writer.WriteStartArray();
+
+                        foreach (var (kvp, i) in dictionary.Select((kvp, i) => (kvp, i)))
+                        {
+                            writer.WriteCommentValue(JsonSerializer.Serialize(kvp.Key, options) + ":");
+                            JsonSerializer.Serialize(writer, kvp.Value, options);
+                        }
+
+                        writer.WriteEndArray();
+                    }
                 }
             }
         }

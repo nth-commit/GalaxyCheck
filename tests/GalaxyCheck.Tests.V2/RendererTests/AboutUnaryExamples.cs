@@ -26,6 +26,8 @@ namespace Tests.V2.RendererTests
             { 1, "1" },
             { new List<int> { 1, 2, 3 }, "[1,2,3]" },
             { new List<string> { "a", "b", "c" }, @"[""a"",""b"",""c""]" },
+            { new Dictionary<string, int> { { "A", 1 } }, @"{""A"":1}" },
+            { new Dictionary<RecordObj, int> { { new RecordObj(1, 2, 3), 4 } }, @"[/*{""A"":1,""B"":2,""C"":3}:*/4]" },
             { new RecordObj(1, 2, 3), @"{""A"":1,""B"":2,""C"":3}" },
             { new ClassObj(1, 2, 3), @"{""A"":1,""B"":2,""C"":3}" },
             { new { a = 1, b = 2, c = 3 }, @"{""a"":1,""b"":2,""c"":3}" },
