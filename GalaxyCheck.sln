@@ -11,6 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Sandbox", "src\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AF6C5C2C-8D09-4C77-8D8B-4257A18A5E5E}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		nuget.config = nuget.config
 	EndProjectSection
 EndProject
@@ -20,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit", "src\Ga
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.Tests", "tests\GalaxyCheck.Xunit.Tests\GalaxyCheck.Xunit.Tests.csproj", "{E13F7602-3F1E-4F12-A766-ADD11BD3E409}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Benchmarks", "tests\GalaxyCheck.Benchmarks\GalaxyCheck.Benchmarks.csproj", "{441B28CF-1EC6-4B8E-AB4B-CDBC97C2E7EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Benchmarks", "tests\GalaxyCheck.Benchmarks\GalaxyCheck.Benchmarks.csproj", "{441B28CF-1EC6-4B8E-AB4B-CDBC97C2E7EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
