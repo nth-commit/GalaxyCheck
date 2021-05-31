@@ -24,19 +24,25 @@ namespace Tests.V2.RendererTests
         {
             { null, "null" },
             { 1, "1" },
-            { new List<int> { 1, 2, 3 }, "[1,2,3]" },
-            { new List<string> { "a", "b", "c" }, @"[""a"",""b"",""c""]" },
-            { new Dictionary<string, int> { { "A", 1 } }, @"{""A"":1}" },
-            { new Dictionary<RecordObj, int> { { new RecordObj(1, 2, 3), 4 } }, @"[/*{""A"":1,""B"":2,""C"":3}:*/4]" },
-            { new RecordObj(1, 2, 3), @"{""A"":1,""B"":2,""C"":3}" },
-            { new ClassObj(1, 2, 3), @"{""A"":1,""B"":2,""C"":3}" },
-            { new { a = 1, b = 2, c = 3 }, @"{""a"":1,""b"":2,""c"":3}" },
-            { new Func<int, bool>((_) => true), "Func`2[Int32,Boolean]" },
-            { new Func<Func<int, bool>>(() => (_) => true), "Func`1[Func`2[Int32,Boolean]]" },
-            { new Action(() => { }), "Action" },
-            { new Tuple<int, int, int>(1, 2, 3), @"{""Item1"":1,""Item2"":2,""Item3"":3}" },
-            { (1, 2, 3), @"{""Item1"":1,""Item2"":2,""Item3"":3}" },
-            { (1, new List<int> { 1, 2, 3 }, new Func<int, bool>((_) => true)), @"{""Item1"":1,""Item2"":[1,2,3],""Item3"":""Delegate""/*Func`2[Int32,Boolean]*/}" }
+            { 1.5m, "1.5" },
+            { "hiiiiooo", "hiiiiooo" },
+            { new List<int> { 1, 2, 3 }, "[1, 2, 3]" },
+            { new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 }, "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...]" },
+            { new Dictionary<string, int> { { "A", 1 }, { "B", 2 } }, "[{ Key = A, Value = 1 }, { Key = B, Value = 2 }]" },
+            { new Dictionary<RecordObj, int> { { new RecordObj(1, 2, 3), 4 } }, "[{ Key = { A = 1, B = 2, C = 3 }, Value = 4 }]" },
+            { new RecordObj(1, 2, 3), "{ A = 1, B = 2, C = 3 }" },
+            { new RecordObjWithList(new List<int> { 1, 2, 3 }), "{ As = [1, 2, 3] }" },
+            { new RecordObjWithManyProperties(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), "{ A = 1, B = 2, C = 3, D = 4, E = 5, F = 6, G = 7, H = 8, I = 9, J = 10, ... }" },
+            { new ClassObj(1, 2, 3), "{ A = 1, B = 2, C = 3 }" },
+            { new { a = 1, b = 2, c = 3 }, "{ a = 1, b = 2, c = 3 }" },
+            { new Func<int, bool>((_) => true), "System.Func`2[System.Int32,System.Boolean]" },
+            { new Func<Func<int, bool>>(() => (_) => true), "System.Func`1[System.Func`2[System.Int32,System.Boolean]]" },
+            { new Action(() => { }), "System.Action" },
+            { new Tuple<int, int, int>(1, 2, 3), "(Item1 = 1, Item2 = 2, Item3 = 3)" },
+            { (1, 2, 3), "(Item1 = 1, Item2 = 2, Item3 = 3)" },
+            { (1, 2, 3, 4, 5, 6, 7, 8), "(Item1 = 1, Item2 = 2, Item3 = 3, Item4 = 4, Item5 = 5, Item6 = 6, Item7 = 7, Rest = ...)" },
+            { Operations.Create, "Create" },
+            { new FaultyRecord(), "<Rendering failed>" }
         };
 
         [Theory]
@@ -50,6 +56,10 @@ namespace Tests.V2.RendererTests
 
         public record RecordObj(int A, int B, int C);
 
+        public record RecordObjWithList(List<int> As);
+
+        public record RecordObjWithManyProperties(int A, int B, int C, int D, int E, int F, int G, int H, int I, int J, int K);
+
         public class ClassObj
         {
             public ClassObj(int a, int b, int c)
@@ -62,6 +72,17 @@ namespace Tests.V2.RendererTests
             public int A { get; }
             public int B { get; }
             public int C { get; }
+        }
+
+        public record FaultyRecord()
+        {
+            public int A => throw new Exception("Waaaaam waaaaaaaam");
+        }
+
+        public enum Operations
+        {
+            Create,
+            Read
         }
     }
 }

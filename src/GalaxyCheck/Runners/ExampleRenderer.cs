@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace GalaxyCheck.Runners
 {
@@ -15,130 +15,166 @@ namespace GalaxyCheck.Runners
             _ => example.Select((value, index) => $"[{index}] = {RenderValue(value)}"),
         };
 
-        private static string RenderValue(object? value)
+        private static string RenderValue(object? obj)
         {
-            if (value is Delegate del)
+            const int BreadthLimit = 10;
+
+            var handler = new CompositeExampleRendererHandler(new List<IExampleRendererHandler>
             {
-                return RenderType(del.GetType());
+                new PrimitiveExampleRendererHandler(),
+                new EnumerableExampleRendererHandler(elementLimit: BreadthLimit),
+                new TupleRendererHandler(),
+                new ObjectRendererHandler(propertyLimit: BreadthLimit)
+            });
+
+            return handler.Render(obj, handler);
+        }
+
+        private interface IExampleRendererHandler
+        {
+            bool CanRender(object? obj);
+
+            string Render(object? obj, IExampleRendererHandler renderer);
+        }
+
+        private class CompositeExampleRendererHandler : IExampleRendererHandler
+        {
+            private readonly IReadOnlyCollection<IExampleRendererHandler> _innerHandlers;
+
+            public CompositeExampleRendererHandler(
+                IReadOnlyCollection<IExampleRendererHandler> innerHandlers)
+            {
+                _innerHandlers = innerHandlers;
             }
 
-            return JsonSerializer.Serialize(
-                value,
-                new JsonSerializerOptions(new JsonSerializerOptions()
-                {
-                    Converters =
-                    {
-                        new DelegateConverterFactory(),
-                        new TupleConverterFactory(),
-                        new DictionaryConverterFactory(),
-                    }
-                }));
-        }
+            public bool CanRender(object? obj) => true;
 
-        private static bool IsDelegateType(Type type) => typeof(Delegate).IsAssignableFrom(type);
-
-        private static string RenderType(Type type) => type.IsGenericType ? RenderGenericType(type) : type.Name;
-
-        private static string RenderGenericType(Type type)
-        {
-            var genericTypeName = type.GetGenericTypeDefinition().Name;
-
-            var genericParameters = type
-                .GetGenericArguments()
-                .Select(t => RenderType(t));
-
-            return $"{genericTypeName}[{string.Join(",", genericParameters)}]";
-        }
-
-        private class DelegateConverterFactory : JsonConverterFactory
-        {
-            public override bool CanConvert(Type typeToConvert) => IsDelegateType(typeToConvert);
-
-            public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options) => new DelegateConverter();
-
-            private class DelegateConverter : JsonConverter<Delegate>
+            public string Render(object? obj, IExampleRendererHandler renderer)
             {
-                public override Delegate? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-                    throw new InvalidOperationException();
-
-                public override void Write(Utf8JsonWriter writer, Delegate value, JsonSerializerOptions options)
+                try
                 {
-                    writer.WriteStringValue("Delegate");
-                    writer.WriteCommentValue(RenderType(value.GetType()));
+                    var innerHandler = _innerHandlers.Where(h => h.CanRender(obj)).FirstOrDefault();
+
+                    if (innerHandler == null)
+                    {
+                        return obj?.ToString() ?? "null";
+                    }
+
+                    return innerHandler.Render(obj, renderer);
+                }
+                catch
+                {
+                    return "<Rendering failed>";
                 }
             }
         }
 
-        private class TupleConverterFactory : JsonConverterFactory
+        private class PrimitiveExampleRendererHandler : IExampleRendererHandler
         {
-            public override bool CanConvert(Type typeToConvert) =>
-                typeToConvert.GetInterface("System.Runtime.CompilerServices.ITuple") != null;
+            private static readonly ImmutableHashSet<Type> ExtraPrimitiveTypes =
+                ImmutableHashSet.Create(typeof(string), typeof(decimal));
 
-            public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options) => new ValueTupleConverter();
+            public bool CanRender(object? obj) =>
+                obj is null ||
+                obj.GetType().IsPrimitive ||
+                obj.GetType().IsEnum ||
+                ExtraPrimitiveTypes.Contains(obj.GetType()) ||
+                obj is Delegate;
 
-            private class ValueTupleConverter : JsonConverter<object>
+            public string Render(object? obj, IExampleRendererHandler renderer) => obj?.ToString() ?? "null";
+        }
+
+        private class EnumerableExampleRendererHandler : IExampleRendererHandler
+        {
+            private readonly int _elementLimit;
+
+            public EnumerableExampleRendererHandler(int elementLimit)
             {
-                public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-                    throw new InvalidOperationException();
+                _elementLimit = elementLimit;
+            }
 
-                public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
-                {
-                    writer.WriteStartObject();
+            public bool CanRender(object? obj) =>
+                obj is not null &&
+                obj is not string &&
+                obj.GetType().GetInterfaces().Any(t =>
+                    t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
-                    foreach (var field in value.GetType().GetFields())
-                    {
-                        writer.WritePropertyName(field.Name);
-                        JsonSerializer.Serialize(writer, field.GetValue(value), options);
-                    }
+            public string Render(object? obj, IExampleRendererHandler renderer)
+            {
+                var elements = ((IEnumerable)obj!).Cast<object>();
 
-                    foreach (var property in value.GetType().GetProperties())
-                    {
-                        writer.WritePropertyName(property.Name);
-                        JsonSerializer.Serialize(writer, property.GetValue(value), options);
-                    }
+                var elementsToRender = elements.Take(_elementLimit).ToList();
+                var hasMoreElements = elements.Skip(_elementLimit).Any();
 
-                    writer.WriteEndObject();
-                }
+                var renderedElements = Enumerable.Concat(
+                    elementsToRender.Select(x => renderer.Render(x, renderer)),
+                    hasMoreElements ? new[] { "..." } : Enumerable.Empty<string>());
+
+                return "[" + string.Join(", ", renderedElements) + "]";
             }
         }
 
-        private class DictionaryConverterFactory : JsonConverterFactory
+        private class TupleRendererHandler : IExampleRendererHandler
         {
-            public override bool CanConvert(Type typeToConvert) =>
-                typeToConvert.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+            public bool CanRender(object? obj) =>
+                obj is not null &&
+                obj.GetType().GetInterface("System.Runtime.CompilerServices.ITuple") != null;
 
-            public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+            public string Render(object? obj, IExampleRendererHandler renderer)
             {
-                var genericArgs = typeToConvert.GetGenericArguments();
-                var genericDictionaryConvertor = typeof(DictionaryConverter<,>).MakeGenericType(genericArgs);
-
-                return (JsonConverter)Activator.CreateInstance(genericDictionaryConvertor);
+                return obj!.GetType().GetFields().Any()
+                    ? RenderTupleLiteral(obj, renderer)
+                    : RenderClassTuple(obj, renderer);
             }
 
-            private class DictionaryConverter<TKey, TValue> : JsonConverter<IDictionary<TKey, TValue>>
+            private static string RenderTupleLiteral(object obj, IExampleRendererHandler renderer)
             {
-                public override IDictionary<TKey, TValue>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-                    throw new NotImplementedException();
+                var fields = obj!.GetType().GetFields();
 
-                public override void Write(Utf8JsonWriter writer, IDictionary<TKey, TValue> dictionary, JsonSerializerOptions options)
-                {
-                    if (typeof(TKey) == typeof(string) || typeof(TKey) == typeof(int))
-                    {
-                        JsonSerializer.Serialize(writer, dictionary, options);
-                    }
-                    else
-                    {
-                        writer.WriteStartArray();
+                var fieldsToRender = fields.Where(f => f.Name != "Rest").ToList();
+                var hasMoreFields = fields.Any(f => f.Name == "Rest");
 
-                        foreach (var (kvp, i) in dictionary.Select((kvp, i) => (kvp, i)))
-                        {
-                            writer.WriteCommentValue(JsonSerializer.Serialize(kvp.Key, options) + ":");
-                            JsonSerializer.Serialize(writer, kvp.Value, options);
-                        }
+                var renderedFields = Enumerable.Concat(
+                    fieldsToRender.Select(f => $"{f.Name} = {renderer.Render(f.GetValue(obj), renderer)}"),
+                    hasMoreFields ? new[] { "Rest = ..." } : Enumerable.Empty<string>());
 
-                        writer.WriteEndArray();
-                    }
-                }
+                return "(" + string.Join(", ", renderedFields) + ")";
+            }
+
+            private static string RenderClassTuple(object obj, IExampleRendererHandler renderer)
+            {
+                var properties = obj!.GetType().GetProperties();
+
+                var renderedProperties = properties.Select(p => $"{p.Name} = {renderer.Render(p.GetValue(obj), renderer)}");
+
+                return "(" + string.Join(", ", renderedProperties) + ")";
+            }
+        }
+
+        private class ObjectRendererHandler : IExampleRendererHandler
+        {
+            private readonly int _propertyLimit;
+
+            public ObjectRendererHandler(int propertyLimit)
+            {
+                _propertyLimit = propertyLimit;
+            }
+
+            public bool CanRender(object? obj) =>
+                obj is not null;
+
+            public string Render(object? obj, IExampleRendererHandler renderer)
+            {
+                var properties = obj!.GetType().GetProperties();
+
+                var propertiesToRender = properties.Take(_propertyLimit).ToList();
+                var hasMoreProperties = properties.Skip(_propertyLimit).Any();
+
+                var renderedProperties = Enumerable.Concat(
+                    propertiesToRender.Select(p => $"{p.Name} = {renderer.Render(p.GetValue(obj), renderer)}"),
+                    hasMoreProperties ? new[] { "..." } : Enumerable.Empty<string>());
+
+                return "{ " + string.Join(", ", renderedProperties) + " }";
             }
         }
     }
