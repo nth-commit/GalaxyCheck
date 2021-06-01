@@ -17,40 +17,55 @@ namespace GalaxyCheck.Runners
 
         private static string RenderValue(object? obj)
         {
+            const int DepthLimit = 10;
             const int BreadthLimit = 10;
 
-            var handler = new CompositeExampleRendererHandler(new List<IExampleRendererHandler>
-            {
-                new PrimitiveExampleRendererHandler(),
-                new EnumerableExampleRendererHandler(elementLimit: BreadthLimit),
-                new TupleRendererHandler(),
-                new ObjectRendererHandler(propertyLimit: BreadthLimit)
-            });
+            var handler = new CompositeExampleRendererHandler(
+                new List<IExampleRendererHandler>
+                {
+                    new PrimitiveExampleRendererHandler(),
+                    new EnumerableExampleRendererHandler(elementLimit: BreadthLimit),
+                    new TupleRendererHandler(),
+                    new ObjectRendererHandler(propertyLimit: BreadthLimit)
+                },
+                DepthLimit);
 
-            return handler.Render(obj, handler);
+            return handler.Render(obj, handler, ImmutableList.Create<object?>());
         }
 
         private interface IExampleRendererHandler
         {
             bool CanRender(object? obj);
 
-            string Render(object? obj, IExampleRendererHandler renderer);
+            string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path);
         }
 
         private class CompositeExampleRendererHandler : IExampleRendererHandler
         {
             private readonly IReadOnlyCollection<IExampleRendererHandler> _innerHandlers;
+            private readonly int _depthLimit;
 
             public CompositeExampleRendererHandler(
-                IReadOnlyCollection<IExampleRendererHandler> innerHandlers)
+                IReadOnlyCollection<IExampleRendererHandler> innerHandlers, int depthLimit)
             {
                 _innerHandlers = innerHandlers;
+                _depthLimit = depthLimit;
             }
 
             public bool CanRender(object? obj) => true;
 
-            public string Render(object? obj, IExampleRendererHandler renderer)
+            public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
+                if (path.Contains(obj))
+                {
+                    return "<Circular reference>";
+                }
+
+                if (path.Count >= _depthLimit)
+                {
+                    return "...";
+                }
+
                 try
                 {
                     var innerHandler = _innerHandlers.Where(h => h.CanRender(obj)).FirstOrDefault();
@@ -60,7 +75,7 @@ namespace GalaxyCheck.Runners
                         return obj?.ToString() ?? "null";
                     }
 
-                    return innerHandler.Render(obj, renderer);
+                    return innerHandler.Render(obj, renderer, path.Add(obj));
                 }
                 catch
                 {
@@ -72,7 +87,7 @@ namespace GalaxyCheck.Runners
         private class PrimitiveExampleRendererHandler : IExampleRendererHandler
         {
             private static readonly ImmutableHashSet<Type> ExtraPrimitiveTypes =
-                ImmutableHashSet.Create(typeof(string), typeof(decimal));
+                ImmutableHashSet.Create(typeof(string), typeof(decimal), typeof(DateTime));
 
             public bool CanRender(object? obj) =>
                 obj is null ||
@@ -81,7 +96,7 @@ namespace GalaxyCheck.Runners
                 ExtraPrimitiveTypes.Contains(obj.GetType()) ||
                 obj is Delegate;
 
-            public string Render(object? obj, IExampleRendererHandler renderer) => obj?.ToString() ?? "null";
+            public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path) => obj?.ToString() ?? "null";
         }
 
         private class EnumerableExampleRendererHandler : IExampleRendererHandler
@@ -95,11 +110,10 @@ namespace GalaxyCheck.Runners
 
             public bool CanRender(object? obj) =>
                 obj is not null &&
-                obj is not string &&
                 obj.GetType().GetInterfaces().Any(t =>
                     t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
-            public string Render(object? obj, IExampleRendererHandler renderer)
+            public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
                 var elements = ((IEnumerable)obj!).Cast<object>();
 
@@ -107,7 +121,7 @@ namespace GalaxyCheck.Runners
                 var hasMoreElements = elements.Skip(_elementLimit).Any();
 
                 var renderedElements = Enumerable.Concat(
-                    elementsToRender.Select(x => renderer.Render(x, renderer)),
+                    elementsToRender.Select(x => renderer.Render(x, renderer, path)),
                     hasMoreElements ? new[] { "..." } : Enumerable.Empty<string>());
 
                 return "[" + string.Join(", ", renderedElements) + "]";
@@ -120,14 +134,14 @@ namespace GalaxyCheck.Runners
                 obj is not null &&
                 obj.GetType().GetInterface("System.Runtime.CompilerServices.ITuple") != null;
 
-            public string Render(object? obj, IExampleRendererHandler renderer)
+            public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
                 return obj!.GetType().GetFields().Any()
-                    ? RenderTupleLiteral(obj, renderer)
-                    : RenderClassTuple(obj, renderer);
+                    ? RenderTupleLiteral(obj, renderer, path)
+                    : RenderClassTuple(obj, renderer, path);
             }
 
-            private static string RenderTupleLiteral(object obj, IExampleRendererHandler renderer)
+            private static string RenderTupleLiteral(object obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
                 var fields = obj!.GetType().GetFields();
 
@@ -135,17 +149,17 @@ namespace GalaxyCheck.Runners
                 var hasMoreFields = fields.Any(f => f.Name == "Rest");
 
                 var renderedFields = Enumerable.Concat(
-                    fieldsToRender.Select(f => $"{f.Name} = {renderer.Render(f.GetValue(obj), renderer)}"),
+                    fieldsToRender.Select(f => $"{f.Name} = {renderer.Render(f.GetValue(obj), renderer, path)}"),
                     hasMoreFields ? new[] { "Rest = ..." } : Enumerable.Empty<string>());
 
                 return "(" + string.Join(", ", renderedFields) + ")";
             }
 
-            private static string RenderClassTuple(object obj, IExampleRendererHandler renderer)
+            private static string RenderClassTuple(object obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
                 var properties = obj!.GetType().GetProperties();
 
-                var renderedProperties = properties.Select(p => $"{p.Name} = {renderer.Render(p.GetValue(obj), renderer)}");
+                var renderedProperties = properties.Select(p => $"{p.Name} = {renderer.Render(p.GetValue(obj), renderer, path)}");
 
                 return "(" + string.Join(", ", renderedProperties) + ")";
             }
@@ -163,7 +177,7 @@ namespace GalaxyCheck.Runners
             public bool CanRender(object? obj) =>
                 obj is not null;
 
-            public string Render(object? obj, IExampleRendererHandler renderer)
+            public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
                 var properties = obj!.GetType().GetProperties();
 
@@ -171,7 +185,7 @@ namespace GalaxyCheck.Runners
                 var hasMoreProperties = properties.Skip(_propertyLimit).Any();
 
                 var renderedProperties = Enumerable.Concat(
-                    propertiesToRender.Select(p => $"{p.Name} = {renderer.Render(p.GetValue(obj), renderer)}"),
+                    propertiesToRender.Select(p => $"{p.Name} = {renderer.Render(p.GetValue(obj), renderer, path)}"),
                     hasMoreProperties ? new[] { "..." } : Enumerable.Empty<string>());
 
                 return "{ " + string.Join(", ", renderedProperties) + " }";
