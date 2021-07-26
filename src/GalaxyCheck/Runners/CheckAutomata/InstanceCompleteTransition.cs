@@ -84,10 +84,15 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 return TerminationReason.DeepCheckDisabled;
             }
 
-            if (state.CompletedIterations == state.RequestedIterations)
+            if (state.CompletedIterations >= state.RequestedIterations)
             {
                 // We should stop reaching for smaller counterexamples if we are at max iterations already.
                 return TerminationReason.ReachedMaximumIterations;
+            }
+
+            if (state.Shrinks >= state.ShrinkLimit)
+            {
+                return TerminationReason.ReachedShrinkLimit;
             }
 
             if (instance.ReplayParameters.Size.Value == 100)
@@ -102,7 +107,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 // The counterexample is literally the smallest possible example that fits the constraints.
                 return TerminationReason.FoundTheoreticalSmallestCounterexample;
             }
-
 
             const int RecentCounterexampleThreshold = 3;
             var recentCounterexamples = state.CounterexampleStateHistory.Take(RecentCounterexampleThreshold).ToList();
