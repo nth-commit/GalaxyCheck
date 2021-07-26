@@ -52,6 +52,8 @@ namespace GalaxyCheck.Runners
 {
     public class PropertyFailedException : Exception
     {
+        private readonly Counterexample<object?> _counterexample;
+
         public PropertyFailedException(
             Counterexample<object?> counterexample,
             int iterations,
@@ -60,7 +62,10 @@ namespace GalaxyCheck.Runners
             Func<string, string>? formatMessage)
             : base(FormatMessage(formatMessage, BuildMessage(counterexample, iterations, shrinks, formatReproduction)))
         {
+            _counterexample = counterexample;
         }
+
+        public override string StackTrace => _counterexample.Exception?.StackTrace ?? base.StackTrace;
 
         private static string FormatMessage(Func<string, string>? formatMessage, string message) =>
             formatMessage == null
