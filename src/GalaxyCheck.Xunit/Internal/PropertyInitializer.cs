@@ -29,10 +29,12 @@ namespace GalaxyCheck.Xunit.Internal
             var replay = testMethodInfo.GetCustomAttributes<ReplayAttribute>().SingleOrDefault()?.Replay;
 
             var propertyRunParameters = new PropertyRunParameters(
-                property,
-                propertyAttribute.Iterations,
-                propertyAttribute.ShrinkLimit,
-                replay);
+                Property: property,
+                Iterations: propertyAttribute.Iterations,
+                ShrinkLimit: propertyAttribute.ShrinkLimit,
+                Replay: replay,
+                Seed: replay == null ? propertyAttribute.NullableSeed : null,
+                Size: replay == null ? propertyAttribute.NullableSize : null);
 
             return new PropertyInitializationResult(
                 propertyAttribute.Runner,
