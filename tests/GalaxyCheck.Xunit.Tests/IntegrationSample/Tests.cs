@@ -1,4 +1,4 @@
-using GalaxyCheck;
+﻿using GalaxyCheck;
 using GalaxyCheck.Gens;
 using GalaxyCheck.Gens.Injection.Int32;
 using Newtonsoft.Json;

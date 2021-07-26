@@ -12,6 +12,8 @@ namespace GalaxyCheck.Xunit.Internal
 
             parameters.Property.Advanced.Print(
                 stdout: log.Add,
+                seed: parameters.Seed,
+                size: parameters.Size,
                 iterations: parameters.Iterations);
 
             throw new SampleException(string.Join(Environment.NewLine, log));

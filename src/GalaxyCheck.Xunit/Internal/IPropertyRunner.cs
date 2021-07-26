@@ -7,7 +7,9 @@ namespace GalaxyCheck.Xunit.Internal
         IGen<Test<object>> Property,
         int Iterations,
         int ShrinkLimit,
-        string? Replay);
+        string? Replay,
+        int? Seed,
+        int? Size);
 
     internal interface IPropertyRunner
     {
