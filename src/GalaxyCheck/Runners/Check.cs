@@ -307,6 +307,7 @@ namespace GalaxyCheck.Runners.Check
         ReachedMaximumSize = 4,
         FoundTheoreticalSmallestCounterexample = 5,
         FoundPragmaticSmallestCounterexample = 6,
-        FoundError = 7
+        FoundError = 7,
+        ReachedShrinkLimit = 8
     }
 }
