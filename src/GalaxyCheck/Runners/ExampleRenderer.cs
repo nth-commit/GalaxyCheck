@@ -23,6 +23,7 @@ namespace GalaxyCheck.Runners
             var handler = new CompositeExampleRendererHandler(
                 new List<IExampleRendererHandler>
                 {
+                    new StringExampleRendererHandler(),
                     new PrimitiveExampleRendererHandler(),
                     new EnumerableExampleRendererHandler(elementLimit: BreadthLimit),
                     new TupleRendererHandler(),
@@ -82,6 +83,14 @@ namespace GalaxyCheck.Runners
                     return "<Rendering failed>";
                 }
             }
+        }
+
+        private class StringExampleRendererHandler : IExampleRendererHandler
+        {
+            public bool CanRender(object? obj) => obj is string;
+
+            public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path) =>
+                "\"" + (string)obj! + "\"";
         }
 
         private class PrimitiveExampleRendererHandler : IExampleRendererHandler
