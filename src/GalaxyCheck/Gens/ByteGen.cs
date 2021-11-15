@@ -1,6 +1,7 @@
 ﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
+    using System;
 
     public static partial class Gen
     {
@@ -9,7 +10,7 @@
         /// generator size increases. However, byte generation can be customised using the builder methods on
         /// <see cref="IIntGen{byte}"/>.
         /// <returns>The new generator.</returns>
-        public static IIntGen<byte> Byte() => new ByteGen();
+        public static IIntGen<byte> Byte() => new ByteGen(nameof(Byte));
     }
 
     public static partial class Extensions
@@ -32,14 +33,40 @@
         /// </summary>
         /// <param name="maxExclusive">The maximum byte to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<byte> LessThan(this IIntGen<byte> gen, byte maxExclusive) => gen.LessThanEqual((byte)(maxExclusive - 1));
+        public static IIntGen<byte> LessThan(this IIntGen<byte> gen, byte maxExclusive)
+        {
+            try
+            {
+                checked
+                {
+                    return gen.LessThanEqual((byte)(maxExclusive - 1));
+                }
+            }
+            catch (OverflowException ex)
+            {
+                return new FatalIntGen<byte>($"{nameof(Gen.Byte)}().{nameof(LessThan)}({maxExclusive})", ex);
+            }
+        }
 
         /// <summary>
         /// Constrains the generator so that it only produces values greater than the supplied minimum.
         /// </summary>
-        /// <param name="minExclusive">The minimum integer to generate (exclusive).</param>
+        /// <param name="minExclusive">The minimum byte to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<byte> GreaterThan(this IIntGen<byte> gen, int minExclusive) => gen.GreaterThanEqual((byte)(minExclusive + 1));
+        public static IIntGen<byte> GreaterThan(this IIntGen<byte> gen, byte minExclusive)
+        {
+            try
+            {
+                checked
+                {
+                    return gen.GreaterThanEqual((byte)(minExclusive + 1));
+                }
+            }
+            catch (OverflowException ex)
+            {
+                return new FatalIntGen<byte>($"{nameof(Gen.Byte)}().{nameof(GreaterThan)}({minExclusive})", ex);
+            }
+        }
     }
 }
 
@@ -50,56 +77,44 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Parameters;
     using System.Collections.Generic;
 
-    internal class ByteGen : BaseGen<byte>, IIntGen<byte>
+    internal record ByteGen(
+        string PublicGenName,
+        byte? Min = null,
+        byte? Max = null,
+        byte? Origin = null,
+        Gen.Bias? Bias = null) : GenProvider<byte>, IIntGen<byte>
     {
-        private readonly ByteGenConfig _config;
+        public IIntGen<byte> GreaterThanEqual(byte min) => this with { Min = min };
 
-        private record ByteGenConfig(
-            byte? Min,
-            byte? Max,
-            byte? Origin,
-            Gen.Bias? Bias);
+        public IIntGen<byte> LessThanEqual(byte max) => this with { Max = max };
 
-        private ByteGen(ByteGenConfig config)
+        public IIntGen<byte> ShrinkTowards(byte origin) => this with { Origin = origin };
+
+        public IIntGen<byte> WithBias(Gen.Bias bias) => this with { Bias = bias };
+
+        protected override IGen<byte> Get
         {
-            _config = config;
-        }
-
-        public ByteGen() : this(new ByteGenConfig(Min: null, Max: null, Origin: null, Bias: null))
-        {
-        }
-
-        public IIntGen<byte> GreaterThanEqual(byte min) => new ByteGen(_config with { Min = min });
-
-        public IIntGen<byte> LessThanEqual(byte max) => new ByteGen(_config with { Max = max });
-
-        public IIntGen<byte> ShrinkTowards(byte origin) => new ByteGen(_config with { Origin = origin });
-
-        public IIntGen<byte> WithBias(Gen.Bias bias) => new ByteGen(_config with { Bias = bias });
-
-        protected override IEnumerable<IGenIteration<byte>> Run(GenParameters parameters) =>
-            CreateGen(_config).Advanced.Run(parameters);
-
-        private static IGen<byte> CreateGen(ByteGenConfig config)
-        {
-            var gen = Gen
-                .Int32()
-                .GreaterThanEqual(config.Min ?? byte.MinValue)
-                .LessThanEqual(config.Max ?? byte.MaxValue);
-
-            if (config.Origin != null)
+            get
             {
-                gen = gen.ShrinkTowards(config.Origin.Value);
-            }
+                var gen = Gen
+                    .Int16()
+                    .GreaterThanEqual(Min ?? byte.MinValue)
+                    .LessThanEqual(Max ?? byte.MaxValue);
 
-            if (config.Bias != null)
-            {
-                gen = gen.WithBias(config.Bias.Value);
-            }
+                if (Origin != null)
+                {
+                    gen = gen.ShrinkTowards(Origin.Value);
+                }
 
-            return gen
-                .Select(x => (byte)x)
-                .SelectError(error => new GenErrorData(nameof(ByteGen), error.Message));
+                if (Bias != null)
+                {
+                    gen = gen.WithBias(Bias.Value);
+                }
+
+                return gen
+                    .Select(x => (byte)x)
+                    .SelectError(error => new GenErrorData(PublicGenName, error.Message));
+            }
         }
     }
 }
