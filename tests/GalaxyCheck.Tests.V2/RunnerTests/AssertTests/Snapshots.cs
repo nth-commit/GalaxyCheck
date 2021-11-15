@@ -32,7 +32,7 @@ namespace Tests.V2.RunnerTests.AssertTests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var property =
-                    from x in Gen.Int32()
+                    from x in Gen.Int32().LessThan(int.MaxValue)
                     from y in Gen.Int32().GreaterThan(x)
                     select Property.ForThese(() => x < 1000);
 
