@@ -8,33 +8,32 @@ using Xunit;
 using static Tests.V2.DomainGenAttributes;
 using Property = NebulaCheck.Property;
 
-namespace Tests.V2.GenTests.BooleanGenTests
+namespace Tests.V2.GenTests.NullableGenTests
 {
-    public class AboutBooleanGeneration
+    public class AboutNullableGeneration
     {
         [Property]
-        public void FalseDoesNotShrink([Seed] int seed, [Size] int size)
+        public void NullDoesNotShrink([Seed] int seed, [Size] int size)
         {
-            var gen = GalaxyCheck.Gen.Boolean();
+            var gen = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String());
 
             var sample = gen.SampleOneTraversal(seed: seed, size: size);
 
-            Property.Precondition(sample.First() == false);
+            Property.Precondition(sample.First() == null);
 
             sample.Should().HaveCount(1);
         }
 
         [Property]
-        public void TrueShrinksToFalse([Seed] int seed, [Size] int size)
+        public void NonNullShrinksToNull([Seed] int seed, [Size] int size)
         {
-            var gen = GalaxyCheck.Gen.Boolean();
+            var gen = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String());
 
             var sample = gen.SampleOneTraversal(seed: seed, size: size);
 
-            Property.Precondition(sample.First() == true);
+            Property.Precondition(sample.First() != null);
 
-            sample.Should().HaveCount(2);
-            sample.Should().EndWith(false);
+            sample.Should().HaveElementAt(1, null);
         }
 
         [Fact]
@@ -44,7 +43,7 @@ namespace Tests.V2.GenTests.BooleanGenTests
 
             foreach (var seed in seeds)
             {
-                var sample = GalaxyCheck.Gen.Boolean().Sample(seed: seed);
+                var sample = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String()).Sample(seed: seed);
 
                 var nameExtension = string.Join("_", new[]
                 {
