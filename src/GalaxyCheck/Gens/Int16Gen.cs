@@ -59,7 +59,7 @@
             {
                 checked
                 {
-                    return gen.GreaterThanEqual((short)(minExclusive + 1)); ;
+                    return gen.GreaterThanEqual((short)(minExclusive + 1));
                 }
             }
             catch (OverflowException ex)

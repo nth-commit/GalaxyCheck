@@ -39,7 +39,7 @@
             {
                 checked
                 {
-                    return gen.LessThanEqual((int)(maxExclusive - 1));
+                    return gen.LessThanEqual(maxExclusive - 1);
                 }
             }
             catch (OverflowException ex)
@@ -59,7 +59,7 @@
             {
                 checked
                 {
-                    return gen.GreaterThanEqual((int)(minExclusive + 1)); ;
+                    return gen.GreaterThanEqual(minExclusive + 1);
                 }
             }
             catch (OverflowException ex)
