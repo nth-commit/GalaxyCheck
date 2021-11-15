@@ -1,6 +1,7 @@
 ﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
+    using System;
 
     public static partial class Gen
     {
@@ -10,7 +11,7 @@
         /// configuration methods to constrain the produced integers further.
         /// </summary>
         /// <returns>The new generator.</returns>
-        public static IIntGen<long> Int64() => new Int64Gen();
+        public static IIntGen<long> Int64() => new Int64Gen(nameof(Int64));
     }
 
     public static partial class Extensions
@@ -31,98 +32,101 @@
         /// <summary>
         /// Constrains the generator so that it only produces values less than the supplied maximum. 
         /// </summary>
-        /// <param name="maxExclusive">The maximum integer to generate (exclusive).</param>
+        /// <param name="maxExclusive">The maximum int to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<long> LessThan(this IIntGen<long> gen, long maxExclusive) => gen.LessThanEqual(maxExclusive - 1);
+        public static IIntGen<long> LessThan(this IIntGen<long> gen, long maxExclusive)
+        {
+            try
+            {
+                checked
+                {
+                    return gen.LessThanEqual((long)(maxExclusive - 1));
+                }
+            }
+            catch (OverflowException ex)
+            {
+                return new FatalIntGen<long>($"{nameof(Gen.Int64)}().{nameof(LessThan)}({maxExclusive})", ex);
+            }
+        }
 
         /// <summary>
         /// Constrains the generator so that it only produces values greater than the supplied minimum.
         /// </summary>
         /// <param name="minExclusive">The minimum integer to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<long> GreaterThan(this IIntGen<long> gen, long minExclusive) => gen.GreaterThanEqual(minExclusive + 1);
+        public static IIntGen<long> GreaterThan(this IIntGen<long> gen, long minExclusive)
+        {
+            try
+            {
+                checked
+                {
+                    return gen.GreaterThanEqual((long)(minExclusive + 1)); ;
+                }
+            }
+            catch (OverflowException ex)
+            {
+                return new FatalIntGen<long>($"{nameof(Gen.Int64)}().{nameof(GreaterThan)}({minExclusive})", ex);
+            }
+        }
     }
 }
 
 namespace GalaxyCheck.Gens
 {
     using GalaxyCheck.Gens.Internal;
-    using GalaxyCheck.Gens.Iterations.Generic;
     using GalaxyCheck.Gens.Parameters;
     using GalaxyCheck.Gens.Parameters.Internal;
     using GalaxyCheck.ExampleSpaces;
     using System;
-    using System.Collections.Generic;
 
-    internal class Int64Gen : BaseGen<long>, IIntGen<long>
+    internal record Int64Gen(
+        string PublicGenName,
+        long? Min = null,
+        long? Max = null,
+        long? Origin = null,
+        Gen.Bias? Bias = null) : GenProvider<long>, IIntGen<long>
     {
-        private record IntegerGenConfig(long? Min, long? Max, long? Origin, Gen.Bias? Bias);
+        public IIntGen<long> GreaterThanEqual(long min) => this with { Min = min };
 
-        private readonly IntegerGenConfig _config;
+        public IIntGen<long> LessThanEqual(long max) => this with { Max = max };
 
-        private Int64Gen(IntegerGenConfig config)
+        public IIntGen<long> ShrinkTowards(long origin) => this with { Origin = origin };
+
+        public IIntGen<long> WithBias(Gen.Bias bias) => this with { Bias = bias };
+
+        protected override IGen<long> Get
         {
-            _config = config;
-        }
-
-        public Int64Gen()
-            : this(new IntegerGenConfig(Min: null, Max: null, Origin: null, Bias: null))
-        {
-        }
-
-        public IIntGen<long> LessThanEqual(long max) => WithPartialConfig(max: max);
-
-        public IIntGen<long> GreaterThanEqual(long min) => WithPartialConfig(min: min);
-
-        public IIntGen<long> Between(long x, long y) => WithPartialConfig(min: x > y ? y : x, max: x > y ? x : y);
-
-        public IIntGen<long> ShrinkTowards(long origin) => WithPartialConfig(origin: origin);
-
-        public IIntGen<long> WithBias(Gen.Bias bias) => WithPartialConfig(bias: bias);
-
-        protected override IEnumerable<IGenIteration<long>> Run(GenParameters parameters) =>
-            BuildGen(_config).Advanced.Run(parameters);
-
-        private IIntGen<long> WithPartialConfig(
-            long? min = null, long? max = null, long? origin = null, Gen.Bias? bias = null)
-        {
-            return new Int64Gen(new IntegerGenConfig(
-                Min: min ?? _config.Min,
-                Max: max ?? _config.Max,
-                Origin: origin ?? _config.Origin,
-                Bias: bias ?? _config.Bias));
-        }
-
-        private static IGen<long> BuildGen(IntegerGenConfig config)
-        {
-            var min = config.Min ?? long.MinValue;
-            var max = config.Max ?? long.MaxValue;
-
-            if (min > max)
+            get
             {
-                return Error("'min' cannot be greater than 'max'");
+                var min = Min ?? long.MinValue;
+                var max = Max ?? long.MaxValue;
+
+                if (min > max)
+                {
+                    return Error(PublicGenName, "'min' cannot be greater than 'max'");
+                }
+
+                if (Origin != null && (Origin < min || Origin > max))
+                {
+                    return Error(PublicGenName, "'origin' must be between 'min' and 'max'");
+                }
+
+                if (min == max)
+                {
+                    return Gen.Constant(min);
+                }
+
+                var origin = Origin ?? InferOrigin(min, max);
+                var bias = Bias ?? Gen.Bias.WithSize;
+
+                var genFunc = bias == Gen.Bias.WithSize
+                    ? CreateBiasedStatefulGen(min, max, origin)
+                    : CreateUnbiasedStatefulGen(min, max);
+
+                return Gen
+                    .Create(genFunc.Invoke)
+                    .Unfold(value => ExampleSpaceFactory.Int64(value: value, origin: origin, min: min, max: max));
             }
-
-            if (config.Origin != null && (config.Origin < min || config.Origin > max))
-            {
-                return Error("'origin' must be between 'min' and 'max'");
-            }
-
-            if (min == max)
-            {
-                return Gen.Constant(min);
-            }
-
-            var origin = config.Origin ?? InferOrigin(min, max);
-            var bias = config.Bias ?? Gen.Bias.WithSize;
-
-            var genFunc = bias == Gen.Bias.WithSize
-                ? CreateBiasedStatefulGen(min, max, origin)
-                : CreateUnbiasedStatefulGen(min, max);
-
-            return Gen
-                .Create(genFunc.Invoke)
-                .Unfold(value => ExampleSpaceFactory.Int64(value: value, origin: origin, min: min, max: max));
         }
 
         private static Int64GenFunc CreateUnbiasedStatefulGen(long min, long max) => (parameters) => ConsumeNextLong(parameters, min, max);
@@ -218,7 +222,7 @@ namespace GalaxyCheck.Gens
             ExtremeMaximum = 2
         }
 
-        private static IGen<long> Error(string message) => Gen.Advanced.Error<long>(nameof(Int64Gen), message);
+        private static IGen<long> Error(string publicGenName, string message) => Gen.Advanced.Error<long>(publicGenName, message);
 
         /// <summary>
         /// Infer the origin by finding the closest value to 0 that is within the bounds.

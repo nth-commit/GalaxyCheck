@@ -63,7 +63,7 @@ namespace Tests.V2.RunnerTests.PrintTests
         public void PrintBinaryProperty()
         {
             var property =
-                from x in Gen.Int32()
+                from x in Gen.Int32().LessThan(int.MaxValue)
                 from y in Gen.Int32().GreaterThan(x)
                 select Property.ForThese(() => false);
 

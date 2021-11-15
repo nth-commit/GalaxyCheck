@@ -1,6 +1,7 @@
 ﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
+    using System;
 
     public static partial class Gen
     {
@@ -9,7 +10,7 @@
         /// <see cref="short.MinValue"/> and <see cref="short.MaxValue"/>, as the generator size increases. However,
         /// short generation can be customised using the builder methods on <see cref="IIntGen{short}"/>.
         /// <returns>The new generator.</returns>
-        public static IIntGen<short> Int16() => new Int16Gen();
+        public static IIntGen<short> Int16() => new Int16Gen(nameof(Int16));
     }
 
     public static partial class Extensions
@@ -30,18 +31,42 @@
         /// <summary>
         /// Constrains the generator so that it only produces values less than the supplied maximum. 
         /// </summary>
-        /// <param name="maxExclusive">The maximum short to generate (exclusive).</param>
+        /// <param name="maxExclusive">The maximum int to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<short> LessThan(this IIntGen<short> gen, short maxExclusive) =>
-            gen.LessThanEqual((short)(maxExclusive - 1));
+        public static IIntGen<short> LessThan(this IIntGen<short> gen, short maxExclusive)
+        {
+            try
+            {
+                checked
+                {
+                    return gen.LessThanEqual((short)(maxExclusive - 1));
+                }
+            }
+            catch (OverflowException ex)
+            {
+                return new FatalIntGen<short>($"{nameof(Gen.Int16)}().{nameof(LessThan)}({maxExclusive})", ex);
+            }
+        }
 
         /// <summary>
         /// Constrains the generator so that it only produces values greater than the supplied minimum.
         /// </summary>
         /// <param name="minExclusive">The minimum integer to generate (exclusive).</param>
         /// <returns>A new generator with the constraint applied.</returns>
-        public static IIntGen<short> GreaterThan(this IIntGen<short> gen, int minExclusive) =>
-            gen.GreaterThanEqual((short)(minExclusive + 1));
+        public static IIntGen<short> GreaterThan(this IIntGen<short> gen, short minExclusive)
+        {
+            try
+            {
+                checked
+                {
+                    return gen.GreaterThanEqual((short)(minExclusive + 1)); ;
+                }
+            }
+            catch (OverflowException ex)
+            {
+                return new FatalIntGen<short>($"{nameof(Gen.Int16)}().{nameof(GreaterThan)}({minExclusive})", ex);
+            }
+        }
     }
 }
 
@@ -49,59 +74,45 @@ namespace GalaxyCheck.Gens
 {
     using GalaxyCheck.Gens.Internal;
     using GalaxyCheck.Gens.Iterations.Generic;
-    using GalaxyCheck.Gens.Parameters;
-    using System.Collections.Generic;
 
-    internal class Int16Gen : BaseGen<short>, IIntGen<short>
+    internal record Int16Gen(
+        string PublicGenName,
+        short? Min = null,
+        short? Max = null,
+        short? Origin = null,
+        Gen.Bias? Bias = null) : GenProvider<short>, IIntGen<short>
     {
-        private readonly Int16GenConfig _config;
+        public IIntGen<short> GreaterThanEqual(short min) => this with { Min = min };
 
-        private record Int16GenConfig(
-            short? Min,
-            short? Max,
-            short? Origin,
-            Gen.Bias? Bias);
+        public IIntGen<short> LessThanEqual(short max) => this with { Max = max };
 
-        private Int16Gen(Int16GenConfig config)
+        public IIntGen<short> ShrinkTowards(short origin) => this with { Origin = origin };
+
+        public IIntGen<short> WithBias(Gen.Bias bias) => this with { Bias = bias };
+
+        protected override IGen<short> Get
         {
-            _config = config;
-        }
-
-        public Int16Gen() : this(new Int16GenConfig(Min: null, Max: null, Origin: null, Bias: null))
-        {
-        }
-
-        public IIntGen<short> GreaterThanEqual(short min) => new Int16Gen(_config with { Min = min });
-
-        public IIntGen<short> LessThanEqual(short max) => new Int16Gen(_config with { Max = max });
-
-        public IIntGen<short> ShrinkTowards(short origin) => new Int16Gen(_config with { Origin = origin });
-
-        public IIntGen<short> WithBias(Gen.Bias bias) => new Int16Gen(_config with { Bias = bias });
-
-        protected override IEnumerable<IGenIteration<short>> Run(GenParameters parameters) =>
-            CreateGen(_config).Advanced.Run(parameters);
-
-        private static IGen<short> CreateGen(Int16GenConfig config)
-        {
-            var gen = Gen
-                .Int32()
-                .GreaterThanEqual(config.Min ?? short.MinValue)
-                .LessThanEqual(config.Max ?? short.MaxValue);
-
-            if (config.Origin != null)
+            get
             {
-                gen = gen.ShrinkTowards(config.Origin.Value);
-            }
+                var gen = Gen
+                    .Int32()
+                    .GreaterThanEqual(Min ?? short.MinValue)
+                    .LessThanEqual(Max ?? short.MaxValue);
 
-            if (config.Bias != null)
-            {
-                gen = gen.WithBias(config.Bias.Value);
-            }
+                if (Origin != null)
+                {
+                    gen = gen.ShrinkTowards(Origin.Value);
+                }
 
-            return gen
-                .Select(x => (short)x)
-                .SelectError(error => new GenErrorData(nameof(Int16Gen), error.Message));
+                if (Bias != null)
+                {
+                    gen = gen.WithBias(Bias.Value);
+                }
+
+                return gen
+                    .Select(x => (short)x)
+                    .SelectError(error => new GenErrorData(PublicGenName, error.Message));
+            }
         }
     }
 }

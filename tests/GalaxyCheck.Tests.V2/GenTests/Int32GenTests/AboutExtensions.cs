@@ -1,8 +1,11 @@
-﻿using GalaxyCheck;
+﻿using FluentAssertions;
+using GalaxyCheck;
 using GalaxyCheck.Gens;
 using Moq;
 using NebulaCheck;
+using System;
 using System.Linq;
+using Xunit;
 using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
@@ -38,7 +41,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
         [Property]
         public NebulaCheck.IGen<Test> GreaterThanDefersToUnderlyingMethod() =>
-            from minExclusive in Gen.Int32()
+            from minExclusive in Gen.Int32().LessThan(int.MaxValue)
             select Property.ForThese(() =>
             {
                 var mockGen = SetupMock();
@@ -49,8 +52,27 @@ namespace Tests.V2.GenTests.Int32GenTests
             });
 
         [Property]
+        public NebulaCheck.IGen<Test> GreaterThanErrorsAtMaxValue() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var mockGen = SetupMock();
+
+                var gen = mockGen.Object.GreaterThan(int.MaxValue);
+
+                mockGen.Verify(gen => gen.GreaterThanEqual(It.IsAny<int>()), Times.Never);
+
+                Action action = () => gen.SampleOne(seed: seed, size: size);
+
+                action.Should()
+                    .Throw<GalaxyCheck.Exceptions.GenErrorException>()
+                    .WithMessage("Error while running generator Int32().GreaterThan(2147483647): Arithmetic operation resulted in an overflow.");
+            });
+
+        [Property]
         public NebulaCheck.IGen<Test> LessThanDefersToUnderlyingMethod() =>
-            from maxExclusive in Gen.Int32()
+            from maxExclusive in Gen.Int32().GreaterThan(int.MinValue)
             select Property.ForThese(() =>
             {
                 var mockGen = SetupMock();
@@ -58,6 +80,25 @@ namespace Tests.V2.GenTests.Int32GenTests
                 mockGen.Object.LessThan(maxExclusive);
 
                 mockGen.Verify(gen => gen.LessThanEqual(maxExclusive - 1), Times.Once);
+            });
+
+        [Property]
+        public NebulaCheck.IGen<Test> LessThanErrorsAtMinValue() =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var mockGen = SetupMock();
+
+                var gen = mockGen.Object.LessThan(int.MinValue);
+
+                mockGen.Verify(gen => gen.LessThanEqual(It.IsAny<int>()), Times.Never);
+
+                Action action = () => gen.SampleOne(seed: seed, size: size);
+
+                action.Should()
+                    .Throw<GalaxyCheck.Exceptions.GenErrorException>()
+                    .WithMessage("Error while running generator Int32().LessThan(-2147483648): Arithmetic operation resulted in an overflow.");
             });
 
         private static Mock<IIntGen<int>> SetupMock()

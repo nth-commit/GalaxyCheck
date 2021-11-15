@@ -1,4 +1,7 @@
-﻿namespace GalaxyCheck.Gens
+﻿using GalaxyCheck.Gens.Internal;
+using System;
+
+namespace GalaxyCheck.Gens
 {
     public interface IIntGen<T> : IGen<T>
     {
@@ -30,5 +33,27 @@
         /// </summary>
         /// <returns>A new generator with the biasing effect applied.</returns>
         IIntGen<T> WithBias(Gen.Bias bias);
+    }
+
+    internal record FatalIntGen<T> : GenProvider<T>, IIntGen<T>
+    {
+        private readonly string _publicGenName;
+        private readonly Exception _ex;
+
+        public FatalIntGen(string publicGenName, Exception ex)
+        {
+            _publicGenName = publicGenName;
+            _ex = ex;
+        }
+
+        public IIntGen<T> GreaterThanEqual(T min) => this;
+
+        public IIntGen<T> LessThanEqual(T max) => this;
+
+        public IIntGen<T> ShrinkTowards(T origin) => this;
+
+        public IIntGen<T> WithBias(Gen.Bias bias) => this;
+
+        protected override IGen<T> Get => Gen.Advanced.Error<T>(_publicGenName, _ex.Message);
     }
 }
