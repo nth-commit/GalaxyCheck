@@ -244,7 +244,7 @@ namespace GalaxyCheck.Gens
             Either<(int minCount, int maxCount), IGen<IReadOnlyList<T>>> FromBounded(int? minCount, int? maxCount)
             {
                 var resolvedMinCount = minCount ?? 0;
-                var resolvedMaxCount = maxCount ?? resolvedMinCount + 20;
+                var resolvedMaxCount = maxCount ?? InferMaxCount(resolvedMinCount);
 
                 if (resolvedMinCount < 0)
                 {
@@ -268,6 +268,21 @@ namespace GalaxyCheck.Gens
                 onUnspecified: () => FromUnspecified(),
                 onExact: count => FromExact(count),
                 onBounded: (minCount, maxCount) => FromBounded(minCount, maxCount));
+        }
+
+        private static int InferMaxCount(int minCount)
+        {
+            try
+            {
+                checked
+                {
+                    return minCount + 20;
+                }
+            }
+            catch (OverflowException)
+            {
+                return int.MaxValue;
+            }
         }
 
         private static IGen<IReadOnlyList<T>> Error(string message) => Gen.Advanced.Error<IReadOnlyList<T>>(nameof(ListGen<T>), message);
