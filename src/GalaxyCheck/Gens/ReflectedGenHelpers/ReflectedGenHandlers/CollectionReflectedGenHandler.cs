@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
-    internal class ListReflectedGenHandler : IReflectedGenHandler
+    internal class CollectionReflectedGenHandler : IReflectedGenHandler
     {
         public bool CanHandleGen(Type type, ReflectedGenHandlerContext context)
         {
@@ -27,7 +27,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             var genericTypeDefinition = type.GetGenericTypeDefinition();
             var methodName = GenMethodByGenericTypeDefinition[genericTypeDefinition];
 
-            var methodInfo = typeof(ListReflectedGenHandler).GetMethod(
+            var methodInfo = typeof(CollectionReflectedGenHandler).GetMethod(
                 methodName,
                 BindingFlags.Static | BindingFlags.NonPublic)!;
 
@@ -42,7 +42,8 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             { typeof(IReadOnlyList<>), nameof(CreateListGen) },
             { typeof(List<>), nameof(CreateListGen) },
             { typeof(ImmutableList<>), nameof(CreateImmutableListGen) },
-            { typeof(IList<>), nameof(CreateListGen) }
+            { typeof(IList<>), nameof(CreateListGen) },
+            { typeof(IEnumerable<>), nameof(CreateListGen) }
         };
 
         private static IGen<IReadOnlyList<T>> CreateIReadOnlyListGen<T>(IGen<T> elementGen) => elementGen.ListOf();

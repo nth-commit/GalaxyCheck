@@ -24,7 +24,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
             {
                 new MemberOverrideReflectedGenHandler(memberOverrides),
                 new RegistryReflectedGenHandler(registeredGensByType, contextualErrorFactory),
-                new ListReflectedGenHandler(),
+                new CollectionReflectedGenHandler(),
                 new SetReflectedGenHandler(),
                 new ArrayReflectedGenHandler(),
                 new EnumReflectedGenHandler(),
