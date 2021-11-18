@@ -144,6 +144,8 @@ namespace GalaxyCheck.Internal
             {
                 if (isCounted(element) == false)
                 {
+                    // The element is considered neither a discard or a non-discard, don't increment or reset the
+                    // consecutive discard count.
                     return consecutiveDiscardCount;
                 }
 
