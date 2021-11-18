@@ -77,11 +77,15 @@ namespace GalaxyCheck
         }
 
         private static IEnumerable<AbstractTransition<T>> UnfoldTransitions<T>(AbstractTransition<T> initialTransition) =>
-            EnumerableExtensions.Unfold(
-                initialTransition,
-                previousTransition => previousTransition is Termination<T>
-                    ? new Option.None<AbstractTransition<T>>()
-                    : new Option.Some<AbstractTransition<T>>(previousTransition.NextTransition()));
+            EnumerableExtensions
+                .Unfold(
+                    initialTransition,
+                    previousTransition => previousTransition is Termination<T>
+                        ? new Option.None<AbstractTransition<T>>()
+                        : new Option.Some<AbstractTransition<T>>(previousTransition.NextTransition()))
+                .WithDiscardCircuitBreaker(
+                    transition => transition is InstanceCompleteTransition<T>,
+                    transition => ((InstanceCompleteTransition<T>)transition).WasDiscard);
 
         private record TransitionAggregation<T>(
             ImmutableList<CheckIteration<T>> Checks,

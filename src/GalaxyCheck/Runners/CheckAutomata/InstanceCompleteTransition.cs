@@ -24,7 +24,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
         {
             var nextSize = Resize(state, null, instance);
             // TODO: Resize on discards more like Gen.Where does
-            // TODO: Exhaustion protection
             return new InitialTransition<T>(state
                 .IncrementDiscards()
                 .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
