@@ -18,9 +18,9 @@ namespace GalaxyCheck.Gens.Iterations.Generic
     {
         IGenInstanceData<T>? Instance { get; }
 
-        IGenDiscardData? Discard { get; }
-
         IGenErrorData? Error { get; }
+
+        IGenDiscardData? Discard { get; }
 
         TResult Match<TResult>(
             Func<IGenInstanceData<T>, TResult> onInstance,
@@ -45,26 +45,16 @@ namespace GalaxyCheck.Gens.Iterations.Generic
         new IExampleSpace<T> ExampleSpace { get; }
     }
 
-    public record GenInstanceData<T> : IGenInstanceData<T>
+    public record GenInstanceData<T>(
+        IExampleSpace<T> ExampleSpace,
+        IEnumerable<IExampleSpace> ExampleSpaceHistory) : IGenInstanceData<T>
     {
-        public GenInstanceData(
-            IExampleSpace<T> exampleSpace,
-            IEnumerable<IExampleSpace> exampleSpaceHistory)
-        {
-            ExampleSpace = exampleSpace;
-            ExampleSpaceHistory = exampleSpaceHistory;
-        }
-
-        public IExampleSpace<T> ExampleSpace { get; init; }
-
-        public IEnumerable<IExampleSpace> ExampleSpaceHistory { get; init; }
-
         IExampleSpace IGenInstanceData.ExampleSpace => ExampleSpace;
     }
 
     public record GenErrorData(string GenName, string Message) : IGenErrorData;
 
-    public record GenDiscardData() : IGenDiscardData;
+    public record GenDiscardData(IExampleSpace ExampleSpace) : IGenDiscardData;
 
     public record GenData<T> : IGenData<T>
     {
@@ -84,11 +74,11 @@ namespace GalaxyCheck.Gens.Iterations.Generic
             Discard = null
         };
 
-        public static GenData<T> DiscardData() => new GenData<T>
+        public static GenData<T> DiscardData(IExampleSpace exampleSpace) => new GenData<T>
         {
             Instance = null,
             Error = null,
-            Discard = new GenDiscardData()
+            Discard = new GenDiscardData(exampleSpace)
         };
 
         public IGenInstanceData<T>? Instance { get; init; }

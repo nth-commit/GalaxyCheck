@@ -23,7 +23,8 @@ namespace GalaxyCheck
                         error.Message),
                     onDiscard: discard => GenIterationFactory.Discard<T>(
                         iteration.ReplayParameters,
-                        iteration.NextParameters))));
+                        iteration.NextParameters,
+                        discard.ExampleSpace))));
 
         public static IGen<T> Cast<T>(this IGen<T> gen)
         {

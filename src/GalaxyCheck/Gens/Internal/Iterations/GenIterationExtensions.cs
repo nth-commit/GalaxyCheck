@@ -11,7 +11,7 @@ namespace GalaxyCheck.Gens.Internal.Iterations
                 onError: error => new Right<IGenInstance<TSource>, IGenIteration<TNonInstance>>(
                     GenIterationFactory.Error<TNonInstance>(error.ReplayParameters, error.NextParameters, error.GenName, error.Message)),
                 onDiscard: discard => new Right<IGenInstance<TSource>, IGenIteration<TNonInstance>>(
-                    GenIterationFactory.Discard<TNonInstance>(discard.ReplayParameters, discard.NextParameters)));
+                    GenIterationFactory.Discard<TNonInstance>(discard.ReplayParameters, discard.NextParameters, discard.ExampleSpace)));
 
         public static bool IsInstance<T>(this IGenIteration<T> iteration) => iteration.Match(
             onInstance: _ => true,
