@@ -7,11 +7,11 @@ using System.Collections.Generic;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    internal record ReplayTransition<T>(
-        CheckState<T> State,
-        string ReplayEncoded) : AbstractTransition<T>(State)
+    internal record ReplayState<T>(
+        CheckStateContext<T> Context,
+        string ReplayEncoded) : AbstractCheckState<T>(Context)
     {
-        internal override AbstractTransition<T> NextTransition()
+        internal override AbstractCheckState<T> NextState()
         {
             Replay replayDecoded;
             try
@@ -20,69 +20,69 @@ namespace GalaxyCheck.Runners.CheckAutomata
             }
             catch (Exception ex)
             {
-                return new ErrorTransition<T>(State, $"Error decoding replay string: {ex.Message}");
+                return new GenerationStates.Error<T>(Context, $"Error decoding replay string: {ex.Message}");
             }
 
-            var iteration = State.Property.Advanced.Run(replayDecoded.GenParameters).First();
+            var iteration = Context.Property.Advanced.Run(replayDecoded.GenParameters).First();
 
             return iteration.Match(
-                onInstance: instance => HandleInstance(State, instance, replayDecoded),
-                onError: error => HandleError(State),
-                onDiscard: _ => HandleError(State));
+                onInstance: instance => HandleInstance(Context, instance, replayDecoded),
+                onError: error => HandleError(Context),
+                onDiscard: _ => HandleError(Context));
         }
 
-        private static AbstractTransition<T> HandleInstance(CheckState<T> state, IGenInstance<Test<T>> instance, Replay replayDecoded)
+        private static AbstractCheckState<T> HandleInstance(CheckStateContext<T> ctx, IGenInstance<Test<T>> instance, Replay replayDecoded)
         {
             var exampleSpace = instance.ExampleSpace.Navigate(replayDecoded.ExampleSpacePath);
             if (exampleSpace == null)
             {
-                return HandleError(state);
+                return HandleError(ctx);
             }
 
             var exploration = exampleSpace.Explore(AnalyzeExplorationForCheck.Impl<T>()).First();
 
             return exploration.Match(
-                onNonCounterexampleExploration: _ => HandleReplayedNonCounterexample(state, instance),
-                onCounterexampleExploration: counterexample => HandleReplayedCounterexample(state, instance, replayDecoded, counterexample),
-                onDiscardExploration: (_) => HandleError(state));
+                onNonCounterexampleExploration: _ => HandleReplayedNonCounterexample(ctx, instance),
+                onCounterexampleExploration: counterexample => HandleReplayedCounterexample(ctx, instance, replayDecoded, counterexample),
+                onDiscardExploration: (_) => HandleError(ctx));
         }
 
-        private static AbstractTransition<T> HandleReplayedNonCounterexample(
-            CheckState<T> state,
+        private static AbstractCheckState<T> HandleReplayedNonCounterexample(
+            CheckStateContext<T> ctx,
             IGenInstance<Test<T>> instance)
         {
-            return new InstanceCompleteTransition<T>(
-                state,
+            return new GenerationStates.End<T>(
+                ctx,
                 instance,
                 null,
                 false,
                 true);
         }
 
-        private static AbstractTransition<T> HandleReplayedCounterexample(
-            CheckState<T> state,
+        private static AbstractCheckState<T> HandleReplayedCounterexample(
+            CheckStateContext<T> state,
             IGenInstance<Test<T>> instance,
             Replay replayDecoded,
             ExplorationStage<Test<T>>.Counterexample counterexample)
         {
-            var counterexampleState = new CounterexampleState<T>(
+            var counterexampleContext = new CounterexampleContext<T>(
                 counterexample.ExampleSpace,
                 GetNavigatedExampleSpaceHistory(instance, replayDecoded.ExampleSpacePath),
                 replayDecoded.GenParameters,
                 replayDecoded.ExampleSpacePath,
                 counterexample.Exception);
 
-            return new InstanceCompleteTransition<T>(
+            return new GenerationStates.End<T>(
                 state,
                 instance,
-                counterexampleState,
+                counterexampleContext,
                 false,
                 true);
         }
 
-        private static AbstractTransition<T> HandleError(CheckState<T> state)
+        private static AbstractCheckState<T> HandleError(CheckStateContext<T> state)
         {
-            return new ErrorTransition<T>(
+            return new GenerationStates.Error<T>(
                 state,
                 "Error replaying last example, given replay string was no longer valid. Remove the replay " +
                 "parameter and run the property again. This is probably due to the generator setup changing.");

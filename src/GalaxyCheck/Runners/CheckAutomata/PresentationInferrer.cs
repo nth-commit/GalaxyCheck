@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    public static class PresentationInferrer
+    internal static class PresentationInferrer
     {
         public static object?[] InferValue(IEnumerable<Lazy<IExampleSpace<object>?>> exampleSpaceHistory)
         {
