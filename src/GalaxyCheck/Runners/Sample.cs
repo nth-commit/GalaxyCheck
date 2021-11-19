@@ -113,7 +113,6 @@ namespace GalaxyCheck.Runners.Sample
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size, deepCheck: false);
 
             var values = checkResult.Checks
-                .OfType<CheckIteration.Check<T>>()
                 .Select(check => check.ExampleSpace)
                 .ToList();
 
@@ -137,7 +136,6 @@ namespace GalaxyCheck.Runners.Sample
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size, deepCheck: false);
 
             var values = checkResult.Checks
-                .OfType<CheckIteration.Check<T>>()
                 .Select(check => check.ExampleSpace)
                 .ToList();
 
@@ -147,10 +145,17 @@ namespace GalaxyCheck.Runners.Sample
                 checkResult.RandomnessConsumption);
         }
 
-        private static bool TestMeetsPrecondition<T>(Test<T> test) =>
-            test.Output.Value.Result != Test.TestResult.FailedPrecondition;
+        private static bool TestMeetsPrecondition<T>(Test<T> test)
+        {
+            // Evaluate the test by accessing the lazily-evaluated `Output`
+            return test.Output.Value.Result != Test.TestResult.FailedPrecondition;
+        }
 
-        private static Test<T> MuteTestFailure<T>(Test<T> test) =>
-            TestFactory.Create(test.Input, () => true, test.PresentedInput);
+        private static Test<T> MuteTestFailure<T>(Test<T> test)
+        {
+            // Create a test that always passes using the same input. We don't care if a property passes or fails when
+            // we're sampling the input.
+            return TestFactory.Create(test.Input, () => true, test.PresentedInput);
+        }
     }
 }

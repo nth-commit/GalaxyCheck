@@ -5,11 +5,25 @@ using System.Linq;
 using System.Reflection;
 using FluentAssertions;
 using Xunit;
+using static Tests.V2.DomainGenAttributes;
 
 namespace Tests.V2.PropertyTests.AboutPreconditions
 {
     public class AboutPreconditions
     {
+        [Property(Iterations = 1)]
+
+        public void WhenThePredicateOnlyPassesForLargerSizesItStillProducesValues([Seed] int seed, [Size] int size)
+        {
+            var property = GalaxyCheck.Gen
+                .Create(parameters => (parameters.Size.Value, parameters))
+                .ForAll(size => GalaxyCheck.Property.Precondition(size >= 50));
+
+            Action test = () => property.Check(seed: seed, size: size);
+
+            test.Should().NotThrow<GalaxyCheck.Exceptions.GenExhaustionException>();
+        }
+
         [Fact]
         public void IfThePreconditionPasses_ThenTheEquivalentAssertionPasses()
         {

@@ -8,14 +8,15 @@ namespace Tests.V2
         {
             public int MinIterations { get; }
 
-            public IterationsAttribute() : this(1) { }
+            public int MaxIterations { get; }
 
-            public IterationsAttribute(int minIterations)
+            public IterationsAttribute(int minIterations = 1, int maxIterations = 200)
             {
                 MinIterations = minIterations;
+                MaxIterations = maxIterations;
             }
 
-            public override IGen Value => Gen.Int32().Between(MinIterations, 200);
+            public override IGen Value => Gen.Int32().Between(MinIterations, MaxIterations);
         }
 
         public class SeedAttribute : GenAttribute

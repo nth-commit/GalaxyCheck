@@ -4,7 +4,6 @@ using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
@@ -71,9 +70,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                             nonCounterexampleExploration,
                             CounterexampleContext),
 
-                    onDiscardExploration: (_) => IsFirstExplorationStage
-                        ? new GenerationStates.End<T>(ctx, Instance, CounterexampleContext: null, WasDiscard: true, WasReplay: false)
-                        : new Discard<T>(ctx, Instance, tail, CounterexampleContext));
+                    onDiscardExploration: (_) => new Discard<T>(ctx, Instance, tail, CounterexampleContext, IsFirstExplorationStage));
             }
         }
 
@@ -135,14 +132,19 @@ namespace GalaxyCheck.Runners.CheckAutomata
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
-            CounterexampleContext<T>? PreviousCounterexample) : AbstractCheckState<T>(Context)
+            CounterexampleContext<T>? PreviousCounterexample,
+            bool IsFirstExplorationStage) : AbstractCheckState<T>(Context)
         {
-            internal override AbstractCheckState<T> NextState() => new HoldingNextExplorationStage<T>(
-                Context,
-                Instance,
-                NextExplorations,
-                PreviousCounterexample,
-                IsFirstExplorationStage: false);
+            /// <summary>
+            /// It's somewhat surprising that this state can be the first exploration (the top of the tree and a
+            /// discard). If it was the first exploration, you would think the discard would be handled by
+            /// GenerationStates.Discard. However, this code path is hit by "late filtering"
+            /// (<see cref="Property.Precondition(bool)"/>). We don't find out this is a discard until we start
+            /// exploring the example space.
+            /// </summary>
+            internal override AbstractCheckState<T> NextState() => IsFirstExplorationStage
+                ? new GenerationStates.End<T>(Context, Instance, CounterexampleContext: null, WasDiscard: true, WasReplay: false)
+                : new HoldingNextExplorationStage<T>(Context, Instance, NextExplorations, PreviousCounterexample, IsFirstExplorationStage: false);
         }
     }
 }
