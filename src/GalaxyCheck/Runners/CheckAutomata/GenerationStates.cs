@@ -71,20 +71,14 @@ namespace GalaxyCheck.Runners.CheckAutomata
             bool WasReplay) : AbstractCheckState<T>(Context)
         {
             internal override AbstractCheckState<T> NextState() => WasDiscard == true
-                ? NextStateOnDiscard(Context, Instance)
+                ? NextStateOnDiscard(Context)
                 : CounterexampleContext == null
                     ? NextStateWithoutCounterexample(Context, Instance)
                     : NextStateWithCounterexample(Context, Instance, CounterexampleContext, WasReplay);
 
-            private static AbstractCheckState<T> NextStateOnDiscard(
-                CheckStateContext<T> state,
-                IGenInstance<Test<T>> instance)
+            private static AbstractCheckState<T> NextStateOnDiscard(CheckStateContext<T> state)
             {
-                var nextSize = Resize(state, null, instance);
-                // TODO: Resize on discards more like Gen.Where does
-                return new Begin<T>(state
-                    .IncrementDiscards()
-                    .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
+                return new Begin<T>(state.IncrementDiscards());
             }
 
             private static AbstractCheckState<T> NextStateWithoutCounterexample(

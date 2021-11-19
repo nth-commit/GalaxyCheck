@@ -76,16 +76,47 @@ namespace GalaxyCheck
             return (new Size(givenSize.Value), NoopResize<T>());
         }
 
-        private static IEnumerable<AbstractCheckState<T>> UnfoldStates<T>(AbstractCheckState<T> initialState) =>
-            EnumerableExtensions
+        private static IEnumerable<AbstractCheckState<T>> UnfoldStates<T>(AbstractCheckState<T> initialState)
+        {
+            Func<AbstractCheckState<T>, bool> isStateCountedInConsecutiveDiscardCount = state =>
+                state is GenerationStates.Discard<T> ||
+                state is InstanceExplorationStates.Counterexample<T> ||
+                state is InstanceExplorationStates.NonCounterexample<T> ||
+                state is InstanceExplorationStates.Discard<T>;
+
+            Func<AbstractCheckState<T>, bool> isStateDiscard = state =>
+                state is GenerationStates.Discard<T> ||
+                state is InstanceExplorationStates.Discard<T>;
+
+            return EnumerableExtensions
                 .Unfold(
                     initialState,
                     previousState => previousState is TerminationState<T>
                         ? new Option.None<AbstractCheckState<T>>()
                         : new Option.Some<AbstractCheckState<T>>(previousState.NextState()))
-                .WithDiscardCircuitBreaker(
-                    state => state is GenerationStates.End<T>,
-                    state => ((GenerationStates.End<T>)state).WasDiscard);
+                .WithConsecutiveDiscardCount(
+                    isStateCountedInConsecutiveDiscardCount,
+                    isStateDiscard)
+                .SelectMany(x =>
+                {
+                    var (state, consecutiveDiscardCount) = x;
+                    if (state is GenerationStates.End<T> generationEndState && consecutiveDiscardCount >= 10)
+                    {
+                        var state0 = generationEndState with
+                        {
+                            Context = generationEndState.Context.WithNextGenParameters(generationEndState.Instance.NextParameters with
+                            {
+                                Size = generationEndState.Instance.NextParameters.Size.BigIncrement()
+                            })
+                        };
+
+                        return UnfoldStates(state0);
+                    }
+
+                    return new[] { state };
+                })
+                .TakeWhileInclusive(state => state is not TerminationState<T>);
+        }
 
         private record StateAggregation<T>(
             ImmutableList<CheckIteration<T>> Checks,
@@ -94,13 +125,23 @@ namespace GalaxyCheck
 
         private static StateAggregation<T> AggregateStates<T>(IEnumerable<AbstractCheckState<T>> states)
         {
+            Func<AbstractCheckState<T>, bool> isStateCountedInConsecutiveDiscardCount = state =>
+                state is GenerationStates.Discard<T> ||
+                state is InstanceExplorationStates.Counterexample<T> ||
+                state is InstanceExplorationStates.NonCounterexample<T> ||
+                state is InstanceExplorationStates.Discard<T>;
+
+            Func<AbstractCheckState<T>, bool> isStateDiscard = state =>
+                state is GenerationStates.Discard<T> ||
+                state is InstanceExplorationStates.Discard<T>;
+
             var mappedStates = states
+                .WithDiscardCircuitBreaker(isStateCountedInConsecutiveDiscardCount, isStateDiscard)
                 .ScanInParallel<AbstractCheckState<T>, CheckStateContext<T>>(null!, (acc, curr) => curr.Context)
                 .Select(x => (
                     state: x.element,
                     check: MapStateToIterationOrIgnore(x.element),
                     context: x.state))
-                .WithDiscardCircuitBreaker(x => x.check != null, x => x.check is CheckIteration.Discard<T>)
                 .ToImmutableList();
 
             var lastMappedState = mappedStates.Last();
@@ -190,7 +231,7 @@ namespace GalaxyCheck
         {
             CheckIteration<T>? FromHandleCounterexample(InstanceExplorationStates.Counterexample<T> state)
             {
-                return new CheckIteration.Check<T>(
+                return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
                     PresentationalValue:
                         state.TestExampleSpace.Current.Value.PresentedInput ??
@@ -204,7 +245,7 @@ namespace GalaxyCheck
 
             CheckIteration<T>? FromHandleNonCounterexample(InstanceExplorationStates.NonCounterexample<T> state)
             {
-                return new CheckIteration.Check<T>(
+                return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
                     PresentationalValue:
                         state.TestExampleSpace.Current.Value.PresentedInput ??
@@ -216,15 +257,10 @@ namespace GalaxyCheck
                     IsCounterexample: false);
             }
 
-            CheckIteration<T>? ToDiscard() =>
-                new CheckIteration.Discard<T>();
-
             return state switch
             {
                 InstanceExplorationStates.Counterexample<T> t => FromHandleCounterexample(t),
                 InstanceExplorationStates.NonCounterexample<T> t => FromHandleNonCounterexample(t),
-                InstanceExplorationStates.Discard<T> _ => ToDiscard(),
-                GenerationStates.Discard<T> _ => ToDiscard(),
                 GenerationStates.Error<T> t => throw new Exceptions.GenErrorException(t.Description),
                 _ => null
             };
@@ -277,21 +313,14 @@ namespace GalaxyCheck.Runners.Check
         }
     }
 
-    public abstract record CheckIteration<T>;
-
-    public static class CheckIteration
-    {
-        public record Check<T>(
-            T Value,
-            object?[] PresentationalValue,
-            IExampleSpace<T> ExampleSpace,
-            GenParameters Parameters,
-            IEnumerable<int> Path,
-            bool IsCounterexample,
-            Exception? Exception) : CheckIteration<T>;
-
-        public record Discard<T> : CheckIteration<T>;
-    }
+    public record CheckIteration<T>(
+        T Value,
+        object?[] PresentationalValue,
+        IExampleSpace<T> ExampleSpace,
+        GenParameters Parameters,
+        IEnumerable<int> Path,
+        bool IsCounterexample,
+        Exception? Exception);
 
     public record Counterexample<T>(
         ExampleId Id,

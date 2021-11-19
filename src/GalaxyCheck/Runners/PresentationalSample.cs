@@ -40,7 +40,6 @@ namespace GalaxyCheck.Runners.Sample
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
 
             var values = checkResult.Checks
-                .OfType<CheckIteration.Check<T>>()
                 .Select(check => check.PresentationalValue)
                 .ToList();
 
@@ -61,7 +60,6 @@ namespace GalaxyCheck.Runners.Sample
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
 
             var values = checkResult.Checks
-                .OfType<CheckIteration.Check<T>>()
                 .Select(check => check.PresentationalValue)
                 .ToList();
 
