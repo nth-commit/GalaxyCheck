@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.Runners.CheckAutomata
+namespace GalaxyCheck.Runners.Check.Automata
 {
     internal record CheckStateContext<T>
     {
@@ -90,8 +90,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
         public CheckStateContext<T> AddCounterexample(CounterexampleContext<T> counterexampleContext) => this with
         {
-            CounterexampleContextHistory = Enumerable
-                .Concat(new[] { counterexampleContext }, CounterexampleContextHistory)
+            CounterexampleContextHistory = (new[] { counterexampleContext }).Concat(CounterexampleContextHistory)
                 .ToImmutableList()
         };
 

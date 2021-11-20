@@ -1,11 +1,12 @@
-﻿using GalaxyCheck.Gens.Iterations.Generic;
+﻿using GalaxyCheck;
+using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Runners.Replaying;
 using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace GalaxyCheck.Runners.CheckAutomata
+namespace GalaxyCheck.Runners.Check.Automata
 {
     internal record ReplayState<T>(string ReplayEncoded) : CheckState<T>
     {

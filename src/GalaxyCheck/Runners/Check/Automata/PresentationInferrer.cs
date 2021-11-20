@@ -1,10 +1,11 @@
-﻿using GalaxyCheck.ExampleSpaces;
+﻿using GalaxyCheck;
+using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Runners.CheckAutomata
+namespace GalaxyCheck.Runners.Check.Automata
 {
     internal static class PresentationInferrer
     {
