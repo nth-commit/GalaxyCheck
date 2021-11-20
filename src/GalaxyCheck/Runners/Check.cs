@@ -30,19 +30,18 @@ namespace GalaxyCheck
                 ? GenParameters.Create(resolvedSize)
                 : GenParameters.Create(Rng.Create(seed.Value), resolvedSize);
 
-            var initialCtx = CheckStateContext<T>.Create(
+            var initialCtx = new CheckStateContext<T>(
                 property,
                 resolvedIterations,
                 shrinkLimit ?? 500,
                 initialParameters,
-                resizeStrategy,
                 deepCheck);
 
-            AbstractCheckState<T> initialState = replay == null
-                ? new GenerationStates.Begin<T>(initialCtx)
-                : new ReplayState<T>(initialCtx, replay);
+            CheckState<T> initialState = replay == null
+                ? new GenerationStates.Generation_Begin<T>()
+                : new ReplayState<T>(replay);
 
-            var states = UnfoldStates(initialState);
+            var states = UnfoldStates(initialState, initialCtx, resizeStrategy);
             var stateAggregation = AggregateStates(states);
 
             return new CheckResult<T>(
@@ -76,46 +75,43 @@ namespace GalaxyCheck
             return (new Size(givenSize.Value), NoopResize<T>());
         }
 
-        private static IEnumerable<AbstractCheckState<T>> UnfoldStates<T>(AbstractCheckState<T> initialState)
+        private static IEnumerable<CheckStateTransition<T>> UnfoldStates<T>(
+            CheckState<T> initialState,
+            CheckStateContext<T> initialContext,
+            ResizeStrategy<T> resizeStrategy)
         {
-            Func<AbstractCheckState<T>, bool> isStateCountedInConsecutiveDiscardCount = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Counterexample<T> ||
-                state is InstanceExplorationStates.NonCounterexample<T> ||
-                state is InstanceExplorationStates.Discard<T>;
-
-            Func<AbstractCheckState<T>, bool> isStateDiscard = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Discard<T>;
-
             return EnumerableExtensions
                 .Unfold(
-                    initialState,
-                    previousState => previousState is TerminationState<T>
-                        ? new Option.None<AbstractCheckState<T>>()
-                        : new Option.Some<AbstractCheckState<T>>(previousState.NextState()))
-                .WithConsecutiveDiscardCount(
-                    isStateCountedInConsecutiveDiscardCount,
-                    isStateDiscard)
-                .SelectMany(x =>
-                {
-                    var (state, consecutiveDiscardCount) = x;
-                    if (state is GenerationStates.End<T> generationEndState && consecutiveDiscardCount >= 10)
+                    new CheckStateTransition<T>(initialState, initialContext),
+                    previousTransition =>
                     {
-                        var state0 = generationEndState with
+                        if (previousTransition.NextState is TerminationState<T>)
                         {
-                            Context = generationEndState.Context.WithNextGenParameters(generationEndState.Instance.NextParameters with
+                            return new Option.None<CheckStateTransition<T>>();
+                        }
+
+                        var transition = previousTransition.NextState.Transition(previousTransition.NextContext);
+
+                        if (previousTransition.NextState is GenerationStates.Generation_End<T> generationEndState &&
+                            transition.NextState is GenerationStates.Generation_Begin<T>)
+                        {
+                            var resizeStrategyInfo = new ResizeStrategyInformation<T>(
+                                transition.NextContext,
+                                generationEndState.CounterexampleContext,
+                                generationEndState.Instance);
+
+                            var nextSize = resizeStrategy(resizeStrategyInfo);
+
+                            transition = transition with
                             {
-                                Size = generationEndState.Instance.NextParameters.Size.BigIncrement()
-                            })
-                        };
+                                NextContext = transition.NextContext.WithNextGenParameters(GenParameters.Create(
+                                    transition.NextContext.NextParameters.Rng,
+                                    nextSize))
+                            };
+                        }
 
-                        return UnfoldStates(state0);
-                    }
-
-                    return new[] { state };
-                })
-                .TakeWhileInclusive(state => state is not TerminationState<T>);
+                        return new Option.Some<CheckStateTransition<T>>(transition);
+                    });
         }
 
         private record StateAggregation<T>(
@@ -123,36 +119,37 @@ namespace GalaxyCheck
             CheckStateContext<T> FinalContext,
             TerminationReason TerminationReason);
 
-        private static StateAggregation<T> AggregateStates<T>(IEnumerable<AbstractCheckState<T>> states)
+        private static StateAggregation<T> AggregateStates<T>(IEnumerable<CheckStateTransition<T>> transitions)
         {
-            Func<AbstractCheckState<T>, bool> isStateCountedInConsecutiveDiscardCount = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Counterexample<T> ||
-                state is InstanceExplorationStates.NonCounterexample<T> ||
-                state is InstanceExplorationStates.Discard<T>;
+            Func<CheckStateTransition<T>, bool> isStateCountedInConsecutiveDiscardCount = transition =>
+                transition.NextState is GenerationStates.Generation_Discard<T> ||
+                transition.NextState is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
+                transition.NextState is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
+                transition.NextState is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
-            Func<AbstractCheckState<T>, bool> isStateDiscard = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Discard<T>;
+            Func<CheckStateTransition<T>, bool> isStateDiscard = transition =>
+                transition.NextState is GenerationStates.Generation_Discard<T> ||
+                transition.NextState is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
-            var mappedStates = states
+            // TODO: A lot of this can be simplified, now that transitions already have a context built-in
+            var mappedTransitions = transitions
                 .WithDiscardCircuitBreaker(isStateCountedInConsecutiveDiscardCount, isStateDiscard)
-                .ScanInParallel<AbstractCheckState<T>, CheckStateContext<T>>(null!, (acc, curr) => curr.Context)
+                .ScanInParallel<CheckStateTransition<T>, CheckStateContext<T>>(null!, (acc, curr) => curr.NextContext)
                 .Select(x => (
-                    state: x.element,
-                    check: MapStateToIterationOrIgnore(x.element),
+                    state: x.element.NextState,
+                    check: MapStateToIterationOrIgnore(x.element.NextState),
                     context: x.state))
                 .ToImmutableList();
 
-            var lastMappedState = mappedStates.Last();
-            if (lastMappedState.state is not TerminationState<T> terminationState)
+            var lastMappedTransition = mappedTransitions.Last();
+            if (lastMappedTransition.state is not TerminationState<T> terminationState)
             {
                 throw new Exception("Fatal: Check did not terminate");
             }
 
             return new StateAggregation<T>(
-                mappedStates.Select(x => x.check).OfType<CheckIteration<T>>().ToImmutableList(),
-                terminationState.Context,
+                mappedTransitions.Select(x => x.check).OfType<CheckIteration<T>>().ToImmutableList(),
+                lastMappedTransition.context,
                 terminationState.Reason);
         }
 
@@ -217,7 +214,7 @@ namespace GalaxyCheck
                     return SuperStrategicResize<T>()(info);
                 }
 
-                var size = sizes.Skip(info.CheckStateContext.CompletedIterations).FirstOrDefault() ?? new Size(0);
+                var size = sizes.Skip(info.CheckStateContext.CompletedIterations - 1).FirstOrDefault() ?? new Size(0);
                 return size;
             };
         }
@@ -227,9 +224,9 @@ namespace GalaxyCheck
         /// </summary>
         private static ResizeStrategy<T> NoopResize<T>() => (info) => info.Iteration.NextParameters.Size;
 
-        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(AbstractCheckState<T> state)
+        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {
-            CheckIteration<T>? FromHandleCounterexample(InstanceExplorationStates.Counterexample<T> state)
+            CheckIteration<T>? FromHandleCounterexample(InstanceExplorationStates.InstanceExploration_Counterexample<T> state)
             {
                 return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
@@ -243,7 +240,7 @@ namespace GalaxyCheck
                     IsCounterexample: true);
             }
 
-            CheckIteration<T>? FromHandleNonCounterexample(InstanceExplorationStates.NonCounterexample<T> state)
+            CheckIteration<T>? FromHandleNonCounterexample(InstanceExplorationStates.InstanceExploration_NonCounterexample<T> state)
             {
                 return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
@@ -259,9 +256,9 @@ namespace GalaxyCheck
 
             return state switch
             {
-                InstanceExplorationStates.Counterexample<T> t => FromHandleCounterexample(t),
-                InstanceExplorationStates.NonCounterexample<T> t => FromHandleNonCounterexample(t),
-                GenerationStates.Error<T> t => throw new Exceptions.GenErrorException(t.Description),
+                InstanceExplorationStates.InstanceExploration_Counterexample<T> t => FromHandleCounterexample(t),
+                InstanceExplorationStates.InstanceExploration_NonCounterexample<T> t => FromHandleNonCounterexample(t),
+                GenerationStates.Generation_Error<T> t => throw new Exceptions.GenErrorException(t.Description),
                 _ => null
             };
         }

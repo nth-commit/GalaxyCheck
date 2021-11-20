@@ -1,0 +1,52 @@
+﻿{
+  "Iterations": 51,
+  "Discards": 0,
+  "Shrinks": 0,
+  "Counterexample": {
+    "Id": {
+      "HashCode": -1923861349
+    },
+    "Value": 50,
+    "Distance": 0.0,
+    "ReplayParameters": {
+      "Rng": {
+        "Family": 0,
+        "Seed": 0,
+        "Order": 0
+      },
+      "Size": {
+        "Value": 50
+      }
+    },
+    "ReplayPath": [],
+    "Replay": "",
+    "Exception": null,
+    "PresentationalValue": [
+      50
+    ]
+  },
+  "Checks": [],
+  "InitialParameters": {
+    "Rng": {
+      "Family": 0,
+      "Seed": 0,
+      "Order": 0
+    },
+    "Size": {
+      "Value": 0
+    }
+  },
+  "NextParameters": {
+    "Rng": {
+      "Family": 0,
+      "Seed": 0,
+      "Order": 0
+    },
+    "Size": {
+      "Value": 50
+    }
+  },
+  "TerminationReason": "FoundTheoreticalSmallestCounterexample",
+  "Falsified": true,
+  "RandomnessConsumption": 0
+}

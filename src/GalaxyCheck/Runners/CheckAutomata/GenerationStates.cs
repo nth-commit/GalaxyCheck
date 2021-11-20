@@ -10,112 +10,120 @@ namespace GalaxyCheck.Runners.CheckAutomata
 {
     internal static class GenerationStates
     {
-        internal record Begin<T>(CheckStateContext<T> Context) : AbstractCheckState<T>(Context)
+        internal record Generation_Begin<T> : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState()
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
             {
-                if (Context.CompletedIterations >= Context.RequestedIterations)
+                if (context.CompletedIterations >= context.RequestedIterations)
                 {
-                    return new TerminationState<T>(Context, TerminationReason.ReachedMaximumIterations);
+                    return new CheckStateTransition<T>(
+                        new TerminationState<T>(TerminationReason.ReachedMaximumIterations),
+                        context);
                 }
 
-                var iterations = Context.Property.Advanced.Run(Context.NextParameters);
-                return new HoldingNextIteration<T>(Context, iterations);
+                var iterations = context.Property.Advanced.Run(context.NextParameters);
+                return new CheckStateTransition<T>(
+                    new Generation_HoldingNextIteration<T>(iterations),
+                    context);
             }
         }
 
-        internal record HoldingNextIteration<T>(
-            CheckStateContext<T> Context,
-            IEnumerable<IGenIteration<Test<T>>> Iterations) : AbstractCheckState<T>(Context)
+        internal record Generation_HoldingNextIteration<T>(IEnumerable<IGenIteration<Test<T>>> Iterations) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState()
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
             {
                 var (head, tail) = Iterations;
-                return head!.Match<AbstractCheckState<T>>(
+
+                var state = head!.Match<CheckState<T>>(
                     onInstance: (instance) =>
-                        new Instance<T>(Context, instance),
+                        new Generation_Instance<T>(instance),
                     onDiscard: (discard) =>
-                        new Discard<T>(Context, tail, discard),
+                        new Generation_Discard<T>(tail, discard),
                     onError: (error) =>
-                        new Error<T>(Context, $"Error while running generator {error.GenName}: {error.Message}"));
+                        new Generation_Error<T>($"Error while running generator {error.GenName}: {error.Message}"));
+
+                return new CheckStateTransition<T>(state, context);
             }
         }
 
-        internal record Instance<T>(
-            CheckStateContext<T> Context,
-            IGenInstance<Test<T>> Iteration) : AbstractCheckState<T>(Context)
+        internal record Generation_Instance<T>(IGenInstance<Test<T>> Iteration) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState() => new InstanceExplorationStates.Begin<T>(Context, Iteration);
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
+                new InstanceExplorationStates.InstanceExploration_Begin<T>(Iteration),
+                context);
         }
 
-        internal record Discard<T>(
-            CheckStateContext<T> Context,
+        internal record Generation_Discard<T>(
             IEnumerable<IGenIteration<Test<T>>> NextIterations,
-            IGenDiscard<Test<T>> Iteration) : AbstractCheckState<T>(Context)
+            IGenDiscard<Test<T>> Iteration) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState() => new HoldingNextIteration<T>(Context.IncrementDiscards(), NextIterations);
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
+                new Generation_HoldingNextIteration<T>(NextIterations),
+                context.IncrementDiscards());
         }
 
-        internal record Error<T>(
-            CheckStateContext<T> State,
-            string Description) : AbstractCheckState<T>(State)
+        internal record Generation_Error<T>(string Description) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState() => new TerminationState<T>(State, TerminationReason.FoundError);
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
+                new TerminationState<T>(TerminationReason.FoundError),
+                context);
         }
 
-        internal record End<T>(
-            CheckStateContext<T> Context,
+        internal record Generation_End<T>(
             IGenInstance<Test<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
-            bool WasReplay) : AbstractCheckState<T>(Context)
+            bool WasReplay) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState() => WasDiscard == true
-                ? NextStateOnDiscard(Context)
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => WasDiscard == true
+                ? TransitionFromDiscard(context)
                 : CounterexampleContext == null
-                    ? NextStateWithoutCounterexample(Context, Instance)
-                    : NextStateWithCounterexample(Context, Instance, CounterexampleContext, WasReplay);
+                    ? NextStateWithoutCounterexample(context, Instance)
+                    : NextStateWithCounterexample(context, Instance, CounterexampleContext, WasReplay);
 
-            private static AbstractCheckState<T> NextStateOnDiscard(CheckStateContext<T> state)
-            {
-                return new Begin<T>(state.IncrementDiscards());
-            }
+            private static CheckStateTransition<T> TransitionFromDiscard(CheckStateContext<T> context) => new CheckStateTransition<T>(
+                new Generation_Begin<T>(),
+                context.IncrementDiscards());
 
-            private static AbstractCheckState<T> NextStateWithoutCounterexample(
-                CheckStateContext<T> state,
+            private static CheckStateTransition<T> NextStateWithoutCounterexample(
+                CheckStateContext<T> context,
                 IGenInstance<Test<T>> instance)
             {
-                var nextSize = Resize(state, null, instance);
-                return new Begin<T>(state
+                var nextContext = context
                     .IncrementCompletedIterations()
-                    .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
+                    .WithNextGenParameters(instance.NextParameters);
+
+                return new CheckStateTransition<T>(new Generation_Begin<T>(), nextContext);
             }
 
-            private static AbstractCheckState<T> NextStateWithCounterexample(
-                CheckStateContext<T> state,
+            private static CheckStateTransition<T> NextStateWithCounterexample(
+                CheckStateContext<T> context,
                 IGenInstance<Test<T>> instance,
                 CounterexampleContext<T> counterexampleContext,
                 bool wasReplay)
             {
-                var nextSize = Resize(state, counterexampleContext, instance);
-
-                var nextState = state
+                var nextContext = context
                     .IncrementCompletedIterations()
-                    .WithNextGenParameters(instance.NextParameters.With(size: nextSize))
+                    .WithNextGenParameters(instance.NextParameters)
                     .AddCounterexample(counterexampleContext);
 
-                var terminationReason = TryTerminate(nextState, counterexampleContext, instance, wasReplay);
+                var terminationReason = TryTerminate(nextContext, counterexampleContext, instance, wasReplay);
 
                 return terminationReason == null
-                    ? new Begin<T>(nextState.WithNextGenParameters(instance.NextParameters.With(size: nextSize)))
-                    : new TerminationState<T>(nextState, terminationReason.Value);
+                    ? new CheckStateTransition<T>(
+                        new Generation_Begin<T>(),
+                        nextContext)
+                    : new CheckStateTransition<T>(
+                        new TerminationState<T>(terminationReason.Value),
+                        nextContext);
             }
 
             private static Size Resize(
-                CheckStateContext<T> state,
+                CheckStateContext<T> context,
                 CounterexampleContext<T>? counterexampleContext,
-                IGenIteration<Test<T>> instance) =>
-                    state.ResizeStrategy(new ResizeStrategyInformation<T>(state, counterexampleContext, instance));
+                IGenInstance<Test<T>> instance) =>
+                    instance.NextParameters.Size;
+                    //context.ResizeStrategy(new ResizeStrategyInformation<T>(context, counterexampleContext, instance));
 
             private static TerminationReason? TryTerminate(
                 CheckStateContext<T> state,

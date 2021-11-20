@@ -120,7 +120,8 @@ namespace GalaxyCheck
                                     innerError.Message),
                                 onDiscard: innerDiscard => GenIterationFactory.Discard<TResult>(
                                     iteration.ReplayParameters,
-                                    innerIteration.NextParameters));
+                                    innerIteration.NextParameters,
+                                    innerDiscard.ExampleSpace));
                         }
 
                         break;

@@ -4,6 +4,7 @@ using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Internal;
 using System;
 using System.Linq;
+using GalaxyCheck.Gens.Iterations.Generic;
 
 namespace GalaxyCheck
 {
@@ -23,7 +24,10 @@ namespace GalaxyCheck
                 var filteredExampleSpace = instance.ExampleSpace.Filter(pred);
                 if (filteredExampleSpace == null)
                 {
-                    return GenIterationFactory.Discard<T>(instance.ReplayParameters, instance.NextParameters);
+                    return GenIterationFactory.Discard<T>(
+                        instance.ReplayParameters,
+                        instance.NextParameters,
+                        instance.ExampleSpace);
                 }
 
                 return GenIterationFactory.Instance(
@@ -47,7 +51,8 @@ namespace GalaxyCheck
                         {
                             var resizedIteration = GenIterationFactory.Discard<T>(
                                 iteration.ReplayParameters,
-                                iteration.NextParameters.With(size: iteration.NextParameters.Size.BigIncrement()));
+                                iteration.NextParameters.With(size: iteration.NextParameters.Size.BigIncrement()),
+                                iteration.Data.Discard!.ExampleSpace);
 
                             return (iteration: resizedIteration, consecutiveDiscardCount);
                         }
