@@ -3,12 +3,12 @@ using GalaxyCheck.Gens.Parameters.Internal;
 using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Internal;
 using GalaxyCheck.Runners.Check;
-using GalaxyCheck.Runners.CheckAutomata;
 using GalaxyCheck.Runners.Replaying;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using GalaxyCheck.Runners.Check.Automata;
 
 namespace GalaxyCheck
 {
@@ -85,18 +85,18 @@ namespace GalaxyCheck
                     new CheckStateTransition<T>(initialState, initialContext),
                     previousTransition =>
                     {
-                        if (previousTransition.NextState is TerminationState<T>)
+                        if (previousTransition.State is TerminationState<T>)
                         {
                             return new Option.None<CheckStateTransition<T>>();
                         }
 
-                        var transition = previousTransition.NextState.Transition(previousTransition.NextContext);
+                        var transition = previousTransition.State.Transition(previousTransition.Context);
 
-                        if (previousTransition.NextState is GenerationStates.Generation_End<T> generationEndState &&
-                            transition.NextState is GenerationStates.Generation_Begin<T>)
+                        if (previousTransition.State is GenerationStates.Generation_End<T> generationEndState &&
+                            transition.State is GenerationStates.Generation_Begin<T>)
                         {
                             var resizeStrategyInfo = new ResizeStrategyInformation<T>(
-                                transition.NextContext,
+                                transition.Context,
                                 generationEndState.CounterexampleContext,
                                 generationEndState.Instance);
 
@@ -104,8 +104,8 @@ namespace GalaxyCheck
 
                             transition = transition with
                             {
-                                NextContext = transition.NextContext.WithNextGenParameters(GenParameters.Create(
-                                    transition.NextContext.NextParameters.Rng,
+                                Context = transition.Context.WithNextGenParameters(GenParameters.Create(
+                                    transition.Context.NextParameters.Rng,
                                     nextSize))
                             };
                         }
@@ -122,22 +122,22 @@ namespace GalaxyCheck
         private static StateAggregation<T> AggregateStates<T>(IEnumerable<CheckStateTransition<T>> transitions)
         {
             Func<CheckStateTransition<T>, bool> isStateCountedInConsecutiveDiscardCount = transition =>
-                transition.NextState is GenerationStates.Generation_Discard<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_Discard<T>;
+                transition.State is GenerationStates.Generation_Discard<T> ||
+                transition.State is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
+                transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
+                transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
             Func<CheckStateTransition<T>, bool> isStateDiscard = transition =>
-                transition.NextState is GenerationStates.Generation_Discard<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_Discard<T>;
+                transition.State is GenerationStates.Generation_Discard<T> ||
+                transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
             // TODO: A lot of this can be simplified, now that transitions already have a context built-in
             var mappedTransitions = transitions
                 .WithDiscardCircuitBreaker(isStateCountedInConsecutiveDiscardCount, isStateDiscard)
-                .ScanInParallel<CheckStateTransition<T>, CheckStateContext<T>>(null!, (acc, curr) => curr.NextContext)
+                .ScanInParallel<CheckStateTransition<T>, CheckStateContext<T>>(null!, (acc, curr) => curr.Context)
                 .Select(x => (
-                    state: x.element.NextState,
-                    check: MapStateToIterationOrIgnore(x.element.NextState),
+                    state: x.element.State,
+                    check: MapStateToIterationOrIgnore(x.element.State),
                     context: x.state))
                 .ToImmutableList();
 

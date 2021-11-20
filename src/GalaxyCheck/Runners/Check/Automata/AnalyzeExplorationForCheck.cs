@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Runners.CheckAutomata
+namespace GalaxyCheck.Runners.Check.Automata
 {
     internal static class AnalyzeExplorationForCheck
     {

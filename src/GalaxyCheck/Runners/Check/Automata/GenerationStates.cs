@@ -1,12 +1,11 @@
 ﻿using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.Internal;
-using GalaxyCheck.Runners.Check;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Runners.CheckAutomata
+namespace GalaxyCheck.Runners.Check.Automata
 {
     internal static class GenerationStates
     {
@@ -123,7 +122,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 CounterexampleContext<T>? counterexampleContext,
                 IGenInstance<Test<T>> instance) =>
                     instance.NextParameters.Size;
-                    //context.ResizeStrategy(new ResizeStrategyInformation<T>(context, counterexampleContext, instance));
+            //context.ResizeStrategy(new ResizeStrategyInformation<T>(context, counterexampleContext, instance));
 
             private static TerminationReason? TryTerminate(
                 CheckStateContext<T> state,

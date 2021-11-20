@@ -1,7 +1,6 @@
-﻿using GalaxyCheck.Runners.Check;
-using System;
+﻿using System;
 
-namespace GalaxyCheck.Runners.CheckAutomata
+namespace GalaxyCheck.Runners.Check.Automata
 {
     internal record TerminationState<T>(TerminationReason Reason) : CheckState<T>
     {
