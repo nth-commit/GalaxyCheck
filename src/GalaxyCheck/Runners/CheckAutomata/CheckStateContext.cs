@@ -26,8 +26,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
         public GenParameters NextParameters { get; private init; }
 
-        public ResizeStrategy<T> ResizeStrategy { get; private init; }
-
         public bool DeepCheck { get; private init; }
 
         private CheckStateContext(
@@ -39,7 +37,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
             int shrinks,
             ImmutableList<CounterexampleContext<T>> counterexampleContextHistory,
             GenParameters nextParameters,
-            ResizeStrategy<T> resizeStrategy,
             bool deepCheck)
         {
             Property = property;
@@ -50,7 +47,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
             Shrinks = shrinks;
             CounterexampleContextHistory = counterexampleContextHistory;
             NextParameters = nextParameters;
-            ResizeStrategy = resizeStrategy;
             DeepCheck = deepCheck;
         }
 
@@ -59,7 +55,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
             int requestedIterations,
             int shrinkLimit,
             GenParameters initialParameters,
-            ResizeStrategy<T> resizeStrategy,
             bool deepCheck) : this(
                 property,
                 requestedIterations,
@@ -69,7 +64,6 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 0,
                 ImmutableList.Create<CounterexampleContext<T>>(),
                 initialParameters,
-                resizeStrategy,
                 deepCheck)
         {
         }
@@ -110,7 +104,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
     internal record ResizeStrategyInformation<T>(
         CheckStateContext<T> CheckStateContext,
         CounterexampleContext<T>? CounterexampleContext,
-        IGenIteration<Test<T>> Iteration);
+        IGenInstance<Test<T>> Iteration);
 
     internal delegate Size ResizeStrategy<T>(ResizeStrategyInformation<T> info);
 

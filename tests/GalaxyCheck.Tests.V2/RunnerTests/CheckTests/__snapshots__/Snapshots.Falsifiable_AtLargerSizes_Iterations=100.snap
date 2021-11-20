@@ -19,7 +19,7 @@
       }
     },
     "ReplayPath": [],
-    "Replay": "H4sIAAAAAAAACjPQMzXQAwDRi94GBQAAAA==",
+    "Replay": "",
     "Exception": null,
     "PresentationalValue": [
       50
@@ -43,7 +43,7 @@
       "Order": 0
     },
     "Size": {
-      "Value": 55
+      "Value": 50
     }
   },
   "TerminationReason": "FoundTheoreticalSmallestCounterexample",

@@ -89,10 +89,10 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 CheckStateContext<T> context,
                 IGenInstance<Test<T>> instance)
             {
-                var nextSize = Resize(context, null, instance);
                 var nextContext = context
                     .IncrementCompletedIterations()
-                    .WithNextGenParameters(instance.NextParameters.With(size: nextSize));
+                    .WithNextGenParameters(instance.NextParameters);
+
                 return new CheckStateTransition<T>(new Generation_Begin<T>(), nextContext);
             }
 
@@ -102,11 +102,9 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 CounterexampleContext<T> counterexampleContext,
                 bool wasReplay)
             {
-                var nextSize = Resize(context, counterexampleContext, instance);
-
                 var nextContext = context
                     .IncrementCompletedIterations()
-                    .WithNextGenParameters(instance.NextParameters.With(size: nextSize))
+                    .WithNextGenParameters(instance.NextParameters)
                     .AddCounterexample(counterexampleContext);
 
                 var terminationReason = TryTerminate(nextContext, counterexampleContext, instance, wasReplay);
@@ -114,7 +112,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 return terminationReason == null
                     ? new CheckStateTransition<T>(
                         new Generation_Begin<T>(),
-                        nextContext.WithNextGenParameters(instance.NextParameters.With(size: nextSize)))
+                        nextContext)
                     : new CheckStateTransition<T>(
                         new TerminationState<T>(terminationReason.Value),
                         nextContext);
@@ -123,8 +121,9 @@ namespace GalaxyCheck.Runners.CheckAutomata
             private static Size Resize(
                 CheckStateContext<T> context,
                 CounterexampleContext<T>? counterexampleContext,
-                IGenIteration<Test<T>> instance) =>
-                    context.ResizeStrategy(new ResizeStrategyInformation<T>(context, counterexampleContext, instance));
+                IGenInstance<Test<T>> instance) =>
+                    instance.NextParameters.Size;
+                    //context.ResizeStrategy(new ResizeStrategyInformation<T>(context, counterexampleContext, instance));
 
             private static TerminationReason? TryTerminate(
                 CheckStateContext<T> state,

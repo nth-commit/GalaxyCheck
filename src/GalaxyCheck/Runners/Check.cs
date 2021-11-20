@@ -35,14 +35,13 @@ namespace GalaxyCheck
                 resolvedIterations,
                 shrinkLimit ?? 500,
                 initialParameters,
-                resizeStrategy,
                 deepCheck);
 
             CheckState<T> initialState = replay == null
                 ? new GenerationStates.Generation_Begin<T>()
                 : new ReplayState<T>(replay);
 
-            var states = UnfoldStates(initialState, initialCtx);
+            var states = UnfoldStates(initialState, initialCtx, resizeStrategy);
             var stateAggregation = AggregateStates(states);
 
             return new CheckResult<T>(
@@ -76,20 +75,42 @@ namespace GalaxyCheck
             return (new Size(givenSize.Value), NoopResize<T>());
         }
 
-        private static IEnumerable<CheckStateTransition<T>> UnfoldStates<T>(CheckState<T> initialState, CheckStateContext<T> initialContext)
+        private static IEnumerable<CheckStateTransition<T>> UnfoldStates<T>(
+            CheckState<T> initialState,
+            CheckStateContext<T> initialContext,
+            ResizeStrategy<T> resizeStrategy)
         {
             return EnumerableExtensions
                 .Unfold(
                     new CheckStateTransition<T>(initialState, initialContext),
-                    transition =>
+                    previousTransition =>
                     {
-                        if (transition.NextState is TerminationState<T>)
+                        if (previousTransition.NextState is TerminationState<T>)
                         {
                             return new Option.None<CheckStateTransition<T>>();
                         }
 
-                        var nextTransition = transition.NextState.Transition(transition.NextContext);
-                        return new Option.Some<CheckStateTransition<T>>(nextTransition);
+                        var transition = previousTransition.NextState.Transition(previousTransition.NextContext);
+
+                        if (previousTransition.NextState is GenerationStates.Generation_End<T> generationEndState &&
+                            transition.NextState is GenerationStates.Generation_Begin<T>)
+                        {
+                            var resizeStrategyInfo = new ResizeStrategyInformation<T>(
+                                transition.NextContext,
+                                generationEndState.CounterexampleContext,
+                                generationEndState.Instance);
+
+                            var nextSize = resizeStrategy(resizeStrategyInfo);
+
+                            transition = transition with
+                            {
+                                NextContext = transition.NextContext.WithNextGenParameters(GenParameters.Create(
+                                    transition.NextContext.NextParameters.Rng,
+                                    nextSize))
+                            };
+                        }
+
+                        return new Option.Some<CheckStateTransition<T>>(transition);
                     });
         }
 
@@ -193,7 +214,7 @@ namespace GalaxyCheck
                     return SuperStrategicResize<T>()(info);
                 }
 
-                var size = sizes.Skip(info.CheckStateContext.CompletedIterations).FirstOrDefault() ?? new Size(0);
+                var size = sizes.Skip(info.CheckStateContext.CompletedIterations - 1).FirstOrDefault() ?? new Size(0);
                 return size;
             };
         }
