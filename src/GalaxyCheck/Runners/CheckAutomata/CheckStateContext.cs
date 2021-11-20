@@ -8,36 +8,71 @@ using System.Linq;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    internal record CheckStateContext<T>(
-        IGen<Test<T>> Property,
-        int RequestedIterations,
-        int ShrinkLimit,
-        int CompletedIterations,
-        int Discards,
-        int Shrinks,
-        ImmutableList<CounterexampleContext<T>> CounterexampleContextHistory,
-        GenParameters NextParameters,
-        ResizeStrategy<T> ResizeStrategy,
-        bool DeepCheck)
+    internal record CheckStateContext<T>
     {
-        public static CheckStateContext<T> Create(
+        public IGen<Test<T>> Property { get; private init; }
+
+        public int RequestedIterations { get; private init; }
+
+        public int ShrinkLimit { get; private init; }
+
+        public int CompletedIterations { get; private init; }
+
+        public int Discards { get; private init; }
+
+        public int Shrinks { get; private init; }
+
+        public ImmutableList<CounterexampleContext<T>> CounterexampleContextHistory { get; private init; }
+
+        public GenParameters NextParameters { get; private init; }
+
+        public ResizeStrategy<T> ResizeStrategy { get; private init; }
+
+        public bool DeepCheck { get; private init; }
+
+        private CheckStateContext(
+            IGen<Test<T>> property,
+            int requestedIterations,
+            int shrinkLimit,
+            int completedIterations,
+            int discards,
+            int shrinks,
+            ImmutableList<CounterexampleContext<T>> counterexampleContextHistory,
+            GenParameters nextParameters,
+            ResizeStrategy<T> resizeStrategy,
+            bool deepCheck)
+        {
+            Property = property;
+            RequestedIterations = requestedIterations;
+            ShrinkLimit = shrinkLimit;
+            CompletedIterations = completedIterations;
+            Discards = discards;
+            Shrinks = shrinks;
+            CounterexampleContextHistory = counterexampleContextHistory;
+            NextParameters = nextParameters;
+            ResizeStrategy = resizeStrategy;
+            DeepCheck = deepCheck;
+        }
+
+        public CheckStateContext(
             IGen<Test<T>> property,
             int requestedIterations,
             int shrinkLimit,
             GenParameters initialParameters,
             ResizeStrategy<T> resizeStrategy,
-            bool deepCheck) =>
-                new CheckStateContext<T>(
-                    property,
-                    requestedIterations,
-                    shrinkLimit,
-                    0,
-                    0,
-                    0,
-                    ImmutableList.Create<CounterexampleContext<T>>(),
-                    initialParameters,
-                    resizeStrategy,
-                    deepCheck);
+            bool deepCheck) : this(
+                property,
+                requestedIterations,
+                shrinkLimit,
+                0,
+                0,
+                0,
+                ImmutableList.Create<CounterexampleContext<T>>(),
+                initialParameters,
+                resizeStrategy,
+                deepCheck)
+        {
+        }
 
         public CounterexampleContext<T>? Counterexample => CounterexampleContextHistory
             .OrderBy(c => c.ExampleSpace.Current.Distance)

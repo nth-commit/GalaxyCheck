@@ -30,7 +30,7 @@ namespace GalaxyCheck
                 ? GenParameters.Create(resolvedSize)
                 : GenParameters.Create(Rng.Create(seed.Value), resolvedSize);
 
-            var initialCtx = CheckStateContext<T>.Create(
+            var initialCtx = new CheckStateContext<T>(
                 property,
                 resolvedIterations,
                 shrinkLimit ?? 500,
@@ -78,16 +78,6 @@ namespace GalaxyCheck
 
         private static IEnumerable<CheckStateTransition<T>> UnfoldStates<T>(CheckState<T> initialState, CheckStateContext<T> initialContext)
         {
-            Func<CheckStateTransition<T>, bool> isStateCountedInConsecutiveDiscardCount = transition =>
-                transition.NextState is GenerationStates.Generation_Discard<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_Discard<T>;
-
-            Func<CheckStateTransition<T>, bool> isStateDiscard = transition =>
-                transition.NextState is GenerationStates.Generation_Discard<T> ||
-                transition.NextState is InstanceExplorationStates.InstanceExploration_Discard<T>;
-
             return EnumerableExtensions
                 .Unfold(
                     new CheckStateTransition<T>(initialState, initialContext),
@@ -100,26 +90,7 @@ namespace GalaxyCheck
 
                         var nextTransition = transition.NextState.Transition(transition.NextContext);
                         return new Option.Some<CheckStateTransition<T>>(nextTransition);
-                    })
-                .WithConsecutiveDiscardCount(
-                    isStateCountedInConsecutiveDiscardCount,
-                    isStateDiscard)
-                .SelectMany(x =>
-                {
-                    var (transition, consecutiveDiscardCount) = x;
-                    if (transition.NextState is GenerationStates.Generation_End<T> generationEndState && consecutiveDiscardCount >= 10)
-                    {
-                        var nextContext = transition.NextContext.WithNextGenParameters(generationEndState.Instance.NextParameters with
-                        {
-                            Size = generationEndState.Instance.NextParameters.Size.BigIncrement()
-                        });
-
-                        return UnfoldStates(transition.NextState, nextContext);
-                    }
-
-                    return new[] { transition };
-                })
-                .TakeWhileInclusive(state => state is not TerminationState<T>);
+                    });
         }
 
         private record StateAggregation<T>(
