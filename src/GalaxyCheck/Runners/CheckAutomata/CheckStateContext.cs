@@ -44,65 +44,32 @@ namespace GalaxyCheck.Runners.CheckAutomata
             .ThenByDescending(c => c.ReplayParameters.Size.Value) // Bigger sizes are more likely to normalize
             .FirstOrDefault();
 
-        public CheckStateContext<T> IncrementCompletedIterations() => new CheckStateContext<T>(
-            Property,
-            RequestedIterations,
-            ShrinkLimit,
-            CompletedIterations + 1,
-            Discards,
-            Shrinks,
-            CounterexampleContextHistory,
-            NextParameters,
-            ResizeStrategy,
-            DeepCheck);
+        public CheckStateContext<T> IncrementCompletedIterations() => this with
+        {
+            CompletedIterations = CompletedIterations + 1
+        };
 
-        public CheckStateContext<T> IncrementDiscards() => new CheckStateContext<T>(
-            Property,
-            RequestedIterations,
-            ShrinkLimit,
-            CompletedIterations,
-            Discards + 1,
-            Shrinks,
-            CounterexampleContextHistory,
-            NextParameters,
-            ResizeStrategy,
-            DeepCheck);
+        public CheckStateContext<T> IncrementDiscards() => this with
+        {
+            Discards = Discards + 1
+        };
 
-        public CheckStateContext<T> IncrementShrinks() => new CheckStateContext<T>(
-            Property,
-            RequestedIterations,
-            ShrinkLimit,
-            CompletedIterations,
-            Discards,
-            Shrinks + 1,
-            CounterexampleContextHistory,
-            NextParameters,
-            ResizeStrategy,
-            DeepCheck);
+        public CheckStateContext<T> IncrementShrinks() => this with
+        {
+            Shrinks = Shrinks + 1
+        };
 
-        public CheckStateContext<T> AddCounterexample(CounterexampleContext<T> counterexampleContext) => new CheckStateContext<T>(
-            Property,
-            RequestedIterations,
-            ShrinkLimit,
-            CompletedIterations,
-            Discards,
-            Shrinks,
-            Enumerable.Concat(new[] { counterexampleContext }, CounterexampleContextHistory).ToImmutableList(),
-            NextParameters,
-            ResizeStrategy,
-            DeepCheck);
+        public CheckStateContext<T> AddCounterexample(CounterexampleContext<T> counterexampleContext) => this with
+        {
+            CounterexampleContextHistory = Enumerable
+                .Concat(new[] { counterexampleContext }, CounterexampleContextHistory)
+                .ToImmutableList()
+        };
 
-        public CheckStateContext<T> WithNextGenParameters(GenParameters genParameters) => new CheckStateContext<T>(
-            Property,
-            RequestedIterations,
-            ShrinkLimit,
-            CompletedIterations,
-            Discards,
-            Shrinks,
-            CounterexampleContextHistory,
-            genParameters,
-            ResizeStrategy,
-            DeepCheck);
+        public CheckStateContext<T> WithNextGenParameters(GenParameters genParameters) => this with
+        {
+            NextParameters = genParameters
+        };
     }
 
     internal record ResizeStrategyInformation<T>(
