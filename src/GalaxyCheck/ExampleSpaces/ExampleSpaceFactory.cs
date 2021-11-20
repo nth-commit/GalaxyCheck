@@ -54,10 +54,6 @@ namespace GalaxyCheck.ExampleSpaces
             return new ExampleSpace<T>(rootExample, DelayEnumeration(delayedSubspace));
         }
 
-        
-
-        
-
         public static IExampleSpace<int> Int32(int value, int origin, int min, int max) => Unfold(
             value,
             new Int32OptimizedContextualShrinker(origin),

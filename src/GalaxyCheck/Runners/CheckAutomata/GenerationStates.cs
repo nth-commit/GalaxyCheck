@@ -10,7 +10,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 {
     internal static class GenerationStates
     {
-        internal record Begin<T>(CheckStateContext<T> Context) : AbstractCheckState<T>(Context)
+        internal record Generation_Begin<T>(CheckStateContext<T> Context) : AbstractCheckState<T>(Context)
         {
             internal override AbstractCheckState<T> NextState()
             {
@@ -20,11 +20,11 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 }
 
                 var iterations = Context.Property.Advanced.Run(Context.NextParameters);
-                return new HoldingNextIteration<T>(Context, iterations);
+                return new Generation_HoldingNextIteration<T>(Context, iterations);
             }
         }
 
-        internal record HoldingNextIteration<T>(
+        internal record Generation_HoldingNextIteration<T>(
             CheckStateContext<T> Context,
             IEnumerable<IGenIteration<Test<T>>> Iterations) : AbstractCheckState<T>(Context)
         {
@@ -33,37 +33,37 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 var (head, tail) = Iterations;
                 return head!.Match<AbstractCheckState<T>>(
                     onInstance: (instance) =>
-                        new Instance<T>(Context, instance),
+                        new Generation_Instance<T>(Context, instance),
                     onDiscard: (discard) =>
-                        new Discard<T>(Context, tail, discard),
+                        new Generation_Discard<T>(Context, tail, discard),
                     onError: (error) =>
-                        new Error<T>(Context, $"Error while running generator {error.GenName}: {error.Message}"));
+                        new Generation_Error<T>(Context, $"Error while running generator {error.GenName}: {error.Message}"));
             }
         }
 
-        internal record Instance<T>(
+        internal record Generation_Instance<T>(
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Iteration) : AbstractCheckState<T>(Context)
         {
-            internal override AbstractCheckState<T> NextState() => new InstanceExplorationStates.Begin<T>(Context, Iteration);
+            internal override AbstractCheckState<T> NextState() => new InstanceExplorationStates.InstanceExploration_Begin<T>(Context, Iteration);
         }
 
-        internal record Discard<T>(
+        internal record Generation_Discard<T>(
             CheckStateContext<T> Context,
             IEnumerable<IGenIteration<Test<T>>> NextIterations,
             IGenDiscard<Test<T>> Iteration) : AbstractCheckState<T>(Context)
         {
-            internal override AbstractCheckState<T> NextState() => new HoldingNextIteration<T>(Context.IncrementDiscards(), NextIterations);
+            internal override AbstractCheckState<T> NextState() => new Generation_HoldingNextIteration<T>(Context.IncrementDiscards(), NextIterations);
         }
 
-        internal record Error<T>(
+        internal record Generation_Error<T>(
             CheckStateContext<T> State,
             string Description) : AbstractCheckState<T>(State)
         {
             internal override AbstractCheckState<T> NextState() => new TerminationState<T>(State, TerminationReason.FoundError);
         }
 
-        internal record End<T>(
+        internal record Generation_End<T>(
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
@@ -78,7 +78,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
             private static AbstractCheckState<T> NextStateOnDiscard(CheckStateContext<T> state)
             {
-                return new Begin<T>(state.IncrementDiscards());
+                return new Generation_Begin<T>(state.IncrementDiscards());
             }
 
             private static AbstractCheckState<T> NextStateWithoutCounterexample(
@@ -86,7 +86,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 IGenInstance<Test<T>> instance)
             {
                 var nextSize = Resize(state, null, instance);
-                return new Begin<T>(state
+                return new Generation_Begin<T>(state
                     .IncrementCompletedIterations()
                     .WithNextGenParameters(instance.NextParameters.With(size: nextSize)));
             }
@@ -107,7 +107,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 var terminationReason = TryTerminate(nextState, counterexampleContext, instance, wasReplay);
 
                 return terminationReason == null
-                    ? new Begin<T>(nextState.WithNextGenParameters(instance.NextParameters.With(size: nextSize)))
+                    ? new Generation_Begin<T>(nextState.WithNextGenParameters(instance.NextParameters.With(size: nextSize)))
                     : new TerminationState<T>(nextState, terminationReason.Value);
             }
 

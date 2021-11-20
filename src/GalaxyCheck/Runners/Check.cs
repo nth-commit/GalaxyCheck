@@ -39,7 +39,7 @@ namespace GalaxyCheck
                 deepCheck);
 
             AbstractCheckState<T> initialState = replay == null
-                ? new GenerationStates.Begin<T>(initialCtx)
+                ? new GenerationStates.Generation_Begin<T>(initialCtx)
                 : new ReplayState<T>(initialCtx, replay);
 
             var states = UnfoldStates(initialState);
@@ -79,28 +79,28 @@ namespace GalaxyCheck
         private static IEnumerable<AbstractCheckState<T>> UnfoldStates<T>(AbstractCheckState<T> initialState)
         {
             Func<AbstractCheckState<T>, bool> isStateCountedInConsecutiveDiscardCount = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Counterexample<T> ||
-                state is InstanceExplorationStates.NonCounterexample<T> ||
-                state is InstanceExplorationStates.Discard<T>;
+                state is GenerationStates.Generation_Discard<T> ||
+                state is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
+                state is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
+                state is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
             Func<AbstractCheckState<T>, bool> isStateDiscard = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Discard<T>;
+                state is GenerationStates.Generation_Discard<T> ||
+                state is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
             return EnumerableExtensions
                 .Unfold(
                     initialState,
                     previousState => previousState is TerminationState<T>
                         ? new Option.None<AbstractCheckState<T>>()
-                        : new Option.Some<AbstractCheckState<T>>(previousState.NextState()))
+                        : new Option.Some<AbstractCheckState<T>>(previousState.Next2()))
                 .WithConsecutiveDiscardCount(
                     isStateCountedInConsecutiveDiscardCount,
                     isStateDiscard)
                 .SelectMany(x =>
                 {
                     var (state, consecutiveDiscardCount) = x;
-                    if (state is GenerationStates.End<T> generationEndState && consecutiveDiscardCount >= 10)
+                    if (state is GenerationStates.Generation_End<T> generationEndState && consecutiveDiscardCount >= 10)
                     {
                         var state0 = generationEndState with
                         {
@@ -126,14 +126,14 @@ namespace GalaxyCheck
         private static StateAggregation<T> AggregateStates<T>(IEnumerable<AbstractCheckState<T>> states)
         {
             Func<AbstractCheckState<T>, bool> isStateCountedInConsecutiveDiscardCount = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Counterexample<T> ||
-                state is InstanceExplorationStates.NonCounterexample<T> ||
-                state is InstanceExplorationStates.Discard<T>;
+                state is GenerationStates.Generation_Discard<T> ||
+                state is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
+                state is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
+                state is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
             Func<AbstractCheckState<T>, bool> isStateDiscard = state =>
-                state is GenerationStates.Discard<T> ||
-                state is InstanceExplorationStates.Discard<T>;
+                state is GenerationStates.Generation_Discard<T> ||
+                state is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
             var mappedStates = states
                 .WithDiscardCircuitBreaker(isStateCountedInConsecutiveDiscardCount, isStateDiscard)
@@ -229,7 +229,7 @@ namespace GalaxyCheck
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(AbstractCheckState<T> state)
         {
-            CheckIteration<T>? FromHandleCounterexample(InstanceExplorationStates.Counterexample<T> state)
+            CheckIteration<T>? FromHandleCounterexample(InstanceExplorationStates.InstanceExploration_Counterexample<T> state)
             {
                 return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
@@ -243,7 +243,7 @@ namespace GalaxyCheck
                     IsCounterexample: true);
             }
 
-            CheckIteration<T>? FromHandleNonCounterexample(InstanceExplorationStates.NonCounterexample<T> state)
+            CheckIteration<T>? FromHandleNonCounterexample(InstanceExplorationStates.InstanceExploration_NonCounterexample<T> state)
             {
                 return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
@@ -259,9 +259,9 @@ namespace GalaxyCheck
 
             return state switch
             {
-                InstanceExplorationStates.Counterexample<T> t => FromHandleCounterexample(t),
-                InstanceExplorationStates.NonCounterexample<T> t => FromHandleNonCounterexample(t),
-                GenerationStates.Error<T> t => throw new Exceptions.GenErrorException(t.Description),
+                InstanceExplorationStates.InstanceExploration_Counterexample<T> t => FromHandleCounterexample(t),
+                InstanceExplorationStates.InstanceExploration_NonCounterexample<T> t => FromHandleNonCounterexample(t),
+                GenerationStates.Generation_Error<T> t => throw new Exceptions.GenErrorException(t.Description),
                 _ => null
             };
         }

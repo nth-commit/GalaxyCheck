@@ -20,7 +20,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             }
             catch (Exception ex)
             {
-                return new GenerationStates.Error<T>(Context, $"Error decoding replay string: {ex.Message}");
+                return new GenerationStates.Generation_Error<T>(Context, $"Error decoding replay string: {ex.Message}");
             }
 
             var iteration = Context.Property.Advanced.Run(replayDecoded.GenParameters).First();
@@ -51,7 +51,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
             CheckStateContext<T> ctx,
             IGenInstance<Test<T>> instance)
         {
-            return new GenerationStates.End<T>(
+            return new GenerationStates.Generation_End<T>(
                 ctx,
                 instance,
                 null,
@@ -72,7 +72,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 replayDecoded.ExampleSpacePath,
                 counterexample.Exception);
 
-            return new GenerationStates.End<T>(
+            return new GenerationStates.Generation_End<T>(
                 state,
                 instance,
                 counterexampleContext,
@@ -82,7 +82,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
         private static AbstractCheckState<T> HandleError(CheckStateContext<T> state)
         {
-            return new GenerationStates.Error<T>(
+            return new GenerationStates.Generation_Error<T>(
                 state,
                 "Error replaying last example, given replay string was no longer valid. Remove the replay " +
                 "parameter and run the property again. This is probably due to the generator setup changing.");

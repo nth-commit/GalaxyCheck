@@ -9,7 +9,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 {
     internal static class InstanceExplorationStates
     {
-        internal record Begin<T>(
+        internal record InstanceExploration_Begin<T>(
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance) : AbstractCheckState<T>(Context)
         {
@@ -17,11 +17,11 @@ namespace GalaxyCheck.Runners.CheckAutomata
             {
                 var explorations = Instance.ExampleSpace.Explore(AnalyzeExplorationForCheck.Impl<T>());
 
-                return new HoldingNextExplorationStage<T>(Context, Instance, explorations, null, true);
+                return new InstanceExploration_HoldingNextExplorationStage<T>(Context, Instance, explorations, null, true);
             }
         }
 
-        internal record HoldingNextExplorationStage<T>(
+        internal record InstanceExploration_HoldingNextExplorationStage<T>(
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> Explorations,
@@ -34,7 +34,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
                 if (head == null)
                 {
-                    return new GenerationStates.End<T>(
+                    return new InstanceExploration_End<T>(
                         Context,
                         Instance,
                         CounterexampleContext,
@@ -44,7 +44,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
                 if (IsFirstExplorationStage == false && Context.Shrinks >= Context.ShrinkLimit)
                 {
-                    return new GenerationStates.End<T>(
+                    return new InstanceExploration_End<T>(
                         Context,
                         Instance,
                         CounterexampleContext,
@@ -56,31 +56,31 @@ namespace GalaxyCheck.Runners.CheckAutomata
 
                 return head.Match<AbstractCheckState<T>>(
                     onCounterexampleExploration: (counterexampleExploration) =>
-                        new Counterexample<T>(
+                        new InstanceExploration_Counterexample<T>(
                             ctx,
                             Instance,
                             tail,
                             counterexampleExploration),
 
                     onNonCounterexampleExploration: (nonCounterexampleExploration) =>
-                        new NonCounterexample<T>(
+                        new InstanceExploration_NonCounterexample<T>(
                             ctx,
                             Instance,
                             tail,
                             nonCounterexampleExploration,
                             CounterexampleContext),
 
-                    onDiscardExploration: (_) => new Discard<T>(ctx, Instance, tail, CounterexampleContext, IsFirstExplorationStage));
+                    onDiscardExploration: (_) => new InstanceExploration_Discard<T>(ctx, Instance, tail, CounterexampleContext, IsFirstExplorationStage));
             }
         }
 
-        internal record Counterexample<T>(
+        internal record InstanceExploration_Counterexample<T>(
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
             ExplorationStage<Test<T>>.Counterexample CounterexampleExploration) : AbstractCheckState<T>(Context)
         {
-            internal override AbstractCheckState<T> NextState() => new HoldingNextExplorationStage<T>(
+            internal override AbstractCheckState<T> NextState() => new InstanceExploration_HoldingNextExplorationStage<T>(
                 Context,
                 Instance,
                 NextExplorations,
@@ -104,14 +104,14 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(Path)));
         }
 
-        internal record NonCounterexample<T>(
+        internal record InstanceExploration_NonCounterexample<T>(
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
             ExplorationStage<Test<T>>.NonCounterexample NonCounterexampleExploration,
             CounterexampleContext<T>? PreviousCounterexampleContext) : AbstractCheckState<T>(Context)
         {
-            internal override AbstractCheckState<T> NextState() => new HoldingNextExplorationStage<T>(
+            internal override AbstractCheckState<T> NextState() => new InstanceExploration_HoldingNextExplorationStage<T>(
                 Context,
                 Instance,
                 NextExplorations,
@@ -128,7 +128,7 @@ namespace GalaxyCheck.Runners.CheckAutomata
                 exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(Path)));
         }
 
-        internal record Discard<T>(
+        internal record InstanceExploration_Discard<T>(
             CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
@@ -143,8 +143,23 @@ namespace GalaxyCheck.Runners.CheckAutomata
             /// exploring the example space.
             /// </summary>
             internal override AbstractCheckState<T> NextState() => IsFirstExplorationStage
-                ? new GenerationStates.End<T>(Context, Instance, CounterexampleContext: null, WasDiscard: true, WasReplay: false)
-                : new HoldingNextExplorationStage<T>(Context, Instance, NextExplorations, PreviousCounterexample, IsFirstExplorationStage: false);
+                ? new InstanceExploration_End<T>(Context, Instance, CounterexampleContext: null, WasDiscard: true, WasReplay: false)
+                : new InstanceExploration_HoldingNextExplorationStage<T>(Context, Instance, NextExplorations, PreviousCounterexample, IsFirstExplorationStage: false);
+        }
+
+        internal record InstanceExploration_End<T>(
+            CheckStateContext<T> Context,
+            IGenInstance<Test<T>> Instance,
+            CounterexampleContext<T>? CounterexampleContext,
+            bool WasDiscard,
+            bool WasReplay) : AbstractCheckState<T>(Context)
+        {
+            internal override AbstractCheckState<T> NextState() => new GenerationStates.Generation_End<T>(
+                Context,
+                Instance,
+                CounterexampleContext,
+                WasDiscard,
+                WasReplay);
         }
     }
 }

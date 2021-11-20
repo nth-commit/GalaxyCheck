@@ -21,6 +21,7 @@ namespace GalaxyCheck.ExampleSpaces
 
     internal record NoContext;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     internal interface ContextualShrinker<T, TContext>
     {
         TContext RootContext { get; }
