@@ -3,11 +3,9 @@ using System;
 
 namespace GalaxyCheck.Runners.CheckAutomata
 {
-    internal record TerminationState<T>(
-        CheckStateContext<T> Context,
-        TerminationReason Reason) : AbstractCheckState<T>(Context)
+    internal record TerminationState<T>(TerminationReason Reason) : CheckState<T>
     {
-        internal override AbstractCheckState<T> NextState()
+        public CheckStateTransition<T> Transition(CheckStateContext<T> context)
         {
             throw new Exception($"Fatal: Cannot transition from {nameof(TerminationState<T>)}");
         }

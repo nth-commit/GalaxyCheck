@@ -9,83 +9,69 @@ namespace GalaxyCheck.Runners.CheckAutomata
 {
     internal static class InstanceExplorationStates
     {
-        internal record InstanceExploration_Begin<T>(
-            CheckStateContext<T> Context,
-            IGenInstance<Test<T>> Instance) : AbstractCheckState<T>(Context)
+        internal record InstanceExploration_Begin<T>(IGenInstance<Test<T>> Instance) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState()
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
             {
                 var explorations = Instance.ExampleSpace.Explore(AnalyzeExplorationForCheck.Impl<T>());
-
-                return new InstanceExploration_HoldingNextExplorationStage<T>(Context, Instance, explorations, null, true);
+                return new CheckStateTransition<T>(
+                    new InstanceExploration_HoldingNextExplorationStage<T>(Instance, explorations, null, true),
+                    context);
             }
         }
 
         internal record InstanceExploration_HoldingNextExplorationStage<T>(
-            CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> Explorations,
             CounterexampleContext<T>? CounterexampleContext,
-            bool IsFirstExplorationStage) : AbstractCheckState<T>(Context)
+            bool IsFirstExplorationStage) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState()
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
             {
                 var (head, tail) = Explorations;
 
                 if (head == null)
                 {
-                    return new InstanceExploration_End<T>(
-                        Context,
-                        Instance,
-                        CounterexampleContext,
-                        WasDiscard: false,
-                        WasReplay: false);
+                    return new CheckStateTransition<T>(
+                        new InstanceExploration_End<T>(Instance, CounterexampleContext, WasDiscard: false, WasReplay: false),
+                        context);
                 }
 
-                if (IsFirstExplorationStage == false && Context.Shrinks >= Context.ShrinkLimit)
+                if (IsFirstExplorationStage == false && context.Shrinks >= context.ShrinkLimit)
                 {
-                    return new InstanceExploration_End<T>(
-                        Context,
-                        Instance,
-                        CounterexampleContext,
-                        WasDiscard: false,
-                        WasReplay: false);
+                    return new CheckStateTransition<T>(
+                        new InstanceExploration_End<T>(Instance, CounterexampleContext, WasDiscard: false, WasReplay: false),
+                        context);
                 }
 
-                var ctx = IsFirstExplorationStage ? Context : Context.IncrementShrinks();
+                var nextContext = IsFirstExplorationStage ? context : context.IncrementShrinks();
 
-                return head.Match<AbstractCheckState<T>>(
+                var nextState = head.Match<CheckState<T>>(
                     onCounterexampleExploration: (counterexampleExploration) =>
-                        new InstanceExploration_Counterexample<T>(
-                            ctx,
-                            Instance,
-                            tail,
-                            counterexampleExploration),
+                        new InstanceExploration_Counterexample<T>(Instance, tail, counterexampleExploration),
 
                     onNonCounterexampleExploration: (nonCounterexampleExploration) =>
-                        new InstanceExploration_NonCounterexample<T>(
-                            ctx,
-                            Instance,
-                            tail,
-                            nonCounterexampleExploration,
-                            CounterexampleContext),
+                        new InstanceExploration_NonCounterexample<T>(Instance, tail, nonCounterexampleExploration, CounterexampleContext),
 
-                    onDiscardExploration: (_) => new InstanceExploration_Discard<T>(ctx, Instance, tail, CounterexampleContext, IsFirstExplorationStage));
+                    onDiscardExploration: (_) =>
+                        new InstanceExploration_Discard<T>(Instance, tail, CounterexampleContext, IsFirstExplorationStage));
+
+                return new CheckStateTransition<T>(nextState, nextContext);
             }
         }
 
         internal record InstanceExploration_Counterexample<T>(
-            CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
-            ExplorationStage<Test<T>>.Counterexample CounterexampleExploration) : AbstractCheckState<T>(Context)
+            ExplorationStage<Test<T>>.Counterexample CounterexampleExploration) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState() => new InstanceExploration_HoldingNextExplorationStage<T>(
-                Context,
-                Instance,
-                NextExplorations,
-                CounterexampleContext,
-                IsFirstExplorationStage: false);
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
+                new InstanceExploration_HoldingNextExplorationStage<T>(
+                    Instance,
+                    NextExplorations,
+                    CounterexampleContext,
+                    IsFirstExplorationStage: false),
+                context);
 
             public CounterexampleContext<T> CounterexampleContext => new CounterexampleContext<T>(
                 CounterexampleExploration.ExampleSpace,
@@ -105,18 +91,18 @@ namespace GalaxyCheck.Runners.CheckAutomata
         }
 
         internal record InstanceExploration_NonCounterexample<T>(
-            CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
             ExplorationStage<Test<T>>.NonCounterexample NonCounterexampleExploration,
-            CounterexampleContext<T>? PreviousCounterexampleContext) : AbstractCheckState<T>(Context)
+            CounterexampleContext<T>? PreviousCounterexampleContext) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState() => new InstanceExploration_HoldingNextExplorationStage<T>(
-                Context,
-                Instance,
-                NextExplorations,
-                PreviousCounterexampleContext,
-                IsFirstExplorationStage: false);
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
+                new InstanceExploration_HoldingNextExplorationStage<T>(
+                    Instance,
+                    NextExplorations,
+                    PreviousCounterexampleContext,
+                    IsFirstExplorationStage: false),
+                context);
 
             public IExampleSpace<Test<T>> TestExampleSpace => NonCounterexampleExploration.ExampleSpace;
 
@@ -129,11 +115,10 @@ namespace GalaxyCheck.Runners.CheckAutomata
         }
 
         internal record InstanceExploration_Discard<T>(
-            CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
             CounterexampleContext<T>? PreviousCounterexample,
-            bool IsFirstExplorationStage) : AbstractCheckState<T>(Context)
+            bool IsFirstExplorationStage) : CheckState<T>
         {
             /// <summary>
             /// It's somewhat surprising that this state can be the first exploration (the top of the tree and a
@@ -142,24 +127,33 @@ namespace GalaxyCheck.Runners.CheckAutomata
             /// (<see cref="Property.Precondition(bool)"/>). We don't find out this is a discard until we start
             /// exploring the example space.
             /// </summary>
-            internal override AbstractCheckState<T> NextState() => IsFirstExplorationStage
-                ? new InstanceExploration_End<T>(Context, Instance, CounterexampleContext: null, WasDiscard: true, WasReplay: false)
-                : new InstanceExploration_HoldingNextExplorationStage<T>(Context, Instance, NextExplorations, PreviousCounterexample, IsFirstExplorationStage: false);
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
+            {
+                CheckState<T> nextState = IsFirstExplorationStage
+                    ? new InstanceExploration_End<T>(
+                        Instance,
+                        CounterexampleContext: null,
+                        WasDiscard: true,
+                        WasReplay: false)
+                    : new InstanceExploration_HoldingNextExplorationStage<T>(
+                        Instance,
+                        NextExplorations,
+                        PreviousCounterexample,
+                        IsFirstExplorationStage: false);
+
+                return new CheckStateTransition<T>(nextState, context);
+            }
         }
 
         internal record InstanceExploration_End<T>(
-            CheckStateContext<T> Context,
             IGenInstance<Test<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
-            bool WasReplay) : AbstractCheckState<T>(Context)
+            bool WasReplay) : CheckState<T>
         {
-            internal override AbstractCheckState<T> NextState() => new GenerationStates.Generation_End<T>(
-                Context,
-                Instance,
-                CounterexampleContext,
-                WasDiscard,
-                WasReplay);
+            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
+                new GenerationStates.Generation_End<T>(Instance, CounterexampleContext, WasDiscard, WasReplay),
+                context);
         }
     }
 }
