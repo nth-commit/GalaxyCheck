@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GalaxyCheck.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,7 +26,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             foreach (var kvp in _registeredGensByType)
             {
                 var registeredType = kvp.Key;
-                var genTypeArgument = ReflectGenTypeArgument(kvp.Value);
+                var genTypeArgument = kvp.Value.ReflectGenTypeArgument();
 
                 if (registeredType.IsAssignableFrom(genTypeArgument) == false)
                 {
@@ -36,17 +37,6 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             }
 
             return _registeredGensByType[type];
-        }
-
-        private static Type ReflectGenTypeArgument(IGen gen)
-        {
-            var reflectedGenType = gen
-                .GetType()
-                .GetInterfaces()
-                .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGen<>))
-                .SingleOrDefault();
-
-            return reflectedGenType.GetGenericArguments().Single();
         }
     }
 }

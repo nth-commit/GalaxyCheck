@@ -11,7 +11,7 @@ namespace Tests.V2.PropertyTests.AboutPreconditions
 {
     public class AboutPreconditions
     {
-        [Property(Iterations = 1)]
+        [Property(Iterations = 1, Skip = "Flakey, soon-to-be-deleted test")]
 
         public void WhenThePredicateOnlyPassesForLargerSizesItStillProducesValues([Seed] int seed, [Size] int size)
         {

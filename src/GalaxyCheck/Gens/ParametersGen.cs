@@ -1,10 +1,13 @@
 ﻿namespace GalaxyCheck
 {
     using GalaxyCheck.Gens;
+    using System.Collections.Generic;
     using System.Reflection;
 
     public static partial class Gen
     {
+        private static readonly IReadOnlyDictionary<int, IGen> DefaultGensByParameterIndex = new Dictionary<int, IGen>();
+
         /// <summary>
         /// Creates a generator that produces parameters to the given method. Can be used to dynamically invoke a
         /// method or a delegate.
@@ -12,9 +15,14 @@
         /// <param name="methodInfo">The method to generate parameters for.</param>
         /// <param name="genFactory">The <see cref="IGenFactory"/> to use to create generators from parameter
         /// types. If null, it uses the default factory.</param>
+        /// <param name="customGens">The generator to use, keyed by the index of the parameter. Generators
+        /// supplied through this collection will not be associated with <paramref name="genFactory"/>.</param>
         /// <returns>The new generator.</returns>
-        public static IGen<object[]> Parameters(MethodInfo methodInfo, IGenFactory? genFactory = null)
-            => new ParametersGen(genFactory ?? Factory(), methodInfo);
+        public static IGen<object[]> Parameters(
+            MethodInfo methodInfo,
+            IGenFactory? genFactory = null,
+            IReadOnlyDictionary<int, IGen>? customGens = null) =>
+                new ParametersGen(methodInfo, genFactory ?? Factory(), customGens ?? DefaultGensByParameterIndex);
     }
 }
 
@@ -33,36 +41,67 @@ namespace GalaxyCheck.Gens
     {
         private readonly Lazy<IGen<object[]>> _lazyGen;
 
-        public ParametersGen(IGenFactory genFactory, MethodInfo methodInfo)
+        public ParametersGen(MethodInfo methodInfo, IGenFactory genFactory, IReadOnlyDictionary<int, IGen> customGens)
         {
-            _lazyGen = new Lazy<IGen<object[]>>(() => CreateGen(genFactory, methodInfo));
+            _lazyGen = new Lazy<IGen<object[]>>(() => CreateGen(methodInfo, genFactory, customGens));
         }
 
         protected override IEnumerable<IGenIteration<object[]>> Run(GenParameters parameters) =>
             _lazyGen.Value.Advanced.Run(parameters);
 
-        private static IGen<object[]> CreateGen(IGenFactory genFactory, MethodInfo methodInfo)
+        private static IGen<object[]> CreateGen(
+            MethodInfo methodInfo,
+            IGenFactory genFactory,
+            IReadOnlyDictionary<int, IGen> customGens)
         {
-            var gens = methodInfo
-                .GetParameters()
-                .Select(parameterInfo => ResolveGen(genFactory, parameterInfo));
+            var parameters = methodInfo.GetParameters();
+
+            var invalidIndicies = customGens.Keys.Except(Enumerable.Range(0, parameters.Length));
+            if (invalidIndicies.Any())
+            {
+                return Gen.Advanced.Error<object[]>(
+                    nameof(ParametersGen),
+                    $"parameter index '{invalidIndicies.First()}' of custom generator was not valid");
+            }
+
+            var gens = parameters.Select((parameterInfo, parameterIndex) =>
+            {
+                var customGen = customGens.ContainsKey(parameterIndex) ? customGens[parameterIndex] : null;
+                return ResolveGen(genFactory, customGen, parameterInfo);
+            });
 
             return Gen.Zip(gens).Select(xs => xs.ToArray());
         }
 
-        private static IGen<object> ResolveGen(IGenFactory genFactory, ParameterInfo parameterInfo)
+        private static IGen<object> ResolveGen(IGenFactory genFactory, IGen? customGen, ParameterInfo parameterInfo)
         {
-            var configuredGenFactory = ConfigureGenFactory(genFactory, parameterInfo);
+            if (customGen == null)
+            {
+                var configuredGenFactory = ConfigureGenFactory(genFactory, parameterInfo);
 
-            var createGenMethodInfo = typeof(IGenFactory)
-                .GetMethod(nameof(IGenFactory.Create))
-                .MakeGenericMethod(parameterInfo.ParameterType);
+                var createGenMethodInfo = typeof(IGenFactory)
+                    .GetMethod(nameof(IGenFactory.Create))
+                    .MakeGenericMethod(parameterInfo.ParameterType);
 
-            var gen = (IGen)createGenMethodInfo.Invoke(configuredGenFactory, new object[] { });
+                var gen = (IGen)createGenMethodInfo.Invoke(configuredGenFactory, new object[] { });
 
-            return gen
-                .Cast<object>()
-                .SelectError(error => SelectParameterError(parameterInfo, error));
+                return gen
+                    .Cast<object>()
+                    .SelectError(error => SelectParameterError(parameterInfo, error));
+            }
+            else
+            {
+                var genTypeArgument = customGen.ReflectGenTypeArgument();
+
+                if (parameterInfo.ParameterType.IsAssignableFrom(genTypeArgument) == false)
+                {
+                    return Gen.Advanced.Error<object>(
+                        nameof(ParametersGen),
+                        $"generator of type '{genTypeArgument.FullName}' is not compatible with parameter of type '{parameterInfo.ParameterType.FullName}'");
+                }
+
+                return customGen.Cast<object>();
+            }
         }
 
         private static IGenFactory ConfigureGenFactory(IGenFactory genFactory, ParameterInfo parameterInfo)
