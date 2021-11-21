@@ -100,13 +100,6 @@ namespace GalaxyCheck.Runners.Check.Automata
         };
     }
 
-    internal record ResizeStrategyInformation<T>(
-        CheckStateContext<T> CheckStateContext,
-        CounterexampleContext<T>? CounterexampleContext,
-        IGenInstance<Test<T>> Iteration);
-
-    internal delegate Size ResizeStrategy<T>(ResizeStrategyInformation<T> info);
-
     internal record CounterexampleContext<T>(
         IExampleSpace<Test<T>> TestExampleSpace,
         IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory,

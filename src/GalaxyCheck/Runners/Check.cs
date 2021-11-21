@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using GalaxyCheck.Runners.Check.Automata;
+using GalaxyCheck.Runners.Check.Sizing;
 
 namespace GalaxyCheck
 {
@@ -24,7 +25,7 @@ namespace GalaxyCheck
              bool deepCheck = true)
         {
             var resolvedIterations = iterations ?? 100;
-            var (resolvedSize, resizeStrategy) = ResolveSizingAspects<T>(size, resolvedIterations);
+            var (resolvedSize, resizeStrategy) = SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
 
             var initialParameters = seed == null
                 ? GenParameters.Create(resolvedSize)
@@ -55,24 +56,6 @@ namespace GalaxyCheck
                 initialParameters,
                 stateAggregation.FinalContext.NextParameters,
                 stateAggregation.TerminationReason);
-        }
-
-        private static (Size initialSize, ResizeStrategy<T> resizeStrategy) ResolveSizingAspects<T>(int? givenSize, int resolvedIterations)
-        {
-            if (givenSize == null)
-            {
-                if (resolvedIterations >= 100)
-                {
-                    return (new Size(0), SuperStrategicResize<T>());
-                }
-                else
-                {
-                    var (initialSize, nextSizes) = SamplingSize.SampleSize(resolvedIterations);
-                    return (initialSize!, PlannedResize<T>(nextSizes));
-                }
-            }
-
-            return (new Size(givenSize.Value), NoopResize<T>());
         }
 
         private static IEnumerable<CheckStateTransition<T>> UnfoldStates<T>(
@@ -169,60 +152,6 @@ namespace GalaxyCheck
                 counterexampleContext.Exception,
                 counterexampleContext.PresentationalValue);
         }
-
-        /// <summary>
-        /// When a resize is called for, do a small increment if the iteration wasn't a counterexample. This increment
-        /// may loop back to zero. If it was a counterexample, no time to screw around. Activate turbo-mode and
-        /// accelerate towards max size, and never loop back to zero. Because we know this is a fallible property, we 
-        /// should generate bigger values, because bigger values are more likely to be able to normalize.
-        /// </summary>
-        private static ResizeStrategy<T> SuperStrategicResize<T>()
-        {
-            return (info) => info.Iteration.Match(
-                onInstance: instance =>
-                {
-                    if (info.CounterexampleContext == null)
-                    {
-                        return instance.NextParameters.Size.Increment();
-                    }
-
-                    var nextSize = instance.NextParameters.Size.BigIncrement();
-
-                    var incrementWrappedToZero = nextSize.Value < instance.NextParameters.Size.Value;
-                    if (incrementWrappedToZero)
-                    {
-                        // Clamp to MaxValue
-                        return new Size(100);
-                    }
-
-                    return nextSize;
-                },
-                onError: error => error.NextParameters.Size,
-                onDiscard: discard => discard.NextParameters.Size);
-        }
-
-        /// <summary>
-        /// Resize according to the given size plan. If we find a counterexample, switch to super-strategic resizing.
-        /// </summary>
-        private static ResizeStrategy<T> PlannedResize<T>(IEnumerable<Size> plannedSizes)
-        {
-            var sizes = plannedSizes.ToImmutableList();
-            return (info) =>
-            {
-                if (info.CounterexampleContext != null)
-                {
-                    return SuperStrategicResize<T>()(info);
-                }
-
-                var size = sizes.Skip(info.CheckStateContext.CompletedIterations - 1).FirstOrDefault() ?? new Size(0);
-                return size;
-            };
-        }
-
-        /// <summary>
-        /// If you thought you were going to resize well have I got news for you. Resizing cancelled!
-        /// </summary>
-        private static ResizeStrategy<T> NoopResize<T>() => (info) => info.Iteration.NextParameters.Size;
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {
