@@ -25,13 +25,13 @@ namespace GalaxyCheck
              bool deepCheck = true)
         {
             var resolvedIterations = iterations ?? 100;
-            var (resolvedSize, resizeStrategy) = SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
+            var (initialSize, resizeStrategy) = SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
 
             var initialParameters = seed == null
-                ? GenParameters.Create(resolvedSize)
-                : GenParameters.Create(Rng.Create(seed.Value), resolvedSize);
+                ? GenParameters.Create(initialSize)
+                : GenParameters.Create(Rng.Create(seed.Value), initialSize);
 
-            var initialCtx = new CheckStateContext<T>(
+            var initialContext = new CheckStateContext<T>(
                 property,
                 resolvedIterations,
                 shrinkLimit ?? 500,
@@ -42,81 +42,46 @@ namespace GalaxyCheck
                 ? new GenerationStates.Generation_Begin<T>()
                 : new ReplayState<T>(replay);
 
-            var states = UnfoldStates(initialState, initialCtx, resizeStrategy);
-            var stateAggregation = AggregateStates(states);
+            var transitions = CheckStateEnumerator.Enumerate(
+                initialState,
+                initialContext,
+                new[] { new ResizeCheckStateTransitionDecorator<T>(resizeStrategy) });
+
+            var transitionAggregation = AggregateTransitions(transitions);
 
             return new CheckResult<T>(
-                stateAggregation.FinalContext.CompletedIterations,
-                stateAggregation.FinalContext.Discards,
-                stateAggregation.FinalContext.Shrinks,
-                stateAggregation.FinalContext.Counterexample == null
+                transitionAggregation.FinalContext.CompletedIterations,
+                transitionAggregation.FinalContext.Discards,
+                transitionAggregation.FinalContext.Shrinks,
+                transitionAggregation.FinalContext.Counterexample == null
                     ? null
-                    : FromCounterexampleContext(stateAggregation.FinalContext.Counterexample),
-                stateAggregation.Checks,
+                    : FromCounterexampleContext(transitionAggregation.FinalContext.Counterexample),
+                transitionAggregation.Checks,
                 initialParameters,
-                stateAggregation.FinalContext.NextParameters,
-                stateAggregation.TerminationReason);
+                transitionAggregation.FinalContext.NextParameters,
+                transitionAggregation.TerminationReason);
         }
 
-        private static IEnumerable<CheckStateTransition<T>> UnfoldStates<T>(
-            CheckState<T> initialState,
-            CheckStateContext<T> initialContext,
-            ResizeStrategy<T> resizeStrategy)
-        {
-            return EnumerableExtensions
-                .Unfold(
-                    new CheckStateTransition<T>(initialState, initialContext),
-                    previousTransition =>
-                    {
-                        if (previousTransition.State is TerminationState<T>)
-                        {
-                            return new Option.None<CheckStateTransition<T>>();
-                        }
-
-                        var transition = previousTransition.State.Transition(previousTransition.Context);
-
-                        if (previousTransition.State is GenerationStates.Generation_End<T> generationEndState &&
-                            transition.State is GenerationStates.Generation_Begin<T>)
-                        {
-                            var resizeStrategyInfo = new ResizeStrategyInformation<T>(
-                                transition.Context,
-                                generationEndState.CounterexampleContext,
-                                generationEndState.Instance);
-
-                            var nextSize = resizeStrategy(resizeStrategyInfo);
-
-                            transition = transition with
-                            {
-                                Context = transition.Context.WithNextGenParameters(GenParameters.Create(
-                                    transition.Context.NextParameters.Rng,
-                                    nextSize))
-                            };
-                        }
-
-                        return new Option.Some<CheckStateTransition<T>>(transition);
-                    });
-        }
-
-        private record StateAggregation<T>(
+        private record TransitionAggregation<T>(
             ImmutableList<CheckIteration<T>> Checks,
             CheckStateContext<T> FinalContext,
             TerminationReason TerminationReason);
 
-        private static StateAggregation<T> AggregateStates<T>(IEnumerable<CheckStateTransition<T>> transitions)
+        private static TransitionAggregation<T> AggregateTransitions<T>(IEnumerable<CheckStateTransition<T>> transitions)
         {
-            Func<CheckStateTransition<T>, bool> isStateCountedInConsecutiveDiscardCount = transition =>
+            Func<CheckStateTransition<T>, bool> isTransitionCountedInConsecutiveDiscardCount = transition =>
                 transition.State is GenerationStates.Generation_Discard<T> ||
                 transition.State is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
                 transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
                 transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
-            Func<CheckStateTransition<T>, bool> isStateDiscard = transition =>
+            Func<CheckStateTransition<T>, bool> isTransitionDiscard = transition =>
                 transition.State is GenerationStates.Generation_Discard<T> ||
                 transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
 
             // TODO: A lot of this can be simplified, now that transitions already have a context built-in
             var mappedTransitions = transitions
-                .WithDiscardCircuitBreaker(isStateCountedInConsecutiveDiscardCount, isStateDiscard)
+                .WithDiscardCircuitBreaker(isTransitionCountedInConsecutiveDiscardCount, isTransitionDiscard)
                 .ScanInParallel<CheckStateTransition<T>, CheckStateContext<T>>(null!, (acc, curr) => curr.Context)
                 .Select(x => (
                     state: x.element.State,
@@ -130,7 +95,7 @@ namespace GalaxyCheck
                 throw new Exception("Fatal: Check did not terminate");
             }
 
-            return new StateAggregation<T>(
+            return new TransitionAggregation<T>(
                 mappedTransitions.Select(x => x.check).OfType<CheckIteration<T>>().ToImmutableList(),
                 lastMappedTransition.context,
                 terminationState.Reason);
