@@ -1,6 +1,8 @@
-﻿using GalaxyCheck;
+﻿using FluentAssertions;
+using GalaxyCheck;
 using GalaxyCheck.ExampleSpaces;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -37,6 +39,23 @@ namespace Tests.V2
             }
 
             return SampleRec(exampleSpace).Take(maxExamples).ToList();
+        }
+
+        public static void Errors<T>(IGen<T> gen, int? seed = null, string? expectedMessage = null)
+        {
+            Action test = () => gen.SampleOne(seed: seed ?? 0);
+
+            if (expectedMessage == null)
+            {
+                test.Should()
+                    .Throw<Exceptions.GenErrorException>();
+            }
+            else
+            {
+                test.Should()
+                    .Throw<Exceptions.GenErrorException>()
+                    .WithMessage(expectedMessage);
+            }
         }
     }
 }
