@@ -81,10 +81,19 @@ namespace IntegrationSample
 
         [Property]
         [GenFactoryWhereIntsAreNonNegative]
-        public void APropertyOfTheseIntIsThatItIsNonNegative(int x)
+        public void PropertyWithGenFromGenFactory(int x)
         {
-            AnnounceTestInvocation(nameof(APropertyOfTheseIntIsThatItIsNonNegative));
-            Assert.True(x >= 0);
+            AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactory), new [] { x });
+            Assert.True(x >= 0, "They are not negative!");
+        }
+
+        private static IGen<int> EvenInt32 => Gen.Int32().Where(x => x % 2 == 0);
+
+        [Property]
+        public void PropertyWithGenFromMemberGen([MemberGen(nameof(EvenInt32))] int x)
+        {
+            AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactory), new[] { x });
+            Assert.True(x % 2 != 1, "They are not odd!");
         }
 
         [Sample]
