@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -89,9 +89,17 @@ namespace Tests
         }
 
         [Fact]
-        public void APropertyOfTheseIntIsThatItIsNonNegative()
+        public void PropertyWithGenFromGenFactory()
         {
-            var testResult = _fixture.FindTestResult(nameof(APropertyOfTheseIntIsThatItIsNonNegative));
+            var testResult = _fixture.FindTestResult(nameof(PropertyWithGenFromGenFactory));
+
+            testResult.Outcome.Should().Be("Passed");
+        }
+
+        [Fact]
+        public void PropertyWithGenFromMemberGen()
+        {
+            var testResult = _fixture.FindTestResult(nameof(PropertyWithGenFromMemberGen));
 
             testResult.Outcome.Should().Be("Passed");
         }

@@ -3,6 +3,7 @@ using GalaxyCheck.Gens;
 using GalaxyCheck.Xunit.Internal;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 
@@ -79,7 +80,8 @@ namespace Tests.PropertyInitializerTests
                 x => x.CreateProperty(
                     It.IsAny<MethodInfo>(),
                     It.IsAny<object?>(),
-                    It.Is<IGenFactory?>(factory => factory!.GetType() == expectedFactoryType)),
+                    It.Is<IGenFactory?>(factory => factory!.GetType() == expectedFactoryType),
+                    It.IsAny<IReadOnlyDictionary<int, IGen>>()),
                 Times.Once);
         }
 
@@ -89,7 +91,8 @@ namespace Tests.PropertyInitializerTests
                 x => x.CreateProperty(
                     It.IsAny<MethodInfo>(),
                     It.IsAny<object?>(),
-                    It.Is<IGenFactory?>(x => x == null)),
+                    It.Is<IGenFactory?>(x => x == null),
+                    It.IsAny<IReadOnlyDictionary<int, IGen>>()),
                 Times.Once);
         }
 
