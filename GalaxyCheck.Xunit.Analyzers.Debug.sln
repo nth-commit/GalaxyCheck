@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.Analyzers", "src\GalaxyCheck.Xunit.Analyzers\GalaxyCheck.Xunit.Analyzers.csproj", "{DE37A351-874B-45F6-BE32-F010819F95E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Xunit.Analyzers.Vsix", "src\GalaxyCheck.Xunit.Analyzers.Vsix\GalaxyCheck.Xunit.Analyzers.Vsix.csproj", "{3C66752B-BB09-434E-8316-F93ADE8CDE25}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Debug|x86.Build.0 = Debug|Any CPU
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Release|x86.ActiveCfg = Release|Any CPU
+		{DE37A351-874B-45F6-BE32-F010819F95E0}.Release|x86.Build.0 = Release|Any CPU
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Debug|x86.ActiveCfg = Debug|x86
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Debug|x86.Build.0 = Debug|x86
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Release|x86.ActiveCfg = Release|x86
+		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {20FBBBDF-6DB0-49A8-B7DE-37B82CAD1D44}
+	EndGlobalSection
+EndGlobal

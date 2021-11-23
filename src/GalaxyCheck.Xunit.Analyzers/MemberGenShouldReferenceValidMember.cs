@@ -13,7 +13,7 @@ namespace GalaxyCheck.Xunit.Analyzers
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
             Descriptors.GCX1000_MemberGenMustReferenceExistingMember,
-            Descriptors.GCX1001_MemberDataMustReferenceValidMemberType,
+            Descriptors.GCX1001_MemberGenMustReferenceValidMemberType,
             Descriptors.GCX1002_MemberGenMustReferenceMemberOfValidType);
 
         public override void Initialize(AnalysisContext context)
@@ -141,7 +141,7 @@ namespace GalaxyCheck.Xunit.Analyzers
             AttributeSyntax attribute) =>
                 context.ReportDiagnostic(
                     Diagnostic.Create(
-                        Descriptors.GCX1001_MemberDataMustReferenceValidMemberType,
+                        Descriptors.GCX1001_MemberGenMustReferenceValidMemberType,
                         attribute.GetLocation()
                     )
                 );
