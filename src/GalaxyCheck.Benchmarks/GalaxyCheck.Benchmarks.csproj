@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\GalaxyCheck\GalaxyCheck.csproj" />
+    <ProjectReference Include="..\GalaxyCheck\GalaxyCheck.csproj" />
   </ItemGroup>
 
 </Project>
