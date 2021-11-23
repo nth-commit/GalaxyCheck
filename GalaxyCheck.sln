@@ -21,9 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Benchmarks", "src\GalaxyCheck.Benchmarks\GalaxyCheck.Benchmarks.csproj", "{441B28CF-1EC6-4B8E-AB4B-CDBC97C2E7EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Xunit.Analyzers", "src\GalaxyCheck.Xunit.Analyzers\GalaxyCheck.Xunit.Analyzers.csproj", "{221C082A-3AA0-470B-BF09-399511CFD389}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.Analyzers", "src\GalaxyCheck.Xunit.Analyzers\GalaxyCheck.Xunit.Analyzers.csproj", "{221C082A-3AA0-470B-BF09-399511CFD389}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Xunit.Analyzers.Tests", "src\GalaxyCheck.Xunit.Analyzers.Tests\GalaxyCheck.Xunit.Analyzers.Tests.csproj", "{0BBFED38-BA46-451A-B346-67F29CFCDA04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.Analyzers.Tests", "src\GalaxyCheck.Xunit.Analyzers.Tests\GalaxyCheck.Xunit.Analyzers.Tests.csproj", "{0BBFED38-BA46-451A-B346-67F29CFCDA04}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
