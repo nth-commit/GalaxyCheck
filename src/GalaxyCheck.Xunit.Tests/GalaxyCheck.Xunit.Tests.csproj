@@ -1,20 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Tests.V2</RootNamespace>
+    <RootNamespace>Tests</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="IntegrationSample\**" />
+    <EmbeddedResource Remove="IntegrationSample\**" />
+    <None Remove="IntegrationSample\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Moq" Version="4.16.1" />
-    <PackageReference Include="NebulaCheck" Version="0.0.0-1461999709" />
-    <PackageReference Include="NebulaCheck.Xunit" Version="0.0.0-1461999709" />
-    <PackageReference Include="Snapshooter.Xunit" Version="0.5.8" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -27,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\GalaxyCheck\GalaxyCheck.csproj" />
+    <ProjectReference Include="..\GalaxyCheck.Xunit\GalaxyCheck.Xunit.csproj" />
   </ItemGroup>
 
 </Project>
