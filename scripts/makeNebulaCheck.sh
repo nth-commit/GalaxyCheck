@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for replacers in "GalaxyCheck;NebulaCheck" "GalaxyCheck.Xunit;NebulaCheck.Xunit"
+for replacers in "GalaxyCheck;NebulaCheck" "GalaxyCheck.Xunit;NebulaCheck.Xunit" "GalaxyCheck.Xunit.Analyzers;NebulaCheck.Xunit.Analyzers"
 do
   arr=(${replacers//;/ })
   srcProjectName=${arr[0]}
