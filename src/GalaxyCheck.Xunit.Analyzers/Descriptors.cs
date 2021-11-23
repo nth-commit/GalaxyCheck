@@ -14,12 +14,12 @@ namespace GalaxyCheck.Xunit.Analyzers
             "GalaxyCheckXunit1000",
 #pragma warning restore RS2008 // Enable analyzer release tracking
             "MemberGen must reference an existing member",
-            "MemberData must reference an existing member '{0}' on type '{1}'. Fix the member reference, or add the missing data member.",
+            "MemberGen must reference an existing member '{0}' on type '{1}'. Fix the member reference, or add the missing member.",
             "General",
             DiagnosticSeverity.Error,
             true);
 
-        public static readonly DiagnosticDescriptor GCX1001_MemberDataMustReferenceValidMemberType = new DiagnosticDescriptor(
+        public static readonly DiagnosticDescriptor GCX1001_MemberGenMustReferenceValidMemberType = new DiagnosticDescriptor(
 #pragma warning disable RS2008 // Enable analyzer release tracking
             "GalaxyCheckXunit1001",
 #pragma warning restore RS2008 // Enable analyzer release tracking
