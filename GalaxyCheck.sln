@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck", "src\GalaxyCheck\GalaxyCheck.csproj", "{F1F1D74E-BFED-4328-803B-9823FEBC91DC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Tests", "src\GalaxyCheck.Tests\GalaxyCheck.Tests.csproj", "{9C788168-C5F9-4180-8E7E-C609A4C2A304}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Sandbox", "src\GalaxyCheck.Sandbox\GalaxyCheck.Sandbox.csproj", "{5CB4593A-D9E0-484A-A0AA-EAD7788C71E3}"
 EndProject
@@ -33,10 +31,6 @@ Global
 		{F1F1D74E-BFED-4328-803B-9823FEBC91DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1F1D74E-BFED-4328-803B-9823FEBC91DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1F1D74E-BFED-4328-803B-9823FEBC91DC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9C788168-C5F9-4180-8E7E-C609A4C2A304}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9C788168-C5F9-4180-8E7E-C609A4C2A304}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9C788168-C5F9-4180-8E7E-C609A4C2A304}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9C788168-C5F9-4180-8E7E-C609A4C2A304}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5CB4593A-D9E0-484A-A0AA-EAD7788C71E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5CB4593A-D9E0-484A-A0AA-EAD7788C71E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CB4593A-D9E0-484A-A0AA-EAD7788C71E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
