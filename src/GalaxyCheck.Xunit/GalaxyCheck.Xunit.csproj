@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GalaxyCheck.Xunit.Analyzers\GalaxyCheck.Xunit.Analyzers.csproj" />
     <ProjectReference Include="..\GalaxyCheck\GalaxyCheck.csproj" />
   </ItemGroup>
 
