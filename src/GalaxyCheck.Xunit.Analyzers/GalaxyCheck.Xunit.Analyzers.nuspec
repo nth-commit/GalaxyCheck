@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>GalaxyCheck.Xunit.Analyzers</id>
+        <version>$PackageVersion$</version>
+        <description>A collection of Roslyn analyzers for GalaxyCheck.Xunit</description>
+        <authors>nth-commit</authors>
+        <repository type="git" url="https://github.com/nth-commit/GalaxyCheck" />
+        <license>MIT</license>
+        <tags>GalaxyCheck;Property-Based Testing;Test Framework;Xunit</tags>
+    </metadata>
+</package>
