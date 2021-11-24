@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-    <metadata>
-        <id>GalaxyCheck.Xunit.Analyzers</id>
-        <version>$PackageVersion$</version>
-        <description>A collection of Roslyn analyzers for GalaxyCheck.Xunit</description>
-        <authors>nth-commit</authors>
-        <repository type="git" url="https://github.com/nth-commit/GalaxyCheck" />
-        <license>MIT</license>
-        <tags>GalaxyCheck;Property-Based Testing;Test Framework;Xunit</tags>
-    </metadata>
+  <metadata>
+    <id>GalaxyCheck.Xunit.Analyzers</id>
+    <version>$PackageVersion$</version>
+    <description>A collection of Roslyn analyzers for GalaxyCheck.Xunit</description>
+    <authors>nth-commit</authors>
+    <repository type="git" url="https://github.com/nth-commit/GalaxyCheck" />
+    <license type="expression">MIT</license>
+    <tags>GalaxyCheck;Property-Based Testing;Test Framework;Xunit</tags>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+  <files>
+    <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.Analyzers.pdb" target="lib" />
+    <file src="bin\Release\netstandard2.0\*.dll" target="analyzers\dotnet\cs" exclude="**\Microsoft.CodeAnalysis.*;**\System.Collections.Immutable.*;**\System.Reflection.Metadata.*;**\System.Composition.*" />
+    <file src="tools\*.ps1" target="tools\" />
+  </files>
 </package>
