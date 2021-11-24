@@ -5,6 +5,9 @@
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile Condition="'$(Configuration)' == 'Release'">true</GenerateDocumentationFile>
+    <NuspecFile>GalaxyCheck.Xunit.nuspec</NuspecFile>
+    <NuspecProperties>PackageVersion=$(PackageVersion)</NuspecProperties>
+    <NuspecBasePath></NuspecBasePath>
   </PropertyGroup>
 
   <ItemGroup>

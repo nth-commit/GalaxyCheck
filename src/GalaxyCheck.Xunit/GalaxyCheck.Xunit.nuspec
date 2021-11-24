@@ -3,10 +3,22 @@
     <metadata>
         <id>GalaxyCheck.Xunit</id>
         <version>$PackageVersion$</version>
-        <description>An xunit integratio for the property-based testing library GalaxyCheck</description>
+        <description>An xunit integration for the property-based testing library GalaxyCheck</description>
         <authors>nth-commit</authors>
         <repository type="git" url="https://github.com/nth-commit/GalaxyCheck" />
-        <license>MIT</license>
+        <license type="expression">MIT</license>
         <tags>GalaxyCheck;Property-Based Testing;Test Framework;Xunit</tags>
+        <dependencies>
+            <group targetFramework=".NETStandard2.0">
+                <dependency id="xunit.extensibility.execution" version="2.4.1" exclude="Build,Analyzers" />
+                <dependency id="GalaxyCheck" version="$PackageVersion$" exclude="Build,Analyzers" />
+                <dependency id="GalaxyCheck.Xunit.Analyzers" version="$PackageVersion$" />
+            </group>
+        </dependencies>
     </metadata>
+    <files>
+        <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.dll" target="lib\netstandard2.0" />
+        <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.xml" target="lib\netstandard2.0" />
+        <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.pdb" target="lib\netstandard2.0" />
+    </files>
 </package>

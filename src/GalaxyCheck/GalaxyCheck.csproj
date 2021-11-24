@@ -6,6 +6,13 @@
     <Nullable>enable</Nullable>
     <AppDesignerFolder>(none)</AppDesignerFolder>
     <GenerateDocumentationFile Condition="'$(Configuration)' == 'Release'">true</GenerateDocumentationFile>
+    <Description>A property-based testing library for .NET, authored in C#</Description>
+    <PackageId>GalaxyCheck</PackageId>
+    <PackageTags>GalaxyCheck;Property-Based Testing;Test Framework</PackageTags>
+    <PackageProjectUrl>https://github.com/nth-commit/GalaxyCheck</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/nth-commit/GalaxyCheck</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
