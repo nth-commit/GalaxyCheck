@@ -4,7 +4,7 @@
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NuspecFile>GalaxyCheck.Xunit.Analyzers.nuspec</NuspecFile>
+    <NuspecFile>GalaxyCheck.Xunit.CodeAnalysis.nuspec</NuspecFile>
     <NuspecProperties>PackageVersion=$(PackageVersion)</NuspecProperties>
     <NuspecBasePath></NuspecBasePath>
   </PropertyGroup>

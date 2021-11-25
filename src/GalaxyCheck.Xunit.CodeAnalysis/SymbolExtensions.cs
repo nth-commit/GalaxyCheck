@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Linq;
 
-namespace GalaxyCheck.Xunit.Analyzers
+namespace GalaxyCheck.Xunit.CodeAnalysis
 {
     internal static class SymbolExtensions
     {

@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace GalaxyCheck.Xunit.Analyzers.Tests
+namespace GalaxyCheck.Xunit.CodeAnalysis.Tests
 {
     public class CSharpVerifier<TAnalyzer>
         where TAnalyzer : DiagnosticAnalyzer, new()

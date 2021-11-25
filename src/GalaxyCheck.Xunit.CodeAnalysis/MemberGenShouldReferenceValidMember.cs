@@ -6,7 +6,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.Xunit.Analyzers
+namespace GalaxyCheck.Xunit.CodeAnalysis
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MemberGenShouldReferenceValidMember : DiagnosticAnalyzer

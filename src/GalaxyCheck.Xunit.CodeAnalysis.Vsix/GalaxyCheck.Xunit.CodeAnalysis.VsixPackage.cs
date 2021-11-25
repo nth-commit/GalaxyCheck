@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Task = System.Threading.Tasks.Task;
 
-namespace GalaxyCheck.Xunit.Analyzers.Vsix
+namespace GalaxyCheck.Xunit.CodeAnalysis.Vsix
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -25,10 +25,10 @@ namespace GalaxyCheck.Xunit.Analyzers.Vsix
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(PackageGuidString)]
-    public sealed class GalaxyCheckXunitAnalyzersVsixPackage : AsyncPackage
+    public sealed class GalaxyCheckXunitCodeAnalysisVsixPackage : AsyncPackage
     {
          /// <summary>
-        /// GalaxyCheck.Xunit.Analyzers.VsixPackage GUID string.
+        /// GalaxyCheck.Xunit.CodeAnalysis.VsixPackage GUID string.
         /// </summary>
         public const string PackageGuidString = "64f13238-0801-4a3f-956d-f34d74e14a93";
 

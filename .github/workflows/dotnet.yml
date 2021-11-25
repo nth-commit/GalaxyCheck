@@ -16,7 +16,7 @@ env:
   NUGET_TOKEN: ${{ secrets.NUGET_API_KEY }}
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  PRERELEASE_PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit GalaxyCheck.Xunit.Analyzers NebulaCheck NebulaCheck.Xunit NebulaCheck.Xunit.Analyzers
+  PRERELEASE_PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit GalaxyCheck.Xunit.CodeAnalysis NebulaCheck NebulaCheck.Xunit NebulaCheck.Xunit.CodeAnalysis
   PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit
 
 jobs:

@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace GalaxyCheck.Xunit.Analyzers
+namespace GalaxyCheck.Xunit.CodeAnalysis
 {
     public enum Category
     {
