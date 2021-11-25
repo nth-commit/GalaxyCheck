@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="GalaxyCheck.Xunit.Analyzers.Vsix.6ea24e2f-49e2-4a7c-a3be-92c0d21989ee" Version="1.0" Language="en-US" Publisher="Michael Fry-White" />
-        <DisplayName>GalaxyCheck.Xunit.Analyzers.Vsix</DisplayName>
+        <Identity Id="GalaxyCheck.Xunit.CodeAnalysis.Vsix.6ea24e2f-49e2-4a7c-a3be-92c0d21989ee" Version="1.0" Language="en-US" Publisher="Michael Fry-White" />
+        <DisplayName>GalaxyCheck.Xunit.CodeAnalysis.Vsix</DisplayName>
         <Description>Empty VSIX Project.</Description>
     </Metadata>
     <Installation>
@@ -18,6 +18,6 @@
     </Prerequisites>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-        <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="GalaxyCheck.Xunit.Analyzers" Path="|GalaxyCheck.Xunit.Analyzers|" />
+        <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="GalaxyCheck.Xunit.CodeAnalysis" Path="|GalaxyCheck.Xunit.CodeAnalysis|" />
     </Assets>
 </PackageManifest>
