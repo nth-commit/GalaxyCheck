@@ -58,5 +58,32 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.CodeRefactoringProviders
 
             await test.RunAsync();
         }
+
+        public static async Task VerifyNotRefactored(
+            string code,
+            LinePosition codeProvidingRefactorPosition)
+        {
+            var test = new CSharpCodeRefactoringTest<TCodeRefactoringProvider, XUnitVerifier>()
+            {
+                TestCode = code,
+                FixedCode = code,
+                CodeActionVerifier = (codeAction, verifier) =>
+                {
+                    verifier.Fail("Expected code not to be refactored");
+                }
+            };
+
+            test.ExpectedDiagnostics.Add(new DiagnosticResult("Refactoring", DiagnosticSeverity.Hidden)
+                .WithSpan(codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character, codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character));
+
+            test.TestState.AdditionalReferences.AddRange(new[]
+            {
+                MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(FactAttribute))!.Location),
+                MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(IGen))!.Location),
+                MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(PropertyAttribute))!.Location)
+            });
+
+            await test.RunAsync();
+        }
     }
 }

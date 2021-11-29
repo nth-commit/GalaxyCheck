@@ -26,6 +26,9 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeRefactoringProviders
             var propertyAttributeType = semanticModel.Compilation.TryGetPropertyAttributeType();
             if (propertyAttributeType is null) return;
 
+            var memberGenAttributeType = semanticModel.Compilation.TryGetMemberGenAttributeType();
+            if (memberGenAttributeType is null) return;
+
             var activeNode = root.FindNode(context.Span);
 
             var activeMethodDeclarationSyntax = activeNode.FirstAncestorOrSelf<MethodDeclarationSyntax>();
@@ -42,14 +45,23 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeRefactoringProviders
             if (propertyAttribute is null) return;
 
             var activeParameterSyntax = activeNode.FirstAncestorOrSelf<ParameterSyntax>();
-            if (activeParameterSyntax is not null)
-            {
-                context.RegisterRefactoring(InsertAndReferenceMemberGen(
-                    semanticModel,
-                    document,
-                    activeMethodDeclarationSyntax,
-                    activeParameterSyntax));
-            }
+            if (activeParameterSyntax is null) return;
+
+            var hasExistingMemberGenAttribute = activeParameterSyntax
+                .AttributeLists
+                .SelectMany(l => l.Attributes)
+                .Any(a =>
+                {
+                    var attributeSymbol = semanticModel.GetSymbolInfo(a);
+                    return SymbolEqualityComparer.Default.Equals(attributeSymbol.Symbol?.ContainingType, memberGenAttributeType);
+                });
+            if (hasExistingMemberGenAttribute) return;
+
+            context.RegisterRefactoring(InsertAndReferenceMemberGen(
+                semanticModel,
+                document,
+                activeMethodDeclarationSyntax,
+                activeParameterSyntax));
         }
 
         private static CodeAction InsertAndReferenceMemberGen(
