@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.CodeAnaly
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Xunit.CodeAnalysis.Vsix", "src\GalaxyCheck.Xunit.CodeAnalysis.Vsix\GalaxyCheck.Xunit.CodeAnalysis.Vsix.csproj", "{3C66752B-BB09-434E-8316-F93ADE8CDE25}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.CodeAnalysis.Tests", "src\GalaxyCheck.Xunit.CodeAnalysis.Tests\GalaxyCheck.Xunit.CodeAnalysis.Tests.csproj", "{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,14 @@ Global
 		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Release|x86.ActiveCfg = Release|x86
 		{3C66752B-BB09-434E-8316-F93ADE8CDE25}.Release|x86.Build.0 = Release|x86
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Debug|x86.Build.0 = Debug|Any CPU
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Release|x86.ActiveCfg = Release|Any CPU
+		{7CC3A9CF-ED41-4A8A-BB7F-D77530A5C429}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,16 +3,13 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
-using Microsoft.CodeAnalysis.Text;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace GalaxyCheck.Xunit.CodeAnalysis.Tests
+namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.Analyzers
 {
-    public class CSharpVerifier<TAnalyzer>
+    public class Verifier<TAnalyzer>
         where TAnalyzer : DiagnosticAnalyzer, new()
     {
         public static DiagnosticResult Diagnostic(string diagnosticId)
@@ -24,7 +21,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests
             string[] sources,
             params DiagnosticResult[] diagnostics)
         {
-            var test = new Test();
+            var test = new CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>();
 
             foreach (var source in sources)
                 test.TestState.Sources.Add(source);
@@ -39,10 +36,6 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests
             });
 
             return test.RunAsync();
-        }
-
-        public class Test : CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>
-        {
         }
     }
 }

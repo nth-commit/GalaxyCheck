@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Xunit;
-using Verifier = GalaxyCheck.Xunit.CodeAnalysis.Tests.CSharpVerifier<GalaxyCheck.Xunit.CodeAnalysis.MemberGenShouldReferenceValidMember>;
+using Verifier = GalaxyCheck.Xunit.CodeAnalysis.Tests.Analyzers.Verifier<GalaxyCheck.Xunit.CodeAnalysis.Analyzers.MemberGenShouldReferenceValidMember>;
 
 namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.CodeAnalysis
 {

@@ -6,7 +6,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace GalaxyCheck.Xunit.CodeAnalysis
+namespace GalaxyCheck.Xunit.CodeAnalysis.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MemberGenShouldReferenceValidMember : DiagnosticAnalyzer
@@ -33,7 +33,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis
 
         private static void AnalyzeAttribute(Compilation compilation, SyntaxNodeAnalysisContext context)
         {
-            var memberGenAttributeType = compilation.GetTypeByMetadataName("GalaxyCheck.MemberGenAttribute");
+            var memberGenAttributeType = compilation.TryGetMemberGenAttributeType();
             if (memberGenAttributeType == null)
             {
                 return;
