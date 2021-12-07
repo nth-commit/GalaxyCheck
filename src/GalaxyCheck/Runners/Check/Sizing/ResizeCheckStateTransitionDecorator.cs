@@ -30,11 +30,21 @@ namespace GalaxyCheck.Runners.Check.Sizing
             GenerationStates.Generation_End<T> generationEndState,
             CheckStateContext<T> nextContext)
         {
-            if (nextContext.ConsecutiveLateDiscards >= MaxConsecutiveDiscards)
+            if (generationEndState.WasLateDiscard)
             {
-                return nextContext
-                    .WithNextGenParameters(nextContext.NextParameters with { Size = nextContext.NextParameters.Size.BigIncrement() })
-                    .ResetConsecutiveLateDiscards();
+                if (nextContext.ConsecutiveLateDiscards >= MaxConsecutiveDiscards)
+                {
+                    return nextContext
+                        .WithNextGenParameters(nextContext.NextParameters with
+                        {
+                            Size = nextContext.NextParameters.Size.BigIncrement()
+                        })
+                        .ResetConsecutiveDiscards();
+                }
+                else
+                {
+                    return nextContext;
+                }
             }
             else
             {

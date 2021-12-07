@@ -19,5 +19,10 @@ namespace GalaxyCheck.Gens.Parameters
         public Size Increment() => new Size((Value + 1) % 100);
 
         public Size BigIncrement() => new Size((Value + 5) % 100);
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 }

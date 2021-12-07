@@ -76,14 +76,19 @@ namespace GalaxyCheck.Runners.Check.Automata
             bool WasReplay) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => WasDiscard == true
-                ? TransitionFromDiscard(context, WasLateDiscard)
+                ? TransitionFromDiscard(context, Instance, WasLateDiscard)
                 : CounterexampleContext == null
                     ? NextStateWithoutCounterexample(context, Instance)
                     : NextStateWithCounterexample(context, Instance, CounterexampleContext, WasReplay);
 
-            private static CheckStateTransition<T> TransitionFromDiscard(CheckStateContext<T> context, bool wasLateDiscard) => new CheckStateTransition<T>(
-                new Generation_Begin<T>(),
-                context.IncrementDiscards(wasLateDiscard));
+            private static CheckStateTransition<T> TransitionFromDiscard(
+                CheckStateContext<T> context,
+                IGenInstance<Test<T>> instance,
+                bool wasLateDiscard) => new CheckStateTransition<T>(
+                    new Generation_Begin<T>(),
+                    context
+                        .WithNextGenParameters(instance.NextParameters)
+                        .IncrementDiscards(wasLateDiscard));
 
             private static CheckStateTransition<T> NextStateWithoutCounterexample(
                 CheckStateContext<T> context,

@@ -77,12 +77,10 @@ namespace GalaxyCheck.Runners.Check.Automata
             .ThenByDescending(c => c.ReplayParameters.Size.Value) // Bigger sizes are more likely to normalize
             .FirstOrDefault();
 
-        public CheckStateContext<T> IncrementCompletedIterations() => this with
+        public CheckStateContext<T> IncrementCompletedIterations() => (this with
         {
             CompletedIterations = CompletedIterations + 1,
-            ConsecutiveDiscards = 0,
-            ConsecutiveLateDiscards = 0
-        };
+        }).ResetConsecutiveDiscards();
 
         public CheckStateContext<T> IncrementDiscards(bool wasLateDiscard) => this with
         {
@@ -96,8 +94,9 @@ namespace GalaxyCheck.Runners.Check.Automata
             Shrinks = Shrinks + 1
         };
 
-        public CheckStateContext<T> ResetConsecutiveLateDiscards() => this with
+        public CheckStateContext<T> ResetConsecutiveDiscards() => this with
         {
+            ConsecutiveDiscards = 0,
             ConsecutiveLateDiscards = 0
         };
 

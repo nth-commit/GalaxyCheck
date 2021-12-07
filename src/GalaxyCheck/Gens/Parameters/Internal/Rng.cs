@@ -44,5 +44,10 @@ namespace GalaxyCheck.Gens.Parameters.Internal
 
             return Random.NextLong(min, maxOffset);
         }
+
+        public override string ToString()
+        {
+            return "[" + string.Join(",", new [] { Family, Seed, Order }) + "]";
+        }
     }
 }
