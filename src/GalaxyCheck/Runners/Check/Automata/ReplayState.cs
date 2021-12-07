@@ -53,7 +53,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             IGenInstance<Test<T>> instance)
         {
             return new CheckStateTransition<T>(
-                new GenerationStates.Generation_End<T>(instance, null, false, true),
+                new GenerationStates.Generation_End<T>(instance, null, false, false, true),
                 context);
         }
 
@@ -71,7 +71,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                 counterexample.Exception);
 
             return new CheckStateTransition<T>(
-                new GenerationStates.Generation_End<T>(instance, counterexampleContext, false, true),
+                new GenerationStates.Generation_End<T>(instance, counterexampleContext, false, false, true),
                 context);
         }
 

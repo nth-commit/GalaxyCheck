@@ -6,6 +6,8 @@ namespace GalaxyCheck.Runners.Check.Sizing
         SpecificCheckStateTransitionDecorator<T, GenerationStates.Generation_End<T>, GenerationStates.Generation_Begin<T>>,
         ICheckStateTransitionDecorator<T>
     {
+        private const int MaxConsecutiveDiscards = 10;
+
         private readonly ResizeStrategy<T> _resizeStrategy;
 
         public ResizeCheckStateTransitionDecorator(ResizeStrategy<T> resizeStrategy)
@@ -18,16 +20,34 @@ namespace GalaxyCheck.Runners.Check.Sizing
             GenerationStates.Generation_Begin<T> generationBeginState,
             CheckStateContext<T> nextContext)
         {
-            var resizeStrategyInfo = new ResizeStrategyInformation<T>(
-                nextContext,
-                generationEndState.CounterexampleContext,
-                generationEndState.Instance);
+            var nextContextResized = Resize(_resizeStrategy, generationEndState, nextContext);
 
-            var nextSize = _resizeStrategy(resizeStrategyInfo);
+            return new CheckStateTransition<T>(generationBeginState, nextContextResized);
+        }
 
-            return new CheckStateTransition<T>(
-                generationBeginState,
-                nextContext.WithNextGenParameters(nextContext.NextParameters with { Size = nextSize }));
+        private static CheckStateContext<T> Resize(
+            ResizeStrategy<T> resizeStrategy,
+            GenerationStates.Generation_End<T> generationEndState,
+            CheckStateContext<T> nextContext)
+        {
+            if (nextContext.ConsecutiveLateDiscards >= MaxConsecutiveDiscards)
+            {
+                return nextContext
+                    .WithNextGenParameters(nextContext.NextParameters with { Size = nextContext.NextParameters.Size.BigIncrement() })
+                    .ResetConsecutiveLateDiscards();
+            }
+            else
+            {
+                var resizeStrategyInfo = new ResizeStrategyInformation<T>(
+                    nextContext,
+                    generationEndState.CounterexampleContext,
+                    generationEndState.Instance);
+
+                var nextSize = resizeStrategy(resizeStrategyInfo);
+
+                return nextContext
+                    .WithNextGenParameters(nextContext.NextParameters with { Size = nextSize });
+            }
         }
     }
 }

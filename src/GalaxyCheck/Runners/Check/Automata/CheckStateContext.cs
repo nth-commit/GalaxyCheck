@@ -20,6 +20,10 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         public int Discards { get; private init; }
 
+        public int ConsecutiveDiscards { get; private init; } = 0;
+
+        public int ConsecutiveLateDiscards { get; private init; } = 0;
+
         public int Shrinks { get; private init; }
 
         public ImmutableList<CounterexampleContext<T>> CounterexampleContextHistory { get; private init; }
@@ -75,17 +79,26 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         public CheckStateContext<T> IncrementCompletedIterations() => this with
         {
-            CompletedIterations = CompletedIterations + 1
+            CompletedIterations = CompletedIterations + 1,
+            ConsecutiveDiscards = 0,
+            ConsecutiveLateDiscards = 0
         };
 
-        public CheckStateContext<T> IncrementDiscards() => this with
+        public CheckStateContext<T> IncrementDiscards(bool wasLateDiscard) => this with
         {
-            Discards = Discards + 1
+            Discards = Discards + 1,
+            ConsecutiveDiscards = ConsecutiveDiscards + 1,
+            ConsecutiveLateDiscards = wasLateDiscard ? ConsecutiveLateDiscards + 1 : 0
         };
 
         public CheckStateContext<T> IncrementShrinks() => this with
         {
             Shrinks = Shrinks + 1
+        };
+
+        public CheckStateContext<T> ResetConsecutiveLateDiscards() => this with
+        {
+            ConsecutiveLateDiscards = 0
         };
 
         public CheckStateContext<T> AddCounterexample(CounterexampleContext<T> counterexampleContext) => this with
