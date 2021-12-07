@@ -12,7 +12,6 @@ namespace GalaxyCheck.Xunit.Internal
             IGenFactory? genFactory,
             IReadOnlyDictionary<int, IGen> customGens)
         {
-
             return Property.Reflect(methodInfo, target, genFactory, customGens);
         }
     }

@@ -36,5 +36,10 @@
             IRng? rng = null,
             Size? size = null) =>
                 new GenParameters(rng ?? Rng, size ?? Size);
+
+        public override string ToString()
+        {
+            return $"Rng={Rng},Size={Size}";
+        }
     }
 }
