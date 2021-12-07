@@ -45,7 +45,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeActions
 
             var memberName = $"{_methodDeclarationSyntax.Identifier.Text}_{_parameterSyntax.Identifier.Text}";
 
-            var propertySyntax = CreateProperty(syntaxGenerator, memberName, _genType, _parameterType);
+            var propertySyntax = CreateGenPropertyDeclaration(syntaxGenerator, memberName, _genType, _parameterType, _parameterSyntax);
             var attributeSyntax = CreateMemberGenAttribute(syntaxGenerator, memberName);
 
             editor.InsertBefore(_methodDeclarationSyntax, propertySyntax);
@@ -53,26 +53,27 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeActions
             return editor.GetChangedDocument();
         }
 
-        private static PropertyDeclarationSyntax CreateProperty(
+        private static PropertyDeclarationSyntax CreateGenPropertyDeclaration(
             SyntaxGenerator syntaxGenerator,
             string name,
             ITypeSymbol genType,
-            ITypeSymbol parameterType)
+            ITypeSymbol parameterType,
+            ParameterSyntax parameterSyntax)
         {
             var propertyType = syntaxGenerator.TypeExpression(genType);
 
-            var propertyExpression = parameterType.Name switch
+            var propertyExpression = (parameterType.ContainingSymbol.Name, parameterType.Name) switch
             {
-                "Boolean" => SimpleBuiltInGenInvocation("Boolean"),
-                "Byte" => SimpleBuiltInGenInvocation("Byte"),
-                "Int16" => SimpleBuiltInGenInvocation("Int16"),
-                "Int32" => SimpleBuiltInGenInvocation("Int32"),
-                "Int64" => SimpleBuiltInGenInvocation("Int64"),
-                "Char" => SimpleBuiltInGenInvocation("Char"),
-                "String" => SimpleBuiltInGenInvocation("String"),
-                "DateTime" => SimpleBuiltInGenInvocation("DateTime"),
-                "Guid" => SimpleBuiltInGenInvocation("Guid"),
-                _ => CreateGenInvocation(parameterType)
+                ("System", "Boolean") => SimpleBuiltInGenInvocation("Boolean"),
+                ("System", "Byte") => SimpleBuiltInGenInvocation("Byte"),
+                ("System", "Int16") => SimpleBuiltInGenInvocation("Int16"),
+                ("System", "Int32") => SimpleBuiltInGenInvocation("Int32"),
+                ("System", "Int64") => SimpleBuiltInGenInvocation("Int64"),
+                ("System", "Char") => SimpleBuiltInGenInvocation("Char"),
+                ("System", "String") => SimpleBuiltInGenInvocation("String"),
+                ("System", "DateTime") => SimpleBuiltInGenInvocation("DateTime"),
+                ("System", "Guid") => SimpleBuiltInGenInvocation("Guid"),
+                _ => CreateGenInvocation(parameterType, parameterSyntax)
             };
 
             var propertyValue = ArrowExpressionClause(propertyExpression);
@@ -98,7 +99,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeActions
                     IdentifierName(methodName)));
         }
 
-        private static InvocationExpressionSyntax CreateGenInvocation(ITypeSymbol parameterType)
+        private static InvocationExpressionSyntax CreateGenInvocation(ITypeSymbol parameterType, ParameterSyntax parameterSyntax)
         {
             return InvocationExpression(
                 MemberAccessExpression(
@@ -108,19 +109,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeActions
                         Identifier("Create"))
                     .WithTypeArgumentList(
                         TypeArgumentList(
-                            SingletonSeparatedList<TypeSyntax>(QualifyType(parameterType))))));
-        }
-
-        private static NameSyntax QualifyType(INamespaceOrTypeSymbol parameterType)
-        {
-            var unqualifiedTypeSyntax = IdentifierName(parameterType.Name);
-            return parameterType.ContainingSymbol.Name == ""
-                ? unqualifiedTypeSyntax
-                : parameterType.ContainingSymbol switch
-                {
-                    INamespaceOrTypeSymbol type => QualifiedName(QualifyType(type), unqualifiedTypeSyntax),
-                    _ => unqualifiedTypeSyntax
-                };
+                            SingletonSeparatedList(parameterSyntax.Type!)))));
         }
 
         private static AttributeListSyntax CreateMemberGenAttribute(
