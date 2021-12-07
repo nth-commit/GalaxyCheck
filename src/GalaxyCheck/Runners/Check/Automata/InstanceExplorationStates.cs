@@ -153,7 +153,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             bool WasReplay) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
-                new GenerationStates.Generation_End<T>(Instance, CounterexampleContext, WasDiscard, WasReplay),
+                new GenerationStates.Generation_End<T>(Instance, CounterexampleContext, WasDiscard, WasDiscard, WasReplay),
                 context);
         }
     }

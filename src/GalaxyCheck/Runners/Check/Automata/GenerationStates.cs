@@ -58,7 +58,7 @@ namespace GalaxyCheck.Runners.Check.Automata
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
                 new Generation_HoldingNextIteration<T>(NextIterations),
-                context.IncrementDiscards());
+                context.IncrementDiscards(wasLateDiscard: false));
         }
 
         internal record Generation_Error<T>(string Description) : CheckState<T>
@@ -72,17 +72,18 @@ namespace GalaxyCheck.Runners.Check.Automata
             IGenInstance<Test<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
+            bool WasLateDiscard,
             bool WasReplay) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => WasDiscard == true
-                ? TransitionFromDiscard(context)
+                ? TransitionFromDiscard(context, WasLateDiscard)
                 : CounterexampleContext == null
                     ? NextStateWithoutCounterexample(context, Instance)
                     : NextStateWithCounterexample(context, Instance, CounterexampleContext, WasReplay);
 
-            private static CheckStateTransition<T> TransitionFromDiscard(CheckStateContext<T> context) => new CheckStateTransition<T>(
+            private static CheckStateTransition<T> TransitionFromDiscard(CheckStateContext<T> context, bool wasLateDiscard) => new CheckStateTransition<T>(
                 new Generation_Begin<T>(),
-                context.IncrementDiscards());
+                context.IncrementDiscards(wasLateDiscard));
 
             private static CheckStateTransition<T> NextStateWithoutCounterexample(
                 CheckStateContext<T> context,

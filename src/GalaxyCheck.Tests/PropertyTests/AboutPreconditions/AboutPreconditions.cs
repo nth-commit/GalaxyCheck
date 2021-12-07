@@ -11,8 +11,7 @@ namespace Tests.V2.PropertyTests.AboutPreconditions
 {
     public class AboutPreconditions
     {
-        [Property(Iterations = 1, Skip = "Flakey, soon-to-be-deleted test")]
-
+        [Property(Iterations = 10)]
         public void WhenThePredicateOnlyPassesForLargerSizesItStillProducesValues([Seed] int seed, [Size] int size)
         {
             var property = GalaxyCheck.Gen
@@ -24,7 +23,7 @@ namespace Tests.V2.PropertyTests.AboutPreconditions
             test.Should().NotThrow<GalaxyCheck.Exceptions.GenExhaustionException>();
         }
 
-        [Fact(Skip = "Regression")]
+        [Fact]
         public void IfThePreconditionPasses_ThenTheEquivalentAssertionPasses()
         {
             Func<int, bool> pred = x => x % 2 == 0;
