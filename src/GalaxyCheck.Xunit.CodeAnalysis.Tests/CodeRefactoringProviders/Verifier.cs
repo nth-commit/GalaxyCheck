@@ -38,6 +38,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.CodeRefactoringProviders
             {
                 TestCode = code,
                 FixedCode = expectedRefactoredCode,
+                CodeActionValidationMode = CodeActionValidationMode.None,
                 CodeActionVerifier = (codeAction, verifier) =>
                 {
                     verifier.Equal(codeAction.Title, expectedRefactoringTitle);

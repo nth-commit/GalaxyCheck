@@ -72,15 +72,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeActions
                 "String" => SimpleBuiltInGenInvocation("String"),
                 "DateTime" => SimpleBuiltInGenInvocation("DateTime"),
                 "Guid" => SimpleBuiltInGenInvocation("Guid"),
-                _ => InvocationExpression(
-                    MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName("Gen"),
-                        GenericName(
-                            Identifier("Create"))
-                        .WithTypeArgumentList(
-                            TypeArgumentList(
-                                SingletonSeparatedList<TypeSyntax>(IdentifierName(parameterType.Name))))))
+                _ => CreateGenInvocation(parameterType)
             };
 
             var propertyValue = ArrowExpressionClause(propertyExpression);
@@ -104,6 +96,31 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeActions
                     SyntaxKind.SimpleMemberAccessExpression,
                     IdentifierName("Gen"),
                     IdentifierName(methodName)));
+        }
+
+        private static InvocationExpressionSyntax CreateGenInvocation(ITypeSymbol parameterType)
+        {
+            return InvocationExpression(
+                MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName("Gen"),
+                    GenericName(
+                        Identifier("Create"))
+                    .WithTypeArgumentList(
+                        TypeArgumentList(
+                            SingletonSeparatedList<TypeSyntax>(QualifyType(parameterType))))));
+        }
+
+        private static NameSyntax QualifyType(INamespaceOrTypeSymbol parameterType)
+        {
+            var unqualifiedTypeSyntax = IdentifierName(parameterType.Name);
+            return parameterType.ContainingSymbol.Name == ""
+                ? unqualifiedTypeSyntax
+                : parameterType.ContainingSymbol switch
+                {
+                    INamespaceOrTypeSymbol type => QualifiedName(QualifyType(type), unqualifiedTypeSyntax),
+                    _ => unqualifiedTypeSyntax
+                };
         }
 
         private static AttributeListSyntax CreateMemberGenAttribute(

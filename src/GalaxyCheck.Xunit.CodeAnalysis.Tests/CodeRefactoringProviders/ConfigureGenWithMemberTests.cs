@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Verifier = GalaxyCheck.Xunit.CodeAnalysis.Tests.CodeRefactoringProviders.Verifier<GalaxyCheck.Xunit.CodeAnalysis.CodeRefactoringProviders.ConfigureGenWithMember>;
@@ -21,6 +22,8 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.CodeRefactoringProviders
         [InlineData("bool", "Gen.Boolean()")]
         [InlineData("System.Guid", "Gen.Guid()")]
         [InlineData("System.DateTime", "Gen.DateTime()")]
+        [InlineData("System.Exception", "Gen.Create<System.Exception>()")]
+        [InlineData("System.Threading.Tasks.Task", "Gen.Create<System.Threading.Tasks.Task>()")]
         [InlineData("TestClass", "Gen.Create<TestClass>()")] // A random type, not generatable by default, which is in scope
         public async Task ItRefactorsVariousTypes(string type, string genExpression)
         {
