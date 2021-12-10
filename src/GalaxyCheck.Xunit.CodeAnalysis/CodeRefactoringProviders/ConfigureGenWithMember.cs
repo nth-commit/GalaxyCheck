@@ -37,7 +37,7 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeRefactoringProviders
                 .FirstOrDefault(a =>
                 {
                     var attributeSymbol = semanticModel.GetSymbolInfo(a);
-                    return SymbolEqualityComparer.Default.Equals(attributeSymbol.Symbol?.ContainingType, propertyAttributeType);
+                    return attributeSymbol.Symbol != null && propertyAttributeType.IsAssignableFrom(attributeSymbol.Symbol.ContainingType);
                 });
             if (propertyAttribute is null) return;
 
