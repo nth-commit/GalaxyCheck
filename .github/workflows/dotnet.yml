@@ -17,7 +17,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   PRERELEASE_PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit GalaxyCheck.Xunit.CodeAnalysis NebulaCheck NebulaCheck.Xunit NebulaCheck.Xunit.CodeAnalysis
-  PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit
+  PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit GalaxyCheck.Xunit.CodeAnalysis
 
 jobs:
   build:
