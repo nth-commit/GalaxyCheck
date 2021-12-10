@@ -96,6 +96,41 @@ public class TestClass
             await Verifier.Verify(code, codeProvidingRefactorPosition, expectedRefactoredCode, expectedRefactoringTitle);
         }
 
+        [Fact]
+        public async Task ItRefactorsMethodsDecoratedWithTheSampleAttribute()
+        {
+            var code = @"
+using GalaxyCheck;
+
+public class TestClass
+{
+    [Sample]
+    public void TestMethod(int x)
+    {
+    }
+}
+";
+            var codeProvidingRefactorPosition = new LinePosition(7, 28);
+
+            var expectedRefactoredCode = @"
+using GalaxyCheck;
+
+public class TestClass
+{
+    private static IGen<int> TestMethod_x => Gen.Int32();
+
+    [Sample]
+    public void TestMethod([MemberGen(nameof(TestMethod_x))] int x)
+    {
+    }
+}
+";
+
+            var expectedRefactoringTitle = $"Configure generation of parameter with MemberGenAttribute";
+
+            await Verifier.Verify(code, codeProvidingRefactorPosition, expectedRefactoredCode, expectedRefactoringTitle);
+        }
+
         [Theory]
         [InlineData(7, 27)]
         [InlineData(7, 33)]
