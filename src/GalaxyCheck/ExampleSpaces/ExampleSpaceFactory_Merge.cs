@@ -12,13 +12,16 @@ namespace GalaxyCheck.ExampleSpaces
             List<IExampleSpace<T>> exampleSpaces,
             Func<List<T>, TResult> mergeValues,
             ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<List<IExampleSpace<T>>> measureMerge) =>
+            MeasureFunc<List<IExampleSpace<T>>> measureMerge,
+            bool enableSmallestExampleSpacesOptimization) =>
                 MergeHelpers.MergeInternal(
                     exampleSpaces,
                     mergeValues,
                     shrinkExampleSpaces,
                     measureMerge,
-                    ImmutableHashSet.Create<ExampleId>());
+                    ImmutableHashSet.Create<ExampleId>(),
+                    enableSmallestExampleSpacesOptimization,
+                    true);
 
         private static class MergeHelpers
         {
@@ -27,11 +30,20 @@ namespace GalaxyCheck.ExampleSpaces
                 Func<List<T>, TResult> mergeValues,
                 ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
                 MeasureFunc<List<IExampleSpace<T>>> measureMerge,
-                ImmutableHashSet<ExampleId> encounteredIds)
+                ImmutableHashSet<ExampleId> encounteredIds,
+                bool enableSmallestExampleSpacesOptimization,
+                bool isRoot)
             {
                 IExampleSpace<TResult> GenerateNextExampleSpace(IEnumerable<IExampleSpace<T>> exampleSpaces, ImmutableHashSet<ExampleId> encounteredIds)
                 {
-                    return MergeInternal(exampleSpaces.ToList(), mergeValues, shrinkExampleSpaces, measureMerge, encounteredIds);
+                    return MergeInternal(
+                        exampleSpaces.ToList(),
+                        mergeValues,
+                        shrinkExampleSpaces,
+                        measureMerge,
+                        encounteredIds,
+                        enableSmallestExampleSpacesOptimization,
+                        false);
                 }
 
                 var mergedId = exampleSpaces.Aggregate(
@@ -47,6 +59,16 @@ namespace GalaxyCheck.ExampleSpaces
                     mergedValue,
                     mergedDistance);
 
+                var smallestExampleSpacesShrink = enableSmallestExampleSpacesOptimization && isRoot && exampleSpaces.Any(exampleSpace => exampleSpace.Subspace.Any())
+                    ? exampleSpaces
+                        .Select(exampleSpace =>
+                        {
+                            var smallestExampleSpace = exampleSpace.Subspace.FirstOrDefault() ?? exampleSpace;
+                            return smallestExampleSpace;
+                        })
+                        .ToList()
+                    : null;
+
                 var exampleSpaceCullingShrinks = shrinkExampleSpaces(exampleSpaces);
 
                 var subspaceMergingShrinks = exampleSpaces
@@ -54,7 +76,9 @@ namespace GalaxyCheck.ExampleSpaces
                     .SelectMany(exampleSpaces => exampleSpaces);
 
                 var shrinks = TraverseUnencountered(
-                    Enumerable.Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks),
+                    Enumerable.Concat(
+                        smallestExampleSpacesShrink == null ? Enumerable.Empty<List<IExampleSpace<T>>>() : new[] { smallestExampleSpacesShrink }.AsEnumerable(),
+                        Enumerable.Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks)),
                     encounteredIds,
                     GenerateNextExampleSpace);
 
