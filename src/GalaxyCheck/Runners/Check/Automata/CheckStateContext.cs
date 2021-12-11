@@ -1,5 +1,4 @@
-﻿using GalaxyCheck.Gens.Iterations.Generic;
-using GalaxyCheck.Gens.Parameters;
+﻿using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.ExampleSpaces;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,11 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         public int ShrinkLimit { get; private init; }
 
-        public int CompletedIterations { get; private init; }
+        public int CompletedIterationsUntilCounterexample { get; private init; }
+
+        public int CompletedIterationsAfterCounterexample { get; private init; }
+
+        public int CompletedIterations => CompletedIterationsUntilCounterexample + CompletedIterationsAfterCounterexample;
 
         public int Discards { get; private init; }
 
@@ -36,7 +39,8 @@ namespace GalaxyCheck.Runners.Check.Automata
             IGen<Test<T>> property,
             int requestedIterations,
             int shrinkLimit,
-            int completedIterations,
+            int completedIterationsUntilCounterexample,
+            int completedIterationsAfterCounterexample,
             int discards,
             int shrinks,
             ImmutableList<CounterexampleContext<T>> counterexampleContextHistory,
@@ -46,7 +50,8 @@ namespace GalaxyCheck.Runners.Check.Automata
             Property = property;
             RequestedIterations = requestedIterations;
             ShrinkLimit = shrinkLimit;
-            CompletedIterations = completedIterations;
+            CompletedIterationsUntilCounterexample = completedIterationsUntilCounterexample;
+            CompletedIterationsAfterCounterexample = completedIterationsAfterCounterexample;
             Discards = discards;
             Shrinks = shrinks;
             CounterexampleContextHistory = counterexampleContextHistory;
@@ -66,6 +71,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                 0,
                 0,
                 0,
+                0,
                 ImmutableList.Create<CounterexampleContext<T>>(),
                 initialParameters,
                 deepCheck)
@@ -79,7 +85,12 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         public CheckStateContext<T> IncrementCompletedIterations() => (this with
         {
-            CompletedIterations = CompletedIterations + 1,
+            CompletedIterationsUntilCounterexample = Counterexample == null
+                ? CompletedIterationsUntilCounterexample + 1
+                : CompletedIterationsUntilCounterexample,
+            CompletedIterationsAfterCounterexample = Counterexample == null
+                ? CompletedIterationsAfterCounterexample
+                : CompletedIterationsAfterCounterexample + 1,
         }).ResetConsecutiveDiscards();
 
         public CheckStateContext<T> IncrementDiscards(bool wasLateDiscard) => this with

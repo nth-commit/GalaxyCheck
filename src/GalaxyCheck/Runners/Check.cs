@@ -50,9 +50,9 @@ namespace GalaxyCheck
             var transitionAggregation = AggregateTransitions(transitions);
 
             return new CheckResult<T>(
-                transitionAggregation.FinalContext.CompletedIterations,
+                transitionAggregation.FinalContext.CompletedIterationsUntilCounterexample,
                 transitionAggregation.FinalContext.Discards,
-                transitionAggregation.FinalContext.Shrinks,
+                transitionAggregation.FinalContext.Shrinks + transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
                 transitionAggregation.FinalContext.Counterexample == null
                     ? null
                     : FromCounterexampleContext(transitionAggregation.FinalContext.Counterexample),
