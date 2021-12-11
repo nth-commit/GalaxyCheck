@@ -62,8 +62,8 @@ namespace GalaxyCheck.Gens
         private static readonly IReadOnlyDictionary<Gen.CharType, IReadOnlyList<char>> CharacterSetsByFlag =
             new Dictionary<Gen.CharType, IReadOnlyList<char>>
             {
-                { Gen.CharType.Whitespace, new List<char> { ' ' } },
                 { Gen.CharType.Alphabetical, CreateCharRanges((97, 122), (65, 90)) },
+                { Gen.CharType.Whitespace, new List<char> { ' ' } },
                 { Gen.CharType.Numeric, CreateCharRanges((48, 57)) },
                 { Gen.CharType.Symbol, CreateCharRanges((33, 47), (58, 64), (91, 96), (123, 126)) },
                 { Gen.CharType.Extended, CreateCharRanges((128, 255)) },

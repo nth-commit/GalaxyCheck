@@ -15,22 +15,8 @@ namespace Tests.V2.GenTests.CharGenTests
     public class AboutShrinking
     {
         [Property]
-        public NebulaCheck.IGen<Test> IfCharTypeHasWhitespace_ItShrinksToSpace() =>
+        public NebulaCheck.IGen<Test> IfCharTypeHasAlphabetical_ItShrinksToLowercaseA() =>
             from charType in TestGen.CharType()
-            from seed in DomainGen.Seed()
-            from size in DomainGen.Size()
-            select Property.ForThese(() =>
-            {
-                var gen = GalaxyCheck.Gen.Char(GalaxyCheck.Gen.CharType.Whitespace | charType);
-
-                var minimum = gen.Minimum(seed: seed, size: size);
-
-                minimum.Should().Be(' ');
-            });
-
-        [Property]
-        public NebulaCheck.IGen<Test> OtherwiseIfCharTypeHasAlphabetical_ItShrinksToLowercaseA() =>
-            from charType in TestGen.CharType(GalaxyCheck.Gen.CharType.Whitespace)
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>
@@ -40,6 +26,20 @@ namespace Tests.V2.GenTests.CharGenTests
                 var minimum = gen.Minimum(seed: seed, size: size);
 
                 minimum.Should().Be('a');
+            });
+
+        [Property]
+        public NebulaCheck.IGen<Test> OtherwiseIfCharTypeHasWhitespace_ItShrinksToSpace() =>
+            from charType in TestGen.CharType(GalaxyCheck.Gen.CharType.Alphabetical)
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select Property.ForThese(() =>
+            {
+                var gen = GalaxyCheck.Gen.Char(GalaxyCheck.Gen.CharType.Whitespace | charType);
+
+                var minimum = gen.Minimum(seed: seed, size: size);
+
+                minimum.Should().Be(' ');
             });
 
         [Property]
