@@ -2,9 +2,9 @@ name: .NET
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
   release:
     types:
       - published
@@ -86,7 +86,7 @@ jobs:
 
   prerelease:
     needs: pack-prerelease
-    if: github.ref == 'refs/heads/master' && github.event_name != 'release'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Setup .NET
