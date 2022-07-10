@@ -21,7 +21,10 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.Analyzers
             string[] sources,
             params DiagnosticResult[] diagnostics)
         {
-            var test = new CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>();
+            var test = new CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>()
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            };
 
             foreach (var source in sources)
                 test.TestState.Sources.Add(source);

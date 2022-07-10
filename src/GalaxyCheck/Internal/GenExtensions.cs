@@ -11,7 +11,7 @@ namespace GalaxyCheck.Internal
                 .GetType()
                 .GetInterfaces()
                 .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGen<>))
-                .SingleOrDefault();
+                .Single();
 
             return reflectedGenType.GetGenericArguments().Single();
         }

@@ -80,10 +80,10 @@ namespace GalaxyCheck.Gens
                 var configuredGenFactory = ConfigureGenFactory(genFactory, parameterInfo);
 
                 var createGenMethodInfo = typeof(IGenFactory)
-                    .GetMethod(nameof(IGenFactory.Create))
+                    .GetMethod(nameof(IGenFactory.Create))!
                     .MakeGenericMethod(parameterInfo.ParameterType);
 
-                var gen = (IGen)createGenMethodInfo.Invoke(configuredGenFactory, new object[] { });
+                var gen = (IGen)createGenMethodInfo.Invoke(configuredGenFactory, new object[] { })!;
 
                 return gen
                     .Cast<object>()

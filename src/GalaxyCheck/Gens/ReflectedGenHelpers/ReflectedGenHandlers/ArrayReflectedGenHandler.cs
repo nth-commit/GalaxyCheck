@@ -10,7 +10,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
         public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
-            var elementType = type.GetElementType();
+            var elementType = type.GetElementType()!;
             var elementGen = innerHandler.CreateGen(elementType, context);
 
             var methodInfo = typeof(ArrayReflectedGenHandler).GetMethod(
@@ -19,7 +19,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
             var genericMethodInfo = methodInfo.MakeGenericMethod(elementType);
 
-            return (IGen)genericMethodInfo.Invoke(null!, new object[] { elementGen });
+            return (IGen)genericMethodInfo.Invoke(null!, new object[] { elementGen })!;
         }
 
         private static IGen<T[]> CreateArrayGen<T>(IGen<T> elementGen) => elementGen.ListOf().Select(x => x.ToArray());

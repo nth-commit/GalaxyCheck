@@ -23,10 +23,10 @@
             internal static IGen Error(Type type, string genName, string message)
             {
                 var genericErrorGen = typeof(Advanced)
-                    .GetMethod(nameof(Advanced.Error))
+                    .GetMethod(nameof(Advanced.Error))!
                     .MakeGenericMethod(type);
 
-                return (IGen)genericErrorGen.Invoke(null, new object?[] { genName, message });
+                return (IGen)genericErrorGen.Invoke(null, new object?[] { genName, message })!;
             }
         }
     }

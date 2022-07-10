@@ -22,7 +22,7 @@ namespace GalaxyCheck.Xunit.Internal
             object[] constructorArguments,
             IPropertyFactory propertyFactory)
         {
-            var testClassInstance = Activator.CreateInstance(testClassType, constructorArguments);
+            var testClassInstance = Activator.CreateInstance(testClassType, constructorArguments)!;
             var propertyAttribute = testMethodInfo.GetCustomAttributes<PropertyAttribute>(inherit: true).Single();
 
             var genFactory = TryResolveGenFactory(testClassType, testMethodInfo);
@@ -75,13 +75,13 @@ namespace GalaxyCheck.Xunit.Internal
             var property = target.GetType().GetProperty(memberName, bindingFlags);
             if (property != null)
             {
-                return CastToGen(property.GetValue(target), memberName);
+                return CastToGen(property.GetValue(target)!, memberName);
             }
 
             var field = target.GetType().GetField(memberName, bindingFlags);
             if (field != null)
             {
-                return CastToGen(field.GetValue(target), memberName);
+                return CastToGen(field.GetValue(target)!, memberName);
             }
 
             return Gen.Constant<object?>(null);

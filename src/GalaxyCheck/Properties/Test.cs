@@ -3,7 +3,9 @@ using System;
 
 namespace GalaxyCheck
 {
+#pragma warning disable IDE1006 // Naming Styles
     public interface Test
+#pragma warning restore IDE1006 // Naming Styles
     {
         object? Input { get; }
 
@@ -11,7 +13,9 @@ namespace GalaxyCheck
 
         object?[]? PresentedInput { get; }
 
+#pragma warning disable IDE1006 // Naming Styles
         public interface TestOutput
+#pragma warning restore IDE1006 // Naming Styles
         {
             TestResult Result { get; }
 
@@ -26,7 +30,9 @@ namespace GalaxyCheck
         }
     }
 
+#pragma warning disable IDE1006 // Naming Styles
     public interface Test<out T> : Test
+#pragma warning restore IDE1006 // Naming Styles
     {
         new T Input { get; }
     }
