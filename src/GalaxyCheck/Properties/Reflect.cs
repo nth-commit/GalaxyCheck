@@ -55,7 +55,7 @@ namespace GalaxyCheck
                     }
                     catch (TargetInvocationException ex)
                     {
-                        throw ex.InnerException;
+                        throw ex.InnerException!;
                     }
                 })
                 .Select(test => TestFactory.Create<object>(
@@ -72,11 +72,11 @@ namespace GalaxyCheck
                 {
                     try
                     {
-                        return (bool)methodInfo.Invoke(target, parameters);
+                        return (bool)methodInfo.Invoke(target, parameters)!;
                     }
                     catch (TargetInvocationException ex)
                     {
-                        throw ex.InnerException;
+                        throw ex.InnerException!;
                     }
                 })
                 .Select(test => TestFactory.Create<object>(
@@ -93,17 +93,17 @@ namespace GalaxyCheck
             select TestFactory.Create(
                 test.Input,
                 test.Output,
-                Enumerable.Concat(parameters, test.PresentedInput).ToArray());
+                Enumerable.Concat(parameters, test.PresentedInput!).ToArray());
 
         private static ReflectedPropertyHandler ToPureProperty => (methodInfo, target, _, _) =>
         {
             try
             {
-                return ((IGen<Test>)methodInfo.Invoke(target, new object[] { })).Select(test => test.Cast<object>());
+                return ((IGen<Test>)methodInfo.Invoke(target, new object[] { })!).Select(test => test.Cast<object>());
             }
             catch (TargetInvocationException ex)
             {
-                throw ex.InnerException;
+                throw ex.InnerException!;
             }
         };
 
@@ -111,11 +111,11 @@ namespace GalaxyCheck
         {
             try
             {
-                return (Property)methodInfo.Invoke(target, parameters);
+                return (Property)methodInfo.Invoke(target, parameters)!;
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException.GetType() == typeof(PropertyPreconditionException))
+                if (ex.InnerException!.GetType() == typeof(PropertyPreconditionException))
                 {
                     return null;
                 }

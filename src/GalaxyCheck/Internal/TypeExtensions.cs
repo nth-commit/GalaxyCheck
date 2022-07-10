@@ -9,7 +9,7 @@ namespace GalaxyCheck.Internal
         public static bool IsAnonymousType(this Type type)
         {
             bool hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
-            bool nameContainsAnonymousType = type.FullName.Contains("AnonymousType");
+            bool nameContainsAnonymousType = type?.FullName?.Contains("AnonymousType") == true;
             bool isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
 
             return isAnonymousType;

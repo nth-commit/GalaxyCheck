@@ -17,8 +17,8 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.dll" target="lib\netstandard2.0" />
-        <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.xml" target="lib\netstandard2.0" />
-        <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.pdb" target="lib\netstandard2.0" />
+        <file src="bin\Release\net6.0\GalaxyCheck.Xunit.dll" target="lib\net6.0" />
+        <file src="bin\Release\net6.0\GalaxyCheck.Xunit.xml" target="lib\net6.0" />
+        <file src="bin\Release\net6.0\GalaxyCheck.Xunit.pdb" target="lib\net6.0" />
     </files>
 </package>

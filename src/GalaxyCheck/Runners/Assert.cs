@@ -65,7 +65,7 @@ namespace GalaxyCheck.Runners
             _counterexample = counterexample;
         }
 
-        public override string StackTrace => _counterexample.Exception?.StackTrace ?? base.StackTrace;
+        public override string StackTrace => _counterexample.Exception?.StackTrace ?? base.StackTrace!;
 
         private static string FormatMessage(Func<string, string>? formatMessage, string message) =>
             formatMessage == null

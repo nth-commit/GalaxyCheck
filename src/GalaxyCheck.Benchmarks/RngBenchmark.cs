@@ -20,12 +20,12 @@ namespace GalaxyCheck.Benchmarks
         [Arguments(0, 100)]
         [Arguments(0, 1000)]
         [Arguments(long.MinValue, long.MaxValue)]
-        public void RandomLong(long MinValue, long MaxValue)
+        public void RandomLong(long minValue, long maxValue)
         {
             for (var seed = _seed; seed < (_seed + OperationsPerInvoke); seed++)
             {
                 var rng = Rng.Create(seed);
-                rng.Value(MinValue, MaxValue);
+                rng.Value(minValue, maxValue);
             }
         }
     }

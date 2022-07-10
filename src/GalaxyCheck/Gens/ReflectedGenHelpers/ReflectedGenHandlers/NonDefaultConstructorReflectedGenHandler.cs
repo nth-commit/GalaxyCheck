@@ -24,7 +24,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
             var genericMethodInfo = methodInfo.MakeGenericMethod(type);
 
-            return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory });
+            return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory })!;
         }
 
         private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context, ContextualErrorFactory errorFactory)
@@ -34,7 +34,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             var parameterGens = constructor
                 .GetParameters()
                 .Select(parameter => innerHandler
-                    .CreateGen(parameter.ParameterType, context.Next(parameter.Name, parameter.ParameterType)) // TODO: Indicate it's a ctor param in the path
+                    .CreateGen(parameter.ParameterType, context.Next(parameter.Name ?? "<unknown>", parameter.ParameterType)) // TODO: Indicate it's a ctor param in the path
                     .Cast<object>());
 
             return Gen
@@ -48,7 +48,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                     catch (TargetInvocationException ex)
                     {
                         var innerEx = ex.InnerException;
-                        var message = $"'{innerEx.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
+                        var message = $"'{innerEx!.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
                         return errorFactory(message, context).Cast<T>();
                     }
                 });

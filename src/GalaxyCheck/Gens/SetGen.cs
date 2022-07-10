@@ -65,7 +65,7 @@ namespace GalaxyCheck.Gens
     using System.Collections.Immutable;
     using System.Linq;
 
-    public interface ISetGen<T> : IGen<IReadOnlyCollection<T>>
+    public interface ISetGen<T> : IGen<IReadOnlySet<T>>
     {
         /// <summary>
         /// Constrains the generator so that it only produces sets with the given count.
@@ -97,7 +97,7 @@ namespace GalaxyCheck.Gens
 
     internal record SetGen<T>(
         IGen<T> ElementGen,
-        RangeIntention Count) : GenProvider<IReadOnlyCollection<T>>, ISetGen<T>
+        RangeIntention Count) : GenProvider<IReadOnlySet<T>>, ISetGen<T>
     {
         public ISetGen<T> WithCount(int count) => this with { Count = RangeIntention.Exact(count) };
 
@@ -110,13 +110,13 @@ namespace GalaxyCheck.Gens
             throw new System.NotImplementedException();
         }
 
-        protected override IGen<IReadOnlyCollection<T>> Get => TryGetCountRange(Count).Match(
+        protected override IGen<IReadOnlySet<T>> Get => TryGetCountRange(Count).Match(
             fromLeft: range => range == null
                 ? GenSetOfUnspecifiedCount(ElementGen, Gen.Bias.WithSize)
                 : GenSetOfSpecifiedCount(ElementGen, range.Value, Gen.Bias.WithSize),
             fromRight: gen => gen);
 
-        private static IGen<IReadOnlyCollection<T>> GenSetOfSpecifiedCount(
+        private static IGen<IReadOnlySet<T>> GenSetOfSpecifiedCount(
             IGen<T> elementGen,
             (int minCount, int maxCount) range,
             Gen.Bias bias)
@@ -134,14 +134,14 @@ namespace GalaxyCheck.Gens
         private static IGen<int> GenCount(int minCount, int maxCount, Gen.Bias bias) =>
             Gen.Int32().GreaterThanEqual(minCount).LessThanEqual(maxCount).WithBias(bias).NoShrink();
 
-        private static IGen<IReadOnlyCollection<T>> GenSetOfCount(
+        private static IGen<IReadOnlySet<T>> GenSetOfCount(
             IGen<T> elementGen,
             int count,
             int minCount,
             ShrinkFunc<List<IExampleSpace<T>>> shrink,
             MeasureFunc<int> measureCount)
         {
-            IEnumerable<IGenIteration<IReadOnlyCollection<T>>> Run(GenParameters parameters)
+            IEnumerable<IGenIteration<IReadOnlySet<T>>> Run(GenParameters parameters)
             {
                 var nextParameters = parameters;
                 var values = ImmutableHashSet<T>.Empty;
@@ -160,7 +160,7 @@ namespace GalaxyCheck.Gens
                             throw new Exception("Fatal: Element generator exhausted");
                         }
 
-                        var either = elementIterationEnumerator.Current.ToEither<T, ImmutableList<T>>();
+                        var either = elementIterationEnumerator.Current.ToEither<T, IReadOnlySet<T>>();
 
                         if (either.IsLeft(out IGenInstance<T> instance))
                         {
@@ -169,7 +169,7 @@ namespace GalaxyCheck.Gens
                             nextParameters = instance.NextParameters;
                             break;
                         }
-                        else if (either.IsRight(out IGenIteration<ImmutableList<T>> right))
+                        else if (either.IsRight(out IGenIteration<IReadOnlySet<T>> right))
                         {
                             yield return right;
                         }
@@ -184,7 +184,7 @@ namespace GalaxyCheck.Gens
                 var exampleSpace = ExampleSpaceFactory
                     .Merge(
                         instances.Select(instance => instance.ExampleSpace).ToList(),
-                        values => new HashSet<T>(values),
+                        values => ImmutableHashSet.CreateRange(values),
                         shrink,
                         exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
                         enableSmallestExampleSpacesOptimization: true)
@@ -193,10 +193,10 @@ namespace GalaxyCheck.Gens
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace!);
             }
 
-            return new FunctionalGen<IReadOnlyCollection<T>>(Run).Repeat();
+            return new FunctionalGen<IReadOnlySet<T>>(Run).Repeat();
         }
 
-        private static IGen<IReadOnlyCollection<T>> GenSetOfUnspecifiedCount(
+        private static IGen<IReadOnlySet<T>> GenSetOfUnspecifiedCount(
             IGen<T> elementGen,
             Gen.Bias bias)
         {
@@ -212,13 +212,13 @@ namespace GalaxyCheck.Gens
                 select set;
         }
 
-        private static IGen<IReadOnlyCollection<T>> GenSetOfAttempts(
+        private static IGen<IReadOnlySet<T>> GenSetOfAttempts(
             IGen<T> elementGen,
             int attempts,
             ShrinkFunc<List<IExampleSpace<T>>> shrink,
             MeasureFunc<int> measureCount)
         {
-            IEnumerable<IGenIteration<IReadOnlyCollection<T>>> Run(GenParameters parameters)
+            IEnumerable<IGenIteration<IReadOnlySet<T>>> Run(GenParameters parameters)
             {
                 var nextParameters = parameters;
                 var values = ImmutableHashSet<T>.Empty;
@@ -238,7 +238,7 @@ namespace GalaxyCheck.Gens
                             throw new Exception("Fatal: Element generator exhausted");
                         }
 
-                        var either = elementIterationEnumerator.Current.ToEither<T, ImmutableList<T>>();
+                        var either = elementIterationEnumerator.Current.ToEither<T, IReadOnlySet<T>>();
 
                         if (either.IsLeft(out IGenInstance<T> instance))
                         {
@@ -248,7 +248,7 @@ namespace GalaxyCheck.Gens
                             nextParameters = instance.NextParameters;
                             break;
                         }
-                        else if (either.IsRight(out IGenIteration<ImmutableList<T>> right))
+                        else if (either.IsRight(out IGenIteration<IReadOnlySet<T>> right))
                         {
                             numberOfAttempts++;
                             yield return right;
@@ -262,7 +262,7 @@ namespace GalaxyCheck.Gens
 
                 var exampleSpace = ExampleSpaceFactory.Merge(
                     instances.Select(instance => instance.ExampleSpace).ToList(),
-                    values => new HashSet<T>(values),
+                    values => ImmutableHashSet.CreateRange(values),
                     shrink,
                     exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
                     enableSmallestExampleSpacesOptimization: true);
@@ -270,7 +270,7 @@ namespace GalaxyCheck.Gens
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace!);
             }
 
-            return new FunctionalGen<IReadOnlyCollection<T>>(Run).Repeat();
+            return new FunctionalGen<IReadOnlySet<T>>(Run).Repeat();
         }
 
         private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsCount(int count)
@@ -280,18 +280,18 @@ namespace GalaxyCheck.Gens
             return ShrinkFunc.TowardsCountOptimized<IExampleSpace<T>, decimal>(count, exampleSpace => 0);
         }
 
-        private static Either<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>> TryGetCountRange(RangeIntention count)
+        private static Either<(int minCount, int maxCount)?, IGen<IReadOnlySet<T>>> TryGetCountRange(RangeIntention count)
         {
-            Either<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>> CountError(string message) =>
-                new Right<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>>(Error(message));
+            Either<(int minCount, int maxCount)?, IGen<IReadOnlySet<T>>> CountError(string message) =>
+                new Right<(int minCount, int maxCount)?, IGen<IReadOnlySet<T>>>(Error(message));
 
-            Either<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>> FromUnspecified() =>
-                new Left<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>>(null);
+            Either<(int minCount, int maxCount)?, IGen<IReadOnlySet<T>>> FromUnspecified() =>
+                new Left<(int minCount, int maxCount)?, IGen<IReadOnlySet<T>>>(null);
 
-            Either<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>> FromExact(int count) =>
+            Either<(int minCount, int maxCount)?, IGen<IReadOnlySet<T>>> FromExact(int count) =>
                 count < 0 ? CountError("'count' cannot be negative") : (count, count);
 
-            Either<(int minCount, int maxCount)?, IGen<IReadOnlyCollection<T>>> FromBounded(int? minCount, int? maxCount)
+            Either<(int minCount, int maxCount)?, IGen<IReadOnlySet<T>>> FromBounded(int? minCount, int? maxCount)
             {
                 var resolvedMinCount = minCount ?? 0;
                 var resolvedMaxCount = maxCount ?? resolvedMinCount + 20;
@@ -320,7 +320,7 @@ namespace GalaxyCheck.Gens
                 onBounded: (minCount, maxCount) => FromBounded(minCount, maxCount));
         }
 
-        private static IGen<IReadOnlyCollection<T>> Error(string message) =>
-            Gen.Advanced.Error<IReadOnlyCollection<T>>(nameof(SetGen<T>), message);
+        private static IGen<IReadOnlySet<T>> Error(string message) =>
+            Gen.Advanced.Error<IReadOnlySet<T>>(nameof(SetGen<T>), message);
     }
 }

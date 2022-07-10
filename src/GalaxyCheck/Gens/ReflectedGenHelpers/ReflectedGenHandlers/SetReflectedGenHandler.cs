@@ -33,7 +33,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
             var genericMethodInfo = methodInfo.MakeGenericMethod(elementType);
 
-            return (IGen)genericMethodInfo.Invoke(null!, new object[] { elementGen });
+            return (IGen)genericMethodInfo.Invoke(null!, new object[] { elementGen })!;
         }
 
         private static readonly IReadOnlyDictionary<Type, string> GenMethodByGenericTypeDefinition = new Dictionary<Type, string>

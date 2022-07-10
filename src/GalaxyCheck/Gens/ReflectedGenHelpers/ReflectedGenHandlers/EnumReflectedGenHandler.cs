@@ -9,9 +9,9 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
         public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
-            var genMethodInfo = typeof(Gen).GetMethod(nameof(Gen.Enum), BindingFlags.Public | BindingFlags.Static);
+            var genMethodInfo = typeof(Gen).GetMethod(nameof(Gen.Enum), BindingFlags.Public | BindingFlags.Static)!;
             var genericGenMethodInfo = genMethodInfo.MakeGenericMethod(type);
-            return (IGen)genericGenMethodInfo.Invoke(null!, new object[] { });
+            return (IGen)genericGenMethodInfo.Invoke(null!, new object[] { })!;
         }
     }
 }
