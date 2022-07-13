@@ -1,8 +1,8 @@
-﻿using GalaxyCheck;
-using GalaxyCheck.Internal;
+﻿using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck.ExampleSpaces
 {
@@ -33,7 +33,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// <typeparam name="T">The type of the target example space's values.</typeparam>
         /// <typeparam name="TResult">The new type of an example's value</typeparam>
         /// <param name="exampleSpace">The example space to operate on.</param>
-        /// <param name="selector">A function to apply to each value in the example space.</param>
+        /// <param name="f">A function to apply to each value in the example space.</param>
         /// <returns>A new example space with the mapping function applied.</returns>
         public static IExampleSpace<TResult> Map<T, TResult>(
             this IExampleSpace<T> exampleSpace,
@@ -51,7 +51,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// <typeparam name="T">The type of the target example space's values.</typeparam>
         /// <typeparam name="TResult">The new type of an example's value</typeparam>
         /// <param name="exampleSpace">The example space to operate on.</param>
-        /// <param name="selector">A function to apply to each example in the example space.</param>
+        /// <param name="f">A function to apply to each example in the example space.</param>
         /// <returns>A new example space with the mapping  function applied.</returns>
         public static IExampleSpace<TResult> MapExamples<T, TResult>(
             this IExampleSpace<T> exampleSpace,
@@ -86,11 +86,7 @@ namespace GalaxyCheck.ExampleSpaces
         private record CounterexampleSubspace<T>(
             IExampleSpace<T> CounterexampleSpace,
             IEnumerable<int> Path);
-
-        private record SubspaceExploration<T>(
-            CounterexampleSubspace<T>? CounterexampleSubspace,
-            IEnumerable<ExplorationStage<T>> ExplorationStages);
-
+        
         public static IEnumerable<ExplorationStage<T>> Explore<T>(
             this IExampleSpace<T> exampleSpace,
             AnalyzeExploration<T> analyze)
@@ -106,28 +102,15 @@ namespace GalaxyCheck.ExampleSpaces
                     onFail: exception => ExplorationStage<T>.Factory.Counterexample(exampleSpace, path, exception));
             }
 
-            static SubspaceExploration<T> GetSubspaceExploration(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace) =>
+            static IEnumerable<ExplorationStage<T>> GetSubspaceExploration(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace) =>
                 exampleSpace.Subspace
                     .Select((exampleSpace, subspaceIndex) =>
                     {
                         var path = new[] { subspaceIndex };
                         var explorationStage = AnalyzeExampleSpace(exampleSpace, path, analyze);
-                        return (explorationStage, exampleSpace);
+                        return explorationStage;
                     })
-                    .TakeWhileInclusive(x => !x.explorationStage.IsCounterexample())
-                    .Aggregate(
-                        new SubspaceExploration<T>(null, Enumerable.Empty<ExplorationStage<T>>()),
-                        (acc, curr) =>
-                        {
-                            var maybeCounterexampleSubspace = curr.explorationStage.Match<CounterexampleSubspace<T>?>(
-                                onCounterexampleExploration: (counterexample) => new CounterexampleSubspace<T>(counterexample.ExampleSpace, counterexample.Path),
-                                onNonCounterexampleExploration: _ => null,
-                                onDiscardExploration: _ => null);
-
-                            return new SubspaceExploration<T>(
-                                maybeCounterexampleSubspace,
-                                Enumerable.Concat(acc.ExplorationStages, new[] { curr.explorationStage }));
-                        });
+                    .TakeWhileInclusive(explorationStage => explorationStage.IsCounterexample() == false);
 
             static IEnumerable<ExplorationStage<T>> ExploreSubspace(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace)
             {
@@ -140,7 +123,7 @@ namespace GalaxyCheck.ExampleSpaces
 
                     counterexampleSubspace = null;
 
-                    foreach (var explorationStage in subspaceExploration.ExplorationStages.Select(es => es.PrependPath(previousPath)))
+                    foreach (var explorationStage in subspaceExploration.Select(es => es.PrependPath(previousPath)))
                     {
                         yield return explorationStage;
 
@@ -152,32 +135,7 @@ namespace GalaxyCheck.ExampleSpaces
                     }
                 }
             }
-
-            /// <summary>
-            /// Crashes on MacOS, stackoverflahhhh :'(
-            /// 
-            /// I wanna leave this as an easily accessible example for me (and I'm too lazy to establish an index system).
-            /// I'm really bad at doing non-recursive solutions to obviously recursive problems.
-            /// </summary>
-            static IEnumerable<ExplorationStage<T>> ExploreSubspaceRec(AnalyzeExploration<T> analyze, IExampleSpace<T> exampleSpace)
-            {
-                var subspaceExploration = GetSubspaceExploration(analyze, exampleSpace);
-
-                foreach (var explorationStage in subspaceExploration.ExplorationStages)
-                {
-                    yield return explorationStage;
-                }
-
-                var counterexampleSubspace = subspaceExploration.CounterexampleSubspace;
-                if (counterexampleSubspace != null)
-                {
-                    foreach (var childExplorationStage in ExploreSubspaceRec(analyze, counterexampleSubspace.CounterexampleSpace))
-                    {
-                        yield return childExplorationStage.PrependPath(counterexampleSubspace.Path);
-                    }
-                }
-            }
-
+            
             var rootExplorationStage = AnalyzeExampleSpace(
                 exampleSpace,
                 Enumerable.Empty<int>(),
@@ -213,6 +171,70 @@ namespace GalaxyCheck.ExampleSpaces
                 : ExplorationOutcome.Fail(null);
 
             return exampleSpace.Explore(analyze);
+        }
+
+        public static async IAsyncEnumerable<ExplorationStage<T>> ExploreAsync<T>(
+            this IExampleSpace<T> exampleSpace,
+            AnalyzeExplorationAsync<T> analyze)
+        {
+            static async Task<ExplorationStage<T>> AnalyzeExampleSpace(
+                IExampleSpace<T> exampleSpace,
+                IEnumerable<int> path,
+                AnalyzeExplorationAsync<T> analyze)
+            {
+                return (await analyze(exampleSpace.Current)).Match(
+                    onSuccess: () => ExplorationStage<T>.Factory.NonCounterexample(exampleSpace, path),
+                    onDiscard: () => ExplorationStage<T>.Factory.Discard(exampleSpace),
+                    onFail: exception => ExplorationStage<T>.Factory.Counterexample(exampleSpace, path, exception));
+            }
+
+            static IAsyncEnumerable<ExplorationStage<T>> GetSubspaceExploration(AnalyzeExplorationAsync<T> analyze, IExampleSpace<T> exampleSpace) =>
+                exampleSpace.Subspace
+                    .ToAsyncEnumerable()
+                    .SelectAwait(async (exampleSpace, subspaceIndex) =>
+                    {
+                        var path = new[] { subspaceIndex };
+                        return await AnalyzeExampleSpace(exampleSpace, path, analyze);
+                    })
+                    .TakeWhileInclusive(explorationStage => explorationStage.IsCounterexample() == false);
+
+            static async IAsyncEnumerable<ExplorationStage<T>> ExploreSubspace(AnalyzeExplorationAsync<T> analyze, IExampleSpace<T> exampleSpace)
+            {
+                CounterexampleSubspace<T>? counterexampleSubspace = new CounterexampleSubspace<T>(exampleSpace, Enumerable.Empty<int>());
+
+                while (counterexampleSubspace != null)
+                {
+                    var subspaceExploration = GetSubspaceExploration(analyze, counterexampleSubspace.CounterexampleSpace);
+                    var previousPath = counterexampleSubspace.Path;
+
+                    counterexampleSubspace = null;
+
+                    await foreach (var explorationStage in subspaceExploration.Select(es => es.PrependPath(previousPath)))
+                    {
+                        yield return explorationStage;
+
+                        counterexampleSubspace = explorationStage.Match<CounterexampleSubspace<T>?>(
+                            onCounterexampleExploration: counterexampleExploration =>
+                                new CounterexampleSubspace<T>(counterexampleExploration.ExampleSpace, counterexampleExploration.Path),
+                            onNonCounterexampleExploration: _ => null,
+                            onDiscardExploration: _ => null);
+                    }
+                }
+            }
+            
+            var rootExplorationStage = await AnalyzeExampleSpace(
+                exampleSpace,
+                Enumerable.Empty<int>(),
+                analyze);
+
+            yield return rootExplorationStage;
+
+            if (rootExplorationStage.IsCounterexample() == false) yield break;
+            
+            await foreach (var explorationStage in ExploreSubspace(analyze, exampleSpace))
+            {
+                yield return explorationStage;
+            }
         }
     }
 }
