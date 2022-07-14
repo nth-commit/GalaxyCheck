@@ -14,7 +14,7 @@ namespace GalaxyCheck.Runners.Check.Automata
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context)
             {
-                var explorations = Instance.ExampleSpace.Explore(AnalyzeExplorationForCheck.Impl<T>());
+                var explorations = Instance.ExampleSpace.Explore(AnalyzeExplorationForCheck.CheckTest<T>());
                 return new CheckStateTransition<T>(
                     new InstanceExploration_HoldingNextExplorationStage<T>(Instance, explorations, null, true),
                     context);

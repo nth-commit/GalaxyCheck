@@ -40,7 +40,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                 return HandleError(ctx);
             }
 
-            var exploration = exampleSpace.Explore(AnalyzeExplorationForCheck.Impl<T>()).First();
+            var exploration = exampleSpace.Explore(AnalyzeExplorationForCheck.CheckTest<T>()).First();
 
             return exploration.Match(
                 onNonCounterexampleExploration: _ => HandleReplayedNonCounterexample(ctx, instance),
