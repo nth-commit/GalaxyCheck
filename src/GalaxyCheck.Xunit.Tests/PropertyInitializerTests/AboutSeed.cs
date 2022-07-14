@@ -66,7 +66,7 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new PropertyFactorySync());
 
             result.Parameters.Seed.Should().Be(expectedSeed);
         }
@@ -81,7 +81,7 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new PropertyFactorySync());
 
             result.Parameters.Seed.Should().Be(null);
         }

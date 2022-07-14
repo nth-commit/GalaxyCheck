@@ -10,7 +10,7 @@ namespace GalaxyCheck
     {
         object? Input { get; }
 
-        Lazy<ValueTask<TestOutput>> Output { get; }
+        Lazy<Task<TestOutput>> Output { get; }
 
         object?[]? PresentedInput { get; }
 

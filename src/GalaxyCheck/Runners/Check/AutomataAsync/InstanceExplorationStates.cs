@@ -5,32 +5,33 @@ using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace GalaxyCheck.Runners.Check.Automata
+namespace GalaxyCheck.Runners.Check.AutomataAsync
 {
     internal static class InstanceExplorationStates
     {
-        internal record InstanceExploration_Begin<T>(IGenInstance<Test<T>> Instance) : CheckState<T>
+        internal record InstanceExploration_Begin<T>(IGenInstance<TestAsync<T>> Instance) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
             {
-                var explorations = Instance.ExampleSpace.Explore(AnalyzeExplorationForCheck.CheckTest<T>());
+                var explorations = Instance.ExampleSpace.ExploreAsync(AnalyzeExplorationForCheck.CheckTestAsync<T>());
 
-                return new CheckStateTransition<T>(
+                return Task.FromResult(new CheckStateTransition<T>(
                     new InstanceExploration_HoldingNextExplorationStage<T>(Instance, explorations, null, true),
-                    context);
+                    context));
             }
         }
 
         internal record InstanceExploration_HoldingNextExplorationStage<T>(
-            IGenInstance<Test<T>> Instance,
-            IEnumerable<ExplorationStage<Test<T>>> Explorations,
+            IGenInstance<TestAsync<T>> Instance,
+            IAsyncEnumerable<ExplorationStage<TestAsync<T>>> Explorations,
             CounterexampleContext<T>? CounterexampleContext,
             bool IsFirstExplorationStage) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
+            public async Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
             {
-                var (head, tail) = Explorations;
+                var (head, tail) = await Explorations.Deconstruct();
 
                 if (head == null)
                 {
@@ -63,17 +64,18 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record InstanceExploration_Counterexample<T>(
-            IGenInstance<Test<T>> Instance,
-            IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
-            ExplorationStage<Test<T>>.Counterexample CounterexampleExploration) : CheckState<T>
+            IGenInstance<TestAsync<T>> Instance,
+            IAsyncEnumerable<ExplorationStage<TestAsync<T>>> NextExplorations,
+            ExplorationStage<TestAsync<T>>.Counterexample CounterexampleExploration) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
-                new InstanceExploration_HoldingNextExplorationStage<T>(
-                    Instance,
-                    NextExplorations,
-                    CounterexampleContext,
-                    IsFirstExplorationStage: false),
-                context);
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
+                new CheckStateTransition<T>(
+                    new InstanceExploration_HoldingNextExplorationStage<T>(
+                        Instance,
+                        NextExplorations,
+                        CounterexampleContext,
+                        IsFirstExplorationStage: false),
+                    context));
 
             public CounterexampleContext<T> CounterexampleContext => new CounterexampleContext<T>(
                 CounterexampleExploration.ExampleSpace,
@@ -82,7 +84,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                 CounterexampleExploration.Path,
                 CounterexampleExploration.Exception);
 
-            public IExampleSpace<Test<T>> TestExampleSpace => CounterexampleExploration.ExampleSpace;
+            public IExampleSpace<TestAsync<T>> TestExampleSpace => CounterexampleExploration.ExampleSpace;
 
             public IExampleSpace<T> InputExampleSpace => CounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
@@ -93,20 +95,21 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record InstanceExploration_NonCounterexample<T>(
-            IGenInstance<Test<T>> Instance,
-            IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
-            ExplorationStage<Test<T>>.NonCounterexample NonCounterexampleExploration,
+            IGenInstance<TestAsync<T>> Instance,
+            IAsyncEnumerable<ExplorationStage<TestAsync<T>>> NextExplorations,
+            ExplorationStage<TestAsync<T>>.NonCounterexample NonCounterexampleExploration,
             CounterexampleContext<T>? PreviousCounterexampleContext) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
-                new InstanceExploration_HoldingNextExplorationStage<T>(
-                    Instance,
-                    NextExplorations,
-                    PreviousCounterexampleContext,
-                    IsFirstExplorationStage: false),
-                context);
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
+                new CheckStateTransition<T>(
+                    new InstanceExploration_HoldingNextExplorationStage<T>(
+                        Instance,
+                        NextExplorations,
+                        PreviousCounterexampleContext,
+                        IsFirstExplorationStage: false),
+                    context));
 
-            public IExampleSpace<Test<T>> TestExampleSpace => NonCounterexampleExploration.ExampleSpace;
+            public IExampleSpace<TestAsync<T>> TestExampleSpace => NonCounterexampleExploration.ExampleSpace;
 
             public IExampleSpace<T> InputExampleSpace => NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
@@ -117,8 +120,8 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record InstanceExploration_Discard<T>(
-            IGenInstance<Test<T>> Instance,
-            IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
+            IGenInstance<TestAsync<T>> Instance,
+            IAsyncEnumerable<ExplorationStage<TestAsync<T>>> NextExplorations,
             CounterexampleContext<T>? PreviousCounterexample,
             bool IsFirstExplorationStage) : CheckState<T>
         {
@@ -129,7 +132,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             /// (<see cref="Property.Precondition(bool)"/>). We don't find out this is a discard until we start
             /// exploring the example space.
             /// </summary>
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
             {
                 CheckState<T> nextState = IsFirstExplorationStage
                     ? new InstanceExploration_End<T>(
@@ -143,19 +146,20 @@ namespace GalaxyCheck.Runners.Check.Automata
                         PreviousCounterexample,
                         IsFirstExplorationStage: false);
 
-                return new CheckStateTransition<T>(nextState, context);
+                return Task.FromResult(new CheckStateTransition<T>(nextState, context));
             }
         }
 
         internal record InstanceExploration_End<T>(
-            IGenInstance<Test<T>> Instance,
+            IGenInstance<TestAsync<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
             bool WasReplay) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
-                new GenerationStates.Generation_End<T>(Instance, CounterexampleContext, WasDiscard, WasDiscard, WasReplay),
-                context);
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
+                new CheckStateTransition<T>(
+                    new GenerationStates.Generation_End<T>(Instance, CounterexampleContext, WasDiscard, WasDiscard, WasReplay),
+                    context));
         }
     }
 }

@@ -4,15 +4,18 @@ using GalaxyCheck.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace GalaxyCheck.Runners.Check.Automata
+namespace GalaxyCheck.Runners.Check.AutomataAsync
 {
     internal static class GenerationStates
     {
         internal record Generation_Begin<T> : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
+            public async Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
             {
+                await Task.CompletedTask;
+
                 if (context.CompletedIterations >= context.RequestedIterations)
                 {
                     return new CheckStateTransition<T>(
@@ -27,9 +30,9 @@ namespace GalaxyCheck.Runners.Check.Automata
             }
         }
 
-        internal record Generation_HoldingNextIteration<T>(IEnumerable<IGenIteration<Test<T>>> Iterations) : CheckState<T>
+        internal record Generation_HoldingNextIteration<T>(IEnumerable<IGenIteration<TestAsync<T>>> Iterations) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context)
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
             {
                 var (head, tail) = Iterations;
 
@@ -41,49 +44,52 @@ namespace GalaxyCheck.Runners.Check.Automata
                     onError: (error) =>
                         new Generation_Error<T>($"Error while running generator {error.GenName}: {error.Message}"));
 
-                return new CheckStateTransition<T>(state, context);
+                return Task.FromResult(new CheckStateTransition<T>(state, context));
             }
         }
 
-        internal record Generation_Instance<T>(IGenInstance<Test<T>> Iteration) : CheckState<T>
+        internal record Generation_Instance<T>(IGenInstance<TestAsync<T>> Iteration) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
-                new InstanceExplorationStates.InstanceExploration_Begin<T>(Iteration),
-                context);
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
+                new CheckStateTransition<T>(
+                    new InstanceExplorationStates.InstanceExploration_Begin<T>(Iteration),
+                    context));
         }
 
         internal record Generation_Discard<T>(
-            IEnumerable<IGenIteration<Test<T>>> NextIterations,
-            IGenDiscard<Test<T>> Iteration) : CheckState<T>
+            IEnumerable<IGenIteration<TestAsync<T>>> NextIterations,
+            IGenDiscard<TestAsync<T>> Iteration) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
-                new Generation_HoldingNextIteration<T>(NextIterations),
-                context.IncrementDiscards(wasLateDiscard: false));
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
+                new CheckStateTransition<T>(
+                    new Generation_HoldingNextIteration<T>(NextIterations),
+                    context.IncrementDiscards(wasLateDiscard: false)));
         }
 
         internal record Generation_Error<T>(string Description) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
-                new TerminationState<T>(TerminationReason.FoundError),
-                context);
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
+                new CheckStateTransition<T>(
+                    new TerminationState<T>(TerminationReason.FoundError),
+                    context));
         }
 
         internal record Generation_End<T>(
-            IGenInstance<Test<T>> Instance,
+            IGenInstance<TestAsync<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
             bool WasLateDiscard,
             bool WasReplay) : CheckState<T>
         {
-            public CheckStateTransition<T> Transition(CheckStateContext<T> context) => WasDiscard == true
+            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(WasDiscard == true
                 ? TransitionFromDiscard(context, Instance, WasLateDiscard)
                 : CounterexampleContext == null
                     ? NextStateWithoutCounterexample(context, Instance)
-                    : NextStateWithCounterexample(context, Instance, CounterexampleContext, WasReplay);
+                    : NextStateWithCounterexample(context, Instance, CounterexampleContext, WasReplay));
 
             private static CheckStateTransition<T> TransitionFromDiscard(
                 CheckStateContext<T> context,
-                IGenInstance<Test<T>> instance,
+                IGenInstance<TestAsync<T>> instance,
                 bool wasLateDiscard) => new CheckStateTransition<T>(
                     new Generation_Begin<T>(),
                     context
@@ -92,7 +98,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 
             private static CheckStateTransition<T> NextStateWithoutCounterexample(
                 CheckStateContext<T> context,
-                IGenInstance<Test<T>> instance)
+                IGenInstance<TestAsync<T>> instance)
             {
                 var nextContext = context
                     .IncrementCompletedIterations()
@@ -103,7 +109,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 
             private static CheckStateTransition<T> NextStateWithCounterexample(
                 CheckStateContext<T> context,
-                IGenInstance<Test<T>> instance,
+                IGenInstance<TestAsync<T>> instance,
                 CounterexampleContext<T> counterexampleContext,
                 bool wasReplay)
             {
@@ -126,7 +132,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             private static TerminationReason? TryTerminate(
                 CheckStateContext<T> state,
                 CounterexampleContext<T> counterexampleContext,
-                IGenInstance<Test<T>> instance,
+                IGenInstance<TestAsync<T>> instance,
                 bool wasReplay)
             {
                 if (wasReplay)

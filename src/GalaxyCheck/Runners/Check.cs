@@ -1,15 +1,13 @@
 ﻿using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.Gens.Parameters.Internal;
 using GalaxyCheck.ExampleSpaces;
-using GalaxyCheck.Internal;
 using GalaxyCheck.Runners.Check;
 using GalaxyCheck.Runners.Replaying;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using GalaxyCheck.Runners.Check.Automata;
 using GalaxyCheck.Runners.Check.Sizing;
+using Automata = GalaxyCheck.Runners.Check.Automata;
+using AutomataAsync = GalaxyCheck.Runners.Check.AutomataAsync;
 
 namespace GalaxyCheck
 {
@@ -31,23 +29,21 @@ namespace GalaxyCheck
                 ? GenParameters.Create(initialSize)
                 : GenParameters.Create(Rng.Create(seed.Value), initialSize);
 
-            var initialContext = new CheckStateContext<T>(
+            var initialContext = new Automata.CheckStateContext<T>(
                 property,
                 resolvedIterations,
                 shrinkLimit ?? 500,
                 initialParameters,
                 deepCheck);
 
-            CheckState<T> initialState = replay == null
-                ? new GenerationStates.Generation_Begin<T>()
-                : new ReplayState<T>(replay);
+            Automata.CheckState<T> initialState = replay == null
+                ? new Automata.GenerationStates.Generation_Begin<T>()
+                : new Automata.ReplayState<T>(replay);
 
-            var transitions = CheckStateEnumerator.Enumerate(
+            var transitionAggregation = Automata.CheckStateAggregator.Aggregate(
                 initialState,
                 initialContext,
                 new[] { new ResizeCheckStateTransitionDecorator<T>(resizeStrategy) });
-
-            var transitionAggregation = AggregateTransitions(transitions);
 
             return new CheckResult<T>(
                 transitionAggregation.FinalContext.CompletedIterationsUntilCounterexample,
@@ -62,47 +58,53 @@ namespace GalaxyCheck
                 transitionAggregation.TerminationReason);
         }
 
-        private record TransitionAggregation<T>(
-            ImmutableList<CheckIteration<T>> Checks,
-            CheckStateContext<T> FinalContext,
-            TerminationReason TerminationReason);
-
-        private static TransitionAggregation<T> AggregateTransitions<T>(IEnumerable<CheckStateTransition<T>> transitions)
+        public static async System.Threading.Tasks.Task<CheckResult<T>> CheckAsync<T>(
+             this IGen<TestAsync<T>> property,
+             int? iterations = null,
+             int? seed = null,
+             int? size = null,
+             int? shrinkLimit = null,
+             string? replay = null,
+             bool deepCheck = true)
         {
-            Func<CheckStateTransition<T>, bool> isTransitionCountedInConsecutiveDiscardCount = transition =>
-                transition.State is GenerationStates.Generation_Discard<T> ||
-                transition.State is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
-                transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
-                transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
+            var resolvedIterations = iterations ?? 100;
+            var (initialSize, resizeStrategy) = SizingAspectsAsync<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
 
-            Func<CheckStateTransition<T>, bool> isTransitionDiscard = transition =>
-                transition.State is GenerationStates.Generation_Discard<T> ||
-                transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
+            var initialParameters = seed == null
+                ? GenParameters.Create(initialSize)
+                : GenParameters.Create(Rng.Create(seed.Value), initialSize);
 
-            // TODO: A lot of this can be simplified, now that transitions already have a context built-in
-            var mappedTransitions = transitions
-                .WithDiscardCircuitBreaker(isTransitionCountedInConsecutiveDiscardCount, isTransitionDiscard)
-                .ScanInParallel<CheckStateTransition<T>, CheckStateContext<T>>(null!, (acc, curr) => curr.Context)
-                .Select(x => (
-                    state: x.element.State,
-                    check: MapStateToIterationOrIgnore(x.element.State),
-                    context: x.state))
-                .ToImmutableList();
+            var initialContext = new AutomataAsync.CheckStateContext<T>(
+                property,
+                resolvedIterations,
+                shrinkLimit ?? 500,
+                initialParameters,
+                deepCheck);
 
-            var lastMappedTransition = mappedTransitions.Last();
-            if (lastMappedTransition.state is not TerminationState<T> terminationState)
-            {
-                throw new Exception("Fatal: Check did not terminate");
-            }
+            AutomataAsync.CheckState<T> initialState = replay == null
+                ? new AutomataAsync.GenerationStates.Generation_Begin<T>()
+                : new AutomataAsync.ReplayState<T>(replay);
 
-            return new TransitionAggregation<T>(
-                mappedTransitions.Select(x => x.check).OfType<CheckIteration<T>>().ToImmutableList(),
-                lastMappedTransition.context,
-                terminationState.Reason);
+            var transitionAggregation = await AutomataAsync.CheckStateAggregator.Aggregate(
+                initialState,
+                initialContext,
+                new[] { new ResizeCheckStateTransitionDecoratorAsync<T>(resizeStrategy) });
+
+            return new CheckResult<T>(
+                transitionAggregation.FinalContext.CompletedIterationsUntilCounterexample,
+                transitionAggregation.FinalContext.Discards,
+                transitionAggregation.FinalContext.Shrinks + transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
+                transitionAggregation.FinalContext.Counterexample == null
+                    ? null
+                    : FromCounterexampleContext(transitionAggregation.FinalContext.Counterexample),
+                transitionAggregation.Checks,
+                initialParameters,
+                transitionAggregation.FinalContext.NextParameters,
+                transitionAggregation.TerminationReason);
         }
 
         private static Counterexample<T> FromCounterexampleContext<T>(
-            CounterexampleContext<T> counterexampleContext)
+            Automata.CounterexampleContext<T> counterexampleContext)
         {
             var replay = new Replay(counterexampleContext.ReplayParameters, counterexampleContext.ReplayPath);
             var replayEncoded = ReplayEncoding.Encode(replay);
@@ -118,43 +120,21 @@ namespace GalaxyCheck
                 counterexampleContext.PresentationalValue);
         }
 
-        private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
+        private static Counterexample<T> FromCounterexampleContext<T>(
+            AutomataAsync.CounterexampleContext<T> counterexampleContext)
         {
-            CheckIteration<T>? FromHandleCounterexample(InstanceExplorationStates.InstanceExploration_Counterexample<T> state)
-            {
-                return new CheckIteration<T>(
-                    Value: state.InputExampleSpace.Current.Value,
-                    PresentationalValue:
-                        state.TestExampleSpace.Current.Value.PresentedInput ??
-                        PresentationInferrer.InferValue(state.ExampleSpaceHistory),
-                    ExampleSpace: state.InputExampleSpace,
-                    Parameters: state.CounterexampleContext.ReplayParameters,
-                    Path: state.CounterexampleContext.ReplayPath,
-                    Exception: state.CounterexampleContext.Exception,
-                    IsCounterexample: true);
-            }
+            var replay = new Replay(counterexampleContext.ReplayParameters, counterexampleContext.ReplayPath);
+            var replayEncoded = ReplayEncoding.Encode(replay);
 
-            CheckIteration<T>? FromHandleNonCounterexample(InstanceExplorationStates.InstanceExploration_NonCounterexample<T> state)
-            {
-                return new CheckIteration<T>(
-                    Value: state.InputExampleSpace.Current.Value,
-                    PresentationalValue:
-                        state.TestExampleSpace.Current.Value.PresentedInput ??
-                        PresentationInferrer.InferValue(state.ExampleSpaceHistory),
-                    ExampleSpace: state.InputExampleSpace,
-                    Parameters: state.Instance.ReplayParameters,
-                    Path: state.NonCounterexampleExploration.Path,
-                    Exception: null,
-                    IsCounterexample: false);
-            }
-
-            return state switch
-            {
-                InstanceExplorationStates.InstanceExploration_Counterexample<T> t => FromHandleCounterexample(t),
-                InstanceExplorationStates.InstanceExploration_NonCounterexample<T> t => FromHandleNonCounterexample(t),
-                GenerationStates.Generation_Error<T> t => throw new Exceptions.GenErrorException(t.Description),
-                _ => null
-            };
+            return new Counterexample<T>(
+                counterexampleContext.ExampleSpace.Current.Id,
+                counterexampleContext.ExampleSpace.Current.Value,
+                counterexampleContext.ExampleSpace.Current.Distance,
+                counterexampleContext.ReplayParameters,
+                counterexampleContext.ReplayPath,
+                replayEncoded,
+                counterexampleContext.Exception,
+                counterexampleContext.PresentationalValue);
         }
     }
 }
@@ -171,7 +151,7 @@ namespace GalaxyCheck.Runners.Check
 
         public Counterexample<T>? Counterexample { get; init; }
 
-        public ImmutableList<CheckIteration<T>> Checks { get; init; }
+        public IReadOnlyCollection<CheckIteration<T>> Checks { get; init; }
 
         public GenParameters InitialParameters { get; set; }
 
@@ -188,7 +168,7 @@ namespace GalaxyCheck.Runners.Check
             int discards,
             int shrinks,
             Counterexample<T>? counterexample,
-            ImmutableList<CheckIteration<T>> checks,
+            IReadOnlyCollection<CheckIteration<T>> checks,
             GenParameters initialParameters,
             GenParameters nextParameters,
             TerminationReason terminationReason)

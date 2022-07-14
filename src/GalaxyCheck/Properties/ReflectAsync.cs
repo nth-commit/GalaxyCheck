@@ -5,101 +5,102 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck
 {
     public partial class Property
     {
-        private delegate IGen<Test<object>> ReflectedPropertyHandler(
+        private delegate IGen<TestAsync<object>> ReflectedPropertyHandlerAsync(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
             IReadOnlyDictionary<int, IGen>? customGens);
 
-        public static ImmutableList<Type> SupportedReturnTypes => MethodPropertyHandlers.Keys.ToImmutableList();
+        public static ImmutableList<Type> SupportedReturnTypesAsync => MethodPropertyHandlersAsync.Keys.ToImmutableList();
 
-        public static IGen<Test<object>> Reflect(
+        public static IGen<TestAsync<object>> ReflectAsync(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory = null,
             IReadOnlyDictionary<int, IGen>? customGens = null)
         {
-            if (!SupportedReturnTypes.Contains(methodInfo.ReturnType))
+            if (!SupportedReturnTypesAsync.Contains(methodInfo.ReturnType))
             {
-                var supportedReturnTypesFormatted = string.Join(", ", SupportedReturnTypes);
+                var supportedReturnTypesFormatted = string.Join(", ", SupportedReturnTypesAsync);
                 var message = $"Return type {methodInfo.ReturnType} is not supported by GalaxyCheck. Please use one of: {supportedReturnTypesFormatted}";
                 throw new Exception(message);
             }
 
-            return MethodPropertyHandlers[methodInfo.ReturnType](methodInfo, target, genFactory, customGens);
+            return MethodPropertyHandlersAsync[methodInfo.ReturnType](methodInfo, target, genFactory, customGens);
         }
 
-        private readonly static ImmutableDictionary<Type, ReflectedPropertyHandler> MethodPropertyHandlers =
-            new Dictionary<Type, ReflectedPropertyHandler>
+        private readonly static ImmutableDictionary<Type, ReflectedPropertyHandlerAsync> MethodPropertyHandlersAsync =
+            new Dictionary<Type, ReflectedPropertyHandlerAsync>
             {
-                { typeof(void), ToVoidProperty },
-                { typeof(bool), ToBooleanProperty },
-                { typeof(Property), ToNestedProperty },
-                { typeof(IGen<Test>), ToPureProperty },
+                { typeof(Task), ToVoidPropertyAsync },
+                { typeof(Task<bool>), ToBooleanPropertyAsync },
+                { typeof(Task<Property>), ToNestedPropertyAsync }, // TODO
+                { typeof(IGen<TestAsync>), ToPurePropertyAsync }
             }.ToImmutableDictionary();
 
-        private static ReflectedPropertyHandler ToVoidProperty => (methodInfo, target, genFactory, customGens) =>
+        private static ReflectedPropertyHandlerAsync ToVoidPropertyAsync => (methodInfo, target, genFactory, customGens) =>
         {
             return Gen
                 .Parameters(methodInfo, genFactory, customGens)
-                .ForAll(parameters =>
+                .ForAllAsync(async parameters =>
                 {
                     try
                     {
-                        methodInfo.Invoke(target, parameters);
+                        await (Task)methodInfo.Invoke(target, parameters)!;
                     }
                     catch (TargetInvocationException ex)
                     {
                         throw ex.InnerException!;
                     }
                 })
-                .Select(test => TestFactory.Create<object>(
+                .Select(test => TestFactory.CreateAsync<object>(
                     test.Input,
                     test.Output,
                     test.Input));
         };
 
-        private static ReflectedPropertyHandler ToBooleanProperty => (methodInfo, target, genFactory, customGens) =>
+        private static ReflectedPropertyHandlerAsync ToBooleanPropertyAsync => (methodInfo, target, genFactory, customGens) =>
         {
             return Gen
                 .Parameters(methodInfo, genFactory, customGens)
-                .ForAll(parameters =>
+                .ForAllAsync(async parameters =>
                 {
                     try
                     {
-                        return (bool)methodInfo.Invoke(target, parameters)!;
+                        return await (Task<bool>)methodInfo.Invoke(target, parameters)!;
                     }
                     catch (TargetInvocationException ex)
                     {
                         throw ex.InnerException!;
                     }
                 })
-                .Select(test => TestFactory.Create<object>(
+                .Select(test => TestFactory.CreateAsync<object>(
                     test.Input,
                     test.Output,
                     test.Input));
         };
 
-        private static ReflectedPropertyHandler ToNestedProperty => (methodInfo, target, genFactory, customGens) =>
+        private static ReflectedPropertyHandlerAsync ToNestedPropertyAsync => (methodInfo, target, genFactory, customGens) =>
             from parameters in Gen.Parameters(methodInfo, genFactory, customGens)
-            let property = InvokeNestedProperty(methodInfo, target, parameters)
+            let property = InvokeNestedPropertyAsync(methodInfo, target, parameters)
             where property != null
             from test in property
-            select TestFactory.Create(
+            select TestFactory.CreateAsync(
                 test.Input,
                 test.Output,
                 Enumerable.Concat(parameters, test.PresentedInput!).ToArray());
 
-        private static ReflectedPropertyHandler ToPureProperty => (methodInfo, target, _, _) =>
+        private static ReflectedPropertyHandlerAsync ToPurePropertyAsync => (methodInfo, target, _, _) =>
         {
             try
             {
-                return ((IGen<Test>)methodInfo.Invoke(target, new object[] { })!).Select(test => test.Cast<object>());
+                return ((IGen<TestAsync>)methodInfo.Invoke(target, new object[] { })!).Select(test => test.Cast<object>());
             }
             catch (TargetInvocationException ex)
             {
@@ -107,11 +108,11 @@ namespace GalaxyCheck
             }
         };
 
-        private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)
+        private static PropertyAsync? InvokeNestedPropertyAsync(MethodInfo methodInfo, object? target, object[] parameters)
         {
             try
             {
-                return (Property)methodInfo.Invoke(target, parameters)!;
+                return (PropertyAsync)methodInfo.Invoke(target, parameters)!;
             }
             catch (TargetInvocationException ex)
             {

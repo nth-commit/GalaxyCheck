@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace GalaxyCheck.Xunit.Internal
 {
     internal class PropertySampleRunner : IPropertyRunner
     {
-        public void Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper)
+        public async Task Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper)
         {
             var log = new List<string>();
 
-            parameters.Property.Advanced.Print(
+            await parameters.Property.Advanced.PrintAsync(
                 stdout: log.Add,
                 seed: parameters.Seed,
                 size: parameters.Size,

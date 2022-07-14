@@ -3,6 +3,7 @@ using GalaxyCheck.Runners.Check;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck
 {
@@ -20,6 +21,30 @@ namespace GalaxyCheck
             Func<string, string>? formatMessage = null)
         {
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size, shrinkLimit: shrinkLimit, replay: replay, deepCheck: deepCheck);
+
+            if (checkResult.Falsified)
+            {
+                throw new PropertyFailedException(
+                    BoxCounterexample(checkResult.Counterexample!),
+                    checkResult.Iterations,
+                    checkResult.Shrinks,
+                    formatReproduction,
+                    formatMessage);
+            }
+        }
+
+        public static async Task AssertAsync<T>(
+            this IGen<TestAsync<T>> property,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            int? shrinkLimit = null,
+            string? replay = null,
+            bool deepCheck = true,
+            Func<string, string>? formatReproduction = null,
+            Func<string, string>? formatMessage = null)
+        {
+            var checkResult = await property.CheckAsync(iterations: iterations, seed: seed, size: size, shrinkLimit: shrinkLimit, replay: replay, deepCheck: deepCheck);
 
             if (checkResult.Falsified)
             {

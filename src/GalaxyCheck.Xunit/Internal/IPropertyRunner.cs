@@ -1,10 +1,10 @@
-﻿using GalaxyCheck.Gens;
+﻿using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace GalaxyCheck.Xunit.Internal
 {
     internal record PropertyRunParameters(
-        IGen<Test<object>> Property,
+        IGen<TestAsync<object>> Property,
         int Iterations,
         int ShrinkLimit,
         string? Replay,
@@ -13,6 +13,6 @@ namespace GalaxyCheck.Xunit.Internal
 
     internal interface IPropertyRunner
     {
-        void Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper);
+        Task Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper);
     }
 }

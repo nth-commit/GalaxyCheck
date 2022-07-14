@@ -1,5 +1,6 @@
 ﻿using GalaxyCheck.Properties;
 using System;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck
 {
@@ -25,5 +26,14 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static Test<T> Cast<T>(this Test test) => TestFactory.Create((T)test.Input!, test.Output, test.PresentedInput);
+
+        public static TestAsync<T> AsAsync<T>(this Test<T> test) => TestFactory.CreateAsync<T>(
+            test.Input,
+            new Lazy<Task<TestOutput>>(async () =>
+            {
+                await Task.CompletedTask;
+                return test.Output.Value;
+            }),
+            test.PresentedInput);
     }
 }

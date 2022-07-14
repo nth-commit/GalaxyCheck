@@ -4,12 +4,12 @@ using System.Reflection;
 
 namespace GalaxyCheck.Xunit.Internal
 {
-    public interface IPropertyFactory
+    internal class PropertyFactoryAsync : IPropertyFactory
     {
-        IGen<TestAsync<object>> CreateProperty(
+        public IGen<TestAsync<object>> CreateProperty(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
-            IReadOnlyDictionary<int, IGen> customGens);
+            IReadOnlyDictionary<int, IGen> customGens) => Property.ReflectAsync(methodInfo, target, genFactory, customGens);
     }
 }

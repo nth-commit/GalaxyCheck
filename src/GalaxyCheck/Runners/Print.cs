@@ -1,8 +1,8 @@
 ﻿using GalaxyCheck.Runners.Print;
-using GalaxyCheck.Runners.Sample;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck
 {
@@ -16,6 +16,21 @@ namespace GalaxyCheck
             Action<string>? stdout = null)
         {
             var sample = advanced.SamplePresentationalWithMetrics(
+                iterations: iterations,
+                seed: seed,
+                size: size);
+
+            PrintHelpers.Print(sample.Values, sample.Discards, stdout);
+        }
+
+        public static async Task PrintAsync<T>(
+            this IGenAdvanced<TestAsync<T>> advanced,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            Action<string>? stdout = null)
+        {
+            var sample = await advanced.SamplePresentationalWithMetricsAsync(
                 iterations: iterations,
                 seed: seed,
                 size: size);

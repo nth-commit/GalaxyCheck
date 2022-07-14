@@ -29,7 +29,6 @@ namespace GalaxyCheck.Internal
                 {
                     break;
                 }
-
             }
         }
 

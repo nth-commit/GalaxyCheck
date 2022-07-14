@@ -27,7 +27,7 @@ namespace GalaxyCheck.Xunit.Internal
         {
         }
 
-        public override Task<RunSummary> RunAsync(
+        public override async Task<RunSummary> RunAsync(
             IMessageSink diagnosticMessageSink,
             IMessageBus messageBus,
             object[] constructorArguments,
@@ -70,26 +70,26 @@ namespace GalaxyCheck.Xunit.Internal
                     TestMethod.TestClass.Class.ToRuntimeType(),
                     TestMethod.Method.ToRuntimeMethod(),
                     constructorArguments,
-                    new DefaultPropertyFactory());
+                    new PropertyFactorySync());
             }
             catch (Exception exception)
             {
-                return Fail(exception);
+                return await Fail(exception);
             }
 
             if (propertyInitResult.ShouldSkip)
             {
-                return Skip(propertyInitResult.SkipReason!);
+                return await Skip(propertyInitResult.SkipReason!);
             }
 
             try
             {
-                propertyInitResult.Runner.Run(propertyInitResult.Parameters, testOutputHelper);
-                return Pass();
+                await propertyInitResult.Runner.Run(propertyInitResult.Parameters, testOutputHelper);
+                return await Pass();
             }
             catch (Exception propertyFailedException)
             {
-                return Fail(propertyFailedException);
+                return await Fail(propertyFailedException);
             }
         }
     }

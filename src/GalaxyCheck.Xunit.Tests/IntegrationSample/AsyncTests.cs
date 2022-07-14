@@ -3,76 +3,85 @@ using GalaxyCheck.Gens;
 using GalaxyCheck.Gens.Injection.Int32;
 using Newtonsoft.Json;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace IntegrationSample
 {
-    public class Tests
+    public class AsyncTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
 
-        public Tests(ITestOutputHelper testOutputHelper)
+        public AsyncTests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
         }
 
         [Property]
-        public IGen<Test> InfalliblePureProperty() =>
+        public IGen<TestAsync> InfalliblePureProperty() =>
             from a in Gen.Int32().Between(0, 100)
-            select Property.ForThese(() =>
+            select Property.ForTheseAsync(async () =>
             {
+                await Task.Delay(1);
                 AnnounceTestInvocation(nameof(InfalliblePureProperty));
             });
 
         [Property]
-        public IGen<Test> FalliblePureProperty() =>
+        public IGen<TestAsync> FalliblePureProperty() =>
             from a in Gen.Int32().Between(0, 100)
-            select Property.ForThese(() =>
+            select Property.ForTheseAsync(async () =>
             {
+                await Task.Delay(1);
                 AnnounceTestInvocation(nameof(FalliblePureProperty));
                 throw new Exception("Failed!");
             });
 
         [Property]
-        public void InfallibleVoidProperty([Between(0, 100)] int x)
+        public async Task InfallibleVoidProperty([Between(0, 100)] int x)
         {
+            await Task.Delay(1);
             AnnounceTestInvocation(nameof(InfallibleVoidProperty));
         }
 
         [Property]
-        public void FallibleVoidProperty([Between(0, 100)] int x)
+        public async Task FallibleVoidProperty([Between(0, 100)] int x)
         {
+            await Task.Delay(1);
             AnnounceTestInvocation(nameof(FallibleVoidProperty));
             throw new Exception("Failed!");
         }
 
         [Property]
-        public void InfallibleBooleanProperty([Between(0, 100)] int x)
+        public async Task InfallibleBooleanProperty([Between(0, 100)] int x)
         {
+            await Task.Delay(1);
             AnnounceTestInvocation(nameof(InfallibleBooleanProperty));
         }
 
         [Property]
-        public void FallibleBooleanProperty([Between(0, 100)] int x)
+        public async Task FallibleBooleanProperty([Between(0, 100)] int x)
         {
+            await Task.Delay(1);
             AnnounceTestInvocation(nameof(FallibleBooleanProperty));
             throw new Exception("Failed!");
         }
 
-        [Property]
-        public Property InfallibleNestedProperty([Between(0, 100)] int x)
-        {
-            AnnounceTestInvocation(nameof(InfallibleNestedProperty));
-            return Gen.Int32().Between(0, 100).ForAll(y => { });
-        }
+        //[Property]
+        //public async Property InfallibleNestedProperty([Between(0, 100)] int x)
+        //{
+        //    await Task.Delay(1);
+        //    AnnounceTestInvocation(nameof(InfallibleNestedProperty));
+        //    return Gen.Int32().Between(0, 100).ForAll(y => { });
+        //}
 
-        [Property]
-        public Property FallibleNestedProperty([Between(0, 100)] int x)
-        {
-            AnnounceTestInvocation(nameof(FallibleNestedProperty));
-            return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
-        }
+        //[Property]
+        //public async Property FallibleNestedProperty([Between(0, 100)] int x)
+        //{
+        //    await Task.Delay(1);
+        //    AnnounceTestInvocation(nameof(FallibleNestedProperty));
+        //    return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
+        //}
 
         public class GenFactoryWhereIntsAreNonNegativeAttribute : GenFactoryAttribute
         {
@@ -81,8 +90,9 @@ namespace IntegrationSample
 
         [Property]
         [GenFactoryWhereIntsAreNonNegative]
-        public void PropertyWithGenFromGenFactory(int x)
+        public async Task PropertyWithGenFromGenFactory(int x)
         {
+            await Task.Delay(1);
             AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactory), new [] { x });
             Assert.True(x >= 0, "They are not negative!");
         }
@@ -90,17 +100,19 @@ namespace IntegrationSample
         private static IGen<int> EvenInt32 => Gen.Int32().Where(x => x % 2 == 0);
 
         [Property]
-        public void PropertyWithGenFromMemberGen([MemberGen(nameof(EvenInt32))] int x)
+        public async Task PropertyWithGenFromMemberGen([MemberGen(nameof(EvenInt32))] int x)
         {
+            await Task.Delay(1);
             AnnounceTestInvocation(nameof(PropertyWithGenFromMemberGen), new[] { x });
             Assert.True(x % 2 != 1, "They are not odd!");
         }
 
         [Sample]
-        public IGen<Test> Sample() =>
+        public IGen<TestAsync> Sample() =>
             from a in Gen.Int32().Between(0, 100)
-            select Property.ForThese(() =>
+            select Property.ForTheseAsync(async () =>
             {
+                await Task.Delay(1);
             });
 
         private void AnnounceTestInvocation(string testName, params object[] injectedValues)

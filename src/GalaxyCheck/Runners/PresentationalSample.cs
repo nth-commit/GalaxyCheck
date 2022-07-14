@@ -1,6 +1,7 @@
 ﻿using GalaxyCheck.Properties;
 using GalaxyCheck.Runners.Check;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck
 {
@@ -13,6 +14,12 @@ namespace GalaxyCheck
             int? iterations = null,
             int? seed = null,
             int? size = null) => PresentationalSampleHelpers.RunPresentationalValueSample(advanced, iterations: iterations, seed: seed, size: size);
+
+        public static Task<SampleWithMetricsResult<object?[]>> SamplePresentationalWithMetricsAsync<T>(
+            this IGenAdvanced<TestAsync<T>> advanced,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null) => PresentationalSampleHelpers.RunPresentationalValueSampleAsync(advanced, iterations: iterations, seed: seed, size: size);
 
         public static SampleWithMetricsResult<object?[]> SamplePresentationalWithMetrics<T>(
             this IGenAdvanced<T> advanced,
@@ -49,6 +56,29 @@ namespace GalaxyCheck.Runners.Sample
                 checkResult.RandomnessConsumption);
         }
 
+        internal static async Task<SampleWithMetricsResult<object?[]>> RunPresentationalValueSampleAsync<T>(
+            IGenAdvanced<TestAsync<T>> advanced,
+            int? iterations,
+            int? seed,
+            int? size)
+        {
+            var property = advanced
+                .AsGen()
+                .Where(TestMeetsPreconditionAsync)
+                .Select(MuteTestFailureAsync);
+
+            var checkResult = await property.CheckAsync(iterations: iterations, seed: seed, size: size);
+
+            var values = checkResult.Checks
+                .Select(check => check.PresentationalValue)
+                .ToList();
+
+            return new SampleWithMetricsResult<object?[]>(
+                values,
+                checkResult.Discards,
+                checkResult.RandomnessConsumption);
+        }
+
         internal static SampleWithMetricsResult<object?[]> RunPresentationalValueSample<T>(
             IGenAdvanced<T> advanced,
             int? iterations,
@@ -74,5 +104,12 @@ namespace GalaxyCheck.Runners.Sample
 
         private static Test<T> MuteTestFailure<T>(Test<T> test) =>
             TestFactory.Create(test.Input, () => true, test.PresentedInput);
+
+        // TODO: Async
+        private static bool TestMeetsPreconditionAsync<T>(TestAsync<T> test) =>
+            (test.Output.Value.Result).Result != TestResult.FailedPrecondition;
+
+        private static TestAsync<T> MuteTestFailureAsync<T>(TestAsync<T> test) =>
+            TestFactory.CreateAsync(test.Input, () => Task.FromResult(true), test.PresentedInput);
     }
 }

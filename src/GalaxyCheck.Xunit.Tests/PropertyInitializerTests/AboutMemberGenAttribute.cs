@@ -87,7 +87,7 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            Action test = () => PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            Action test = () => PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new PropertyFactorySync());
 
             test.Should()
                 .Throw<Exception>()
