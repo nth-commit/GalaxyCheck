@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck.Properties;
-using System;
 
 namespace GalaxyCheck
 {
