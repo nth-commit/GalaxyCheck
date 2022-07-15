@@ -62,6 +62,18 @@ namespace GalaxyCheck
                 transitionAggregation.TerminationReason);
         }
 
+        public static CheckResult<T> CheckAsync<T>(
+             this IGen<AsyncTest<T>> property,
+             int? iterations = null,
+             int? seed = null,
+             int? size = null,
+             int? shrinkLimit = null,
+             string? replay = null,
+             bool deepCheck = true)
+        {
+            throw new NotImplementedException();
+        }
+
         private record TransitionAggregation<T>(
             ImmutableList<CheckIteration<T>> Checks,
             CheckStateContext<T> FinalContext,
