@@ -10,7 +10,7 @@ namespace GalaxyCheck.Xunit.Internal
         {
             var log = new List<string>();
 
-            parameters.Property.Advanced.Print(
+            parameters.Property.Print(
                 stdout: log.Add,
                 seed: parameters.Seed,
                 size: parameters.Size,

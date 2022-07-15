@@ -7,14 +7,14 @@ namespace GalaxyCheck
 {
     public static partial class Extensions
     {
-        public static void Print<T>(
-            this IGenAdvanced<Test<T>> advanced,
+        public static void Print(
+            this Property property,
             int? iterations = null,
             int? seed = null,
             int? size = null,
             Action<string>? stdout = null)
         {
-            var sample = advanced.SamplePresentationalWithMetrics(
+            var sample = property.SamplePresentationalWithMetrics(
                 iterations: iterations,
                 seed: seed,
                 size: size);

@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 namespace GalaxyCheck.Xunit.Internal
 {
     internal record PropertyRunParameters(
-        IGen<Test<object>> Property,
+        Property Property,
         int Iterations,
         int ShrinkLimit,
         string? Replay,

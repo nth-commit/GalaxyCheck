@@ -5,21 +5,20 @@ using System.Collections.Generic;
 namespace GalaxyCheck
 {
 #pragma warning disable IDE1006 // Naming Styles
-    public interface Test
+    public interface Test : Test<object?>
 #pragma warning restore IDE1006 // Naming Styles
     {
-        object? Input { get; }
+    }
+
+#pragma warning disable IDE1006 // Naming Styles
+    public interface Test<out T>
+#pragma warning restore IDE1006 // Naming Styles
+    {
+        T Input { get; }
 
         Lazy<TestOutput> Output { get; }
 
         IReadOnlyList<object?>? PresentedInput { get; }
-    }
-
-#pragma warning disable IDE1006 // Naming Styles
-    public interface Test<out T> : Test
-#pragma warning restore IDE1006 // Naming Styles
-    {
-        new T Input { get; }
     }
 
     public static partial class Extensions

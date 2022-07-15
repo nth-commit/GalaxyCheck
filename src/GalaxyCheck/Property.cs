@@ -4,7 +4,11 @@ namespace GalaxyCheck
 {
     public partial class Property : Property<object>
     {
-        public Property(IGen<Test> gen) : base(gen.Select(t => t.Cast<object>()))
+        public Property(IGen<Test<object>> gen) : base(gen)
+        {
+        }
+
+        public Property(IGen<Test> gen) : this(gen.Select(t => t.Cast<object>()))
         {
         }
     }

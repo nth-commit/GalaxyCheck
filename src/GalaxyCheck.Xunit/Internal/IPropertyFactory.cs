@@ -6,7 +6,7 @@ namespace GalaxyCheck.Xunit.Internal
 {
     public interface IPropertyFactory
     {
-        IGen<Test<object>> CreateProperty(
+        Property CreateProperty(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
