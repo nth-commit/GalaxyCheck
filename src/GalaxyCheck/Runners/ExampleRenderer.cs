@@ -8,7 +8,7 @@ namespace GalaxyCheck.Runners
 {
     public static class ExampleRenderer
     {
-        public static IEnumerable<string> Render(object?[] example) => example.Length switch
+        public static IEnumerable<string> Render(IReadOnlyList<object?> example) => example.Count switch
         {
             0 => new string[] { "(no value)" },
             1 => new string[] { RenderValue(example.Single()) },

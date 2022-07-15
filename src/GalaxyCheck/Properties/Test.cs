@@ -1,5 +1,6 @@
 ﻿using GalaxyCheck.Properties;
 using System;
+using System.Collections.Generic;
 
 namespace GalaxyCheck
 {
@@ -11,9 +12,7 @@ namespace GalaxyCheck
 
         Lazy<TestOutput> Output { get; }
 
-        object?[]? PresentedInput { get; }
-
-
+        IReadOnlyList<object?>? PresentedInput { get; }
     }
 
 #pragma warning disable IDE1006 // Naming Styles

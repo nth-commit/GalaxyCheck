@@ -206,7 +206,7 @@ namespace GalaxyCheck.Runners.Check
 
     public record CheckIteration<T>(
         T Value,
-        object?[] PresentationalValue,
+        IReadOnlyList<object?> PresentationalValue,
         IExampleSpace<T> ExampleSpace,
         GenParameters Parameters,
         IEnumerable<int> Path,
@@ -221,7 +221,7 @@ namespace GalaxyCheck.Runners.Check
         IEnumerable<int> ReplayPath,
         string Replay,
         Exception? Exception,
-        object?[] PresentationalValue);
+        IReadOnlyList<object?> PresentationalValue);
 
     public enum TerminationReason
     {
