@@ -1,28 +1,42 @@
-﻿using GalaxyCheck.Properties;
+﻿#pragma warning disable IDE1006 // Naming Styles
+using GalaxyCheck.Properties;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck
 {
-#pragma warning disable IDE1006 // Naming Styles
-    public interface Test : Test<object?>
-#pragma warning restore IDE1006 // Naming Styles
+    public interface TestInput<out TInput, TOutput>
+    {
+        TInput Input { get; }
+
+        Lazy<TOutput> Output { get; }
+
+        IReadOnlyList<object?>? PresentedInput { get; }
+    }
+
+    public interface Test<out T> : TestInput<T, TestOutput>
     {
     }
 
-#pragma warning disable IDE1006 // Naming Styles
-    public interface Test<out T>
-#pragma warning restore IDE1006 // Naming Styles
+    public interface Test : Test<object?>
     {
-        T Input { get; }
+    }
 
-        Lazy<TestOutput> Output { get; }
+    public interface AsyncTest<out T> : TestInput<T, Task<TestOutput>>
+    {
+    }
 
-        IReadOnlyList<object?>? PresentedInput { get; }
+    public interface AsyncTest : AsyncTest<object?>
+    {
     }
 
     public static partial class Extensions
     {
         public static Test<T> Cast<T>(this Test test) => TestFactory.Create((T)test.Input!, test.Output, test.PresentedInput);
+
+        public static AsyncTest<T> Cast<T>(this AsyncTest test) => TestFactory.Create((T)test.Input!, test.Output, test.PresentedInput);
+
     }
 }
+#pragma warning disable IDE1006 // Naming Styles
