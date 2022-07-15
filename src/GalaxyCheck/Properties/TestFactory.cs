@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GalaxyCheck.Properties
 {
@@ -6,29 +7,29 @@ namespace GalaxyCheck.Properties
     {
         private record TestOutputImpl(TestResult Result, Exception? Exception) : TestOutput;
 
-        private record TestImpl<T>(T Input, Lazy<TestOutput> Output, object?[]? PresentedInput) : Test<T>
+        private record TestImpl<T>(T Input, Lazy<TestOutput> Output, IReadOnlyList<object?>? PresentedInput) : Test<T>
         {
             object? Test.Input => Input;
         }
 
-        private record TestImpl(object? Input, Lazy<TestOutput> Output, object?[]? PresentedInput) : Test;
+        private record TestImpl(object? Input, Lazy<TestOutput> Output, IReadOnlyList<object?>? PresentedInput) : Test;
 
-        public static Test<T> Create<T>(T input, Lazy<TestOutput> output, object?[]? presentedInput)
+        public static Test<T> Create<T>(T input, Lazy<TestOutput> output, IReadOnlyList<object?>? presentedInput)
         {
             return new TestImpl<T>(input, output, presentedInput);
         }
 
-        public static Test Create(object[] input, Lazy<TestOutput> output, object?[]? presentedInput)
+        public static Test Create(object[] input, Lazy<TestOutput> output, IReadOnlyList<object?>? presentedInput)
         {
             return new TestImpl(input, output, presentedInput);
         }
 
-        public static Test<T> Create<T>(T input, Func<bool> generateOutput, object?[]? presentedInput)
+        public static Test<T> Create<T>(T input, Func<bool> generateOutput, IReadOnlyList<object?>? presentedInput)
         {
             return new TestImpl<T>(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }
 
-        public static Test Create(object[] input, Func<bool> generateOutput, object?[]? presentedInput)
+        public static Test Create(object[] input, Func<bool> generateOutput, IReadOnlyList<object?>? presentedInput)
         {
             return new TestImpl(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }

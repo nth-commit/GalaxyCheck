@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck.Runners.Print;
-using GalaxyCheck.Runners.Sample;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +44,7 @@ namespace GalaxyCheck.Runners.Print
     internal static class PrintHelpers
     {
         internal static void Print(
-            IReadOnlyList<object?[]> presentationalValues,
+            IReadOnlyList<IReadOnlyList<object?>> presentationalValues,
             int discards,
             Action<string>? stdout)
         {

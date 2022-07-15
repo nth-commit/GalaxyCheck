@@ -9,7 +9,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 {
     internal static class PresentationInferrer
     {
-        public static object?[] InferValue(IEnumerable<Lazy<IExampleSpace<object>?>> exampleSpaceHistory)
+        public static IReadOnlyList<object?> InferValue(IEnumerable<Lazy<IExampleSpace<object>?>> exampleSpaceHistory)
         {
             return InferExampleSpace(exampleSpaceHistory)?.Current.Value ?? new object?[] { };
         }

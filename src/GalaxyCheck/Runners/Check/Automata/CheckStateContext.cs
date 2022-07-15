@@ -134,12 +134,12 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         public T Value => ExampleSpace.Current.Value;
 
-        public object?[] PresentationalValue
+        public IReadOnlyList<object?> PresentationalValue
         {
             get
             {
                 var test = TestExampleSpace.Current.Value;
-                var arity = test.PresentedInput?.Length;
+                var arity = test.PresentedInput?.Count;
                 return arity > 0 ? test.PresentedInput! : PresentationInferrer.InferValue(ExampleSpaceHistory);
             }
         }

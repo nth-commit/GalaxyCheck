@@ -1,5 +1,5 @@
 ﻿using GalaxyCheck.Properties;
-using GalaxyCheck.Runners.Check;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GalaxyCheck
@@ -8,13 +8,13 @@ namespace GalaxyCheck
 
     public static partial class Extensions
     {
-        public static SampleWithMetricsResult<object?[]> SamplePresentationalWithMetrics<T>(
+        public static SampleWithMetricsResult<IReadOnlyList<object?>> SamplePresentationalWithMetrics<T>(
             this IGenAdvanced<Test<T>> advanced,
             int? iterations = null,
             int? seed = null,
             int? size = null) => PresentationalSampleHelpers.RunPresentationalValueSample(advanced, iterations: iterations, seed: seed, size: size);
 
-        public static SampleWithMetricsResult<object?[]> SamplePresentationalWithMetrics<T>(
+        public static SampleWithMetricsResult<IReadOnlyList<object?>> SamplePresentationalWithMetrics<T>(
             this IGenAdvanced<T> advanced,
             int? iterations = null,
             int? seed = null,
@@ -26,7 +26,7 @@ namespace GalaxyCheck.Runners.Sample
 {
     internal static class PresentationalSampleHelpers
     {
-        internal static SampleWithMetricsResult<object?[]> RunPresentationalValueSample<T>(
+        internal static SampleWithMetricsResult<IReadOnlyList<object?>> RunPresentationalValueSample<T>(
             IGenAdvanced<Test<T>> advanced,
             int? iterations,
             int? seed,
@@ -43,13 +43,13 @@ namespace GalaxyCheck.Runners.Sample
                 .Select(check => check.PresentationalValue)
                 .ToList();
 
-            return new SampleWithMetricsResult<object?[]>(
+            return new SampleWithMetricsResult<IReadOnlyList<object?>>(
                 values,
                 checkResult.Discards,
                 checkResult.RandomnessConsumption);
         }
 
-        internal static SampleWithMetricsResult<object?[]> RunPresentationalValueSample<T>(
+        internal static SampleWithMetricsResult<IReadOnlyList<object?>> RunPresentationalValueSample<T>(
             IGenAdvanced<T> advanced,
             int? iterations,
             int? seed,
@@ -63,7 +63,7 @@ namespace GalaxyCheck.Runners.Sample
                 .Select(check => check.PresentationalValue)
                 .ToList();
 
-            return new SampleWithMetricsResult<object?[]>(
+            return new SampleWithMetricsResult<IReadOnlyList<object?>>(
                 values,
                 checkResult.Discards,
                 checkResult.RandomnessConsumption);
