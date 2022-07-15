@@ -148,7 +148,7 @@ namespace GalaxyCheck.Runners.Sample
         private static bool TestMeetsPrecondition<T>(Test<T> test)
         {
             // Evaluate the test by accessing the lazily-evaluated `Output`
-            return test.Output.Value.Result != Test.TestResult.FailedPrecondition;
+            return test.Output.Value.Result != TestResult.FailedPrecondition;
         }
 
         private static Test<T> MuteTestFailure<T>(Test<T> test)

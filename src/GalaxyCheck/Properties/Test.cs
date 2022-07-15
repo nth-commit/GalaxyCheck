@@ -13,21 +13,7 @@ namespace GalaxyCheck
 
         object?[]? PresentedInput { get; }
 
-#pragma warning disable IDE1006 // Naming Styles
-        public interface TestOutput
-#pragma warning restore IDE1006 // Naming Styles
-        {
-            TestResult Result { get; }
 
-            Exception? Exception { get; }
-        }
-
-        public enum TestResult
-        {
-            Succeeded = 1,
-            Failed = 2,
-            FailedPrecondition = 3
-        }
     }
 
 #pragma warning disable IDE1006 // Naming Styles

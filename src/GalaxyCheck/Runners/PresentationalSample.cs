@@ -70,7 +70,7 @@ namespace GalaxyCheck.Runners.Sample
         }
 
         private static bool TestMeetsPrecondition<T>(Test<T> test) =>
-            test.Output.Value.Result != Test.TestResult.FailedPrecondition;
+            test.Output.Value.Result != TestResult.FailedPrecondition;
 
         private static Test<T> MuteTestFailure<T>(Test<T> test) =>
             TestFactory.Create(test.Input, () => true, test.PresentedInput);
