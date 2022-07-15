@@ -2,18 +2,11 @@
 
 namespace GalaxyCheck
 {
-    public partial class Property : IGen<Test>
+    public partial class Property : Property<object>
     {
-        private readonly IGen<Test> _gen;
-
-        public Property(IGen<Test> gen)
+        public Property(IGen<Test> gen) : base(gen.Select(t => t.Cast<object>()))
         {
-            _gen = gen;
         }
-
-        public IGenAdvanced<Test> Advanced => _gen.Advanced;
-
-        IGenAdvanced IGen.Advanced => Advanced;
     }
 
     public class Property<T> : IGen<Test<T>>
