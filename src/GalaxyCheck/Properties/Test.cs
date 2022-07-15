@@ -37,6 +37,15 @@ namespace GalaxyCheck
 
         public static AsyncTest<T> Cast<T>(this AsyncTest test) => TestFactory.Create((T)test.Input!, test.Output, test.PresentedInput);
 
+        public static AsyncTest<T> AsAsync<T>(this Test<T> test) => TestFactory.Create<T>(
+            test.Input,
+            new Lazy<Task<TestOutput>>(async () =>
+            {
+                await Task.CompletedTask;
+                return test.Output.Value;
+            }),
+            test.PresentedInput);
+
     }
 }
 #pragma warning disable IDE1006 // Naming Styles
