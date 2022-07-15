@@ -30,4 +30,33 @@ namespace GalaxyCheck
             from test in property
             select TestFactory.Create(new object[] { test.Input }, test.Output, test.PresentedInput));
     }
+
+    public class AsyncProperty : AsyncProperty<object>
+    {
+        public AsyncProperty(IGen<AsyncTest<object>> gen) : base(gen)
+        {
+        }
+
+        public AsyncProperty(IGen<AsyncTest> gen) : this(gen.Select(t => t.Cast<object>()))
+        {
+        }
+    }
+
+    public class AsyncProperty<T> : IGen<AsyncTest<T>>
+    {
+        private readonly IGen<AsyncTest<T>> _gen;
+
+        public AsyncProperty(IGen<AsyncTest<T>> gen)
+        {
+            _gen = gen;
+        }
+
+        public IGenAdvanced<AsyncTest<T>> Advanced => _gen.Advanced;
+
+        IGenAdvanced IGen.Advanced => Advanced;
+
+        public static implicit operator AsyncProperty(AsyncProperty<T> property) => new AsyncProperty(
+            from test in property
+            select TestFactory.Create(new object[] { test.Input }, test.Output, test.PresentedInput));
+    }
 }
