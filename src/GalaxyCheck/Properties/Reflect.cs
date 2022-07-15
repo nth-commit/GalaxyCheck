@@ -10,7 +10,7 @@ namespace GalaxyCheck
 {
     public partial class Property
     {
-        private delegate Property<object> ReflectedPropertyHandler(
+        private delegate Property ReflectedPropertyHandler(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
@@ -18,7 +18,7 @@ namespace GalaxyCheck
 
         public static ImmutableList<Type> SupportedReturnTypes => MethodPropertyHandlers.Keys.ToImmutableList();
 
-        public static Property<object> Reflect(
+        public static Property Reflect(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory = null,
@@ -45,7 +45,7 @@ namespace GalaxyCheck
 
         private static ReflectedPropertyHandler ToVoidProperty => (methodInfo, target, genFactory, customGens) =>
         {
-            return new Property<object>(Gen
+            return new Property(Gen
                 .Parameters(methodInfo, genFactory, customGens)
                 .ForAll(parameters =>
                 {
@@ -66,7 +66,7 @@ namespace GalaxyCheck
 
         private static ReflectedPropertyHandler ToBooleanProperty => (methodInfo, target, genFactory, customGens) =>
         {
-            return new Property<object>(Gen
+            return new Property(Gen
                 .Parameters(methodInfo, genFactory, customGens)
                 .ForAll(parameters =>
                 {
@@ -85,7 +85,7 @@ namespace GalaxyCheck
                     test.Input)));
         };
 
-        private static ReflectedPropertyHandler ToNestedProperty => (methodInfo, target, genFactory, customGens) => new Property<object>(
+        private static ReflectedPropertyHandler ToNestedProperty => (methodInfo, target, genFactory, customGens) => new Property(
             from parameters in Gen.Parameters(methodInfo, genFactory, customGens)
             let property = InvokeNestedProperty(methodInfo, target, parameters)
             where property != null
@@ -99,7 +99,7 @@ namespace GalaxyCheck
         {
             try
             {
-                return new Property<object>(((IGen<Test>)methodInfo.Invoke(target, new object[] { })!).Select(test => test.Cast<object>()));
+                return new Property((IGen<Test>)methodInfo.Invoke(target, new object[] { })!);
             }
             catch (TargetInvocationException ex)
             {

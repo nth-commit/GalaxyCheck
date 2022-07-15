@@ -8,11 +8,11 @@ namespace GalaxyCheck
 
     public static partial class Extensions
     {
-        public static SampleWithMetricsResult<IReadOnlyList<object?>> SamplePresentationalWithMetrics<T>(
-            this IGenAdvanced<Test<T>> advanced,
+        public static SampleWithMetricsResult<IReadOnlyList<object?>> SamplePresentationalWithMetrics(
+            this Property property,
             int? iterations = null,
             int? seed = null,
-            int? size = null) => PresentationalSampleHelpers.RunPresentationalValueSample(advanced, iterations: iterations, seed: seed, size: size);
+            int? size = null) => PresentationalSampleHelpers.RunPresentationalValueSample(property, iterations: iterations, seed: seed, size: size);
 
         public static SampleWithMetricsResult<IReadOnlyList<object?>> SamplePresentationalWithMetrics<T>(
             this IGenAdvanced<T> advanced,
@@ -26,18 +26,17 @@ namespace GalaxyCheck.Runners.Sample
 {
     internal static class PresentationalSampleHelpers
     {
-        internal static SampleWithMetricsResult<IReadOnlyList<object?>> RunPresentationalValueSample<T>(
-            IGenAdvanced<Test<T>> advanced,
+        internal static SampleWithMetricsResult<IReadOnlyList<object?>> RunPresentationalValueSample(
+            Property property,
             int? iterations,
             int? seed,
             int? size)
         {
-            var property = advanced
-                .AsGen()
+            var propertyWithoutFailures = property
                 .Where(TestMeetsPrecondition)
                 .Select(MuteTestFailure);
 
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size);
+            var checkResult = propertyWithoutFailures.Check(iterations: iterations, seed: seed, size: size);
 
             var values = checkResult.Checks
                 .Select(check => check.PresentationalValue)

@@ -9,108 +9,114 @@ namespace Tests.V2.RunnerTests.PrintTests
 {
     public class Snapshots
     {
-        [Fact]
-        public void PrintInt32Gen()
+        public class PrintGen
         {
-            var gen = Gen.Int32();
+            [Fact]
+            public void PrintInt32Gen()
+            {
+                var gen = Gen.Int32();
 
-            var print = PrintAndCollect(gen.Cast<object>());
+                var print = PrintAndCollect(gen.Cast<object>());
 
-            Snapshot.Match(print);
+                Snapshot.Match(print);
+            }
+
+            [Fact]
+            public void PrintInt32GenFiltered()
+            {
+                var gen = Gen.Int32().Where(x => x % 2 == 0);
+
+                var print = PrintAndCollect(gen.Cast<object>());
+
+                Snapshot.Match(print);
+            }
+
+            [Fact]
+            public void PrintListOfInt32Gen()
+            {
+                var gen = Gen.Int32().ListOf();
+
+                var print = PrintAndCollect(gen);
+
+                Snapshot.Match(print);
+            }
+
+            private static string PrintAndCollect<T>(IGen<T> gen)
+            {
+                var log = new List<string>();
+
+                gen.Advanced.Print(seed: 0, stdout: log.Add);
+
+                return string.Join(Environment.NewLine, log);
+            }
         }
 
-        [Fact]
-        public void PrintInt32GenFiltered()
+        public class PrintProperty
         {
-            var gen = Gen.Int32().Where(x => x % 2 == 0);
+            [Fact]
+            public void PrintNullaryProperty()
+            {
+                var property = Property.Nullary(() => false);
 
-            var print = PrintAndCollect(gen.Cast<object>());
+                var print = PrintAndCollect(property);
 
-            Snapshot.Match(print);
-        }
+                Snapshot.Match(print);
+            }
 
-        [Fact]
-        public void PrintListOfInt32Gen()
-        {
-            var gen = Gen.Int32().ListOf();
+            [Fact]
+            public void PrintUnaryProperty()
+            {
+                var property = Gen.Int32().ForAll((_) => false);
 
-            var print = PrintAndCollect(gen);
+                var print = PrintAndCollect(property);
 
-            Snapshot.Match(print);
-        }
+                Snapshot.Match(print);
+            }
 
-        [Fact]
-        public void PrintNullaryProperty()
-        {
-            var property = Property.Nullary(() => false);
+            [Fact]
+            public void PrintBinaryProperty()
+            {
+                var property = new Property(
+                    from x in Gen.Int32().LessThan(int.MaxValue)
+                    from y in Gen.Int32().GreaterThan(x)
+                    select Property.ForThese(() => false));
 
-            var print = PrintAndCollect(property);
+                var print = PrintAndCollect(property);
 
-            Snapshot.Match(print);
-        }
+                Snapshot.Match(print);
+            }
 
-        [Fact]
-        public void PrintUnaryProperty()
-        {
-            var property = Gen.Int32().ForAll((_) => false);
+            [Fact]
+            public void PrintUnaryListProperty()
+            {
+                var property = Gen.Int32().ListOf().ForAll((_) => false);
 
-            var print = PrintAndCollect(property);
+                var print = PrintAndCollect(property);
 
-            Snapshot.Match(print);
-        }
+                Snapshot.Match(print);
+            }
 
-        [Fact]
-        public void PrintBinaryProperty()
-        {
-            var property =
-                from x in Gen.Int32().LessThan(int.MaxValue)
-                from y in Gen.Int32().GreaterThan(x)
-                select Property.ForThese(() => false);
+            [Fact]
+            public void PrintBinaryListProperty()
+            {
+                var property = new Property(
+                    from xs in Gen.Int32().ListOf()
+                    from ys in Gen.Int32().ListOf().WithCountGreaterThan(xs.Count)
+                    select Property.ForThese(() => false));
 
-            var print = PrintAndCollect(property);
+                var print = PrintAndCollect(property);
 
-            Snapshot.Match(print);
-        }
+                Snapshot.Match(print);
+            }
 
-        [Fact]
-        public void PrintUnaryListProperty()
-        {
-            var property = Gen.Int32().ListOf().ForAll((_) => false);
+            private static string PrintAndCollect(Property property)
+            {
+                var log = new List<string>();
 
-            var print = PrintAndCollect(property);
+                property.Print(seed: 0, stdout: log.Add);
 
-            Snapshot.Match(print);
-        }
-
-        [Fact]
-        public void PrintBinaryListProperty()
-        {
-            var property =
-                from xs in Gen.Int32().ListOf()
-                from ys in Gen.Int32().ListOf().WithCountGreaterThan(xs.Count)
-                select Property.ForThese(() => false);
-
-            var print = PrintAndCollect(property);
-
-            Snapshot.Match(print);
-        }
-
-        private static string PrintAndCollect<T>(IGen<T> gen)
-        {
-            var log = new List<string>();
-
-            gen.Advanced.Print(seed: 0, stdout: log.Add);
-
-            return string.Join(Environment.NewLine, log);
-        }
-
-        private static string PrintAndCollect<T>(IGen<Test<T>> gen)
-        {
-            var log = new List<string>();
-
-            gen.Advanced.Print(seed: 0, stdout: log.Add);
-
-            return string.Join(Environment.NewLine, log);
-        }
+                return string.Join(Environment.NewLine, log);
+            }
+        }        
     }
 }

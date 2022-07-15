@@ -7,10 +7,7 @@ namespace GalaxyCheck.Properties
     {
         private record TestOutputImpl(TestResult Result, Exception? Exception) : TestOutput;
 
-        private record TestImpl<T>(T Input, Lazy<TestOutput> Output, IReadOnlyList<object?>? PresentedInput) : Test<T>
-        {
-            object? Test.Input => Input;
-        }
+        private record TestImpl<T>(T Input, Lazy<TestOutput> Output, IReadOnlyList<object?>? PresentedInput) : Test<T>;
 
         private record TestImpl(object? Input, Lazy<TestOutput> Output, IReadOnlyList<object?>? PresentedInput) : Test;
 

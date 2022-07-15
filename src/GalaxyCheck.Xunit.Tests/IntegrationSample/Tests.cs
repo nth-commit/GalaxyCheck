@@ -103,6 +103,11 @@ namespace IntegrationSample
             {
             });
 
+        [Sample]
+        public void VoidPropertySample([Between(0, 100)] int x)
+        {
+        }
+
         private void AnnounceTestInvocation(string testName, params object[] injectedValues)
         {
             _testOutputHelper.WriteLine(JsonConvert.SerializeObject(new
