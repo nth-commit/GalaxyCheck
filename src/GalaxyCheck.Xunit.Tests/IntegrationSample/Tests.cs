@@ -61,14 +61,14 @@ namespace IntegrationSample
         }
 
         [Property]
-        public Property InfallibleNestedProperty([Between(0, 100)] int x)
+        public Property InfallibleNestedProperty()
         {
             AnnounceTestInvocation(nameof(InfallibleNestedProperty));
             return Gen.Int32().Between(0, 100).ForAll(y => { });
         }
 
         [Property]
-        public Property FallibleNestedProperty([Between(0, 100)] int x)
+        public Property FallibleNestedProperty()
         {
             AnnounceTestInvocation(nameof(FallibleNestedProperty));
             return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
@@ -97,14 +97,14 @@ namespace IntegrationSample
         }
 
         [Sample]
-        public IGen<Test> Sample() =>
+        public IGen<Test> SamplePureProperty() =>
             from a in Gen.Int32().Between(0, 100)
             select Property.ForThese(() =>
             {
             });
 
         [Sample]
-        public void VoidPropertySample([Between(0, 100)] int x)
+        public void SampleVoidProperty([Between(0, 100)] int x)
         {
         }
 

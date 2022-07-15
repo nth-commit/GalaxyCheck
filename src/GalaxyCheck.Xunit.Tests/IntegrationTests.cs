@@ -105,9 +105,18 @@ namespace Tests
         }
 
         [Fact]
-        public void Sample()
+        public void SamplePureProperty()
         {
-            var testResult = _fixture.FindTestResult(nameof(Sample));
+            var testResult = _fixture.FindTestResult(nameof(SamplePureProperty));
+
+            testResult.Outcome.Should().Be("Failed");
+            testResult.Message.Should().StartWith("GalaxyCheck.SampleException : Test case failed to prevent false-positives.");
+        }
+
+        [Fact]
+        public void SampleVoidProperty()
+        {
+            var testResult = _fixture.FindTestResult(nameof(SampleVoidProperty));
 
             testResult.Outcome.Should().Be("Failed");
             testResult.Message.Should().StartWith("GalaxyCheck.SampleException : Test case failed to prevent false-positives.");
@@ -115,7 +124,7 @@ namespace Tests
 
         public record Invocation(object[] InjectedParameters);
 
-        public record TestResult(string TestName, string Outcome, string? Message, ImmutableList<Invocation> Invocations);
+        public record TestResult(string TestName, string Outcome, string Message, ImmutableList<Invocation> Invocations);
 
         public class TestSuiteFixture : IAsyncLifetime
         {
@@ -168,7 +177,7 @@ namespace Tests
                 return new TestResult(
                     attributes.Single(a => a.Name.LocalName.Contains("testName")).Value.Split('.').Last(),
                     attributes.Single(a => a.Name.LocalName.Contains("outcome")).Value,
-                    message,
+                    message!,
                     new List<Invocation>().ToImmutableList());
             }
         }

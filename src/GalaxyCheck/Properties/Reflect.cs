@@ -39,7 +39,7 @@ namespace GalaxyCheck
             {
                 { typeof(void), ToVoidProperty },
                 { typeof(bool), ToBooleanProperty },
-                { typeof(Property), ToNestedProperty },
+                { typeof(Property), ToReturnedProperty },
                 { typeof(IGen<Test>), ToPureProperty },
             }.ToImmutableDictionary();
 
@@ -85,15 +85,22 @@ namespace GalaxyCheck
                     test.Input)));
         };
 
-        private static ReflectedPropertyHandler ToNestedProperty => (methodInfo, target, genFactory, customGens) => new Property(
-            from parameters in Gen.Parameters(methodInfo, genFactory, customGens)
-            let property = InvokeNestedProperty(methodInfo, target, parameters)
-            where property != null
-            from test in property
-            select TestFactory.Create(
-                test.Input,
-                test.Output,
-                Enumerable.Concat(parameters, test.PresentedInput!).ToArray()));
+        private static ReflectedPropertyHandler ToReturnedProperty => (methodInfo, target, genFactory, customGens) =>
+        {
+            if (methodInfo.GetParameters().Any())
+            {
+                throw new Exception($"Parameters are not support for methods returning properties. Violating signature: \"{methodInfo}\"");
+            }
+
+            try
+            {
+                return (Property)methodInfo.Invoke(target, new object[] {})!;
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException!;
+            }
+        };
 
         private static ReflectedPropertyHandler ToPureProperty => (methodInfo, target, _, _) =>
         {
@@ -106,22 +113,5 @@ namespace GalaxyCheck
                 throw ex.InnerException!;
             }
         };
-
-        private static Property? InvokeNestedProperty(MethodInfo methodInfo, object? target, object[] parameters)
-        {
-            try
-            {
-                return (Property)methodInfo.Invoke(target, parameters)!;
-            }
-            catch (TargetInvocationException ex)
-            {
-                if (ex.InnerException!.GetType() == typeof(PropertyPreconditionException))
-                {
-                    return null;
-                }
-
-                throw ex.InnerException;
-            }
-        }
     }
 }

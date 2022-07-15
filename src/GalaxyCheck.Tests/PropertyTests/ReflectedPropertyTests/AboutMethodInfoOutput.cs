@@ -60,13 +60,13 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
             checkResult.Falsified.Should().BeTrue();
         }
 
-        private Property AnInfallibleNestedPropertyFunction(int x) => Gen.Constant<object?>(null).ForAll(_ => true);
-        private Property AnInfallibleNestedPropertyFunctionWithVaryingTypes(int x) => Gen.Constant(true).ForAll(_ => true);
+        private Property AnInfalliblePropertyFunction() => Gen.Constant<object?>(null).ForAll(_ => true);
+        private Property AnInfalliblePropertyFunctionWithVaryingTypes() => Gen.Constant(true).ForAll(_ => true);
 
         [Theory]
-        [InlineData(nameof(AnInfallibleNestedPropertyFunction))]
-        [InlineData(nameof(AnInfallibleNestedPropertyFunctionWithVaryingTypes))]
-        public void ANestedPropertyMethodInfoCanBeUnfalsifiable(string methodName)
+        [InlineData(nameof(AnInfalliblePropertyFunction))]
+        [InlineData(nameof(AnInfalliblePropertyFunctionWithVaryingTypes))]
+        public void APropertyMethodInfoCanBeUnfalsifiable(string methodName)
         {
             var property = Property.Reflect(GetMethod(methodName), this);
 
@@ -75,12 +75,12 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
             checkResult.Falsified.Should().BeFalse();
         }
 
-        private Property AFallibleNestedPropertyFunction(int x) => Gen.Int32().ForAll(x => x < 100);
+        private Property AFalliblePropertyFunction() => Gen.Int32().ForAll(x => x < 100);
 
         [Fact]
-        public void ANestedPropertyMethodInfoCanBeFalsified()
+        public void APropertyMethodInfoCanBeFalsified()
         {
-            var property = Property.Reflect(GetMethod(nameof(AFallibleNestedPropertyFunction)), this);
+            var property = Property.Reflect(GetMethod(nameof(AFalliblePropertyFunction)), this);
 
             var checkResult = property.Check();
 
