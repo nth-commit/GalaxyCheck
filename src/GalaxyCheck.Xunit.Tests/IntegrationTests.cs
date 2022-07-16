@@ -20,103 +20,51 @@ namespace Tests
             _fixture = fixture;
         }
 
-        [Fact]
-        public void InfalliblePureProperty()
+        [Theory]
+        [InlineData("InfalliblePureProperty")]
+        [InlineData("InfalliblePurePropertyAsync")]
+        [InlineData("InfallibleVoidProperty")]
+        [InlineData("InfallibleVoidPropertyAsync")]
+        [InlineData("InfallibleBooleanProperty")]
+        [InlineData("InfallibleBooleanPropertyAsync")]
+        [InlineData("InfallibleReturnedProperty")]
+        [InlineData("InfallibleReturnedPropertyAsync")]
+        [InlineData("PropertyWithGenFromGenFactory")]
+        [InlineData("PropertyWithGenFromGenFactoryAsync")]
+        [InlineData("PropertyWithGenFromMemberGen")]
+        [InlineData("PropertyWithGenFromMemberGenAsync")]
+        public void PassingProperties(string testName)
         {
-            var testResult = _fixture.FindTestResult(nameof(InfalliblePureProperty));
+            var testResult = _fixture.FindTestResult(testName);
 
             testResult.Outcome.Should().Be("Passed");
         }
 
-        [Fact]
-        public void FalliblePureProperty()
+        [Theory]
+        [InlineData("FalliblePureProperty")]
+        [InlineData("FalliblePurePropertyAsync")]
+        [InlineData("FallibleVoidProperty")]
+        [InlineData("FallibleVoidPropertyAsync")]
+        [InlineData("FallibleBooleanProperty")]
+        [InlineData("FallibleBooleanPropertyAsync")]
+        [InlineData("FallibleReturnedProperty")]
+        [InlineData("FallibleReturnedPropertyAsync")]
+        public void FailingProperties(string testName)
         {
-            var testResult = _fixture.FindTestResult(nameof(FalliblePureProperty));
+            var testResult = _fixture.FindTestResult(testName);
 
             testResult.Outcome.Should().Be("Failed");
             testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
         }
 
-        [Fact]
-        public void InfallibleVoidProperty()
+        [Theory]
+        [InlineData("SamplePureProperty")]
+        [InlineData("SamplePurePropertyAsync")]
+        [InlineData("SampleVoidProperty")]
+        [InlineData("SampleVoidPropertyAsync")]
+        public void SampledProperties(string testName)
         {
-            var testResult = _fixture.FindTestResult(nameof(InfallibleVoidProperty));
-
-            testResult.Outcome.Should().Be("Passed");
-        }
-
-        [Fact]
-        public void FallibleVoidProperty()
-        {
-            var testResult = _fixture.FindTestResult(nameof(FallibleVoidProperty));
-
-            testResult.Outcome.Should().Be("Failed");
-            testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
-        }
-
-        [Fact]
-        public void InfallibleBooleanProperty()
-        {
-            var testResult = _fixture.FindTestResult(nameof(InfallibleBooleanProperty));
-
-            testResult.Outcome.Should().Be("Passed");
-        }
-
-        [Fact]
-        public void FallibleBooleanProperty()
-        {
-            var testResult = _fixture.FindTestResult(nameof(FallibleBooleanProperty));
-
-            testResult.Outcome.Should().Be("Failed");
-            testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
-        }
-
-        [Fact]
-        public void InfallibleNestedProperty()
-        {
-            var testResult = _fixture.FindTestResult(nameof(InfallibleNestedProperty));
-
-            testResult.Outcome.Should().Be("Passed");
-        }
-
-        [Fact]
-        public void FallibleNestedProperty()
-        {
-            var testResult = _fixture.FindTestResult(nameof(FallibleNestedProperty));
-
-            testResult.Outcome.Should().Be("Failed");
-            testResult.Message.Should().StartWith("GalaxyCheck.Runners.PropertyFailedException");
-        }
-
-        [Fact]
-        public void PropertyWithGenFromGenFactory()
-        {
-            var testResult = _fixture.FindTestResult(nameof(PropertyWithGenFromGenFactory));
-
-            testResult.Outcome.Should().Be("Passed");
-        }
-
-        [Fact]
-        public void PropertyWithGenFromMemberGen()
-        {
-            var testResult = _fixture.FindTestResult(nameof(PropertyWithGenFromMemberGen));
-
-            testResult.Outcome.Should().Be("Passed");
-        }
-
-        [Fact]
-        public void SamplePureProperty()
-        {
-            var testResult = _fixture.FindTestResult(nameof(SamplePureProperty));
-
-            testResult.Outcome.Should().Be("Failed");
-            testResult.Message.Should().StartWith("GalaxyCheck.SampleException : Test case failed to prevent false-positives.");
-        }
-
-        [Fact]
-        public void SampleVoidProperty()
-        {
-            var testResult = _fixture.FindTestResult(nameof(SampleVoidProperty));
+            var testResult = _fixture.FindTestResult(testName);
 
             testResult.Outcome.Should().Be("Failed");
             testResult.Message.Should().StartWith("GalaxyCheck.SampleException : Test case failed to prevent false-positives.");

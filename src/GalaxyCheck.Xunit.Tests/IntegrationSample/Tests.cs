@@ -61,16 +61,16 @@ namespace IntegrationSample
         }
 
         [Property]
-        public Property InfallibleNestedProperty()
+        public Property InfallibleReturnedProperty()
         {
-            AnnounceTestInvocation(nameof(InfallibleNestedProperty));
+            AnnounceTestInvocation(nameof(InfallibleReturnedProperty));
             return Gen.Int32().Between(0, 100).ForAll(y => { });
         }
 
         [Property]
-        public Property FallibleNestedProperty()
+        public Property FallibleReturnedProperty()
         {
-            AnnounceTestInvocation(nameof(FallibleNestedProperty));
+            AnnounceTestInvocation(nameof(FallibleReturnedProperty));
             return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
         }
 

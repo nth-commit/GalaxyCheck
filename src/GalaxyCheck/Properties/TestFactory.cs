@@ -43,26 +43,26 @@ namespace GalaxyCheck.Properties
             }
         });
 
-        private record AsyncTestImpl<T>(T Input, Lazy<Task<TestOutput>> Output, IReadOnlyList<object?>? PresentedInput) : AsyncTest<T>;
+        private record AsyncTestImpl<T>(T Input, Lazy<ValueTask<TestOutput>> Output, IReadOnlyList<object?>? PresentedInput) : AsyncTest<T>;
 
-        private record AsyncTestImpl(object? Input, Lazy<Task<TestOutput>> Output, IReadOnlyList<object?>? PresentedInput) : AsyncTest;
+        private record AsyncTestImpl(object? Input, Lazy<ValueTask<TestOutput>> Output, IReadOnlyList<object?>? PresentedInput) : AsyncTest;
 
-        public static AsyncTest<T> Create<T>(T input, Lazy<Task<TestOutput>> output, IReadOnlyList<object?>? presentedInput)
+        public static AsyncTest<T> Create<T>(T input, Lazy<ValueTask<TestOutput>> output, IReadOnlyList<object?>? presentedInput)
         {
             return new AsyncTestImpl<T>(input, output, presentedInput);
         }
 
-        public static AsyncTest<T> Create<T>(T input, Func<Task<bool>> generateOutput, IReadOnlyList<object?>? presentedInput)
+        public static AsyncTest<T> Create<T>(T input, Func<ValueTask<bool>> generateOutput, IReadOnlyList<object?>? presentedInput)
         {
             return new AsyncTestImpl<T>(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }
 
-        public static AsyncTest Create(object[] input, Func<Task<bool>> generateOutput, IReadOnlyList<object?>? presentedInput)
+        public static AsyncTest Create(object[] input, Func<ValueTask<bool>> generateOutput, IReadOnlyList<object?>? presentedInput)
         {
             return new AsyncTestImpl(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }
 
-        private static Lazy<Task<TestOutput>> AnalyzeBooleanOutput(Func<Task<bool>> generateOutput) => new Lazy<Task<TestOutput>>(async () =>
+        private static Lazy<ValueTask<TestOutput>> AnalyzeBooleanOutput(Func<ValueTask<bool>> generateOutput) => new Lazy<ValueTask<TestOutput>>(async () =>
         {
             try
             {

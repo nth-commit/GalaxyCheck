@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace GalaxyCheck.Xunit.Internal
 {
     internal class PropertyAssertRunner : IPropertyRunner
     {
-        public void Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper)
-        {
-            parameters.Property.Assert(
+        public Task Run(PropertyRunParameters parameters, ITestOutputHelper testOutputHelper) =>
+            parameters.Property.AssertAsync(
                 replay: parameters.Replay,
                 seed: parameters.Seed,
                 size: parameters.Size,
@@ -15,6 +15,5 @@ namespace GalaxyCheck.Xunit.Internal
                 shrinkLimit: parameters.ShrinkLimit,
                 formatReproduction: (newReplay) => $"{Environment.NewLine}    [Replay(\"{newReplay}\")]",
                 formatMessage: (x) => Environment.NewLine + Environment.NewLine + x);
-        }
     }
 }
