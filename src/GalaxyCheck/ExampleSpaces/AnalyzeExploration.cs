@@ -1,3 +1,6 @@
-﻿using GalaxyCheck.ExampleSpaces;
+﻿using System.Threading.Tasks;
+using GalaxyCheck.ExampleSpaces;
 
-internal delegate ExplorationOutcome AnalyzeExploration<T>(IExample<T> example);
+internal delegate ExplorationOutcome AnalyzeExploration<in T>(IExample<T> example);
+
+internal delegate ValueTask<ExplorationOutcome> AnalyzeExplorationAsync<in T>(IExample<T> example);

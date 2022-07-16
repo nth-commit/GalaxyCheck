@@ -2,7 +2,6 @@
 using System;
 using System.Reflection;
 using Xunit;
-
 using GalaxyCheck;
 using System.Threading.Tasks;
 
@@ -108,20 +107,13 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
             private void AnInfallibleVoidPropertyFunction() { }
 
             [Fact]
-            public void AVoidMethodInfoCanBeUnfalsifiable()
+            public async Task AVoidMethodInfoCanBeUnfalsifiable()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AnInfallibleVoidPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeFalse();
+                checkResult.Falsified.Should().BeFalse();
             }
 
             private void AFallibleVoidPropertyFunction(int x)
@@ -130,58 +122,37 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
             }
 
             [Fact]
-            public void AVoidMethodInfoCanBeFalsified()
+            public async Task AVoidMethodInfoCanBeFalsified()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AFallibleVoidPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeTrue();
+                checkResult.Falsified.Should().BeTrue();
             }
 
             private bool AnInfallibleBooleanPropertyFunction() => true;
 
             [Fact]
-            public void ABooleanMethodInfoCanBeUnfalsifiable()
+            public async Task ABooleanMethodInfoCanBeUnfalsifiable()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AnInfallibleBooleanPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeFalse();
+                checkResult.Falsified.Should().BeFalse();
             }
 
             private bool AFallibleBooleanPropertyFunction(int x) => x < 100;
 
             [Fact]
-            public void ABooleanMethodInfoCanBeFalsified()
+            public async Task ABooleanMethodInfoCanBeFalsified()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AFallibleBooleanPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeTrue();
+                checkResult.Falsified.Should().BeTrue();
             }
 
             private Property AnInfalliblePropertyFunction() => Gen.Constant<object?>(null).ForAll(_ => true);
@@ -190,180 +161,124 @@ namespace Tests.V2.PropertyTests.ReflectedPropertyTests
             [Theory]
             [InlineData(nameof(AnInfalliblePropertyFunction))]
             [InlineData(nameof(AnInfalliblePropertyFunctionWithVaryingTypes))]
-            public void APropertyMethodInfoCanBeUnfalsifiable(string methodName)
+            public async Task APropertyMethodInfoCanBeUnfalsifiable(string methodName)
             {
                 var property = Property.ReflectAsync(GetMethod(methodName), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeFalse();
+                checkResult.Falsified.Should().BeFalse();
             }
 
             private Property AFalliblePropertyFunction() => Gen.Int32().ForAll(x => x < 100);
 
             [Fact]
-            public void APropertyMethodInfoCanBeFalsified()
+            public async Task APropertyMethodInfoCanBeFalsified()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AFalliblePropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeTrue();
+                checkResult.Falsified.Should().BeTrue();
             }
 
             private Task AnInfallibleTaskPropertyFunction() => Task.CompletedTask;
 
             [Fact]
-            public void ATaskMethodInfoCanBeUnfalsifiable()
+            public async Task ATaskMethodInfoCanBeUnfalsifiable()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AnInfallibleTaskPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeFalse();
+                checkResult.Falsified.Should().BeFalse();
             }
 
             private async Task AFallibleTaskPropertyFunction(int x)
             {
-                await Task.Delay(1);
+                await Task.CompletedTask;
                 Assert.True(x < 100);
             }
 
             [Fact]
-            public void ATaskMethodInfoCanBeFalsified()
+            public async Task ATaskMethodInfoCanBeFalsified()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AFallibleTaskPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeTrue();
+                checkResult.Falsified.Should().BeTrue();
             }
 
             private async Task<bool> AnInfallibleTaskBooleanPropertyFunction()
             {
-                await Task.Delay(1);
+                await Task.CompletedTask;
                 return true;
             }
 
             [Fact]
-            public void ATaskBooleanMethodInfoCanBeUnfalsifiable()
+            public async Task ATaskBooleanMethodInfoCanBeUnfalsifiable()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AnInfallibleTaskBooleanPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeFalse();
+                checkResult.Falsified.Should().BeFalse();
             }
 
             private async Task<bool> AFallibleTaskBooleanPropertyFunction(int x)
             {
-                await Task.Delay(1);
+                await Task.CompletedTask;
                 return x < 100;
             }
 
             [Fact]
-            public void ATaskBooleanMethodInfoCanBeFalsified()
+            public async Task ATaskBooleanMethodInfoCanBeFalsified()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AFallibleTaskBooleanPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeTrue();
+                checkResult.Falsified.Should().BeTrue();
             }
 
             private AsyncProperty AnInfallibleAsyncPropertyFunction() => Gen.Constant<object?>(null).ForAllAsync(async _ =>
             {
-                await Task.Delay(1);
+                await Task.CompletedTask;
                 return true;
             });
             private AsyncProperty AnInfallibleAsyncPropertyFunctionWithVaryingTypes() => Gen.Constant(true).ForAllAsync(async _ =>
             {
-                await Task.Delay(1);
+                await Task.CompletedTask;
                 return true;
             });
 
             [Theory]
             [InlineData(nameof(AnInfallibleAsyncPropertyFunction))]
             [InlineData(nameof(AnInfallibleAsyncPropertyFunctionWithVaryingTypes))]
-            public void AnAsyncPropertyMethodInfoCanBeUnfalsifiable(string methodName)
+            public async Task AnAsyncPropertyMethodInfoCanBeUnfalsifiable(string methodName)
             {
                 var property = Property.ReflectAsync(GetMethod(methodName), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeFalse();
+                checkResult.Falsified.Should().BeFalse();
             }
 
             private AsyncProperty AFallibleAsyncPropertyFunction() => Gen.Int32().ForAllAsync(async x =>
             {
-                await Task.Delay(1);
+                await Task.CompletedTask;
                 return x < 100;
             });
 
             [Fact]
-            public void AnAsyncPropertyMethodInfoCanBeFalsified()
+            public async Task AnAsyncPropertyMethodInfoCanBeFalsified()
             {
                 var property = Property.ReflectAsync(GetMethod(nameof(AFallibleAsyncPropertyFunction)), this);
 
-                Action test = () =>
-                {
-                    property.CheckAsync();
-                };
+                var checkResult = await property.CheckAsync();
 
-                test.Should().Throw<NotImplementedException>();
-
-                //var checkResult = property.CheckAsync();
-
-                //checkResult.Falsified.Should().BeTrue();
+                checkResult.Falsified.Should().BeTrue();
             }
 
             private static MethodInfo GetMethod(string name)

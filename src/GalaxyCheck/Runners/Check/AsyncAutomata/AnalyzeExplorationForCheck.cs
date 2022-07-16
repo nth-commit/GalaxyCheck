@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace GalaxyCheck.Runners.Check.Automata
+namespace GalaxyCheck.Runners.Check.AsyncAutomata
 {
     internal static class AnalyzeExplorationForCheck
     {
-        public static AnalyzeExploration<Test<T>> CheckTest<T>() => (example) =>
+        public static AnalyzeExplorationAsync<AsyncTest<T>> CheckTestAsync<T>() => async (example) =>
         {
-            var testOutput = example.Value.Output.Value;
+            var testOutput = await example.Value.Output.Value;
             return testOutput.Result switch
             {
                 TestResult.Succeeded => ExplorationOutcome.Success(),

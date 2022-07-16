@@ -5,12 +5,13 @@ using GalaxyCheck.Runners.Replaying;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace GalaxyCheck.Runners.Check.Automata
+namespace GalaxyCheck.Runners.Check.AsyncAutomata
 {
     internal record ReplayState<T>(string ReplayEncoded) : CheckState<T>
     {
-        public CheckStateTransition<T> Transition(CheckStateContext<T> context)
+        public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
         {
             Replay replayDecoded;
             try
@@ -19,20 +20,20 @@ namespace GalaxyCheck.Runners.Check.Automata
             }
             catch (Exception ex)
             {
-                return new CheckStateTransition<T>(
+                return Task.FromResult(new CheckStateTransition<T>(
                     new GenerationStates.Generation_Error<T>($"Error decoding replay string: {ex.Message}"),
-                    context);
+                    context));
             }
 
             var iteration = context.Property.Advanced.Run(replayDecoded.GenParameters).First();
 
             return iteration.Match(
                 onInstance: instance => HandleInstance(context, instance, replayDecoded),
-                onError: error => HandleError(context),
-                onDiscard: _ => HandleError(context));
+                onError: error => Task.FromResult(HandleError(context)),
+                onDiscard: _ => Task.FromResult(HandleError(context)));
         }
 
-        private static CheckStateTransition<T> HandleInstance(CheckStateContext<T> ctx, IGenInstance<Test<T>> instance, Replay replayDecoded)
+        private static async Task<CheckStateTransition<T>> HandleInstance(CheckStateContext<T> ctx, IGenInstance<AsyncTest<T>> instance, Replay replayDecoded)
         {
             var exampleSpace = instance.ExampleSpace.Navigate(replayDecoded.ExampleSpacePath);
             if (exampleSpace == null)
@@ -40,7 +41,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                 return HandleError(ctx);
             }
 
-            var exploration = exampleSpace.Explore(AnalyzeExplorationForCheck.CheckTest<T>()).First();
+            var exploration = await exampleSpace.ExploreAsync(AnalyzeExplorationForCheck.CheckTestAsync<T>()).FirstAsync();
 
             return exploration.Match(
                 onNonCounterexampleExploration: _ => HandleReplayedNonCounterexample(ctx, instance),
@@ -50,7 +51,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         private static CheckStateTransition<T> HandleReplayedNonCounterexample(
             CheckStateContext<T> context,
-            IGenInstance<Test<T>> instance)
+            IGenInstance<AsyncTest<T>> instance)
         {
             return new CheckStateTransition<T>(
                 new GenerationStates.Generation_End<T>(instance, null, false, false, true),
@@ -59,9 +60,9 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         private static CheckStateTransition<T> HandleReplayedCounterexample(
             CheckStateContext<T> context,
-            IGenInstance<Test<T>> instance,
+            IGenInstance<AsyncTest<T>> instance,
             Replay replayDecoded,
-            ExplorationStage<Test<T>>.Counterexample counterexample)
+            ExplorationStage<AsyncTest<T>>.Counterexample counterexample)
         {
             var counterexampleContext = new CounterexampleContext<T>(
                 counterexample.ExampleSpace,
@@ -85,7 +86,7 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         private static IEnumerable<Lazy<IExampleSpace<object>?>> GetNavigatedExampleSpaceHistory(
-            IGenInstance<Test<T>> instance,
+            IGenInstance<AsyncTest<T>> instance,
             IEnumerable<int> path) =>
                 instance.ExampleSpaceHistory.Select(exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(path)));
     }
