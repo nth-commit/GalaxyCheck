@@ -5,7 +5,7 @@ namespace GalaxyCheck
 {
     public partial class Property
     {
-        public static Property<object[]> Nullary(Func<bool> func) => new Property<object[]>(
+        public static Property Nullary(Func<bool> func) => new Property(
             Gen.Constant(new object[] { }).Select(x => TestFactory.Create<object[]>(
                 x,
                 func,
@@ -48,7 +48,7 @@ namespace GalaxyCheck
                     () => func(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4),
                     new object?[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4 })));
 
-        public static Property<object[]> Nullary(Action func) => Nullary(func.AsTrueFunc());
+        public static Property Nullary(Action func) => Nullary(func.AsTrueFunc());
 
         public static Property<T0> ForAll<T0>(IGen<T0> gen0, Action<T0> action) =>
             ForAll(gen0, action.AsTrueFunc());

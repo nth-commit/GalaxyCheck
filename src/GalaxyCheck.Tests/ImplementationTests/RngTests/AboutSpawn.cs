@@ -8,7 +8,7 @@ namespace Tests.V2.ImplementationTests.RngTests
     public class AboutSpawn
     {
         [Property]
-        public IGen<Test> ItReturnsRngsWithReasonableRandomness() => Property.Nullary(() =>
+        public Property ItReturnsRngsWithReasonableRandomness() => Property.Nullary(() =>
         {
             var sampleSize = 10;
             var seeds = Enumerable.Range(0, sampleSize).Select(_ => Rng.Spawn()).Select(rng => rng.Seed).ToList();
@@ -19,7 +19,7 @@ namespace Tests.V2.ImplementationTests.RngTests
         });
 
         [Property]
-        public IGen<Test> ItInitializesTheOrder() => Property.Nullary(() =>
+        public Property ItInitializesTheOrder() => Property.Nullary(() =>
         {
             var rng = Rng.Spawn();
 

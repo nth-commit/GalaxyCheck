@@ -9,14 +9,17 @@ namespace Tests.V2.RunnerTests.AssertTests
 {
     public class AboutExhaustion
     {
-        [Property(Iterations = 1)]
-        public void ItCanExhaust([Seed] int seed, [Size] int size)
+        public class Sync
         {
-            var property = GalaxyCheck.Gen.Int32().Where(x => false).ForAll(_ => true);
+            [Property(Iterations = 1)]
+            public void ItCanExhaust([Seed] int seed, [Size] int size)
+            {
+                var property = GalaxyCheck.Gen.Int32().Where(x => false).ForAll(_ => true);
 
-            Action test = () => property.Assert(seed: seed, size: size, deepCheck: false);
+                Action test = () => property.Assert(seed: seed, size: size, deepCheck: false);
 
-            test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
+                test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
+            }
         }
     }
 }
