@@ -3,7 +3,7 @@
   <PropertyGroup>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NuspecFile>GalaxyCheck.Xunit.CodeAnalysis.nuspec</NuspecFile>
     <NuspecProperties>PackageVersion=$(PackageVersion)</NuspecProperties>
     <NuspecBasePath></NuspecBasePath>
