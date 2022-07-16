@@ -25,7 +25,7 @@ namespace Tests.V2.RunnerTests.PrintTests
 
                         test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
                     },
-                    TimeSpan.FromSeconds(20));
+                    TimeSpan.FromSeconds(60));
             }
         }
 
@@ -43,7 +43,7 @@ namespace Tests.V2.RunnerTests.PrintTests
 
                         await test.Should().ThrowAsync<GalaxyCheck.Exceptions.GenExhaustionException>();
                     },
-                    TimeSpan.FromSeconds(20));
+                    TimeSpan.FromSeconds(60));
             }
         }
     }

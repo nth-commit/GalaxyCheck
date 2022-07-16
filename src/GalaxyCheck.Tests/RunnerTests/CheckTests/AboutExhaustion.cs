@@ -26,7 +26,7 @@ namespace Tests.V2.RunnerTests.CheckTests
                         test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
 
                     },
-                    TimeSpan.FromSeconds(20));
+                    TimeSpan.FromSeconds(60));
             }
 
             [Property(Iterations = 1)]
@@ -41,7 +41,7 @@ namespace Tests.V2.RunnerTests.CheckTests
 
                         test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
                     },
-                    TimeSpan.FromSeconds(20));
+                    TimeSpan.FromSeconds(60));
             }
         }
 
@@ -60,7 +60,7 @@ namespace Tests.V2.RunnerTests.CheckTests
                         await test.Should().ThrowAsync<GalaxyCheck.Exceptions.GenExhaustionException>();
 
                     },
-                    TimeSpan.FromSeconds(20));
+                    TimeSpan.FromSeconds(60));
             }
 
             [Property(Iterations = 1)]
@@ -79,7 +79,7 @@ namespace Tests.V2.RunnerTests.CheckTests
 
                         await test.Should().ThrowAsync<GalaxyCheck.Exceptions.GenExhaustionException>();
                     },
-                    TimeSpan.FromSeconds(20));
+                    TimeSpan.FromSeconds(60));
             }
 
         }

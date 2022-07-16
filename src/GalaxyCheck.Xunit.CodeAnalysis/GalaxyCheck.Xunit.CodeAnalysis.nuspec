@@ -11,8 +11,8 @@
     <developmentDependency>true</developmentDependency>
   </metadata>
   <files>
-    <file src="bin\Release\net6.0\GalaxyCheck.Xunit.CodeAnalysis.pdb" target="lib" />
-    <file src="bin\Release\net6.0\*.dll" target="analyzers\dotnet\cs" exclude="**\Microsoft.CodeAnalysis.*;**\System.Collections.Immutable.*;**\System.Reflection.Metadata.*;**\System.Composition.*" />
+    <file src="bin\Release\netstandard2.0\GalaxyCheck.Xunit.CodeAnalysis.pdb" target="lib" />
+    <file src="bin\Release\netstandard2.0\*.dll" target="analyzers\dotnet\cs" exclude="**\Microsoft.CodeAnalysis.*;**\System.Collections.Immutable.*;**\System.Reflection.Metadata.*;**\System.Composition.*" />
     <file src="tools\*.ps1" target="tools\" />
   </files>
 </package>
