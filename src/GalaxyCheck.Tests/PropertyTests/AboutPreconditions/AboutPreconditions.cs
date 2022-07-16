@@ -39,23 +39,5 @@ namespace Tests.V2.PropertyTests.AboutPreconditions
 
             result.Counterexample.Should().BeNull();
         }
-
-        [Fact]
-        public void IfThePreconditionPasses_WhenThePropertyIsSampled_AllTheValuesPassThePrecondition()
-        {
-            Func<int, bool> pred = x => x % 2 == 0;
-
-            var result = GalaxyCheck.Gen
-                .Int32()
-                .ForAll(x =>
-                {
-                    GalaxyCheck.Property.Precondition(pred(x));
-
-                    pred(x).Should().BeTrue();
-                })
-                .Sample(seed: 0);
-
-            result.Should().OnlyContain(x => pred(x));
-        }
     }
 }
