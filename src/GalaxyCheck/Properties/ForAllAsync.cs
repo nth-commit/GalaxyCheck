@@ -6,8 +6,8 @@ namespace GalaxyCheck
 {
     public partial class Property
     {
-        public static AsyncProperty<object[]> NullaryAsync(Func<Task<bool>> func) => new AsyncProperty<object[]>(
-            Gen.Constant(new object[] { }).Select(x => TestFactory.Create<object[]>(
+        public static AsyncProperty NullaryAsync(Func<Task<bool>> func) => new AsyncProperty(
+            Gen.Constant(new object[] { }).Select(x => TestFactory.Create(
                 x,
                 () => new ValueTask<bool>(func()),
                 x)));
@@ -49,7 +49,7 @@ namespace GalaxyCheck
                     () => new ValueTask<bool>(func(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4)),
                     new object?[] { tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4 })));
 
-        public static AsyncProperty<object[]> NullaryAsync(Func<Task> func) => NullaryAsync(func.AsTrueFunc());
+        public static AsyncProperty NullaryAsync(Func<Task> func) => NullaryAsync(func.AsTrueFunc());
 
         public static AsyncProperty<T0> ForAllAsync<T0>(IGen<T0> gen0, Func<T0, Task> action) =>
             ForAllAsync(gen0, action.AsTrueFunc());
