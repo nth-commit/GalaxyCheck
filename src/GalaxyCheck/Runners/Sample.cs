@@ -22,12 +22,6 @@ namespace GalaxyCheck
             int? seed = null,
             int? size = null) => gen.Advanced.SampleWithMetrics(iterations: iterations, seed: seed, size: size).Values;
 
-        public static List<T> Sample<T>(
-            this IGen<Test<T>> gen,
-            int? iterations = null,
-            int? seed = null,
-            int? size = null) => gen.Advanced.SampleWithMetrics(iterations: iterations, seed: seed, size: size).Values;
-
         public static SampleOneWithMetricsResult<T> SampleOneWithMetrics<T>(
             this IGenAdvanced<T> advanced,
             int? seed = null,
@@ -46,12 +40,6 @@ namespace GalaxyCheck
             int? seed = null,
             int? size = null) => advanced.SampleExampleSpacesWithMetrics(iterations: iterations, seed: seed, size: size).Select(ex => ex.Current.Value);
 
-        public static SampleWithMetricsResult<T> SampleWithMetrics<T>(
-            this IGenAdvanced<Test<T>> advanced,
-            int? iterations = null,
-            int? seed = null,
-            int? size = null) => advanced.SampleExampleSpacesWithMetrics(iterations: iterations, seed: seed, size: size).Select(exs => exs.Current.Value);
-
         public static IExampleSpace<T> SampleOneExampleSpace<T>(
             this IGenAdvanced<T> advanced,
             int? seed = null,
@@ -65,12 +53,6 @@ namespace GalaxyCheck
 
         public static SampleWithMetricsResult<IExampleSpace<T>> SampleExampleSpacesWithMetrics<T>(
             this IGenAdvanced<T> advanced,
-            int? iterations = null,
-            int? seed = null,
-            int? size = null) => SampleHelpers.RunExampleSpaceSample(advanced, iterations: iterations, seed: seed, size: size);
-
-        public static SampleWithMetricsResult<IExampleSpace<T>> SampleExampleSpacesWithMetrics<T>(
-            this IGenAdvanced<Test<T>> advanced,
             int? iterations = null,
             int? seed = null,
             int? size = null) => SampleHelpers.RunExampleSpaceSample(advanced, iterations: iterations, seed: seed, size: size);
@@ -120,42 +102,6 @@ namespace GalaxyCheck.Runners.Sample
                 values,
                 checkResult.Discards,
                 checkResult.RandomnessConsumption);
-        }
-
-        internal static SampleWithMetricsResult<IExampleSpace<T>> RunExampleSpaceSample<T>(
-            IGenAdvanced<Test<T>> advanced,
-            int? iterations,
-            int? seed,
-            int? size)
-        {
-            var property = advanced
-                .AsGen()
-                .Where(TestMeetsPrecondition)
-                .Select(MuteTestFailure);
-
-            var checkResult = property.Check(iterations: iterations, seed: seed, size: size, deepCheck: false);
-
-            var values = checkResult.Checks
-                .Select(check => check.ExampleSpace)
-                .ToList();
-
-            return new SampleWithMetricsResult<IExampleSpace<T>>(
-                values,
-                checkResult.Discards,
-                checkResult.RandomnessConsumption);
-        }
-
-        private static bool TestMeetsPrecondition<T>(Test<T> test)
-        {
-            // Evaluate the test by accessing the lazily-evaluated `Output`
-            return test.Output.Value.Result != TestResult.FailedPrecondition;
-        }
-
-        private static Test<T> MuteTestFailure<T>(Test<T> test)
-        {
-            // Create a test that always passes using the same input. We don't care if a property passes or fails when
-            // we're sampling the input.
-            return TestFactory.Create(test.Input, () => true, test.PresentedInput);
         }
     }
 }
