@@ -101,7 +101,7 @@ namespace GalaxyCheck.Runners.Sample
         {
             // Create a test that always passes using the same input. We don't care if a property passes or fails when
             // we're sampling the input.
-            return TestFactory.Create(test.Input, () => Task.FromResult(true), test.PresentedInput);
+            return TestFactory.Create(test.Input, () => ValueTask.FromResult(true), test.PresentedInput);
         }
 
         private static SampleWithMetricsResult<IReadOnlyList<object?>> ExtractSampleFromCheckResult<T>(CheckResult<T> checkResult)

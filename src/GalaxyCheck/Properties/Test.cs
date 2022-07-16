@@ -23,7 +23,7 @@ namespace GalaxyCheck
     {
     }
 
-    public interface AsyncTest<out T> : TestInput<T, Task<TestOutput>>
+    public interface AsyncTest<out T> : TestInput<T, ValueTask<TestOutput>>
     {
     }
 
@@ -39,11 +39,7 @@ namespace GalaxyCheck
 
         public static AsyncTest<T> AsAsync<T>(this Test<T> test) => TestFactory.Create<T>(
             test.Input,
-            new Lazy<Task<TestOutput>>(async () =>
-            {
-                await Task.CompletedTask;
-                return test.Output.Value;
-            }),
+            new Lazy<ValueTask<TestOutput>>(() => ValueTask.FromResult(test.Output.Value)),
             test.PresentedInput);
 
     }

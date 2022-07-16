@@ -6,11 +6,11 @@ namespace GalaxyCheck
 {
     public partial class Property
     {
-        public static AsyncTest<object> ForTheseAsync(Func<Task<bool>> func) => TestFactory.Create<object>(
+        public static AsyncTest ForTheseAsync(Func<Task<bool>> func) => TestFactory.Create(
             null!,
-            () => func(),
+            () => new ValueTask<bool>(func()),
             null);
 
-        public static AsyncTest<object> ForTheseAsync(Func<Task> func) => ForTheseAsync(func.AsTrueFunc());
+        public static AsyncTest ForTheseAsync(Func<Task> func) => ForTheseAsync(func.AsTrueFunc());
     }
 }
