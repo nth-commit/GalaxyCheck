@@ -3,30 +3,85 @@ using GalaxyCheck;
 using NebulaCheck;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using static Tests.V2.DomainGenAttributes;
+using static Tests.V2.Timeouts;
 
 namespace Tests.V2.RunnerTests.CheckTests
 {
     public class AboutExhaustion
     {
-        [Property(Iterations = 1)]
-        public void ItExhaustsWhenGenerationIsImpossible([Seed] int seed, [Size] int size)
+        public class Sync
         {
-            var property = GalaxyCheck.Gen.Int32().Where(x => false).ForAll(_ => true);
+            [Property(Iterations = 1)]
+            public void ItExhaustsWhenGenerationIsImpossible([Seed] int seed, [Size] int size)
+            {
+                RunWithTimeout(
+                    () =>
+                    {
+                        var property = GalaxyCheck.Gen.Int32().Where(x => false).ForAll(_ => true);
 
-            Action test = () => property.Check(seed: seed, size: size, deepCheck: false);
+                        Action test = () => property.Check(seed: seed, size: size);
 
-            test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
+                        test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
+
+                    },
+                    TimeSpan.FromSeconds(20));
+            }
+
+            [Property(Iterations = 1)]
+            public void ItExhaustsWhenPreconditionIsImpossible([Seed] int seed, [Size] int size)
+            {
+                RunWithTimeout(
+                    () =>
+                    {
+                        var property = GalaxyCheck.Gen.Int32().ForAll(_ => GalaxyCheck.Property.Precondition(false));
+
+                        Action test = () => property.Check(seed: seed, size: size);
+
+                        test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
+                    },
+                    TimeSpan.FromSeconds(20));
+            }
         }
 
-        [Property(Iterations = 1)]
-        public void ItExhaustsWhenPreconditionIsImpossible([Seed] int seed, [Size] int size)
+        public class Async
         {
-            var property = GalaxyCheck.Gen.Int32().ForAll(_ => GalaxyCheck.Property.Precondition(false));
+            [Property(Iterations = 1)]
+            public void ItExhaustsWhenGenerationIsImpossible([Seed] int seed, [Size] int size)
+            {
+                RunWithTimeoutAsync(
+                    async () =>
+                    {
+                        var property = GalaxyCheck.Gen.Int32().Where(x => false).ForAllAsync(_ => Task.CompletedTask);
 
-            Action test = () => property.Check(seed: seed, size: size, deepCheck: false);
+                        Func<Task> test = () => property.CheckAsync(seed: seed, size: size);
 
-            test.Should().Throw<GalaxyCheck.Exceptions.GenExhaustionException>();
+                        await test.Should().ThrowAsync<GalaxyCheck.Exceptions.GenExhaustionException>();
+
+                    },
+                    TimeSpan.FromSeconds(20));
+            }
+
+            [Property(Iterations = 1)]
+            public void ItExhaustsWhenPreconditionIsImpossible([Seed] int seed, [Size] int size)
+            {
+                RunWithTimeoutAsync(
+                    async () =>
+                    {
+                        var property = GalaxyCheck.Gen.Int32().ForAllAsync(async _ =>
+                        {
+                            await Task.CompletedTask;
+                            GalaxyCheck.Property.Precondition(false);
+                        });
+
+                        Func<Task> test = () => property.CheckAsync(seed: seed, size: size);
+
+                        await test.Should().ThrowAsync<GalaxyCheck.Exceptions.GenExhaustionException>();
+                    },
+                    TimeSpan.FromSeconds(20));
+            }
+
         }
     }
 }

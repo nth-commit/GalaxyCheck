@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GalaxyCheck.Runners.Check.AsyncAutomata
 {
@@ -54,10 +55,10 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                 .Select(x => x.nextTransition)
                 .Last();
 
-        private static async System.Threading.Tasks.Task<TransitionAggregation<T>> AggregateTransitionsAsync<T>(IAsyncEnumerable<CheckStateTransition<T>> transitions)
+        private static async Task<TransitionAggregation<T>> AggregateTransitionsAsync<T>(IAsyncEnumerable<CheckStateTransition<T>> transitions)
         {
             var mappedTransitions = await transitions
-                //.WithDiscardCircuitBreaker(isTransitionCountedInConsecutiveDiscardCount, isTransitionDiscard)
+                .WithDiscardCircuitBreaker(isTransitionCountedInConsecutiveDiscardCount, isTransitionDiscard)
                 .Select(x => (
                     state: x.State,
                     check: MapStateToIterationOrIgnore(x.State),

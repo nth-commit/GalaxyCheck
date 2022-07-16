@@ -8,6 +8,14 @@ namespace GalaxyCheck
 {
     public static partial class Extensions
     {
+        // TODO: Delete this once C# supports extension methods after implicit conversions
+        public static void Print<T>(
+            this Property<T> property,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            Action<string>? stdout = null) => Print((Property)property, iterations, seed, size, stdout);
+
         public static void Print(
             this Property property,
             int? iterations = null,
@@ -22,6 +30,14 @@ namespace GalaxyCheck
 
             PrintHelpers.Print(sample.Values, sample.Discards, stdout);
         }
+
+        // TODO: Delete this once C# supports extension methods after implicit conversions
+        public static Task PrintAsync<T>(
+            this AsyncProperty<T> property,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            Action<string>? stdout = null) => PrintAsync((AsyncProperty)property, iterations, seed, size, stdout);
 
         public static async Task PrintAsync(
             this AsyncProperty property,
