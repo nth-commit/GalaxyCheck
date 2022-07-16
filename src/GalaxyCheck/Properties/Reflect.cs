@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -59,7 +58,6 @@ namespace GalaxyCheck
                 var asyncHandler = ToAsyncPropertyHandler(handler);
                 return asyncHandler(methodInfo, target, genFactory, customGens);
             }
-
         }
 
         private static string FormatSupportReturnTypes(IEnumerable<Type> types)

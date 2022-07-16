@@ -14,4 +14,8 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nth-commit/GalaxyCheck</RepositoryUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+  </ItemGroup>
 </Project>
