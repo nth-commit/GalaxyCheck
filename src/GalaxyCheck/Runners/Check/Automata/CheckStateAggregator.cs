@@ -78,12 +78,10 @@ namespace GalaxyCheck.Runners.Check.Automata
         private static bool isTransitionCountedInConsecutiveDiscardCount<T>(CheckStateTransition<T> transition) =>
             transition.State is GenerationStates.Generation_Discard<T> ||
             transition.State is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
+            transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T>;
 
         private static bool isTransitionDiscard<T>(CheckStateTransition<T> transition) =>
-            transition.State is GenerationStates.Generation_Discard<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
+            transition.State is GenerationStates.Generation_Discard<T>;
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {

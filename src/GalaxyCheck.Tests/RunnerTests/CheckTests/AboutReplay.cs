@@ -4,7 +4,6 @@ using GalaxyCheck.Runners.Replaying;
 using NebulaCheck;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Gen = NebulaCheck.Gen;
 using Property = NebulaCheck.Property;
@@ -57,27 +56,6 @@ namespace Tests.V2.RunnerTests.CheckTests
             select Property.ForThese(() =>
             {
                 var property = GalaxyCheck.Gen.Advanced.Error<object>("", "").ForAll(func);
-                var replay = ReplayEncoding.Encode(CreateReplay(replaySeed, replaySize, replayPath));
-
-                Action test = () => property.Check(replay: replay);
-
-                test.Should()
-                    .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error replaying last example, given replay string was no longer valid.*");
-            });
-
-        [Property]
-        public NebulaCheck.IGen<Test> IfTheReplayEncodesAPreconditionFailure_ItThrows() =>
-            from value in DomainGen.Any()
-            from replaySeed in Gen.Int32()
-            from replaySize in Gen.Int32().Between(0, 100)
-            from replayPath in Gen.Int32().ListOf()
-            select Property.ForThese(() =>
-            {
-                var property = GalaxyCheck.Gen.Constant(value).ForAll((_) =>
-                {
-                    GalaxyCheck.Property.Precondition(false);
-                });
                 var replay = ReplayEncoding.Encode(CreateReplay(replaySeed, replaySize, replayPath));
 
                 Action test = () => property.Check(replay: replay);

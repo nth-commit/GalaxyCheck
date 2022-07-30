@@ -1,38 +1,37 @@
 ﻿using FluentAssertions;
-using GalaxyCheck;
 using NebulaCheck;
 using Snapshooter;
 using Snapshooter.Xunit;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using static Tests.V2.DomainGenAttributes;
 using Property = NebulaCheck.Property;
 
 namespace Tests.V2.GenTests.NullableGenTests
 {
     public class AboutNullableGeneration
     {
+        private static readonly GalaxyCheck.IGen<string?> GenUnderTest = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String());
+
+        private static IGen<List<string?>> Sample =>
+            from seed in DomainGen.Seed()
+            from size in DomainGen.Size()
+            select GenUnderTest.SampleOneTraversal(seed: seed, size: size);
+
+        private static IGen<List<string?>> NullableSample => Sample.Where(s => s.First() == null);
+
+
         [Property]
-        public void NullDoesNotShrink([Seed] int seed, [Size] int size)
+        public void NullDoesNotShrink([MemberGen(nameof(NullableSample))] List<string?> sample)
         {
-            var gen = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String());
-
-            var sample = gen.SampleOneTraversal(seed: seed, size: size);
-
-            Property.Precondition(sample.First() == null);
-
             sample.Should().HaveCount(1);
         }
 
+        private static IGen<List<string?>> NonNullableSample => Sample.Where(s => s.First() != null);
+
         [Property]
-        public void NonNullShrinksToNull([Seed] int seed, [Size] int size)
+        public void NonNullShrinksToNull([MemberGen(nameof(NonNullableSample))] List<string?> sample)
         {
-            var gen = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String());
-
-            var sample = gen.SampleOneTraversal(seed: seed, size: size);
-
-            Property.Precondition(sample.First() != null);
-
             sample.Should().HaveElementAt(1, null);
         }
 
@@ -43,7 +42,7 @@ namespace Tests.V2.GenTests.NullableGenTests
 
             foreach (var seed in seeds)
             {
-                var sample = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String()).Sample(seed: seed);
+                var sample = GalaxyCheck.Extensions.Sample(GenUnderTest, seed: seed);
 
                 var nameExtension = string.Join("_", new[]
                 {

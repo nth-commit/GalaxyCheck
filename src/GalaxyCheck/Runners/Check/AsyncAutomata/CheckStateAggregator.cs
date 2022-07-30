@@ -14,7 +14,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
     internal static class CheckStateAggregator
     {
-        public static async System.Threading.Tasks.Task<TransitionAggregation<T>> Aggregate<T>(
+        public static async Task<TransitionAggregation<T>> Aggregate<T>(
             CheckState<T> initialState,
             CheckStateContext<T> initialContext,
             IReadOnlyCollection<ICheckStateTransitionDecorator<T>> decorators)
@@ -79,12 +79,10 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
         private static bool isTransitionCountedInConsecutiveDiscardCount<T>(CheckStateTransition<T> transition) =>
             transition.State is GenerationStates.Generation_Discard<T> ||
             transition.State is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
+            transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T>;
 
         private static bool isTransitionDiscard<T>(CheckStateTransition<T> transition) =>
-            transition.State is GenerationStates.Generation_Discard<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_Discard<T>;
+            transition.State is GenerationStates.Generation_Discard<T>;
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {
