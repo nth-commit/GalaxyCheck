@@ -10,7 +10,6 @@ namespace GalaxyCheck.Runners.Check.Automata
             return testOutput.Result switch
             {
                 TestResult.Succeeded => ExplorationOutcome.Success(),
-                TestResult.FailedPrecondition => ExplorationOutcome.Discard(),
                 TestResult.Failed => ExplorationOutcome.Fail(testOutput.Exception),
                 _ => throw new Exception("Fatal: Unhandled case")
             };

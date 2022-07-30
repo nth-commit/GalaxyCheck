@@ -54,10 +54,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                         new InstanceExploration_Counterexample<T>(Instance, tail, counterexampleExploration),
 
                     onNonCounterexampleExploration: (nonCounterexampleExploration) =>
-                        new InstanceExploration_NonCounterexample<T>(Instance, tail, nonCounterexampleExploration, CounterexampleContext),
-
-                    onDiscardExploration: (_) =>
-                        new InstanceExploration_Discard<T>(Instance, tail, CounterexampleContext, IsFirstExplorationStage));
+                        new InstanceExploration_NonCounterexample<T>(Instance, tail, nonCounterexampleExploration, CounterexampleContext));
 
                 return new CheckStateTransition<T>(nextState, nextContext);
             }
@@ -117,37 +114,6 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
             public IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory => Instance.ExampleSpaceHistory.Select(
                 exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(Path)));
-        }
-
-        internal record InstanceExploration_Discard<T>(
-            IGenInstance<AsyncTest<T>> Instance,
-            IAsyncEnumerable<ExplorationStage<AsyncTest<T>>> NextExplorations,
-            CounterexampleContext<T>? PreviousCounterexample,
-            bool IsFirstExplorationStage) : CheckState<T>
-        {
-            /// <summary>
-            /// It's somewhat surprising that this state can be the first exploration (the top of the tree and a
-            /// discard). If it was the first exploration, you would think the discard would be handled by
-            /// GenerationStates.Discard. However, this code path is hit by "late filtering"
-            /// (<see cref="Property.Precondition(bool)"/>). We don't find out this is a discard until we start
-            /// exploring the example space.
-            /// </summary>
-            public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
-            {
-                CheckState<T> nextState = IsFirstExplorationStage
-                    ? new InstanceExploration_End<T>(
-                        Instance,
-                        CounterexampleContext: null,
-                        WasDiscard: true,
-                        WasReplay: false)
-                    : new InstanceExploration_HoldingNextExplorationStage<T>(
-                        Instance,
-                        NextExplorations,
-                        PreviousCounterexample,
-                        IsFirstExplorationStage: false);
-
-                return Task.FromResult(new CheckStateTransition<T>(nextState, context));
-            }
         }
 
         internal record InstanceExploration_End<T>(

@@ -45,8 +45,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
             return exploration.Match(
                 onNonCounterexampleExploration: _ => HandleReplayedNonCounterexample(ctx, instance),
-                onCounterexampleExploration: counterexample => HandleReplayedCounterexample(ctx, instance, replayDecoded, counterexample),
-                onDiscardExploration: (_) => HandleError(ctx));
+                onCounterexampleExploration: counterexample => HandleReplayedCounterexample(ctx, instance, replayDecoded, counterexample));
         }
 
         private static CheckStateTransition<T> HandleReplayedNonCounterexample(

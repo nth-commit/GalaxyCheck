@@ -98,7 +98,6 @@ namespace GalaxyCheck.ExampleSpaces
             {
                 return analyze(exampleSpace.Current).Match(
                     onSuccess: () => ExplorationStage<T>.Factory.NonCounterexample(exampleSpace, path),
-                    onDiscard: () => ExplorationStage<T>.Factory.Discard(exampleSpace),
                     onFail: exception => ExplorationStage<T>.Factory.Counterexample(exampleSpace, path, exception));
             }
 
@@ -130,8 +129,7 @@ namespace GalaxyCheck.ExampleSpaces
                         counterexampleSubspace = explorationStage.Match<CounterexampleSubspace<T>?>(
                             onCounterexampleExploration: counterexampleExploration =>
                                 new CounterexampleSubspace<T>(counterexampleExploration.ExampleSpace, counterexampleExploration.Path),
-                            onNonCounterexampleExploration: _ => null,
-                            onDiscardExploration: _ => null);
+                            onNonCounterexampleExploration: _ => null);
                     }
                 }
             }
@@ -184,7 +182,6 @@ namespace GalaxyCheck.ExampleSpaces
             {
                 return (await analyze(exampleSpace.Current)).Match(
                     onSuccess: () => ExplorationStage<T>.Factory.NonCounterexample(exampleSpace, path),
-                    onDiscard: () => ExplorationStage<T>.Factory.Discard(exampleSpace),
                     onFail: exception => ExplorationStage<T>.Factory.Counterexample(exampleSpace, path, exception));
             }
 
@@ -216,8 +213,7 @@ namespace GalaxyCheck.ExampleSpaces
                         counterexampleSubspace = explorationStage.Match<CounterexampleSubspace<T>?>(
                             onCounterexampleExploration: counterexampleExploration =>
                                 new CounterexampleSubspace<T>(counterexampleExploration.ExampleSpace, counterexampleExploration.Path),
-                            onNonCounterexampleExploration: _ => null,
-                            onDiscardExploration: _ => null);
+                            onNonCounterexampleExploration: _ => null);
                     }
                 }
             }

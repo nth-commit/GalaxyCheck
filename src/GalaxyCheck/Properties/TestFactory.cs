@@ -33,10 +33,6 @@ namespace GalaxyCheck.Properties
             {
                 return new TestOutputImpl(generateOutput() ? TestResult.Succeeded : TestResult.Failed, null);
             }
-            catch (Property.PropertyPreconditionException)
-            {
-                return new TestOutputImpl(TestResult.FailedPrecondition, null);
-            }
             catch (Exception ex)
             {
                 return new TestOutputImpl(TestResult.Failed, ex);
@@ -67,10 +63,6 @@ namespace GalaxyCheck.Properties
             try
             {
                 return new TestOutputImpl(await generateOutput() ? TestResult.Succeeded : TestResult.Failed, null);
-            }
-            catch (Property.PropertyPreconditionException)
-            {
-                return new TestOutputImpl(TestResult.FailedPrecondition, null);
             }
             catch (Exception ex)
             {
