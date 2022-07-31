@@ -17,11 +17,6 @@
             return new GenParameters(Internal.Rng.Create(seed), new Size(size));
         }
 
-        public static GenParameters Create(int size)
-        {
-            return new GenParameters(Internal.Rng.Spawn(), new Size(size));
-        }
-
         internal static GenParameters Create(IRng rng, Size size)
         {
             return new GenParameters(rng, size);

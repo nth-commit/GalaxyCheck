@@ -34,7 +34,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             var parameterGens = constructor
                 .GetParameters()
                 .Select(parameter => innerHandler
-                    .CreateGen(parameter.ParameterType, context.Next(parameter.Name ?? "<unknown>", parameter.ParameterType)) // TODO: Indicate it's a ctor param in the path
+                    .CreateNamedGen(parameter.ParameterType, parameter.Name!, context)
                     .Cast<object>());
 
             return Gen
