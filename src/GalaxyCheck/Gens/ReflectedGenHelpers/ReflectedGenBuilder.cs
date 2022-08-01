@@ -9,7 +9,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
     {
         public static IGen Build(
             Type type,
-            IReadOnlyDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
             IReadOnlyList<ReflectedGenMemberOverride> memberOverrides,
             ErrorFactory errorFactory,
             ReflectedGenHandlerContext context)

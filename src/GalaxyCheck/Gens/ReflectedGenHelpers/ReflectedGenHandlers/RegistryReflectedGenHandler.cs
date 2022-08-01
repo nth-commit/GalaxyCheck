@@ -7,11 +7,11 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
     internal class RegistryReflectedGenHandler : IReflectedGenHandler
     {
-        private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
+        private readonly IReadOnlyDictionary<Type, Func<IGen>> _registeredGensByType;
         private readonly ContextualErrorFactory _errorFactory;
 
         public RegistryReflectedGenHandler(
-            IReadOnlyDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
             ContextualErrorFactory errorFactory)
         {
             _registeredGensByType = registeredGensByType;
@@ -23,20 +23,17 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
         public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
-            foreach (var kvp in _registeredGensByType)
-            {
-                var registeredType = kvp.Key;
-                var genTypeArgument = kvp.Value.ReflectGenTypeArgument();
+            var gen = _registeredGensByType[type]();
 
-                if (registeredType.IsAssignableFrom(genTypeArgument) == false)
-                {
-                    return _errorFactory(
-                        $"type '{genTypeArgument}' was not assignable to the type it was registered to, '{registeredType}'",
-                        context);
-                }
+            var genTypeArgument = gen.ReflectGenTypeArgument();
+            if (type.IsAssignableFrom(genTypeArgument) == false)
+            {
+                return _errorFactory(
+                    $"type '{genTypeArgument}' was not assignable to the type it was registered to, '{type}'",
+                    context);
             }
 
-            return _registeredGensByType[type];
+            return gen;
         }
     }
 }
