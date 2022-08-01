@@ -128,9 +128,9 @@ jobs:
         run: |
           arrTag=(${GITHUB_REF//\// })
           VERSION="${arrTag[2]}"
-          echo Version: $VERSION
-          VERSION="${VERSION//v}"
-          echo Clean Version: $VERSION
+          echo "Version: $VERSION"
+          VERSION=$(echo $VERSION | sed -E 's/^v//g')
+          echo "Clean Version: $VERSION"
 
           mkdir ./nupkg-release
           for project in $PACKABLE_PROJECTS; do
