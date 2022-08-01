@@ -43,7 +43,7 @@ namespace GalaxyCheck.Gens
     public interface IGenFactory
     {
         /// <summary>
-        /// Registers a custom generator to the given type. The generator is applied to all <see cref="ITypedGen{T}"/>
+        /// Registers a custom generator to the given type. The generator is applied to all <see cref="IReflectedGen{T}"/>
         /// that are created by this factory.
         /// </summary>
         /// <param name="type">The type to register the generator against.</param>
@@ -52,12 +52,33 @@ namespace GalaxyCheck.Gens
         IGenFactory RegisterType(Type type, IGen gen);
 
         /// <summary>
-        /// Registers a custom generator to the given type. The generator is applied to all <see cref="ITypedGen{T}"/>
+        /// Registers a custom generator to the given type. The generator is applied to all <see cref="IReflectedGen{T}"/>
         /// that are created by this factory.
         /// </summary>
         /// <param name="gen">The generator to register at the type.</param>
         /// <returns>A new factory with the registration applied.</returns>
         IGenFactory RegisterType<T>(IGen<T> gen);
+
+        /// <summary>
+        /// Registers a custom generator to the given type. The generator is applied to all
+        /// <see cref="IReflectedGen{T}"/>. The registration function can reference existing conventions defined by the
+        /// factory. Note, only conventions previously defined are used.
+        /// </summary>
+        /// <param name="type">The type to register the generator against.</param>
+        /// <param name="genFunc">A function that takes the current factory and returns a generator. The factory can be
+        /// used to create the gen, but it only uses conventions that were previously defined.</param>
+        /// <returns>A new factory with the registration applied.</returns>
+        IGenFactory RegisterType(Type type, Func<IGenFactory, IGen> genFunc);
+
+        /// <summary>
+        /// Registers a custom generator to the given type. The generator is applied to all
+        /// <see cref="IReflectedGen{T}"/>. The registration function can reference existing conventions defined by the
+        /// factory. Note, only conventions previously defined are used.
+        /// </summary>
+        /// <param name="genFunc">A function that takes the current factory and returns a generator. The factory can be
+        /// used to create the gen, but it only uses conventions that were previously defined.</param>
+        /// <returns>A new factory with the registration applied.</returns>
+        IGenFactory RegisterType<T>(Func<IGenFactory, IGen<T>> genFunc);
 
         /// <summary>
         /// Creates an auto-generator for the given type, using the configuration that was specified on this factory.
@@ -68,39 +89,48 @@ namespace GalaxyCheck.Gens
 
     internal class GenFactory : IGenFactory
     {
-        private static readonly IReadOnlyDictionary<Type, IGen> DefaultRegisteredGensByType =
-            new Dictionary<Type, IGen>
+        private static readonly IReadOnlyDictionary<Type, Func<IGen>> DefaultRegisteredGensByType =
+            new Dictionary<Type, Func<IGen>>
             {
-                { typeof(short), Gen.Int16() },
-                { typeof(ushort), Gen.Int16().Select(x => (ushort)x) },
-                { typeof(int), Gen.Int32() },
-                { typeof(uint), Gen.Int32().Select(x => (uint)x) },
-                { typeof(long), Gen.Int64() },
-                { typeof(ulong), Gen.Int64().Select(x => (ulong)x) },
-                { typeof(char), Gen.Char() },
-                { typeof(string), Gen.String() },
-                { typeof(byte), Gen.Byte() },
-                { typeof(Guid), Gen.Guid() },
-                { typeof(DateTime), Gen.DateTime() },
-                { typeof(bool), Gen.Boolean() }
+                { typeof(short), () => Gen.Int16() },
+                { typeof(ushort), () => Gen.Int16().Select(x => (ushort)x) },
+                { typeof(int), () => Gen.Int32() },
+                { typeof(uint), () => Gen.Int32().Select(x => (uint)x) },
+                { typeof(long), () => Gen.Int64() },
+                { typeof(ulong), () => Gen.Int64().Select(x => (ulong)x) },
+                { typeof(char), () => Gen.Char() },
+                { typeof(string), () => Gen.String() },
+                { typeof(byte), () => Gen.Byte() },
+                { typeof(Guid), () => Gen.Guid() },
+                { typeof(DateTime), () => Gen.DateTime() },
+                { typeof(bool), () => Gen.Boolean() }
             };
 
-        private readonly ImmutableDictionary<Type, IGen> _registeredGensByType;
+        private readonly ImmutableDictionary<Type, Func<IGen>> _registeredGensByType;
 
-        private GenFactory(ImmutableDictionary<Type, IGen> registeredGensByType)
+        private GenFactory(ImmutableDictionary<Type, Func<IGen>> registeredGensByType)
         {
             _registeredGensByType = registeredGensByType;
         }
 
-        public GenFactory() : this(DefaultRegisteredGensByType.ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value))
+        public GenFactory() : this(DefaultRegisteredGensByType
+            .ToImmutableDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value))
         {
         }
 
         public IGenFactory RegisterType(Type type, IGen gen) =>
-            new GenFactory(_registeredGensByType.SetItem(type, gen));
+            RegisterType(type, (_) => gen);
 
         public IGenFactory RegisterType<T>(IGen<T> gen) =>
-            RegisterType(typeof(T), gen);
+            RegisterType((_) => gen);
+
+        public IGenFactory RegisterType(Type type, Func<IGenFactory, IGen> genFunc) =>
+            new GenFactory(_registeredGensByType.SetItem(type, () => genFunc(this)));
+
+        public IGenFactory RegisterType<T>(Func<IGenFactory, IGen<T>> genFunc) =>
+            new GenFactory(_registeredGensByType.SetItem(typeof(T), () => genFunc(this)));
 
         public IReflectedGen<T> Create<T>() => new ReflectedGen<T>(_registeredGensByType);
     }
@@ -109,12 +139,12 @@ namespace GalaxyCheck.Gens
 
     internal class ReflectedGen<T> : BaseGen<T>, IReflectedGen<T>
     {
-        private readonly IReadOnlyDictionary<Type, IGen> _registeredGensByType;
+        private readonly IReadOnlyDictionary<Type, Func<IGen>> _registeredGensByType;
         private readonly ImmutableList<ReflectedGenMemberOverride> _memberOverrides;
         private readonly string? _errorExpression;
 
         private ReflectedGen(
-            IReadOnlyDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
             ImmutableList<ReflectedGenMemberOverride> memberOverrides,
             string? errorExpression)
         {
@@ -123,7 +153,7 @@ namespace GalaxyCheck.Gens
             _errorExpression = errorExpression;
         }
 
-        public ReflectedGen(IReadOnlyDictionary<Type, IGen> registeredGensByType)
+        public ReflectedGen(IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType)
             : this(registeredGensByType, ImmutableList.Create<ReflectedGenMemberOverride>(), null)
         {
         }
@@ -146,7 +176,7 @@ namespace GalaxyCheck.Gens
             BuildGen(_registeredGensByType, _memberOverrides, _errorExpression).Advanced.Run(parameters);
 
         private static IGen<T> BuildGen(
-            IReadOnlyDictionary<Type, IGen> registeredGensByType,
+            IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
             IReadOnlyList<ReflectedGenMemberOverride> memberOverrides,
             string? errorExpression)
         {

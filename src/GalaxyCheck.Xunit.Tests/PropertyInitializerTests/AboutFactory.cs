@@ -112,6 +112,16 @@ namespace Tests.PropertyInitializerTests
             {
                 throw new NotImplementedException();
             }
+
+            public IGenFactory RegisterType<T>(Func<IGenFactory, IGen<T>> genFunc)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IGenFactory RegisterType(Type type, Func<IGenFactory, IGen> genFunc)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class GenFactory1Attribute : GenFactoryAttribute
@@ -132,6 +142,16 @@ namespace Tests.PropertyInitializerTests
             }
 
             public IGenFactory RegisterType<T>(IGen<T> gen)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IGenFactory RegisterType<T>(Func<IGenFactory, IGen<T>> genFunc)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IGenFactory RegisterType(Type type, Func<IGenFactory, IGen> genFunc)
             {
                 throw new NotImplementedException();
             }

@@ -12,7 +12,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
         [Fact]
         public void ItErrorsWhenPrimitiveIsUnresolvable()
         {
-            var gen = new ReflectedGen<int>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new ReflectedGen<int>(ImmutableDictionary.Create<Type, Func<IGen>>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
@@ -29,7 +29,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
         [Fact]
         public void ItErrorsWhenPropertyTypeIsUnresolvable()
         {
-            var gen = new ReflectedGen<ClassWithOneProperty>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new ReflectedGen<ClassWithOneProperty>(ImmutableDictionary.Create<Type, Func<IGen>>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
@@ -46,7 +46,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
         [Fact]
         public void ItErrorsWhenNestedPropertyTypeIsUnresolvable()
         {
-            var gen = new ReflectedGen<ClassWithOneNestedProperty>(ImmutableDictionary.Create<Type, IGen>());
+            var gen = new ReflectedGen<ClassWithOneNestedProperty>(ImmutableDictionary.Create<Type, Func<IGen>>());
 
             Action action = () => gen.SampleOne(seed: 0);
 
