@@ -36,8 +36,6 @@ namespace GalaxyCheck.Gens.Parameters.Internal
 
         public IRng Fork() => Create((Family + 1) * -1521134295 + Order);
 
-        public IRng Influence(int seed) => new Rng(Family, seed, Order);
-
         public long Value(long min, long max)
         {
             if (min > max) throw new ArgumentOutOfRangeException(nameof(min), "'min' cannot be greater than 'max'");

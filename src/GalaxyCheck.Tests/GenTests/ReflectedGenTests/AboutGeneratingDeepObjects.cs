@@ -45,6 +45,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
         [Property]
         public NebulaCheck.IGen<Test> IfTheClassHasARecursiveProperty_ItErrors() =>
+            from value in DomainGen.Any()
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select Property.ForThese(() =>

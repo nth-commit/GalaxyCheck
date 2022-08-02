@@ -73,14 +73,16 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
         private class DefaultConstructorAndAnotherWithOneArgument
         {
-            public int? Property { get; set; }
+            public bool WasCreatedWithDefaultConstructor { get; }
 
             public DefaultConstructorAndAnotherWithOneArgument()
             {
+                WasCreatedWithDefaultConstructor = true;
             }
 
-            public DefaultConstructorAndAnotherWithOneArgument(int property)
+            public DefaultConstructorAndAnotherWithOneArgument(int parameter)
             {
+                WasCreatedWithDefaultConstructor = false;
             }
         }
 
@@ -92,7 +94,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
             var instance = gen.SampleOne(seed: 0);
 
             instance.Should().NotBeNull();
-            instance.Property.Should().NotBeNull();
+            instance.WasCreatedWithDefaultConstructor.Should().BeTrue();
         }
 
         private class ConstructorWithOneArgumentAndAnotherWithTwoArguments

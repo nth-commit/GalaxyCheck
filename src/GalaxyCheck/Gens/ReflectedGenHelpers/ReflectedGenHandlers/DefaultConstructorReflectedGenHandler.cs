@@ -1,10 +1,7 @@
-﻿using GalaxyCheck.Gens.Parameters;
-using GalaxyCheck.Gens.Parameters.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
@@ -74,39 +71,26 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                 });
         }
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(
-            IReflectedGenHandler innerHandler,
-            Type type,
-            ReflectedGenHandlerContext context) => type
+        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
+        {
+            return type
                 .GetProperties()
                 .Where(property => property.CanWrite)
-                .Select(property => CreateSetMemberActionGen(
-                    innerHandler,
-                    context,
-                    property.Name,
-                    property.PropertyType,
-                    (target, value) => property.SetValue(target, value)));
+                .Select(property => innerHandler
+                    .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType))
+                    .Cast<object>()
+                    .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));
+        }
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(
-            IReflectedGenHandler innerHandler,
-            Type type,
-            ReflectedGenHandlerContext context) => type
+        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
+        {
+            return type
                 .GetFields()
                 .Where(field => field.IsPublic)
-                .Select(field => CreateSetMemberActionGen(
-                    innerHandler,
-                    context,
-                    field.Name,
-                    field.FieldType,
-                    (target, value) => field.SetValue(target, value)));
-
-        private static IGen<Action<object>> CreateSetMemberActionGen(
-            IReflectedGenHandler innerHandler,
-            ReflectedGenHandlerContext parentContext,
-            string memberName,
-            Type memberType,
-            Action<object, object> setMemberValue) => innerHandler.CreateNamedGen(memberType, memberName, parentContext)
-                .Cast<object>()
-                .Select((Func<object, Action<object>>)(value => obj => setMemberValue(obj, value)));
+                .Select(field => innerHandler
+                    .CreateGen(field.FieldType, context.Next(field.Name, field.FieldType))
+                    .Cast<object>()
+                    .Select<object, Action<object>>(value => obj => field.SetValue(obj, value)));
+        }
     }
 }
