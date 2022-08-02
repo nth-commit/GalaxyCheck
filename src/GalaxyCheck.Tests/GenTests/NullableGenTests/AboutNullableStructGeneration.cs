@@ -9,27 +9,27 @@ using Property = NebulaCheck.Property;
 
 namespace Tests.V2.GenTests.NullableGenTests
 {
-    public class AboutNullableGeneration
+    public class AboutNullableStructGeneration
     {
-        private static readonly GalaxyCheck.IGen<string?> GenUnderTest = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String());
+        private static readonly GalaxyCheck.IGen<int?> GenUnderTest = GalaxyCheck.Gen.NullableStruct(GalaxyCheck.Gen.Int32());
 
-        private static IGen<List<string?>> Sample =>
+        private static IGen<List<int?>> Sample =>
             from seed in DomainGen.Seed()
             from size in DomainGen.Size()
             select GenUnderTest.SampleOneTraversal(seed: seed, size: size);
 
-        private static IGen<List<string?>> NullableSample => Sample.Where(s => s.First() == null);
+        private static IGen<List<int?>> NullableSample => Sample.Where(s => s.First() == null);
 
         [Property]
-        public void NullDoesNotShrink([MemberGen(nameof(NullableSample))] List<string?> sample)
+        public void NullDoesNotShrink([MemberGen(nameof(NullableSample))] List<int?> sample)
         {
             sample.Should().HaveCount(1);
         }
 
-        private static IGen<List<string?>> NonNullableSample => Sample.Where(s => s.First() != null);
+        private static IGen<List<int?>> NonNullableSample => Sample.Where(s => s.First() != null);
 
         [Property]
-        public void NonNullShrinksToNull([MemberGen(nameof(NonNullableSample))] List<string?> sample)
+        public void NonNullShrinksToNull([MemberGen(nameof(NonNullableSample))] List<int?> sample)
         {
             sample.Should().HaveElementAt(1, null);
         }
