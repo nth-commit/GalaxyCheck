@@ -23,6 +23,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
             var genFactoriesByPriority = new List<IReflectedGenHandler>
             {
                 new MemberOverrideReflectedGenHandler(memberOverrides),
+                new NullableGenHandler(),
                 new RegistryReflectedGenHandler(registeredGensByType, contextualErrorFactory),
                 new CollectionReflectedGenHandler(),
                 new SetReflectedGenHandler(),
