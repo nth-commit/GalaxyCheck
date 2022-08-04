@@ -3,6 +3,8 @@ using GalaxyCheck;
 using NebulaCheck;
 using System;
 using System.Linq;
+using Xunit;
+using static Tests.V2.DomainGenAttributes;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
@@ -57,6 +59,26 @@ namespace Tests.V2.GenTests.ReflectedGenTests
                 instance.Should().NotBeNull();
                 instance.Property.Property.Should().Be(value);
             });
+
+        private record RecordWithOneProperty2(int Property);
+
+        [Fact]
+        public void ItErrorsWhenTryingToOverrideAMemberOfATypeRegisteredInTheFactory()
+        {
+            var genFactory = GalaxyCheck.Gen
+                .Factory()
+                .RegisterType(GalaxyCheck.Gen.Int32().Select(i => new RecordWithOneProperty2(1)));
+
+            var gen = genFactory
+                .Create<RecordWithOneProperty2>()
+                .OverrideMember(x => x.Property, GalaxyCheck.Gen.Constant(2));
+
+            Action action = () => gen.SampleOne();
+
+            action.Should()
+                .Throw<GalaxyCheck.Exceptions.GenErrorException>()
+                .WithMessage("Error while running generator ReflectedGen: attempted to override expression 'x => x.Property' on type 'Tests.V2.GenTests.ReflectedGenTests.AboutOverridingMembers+RecordWithOneProperty2', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)");
+        }
 
         private record RecordWithAMethod(object Property)
         {

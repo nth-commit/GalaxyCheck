@@ -137,20 +137,18 @@ namespace GalaxyCheck.Gens
 
     internal record ReflectedGenMemberOverride(string Path, IGen Gen);
 
-    internal class ReflectedGen<T> : BaseGen<T>, IReflectedGen<T>
+    internal record ReflectedGen<T>(
+        IReadOnlyDictionary<Type, Func<IGen>> RegisteredGensByType,
+        ImmutableList<ReflectedGenMemberOverride> MemberOverrides,
+        ReflectedGen<T>.OverrideMemberErrorKind? OverrideMemberError) : BaseGenV2<T>, IReflectedGen<T>
     {
-        private readonly IReadOnlyDictionary<Type, Func<IGen>> _registeredGensByType;
-        private readonly ImmutableList<ReflectedGenMemberOverride> _memberOverrides;
-        private readonly string? _errorExpression;
-
-        private ReflectedGen(
-            IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
-            ImmutableList<ReflectedGenMemberOverride> memberOverrides,
-            string? errorExpression)
+        public record OverrideMemberErrorKind
         {
-            _registeredGensByType = registeredGensByType;
-            _memberOverrides = memberOverrides;
-            _errorExpression = errorExpression;
+            private OverrideMemberErrorKind() { }
+
+            public record InvalidExpression(string Expression) : OverrideMemberErrorKind;
+
+            public record AttemptedOverrideOnRegisteredGen(string Expression) : OverrideMemberErrorKind;
         }
 
         public ReflectedGen(IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType)
@@ -160,30 +158,35 @@ namespace GalaxyCheck.Gens
 
         public IReflectedGen<T> OverrideMember<TMember>(Expression<Func<T, TMember>> memberSelector, IGen<TMember> fieldGen)
         {
+            // TODO: Either.Select, Either.SelectMany, Either.SelectError
             var pathResult = PathResolver.FromExpression(memberSelector);
-            return pathResult.Match<string, string, IReflectedGen<T>>(
-                fromLeft: path => new ReflectedGen<T>(
-                    _registeredGensByType,
-                    _memberOverrides.Add(new ReflectedGenMemberOverride(path, fieldGen)),
-                    _errorExpression),
-                fromRight: error => new ReflectedGen<T>(
-                    _registeredGensByType,
-                    _memberOverrides,
-                    error));
+            return pathResult.Match<(string path, string expression), string, IReflectedGen<T>>(
+                fromLeft: x => RegisteredGensByType.ContainsKey(typeof(T))
+                    ? this with
+                    {
+                        OverrideMemberError = new OverrideMemberErrorKind.AttemptedOverrideOnRegisteredGen(x.expression)
+                    }
+                    : this with
+                    {
+                        MemberOverrides = MemberOverrides.Add(new ReflectedGenMemberOverride(x.path, fieldGen))
+                    },
+                fromRight: expression => this with
+                {
+                    OverrideMemberError = new OverrideMemberErrorKind.InvalidExpression(expression)
+                });
         }
 
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) =>
-            BuildGen(_registeredGensByType, _memberOverrides, _errorExpression).Advanced.Run(parameters);
+            BuildGen(RegisteredGensByType, MemberOverrides, OverrideMemberError).Advanced.Run(parameters);
 
         private static IGen<T> BuildGen(
             IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
             IReadOnlyList<ReflectedGenMemberOverride> memberOverrides,
-            string? errorExpression)
+            OverrideMemberErrorKind? overrideMemberError)
         {
-            if (errorExpression != null)
+            if (overrideMemberError != null)
             {
-                return Error(
-                    $"expression '{errorExpression}' was invalid, an overridding expression may only contain member access");
+                return ResolveError(overrideMemberError);
             }
 
             var context = ReflectedGenHandlerContext.Create(typeof(T));
@@ -191,6 +194,15 @@ namespace GalaxyCheck.Gens
                 .Build(typeof(T), registeredGensByType, memberOverrides, Error, context)
                 .Cast<T>();
         }
+
+        private static IGen<T> ResolveError(OverrideMemberErrorKind overrideMemberError) => overrideMemberError switch
+        {
+            OverrideMemberErrorKind.InvalidExpression invalidExpression =>
+                Error($"expression '{invalidExpression.Expression}' was invalid, an overridding expression may only contain member access"),
+            OverrideMemberErrorKind.AttemptedOverrideOnRegisteredGen attemptedOverrideOnRegisteredGen =>
+                Error($"attempted to override expression '{attemptedOverrideOnRegisteredGen.Expression}' on type '{typeof(T)}', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)"),
+            _ => throw new NotSupportedException($"Type not supported in switch: {overrideMemberError.GetType()}")
+        };
 
         private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
     }
