@@ -32,6 +32,7 @@ namespace GalaxyCheck.Gens
     using System.Collections.Immutable;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Runtime.CompilerServices;
 
     public interface IReflectedGen<T> : IGen<T>
     {
@@ -132,6 +133,7 @@ namespace GalaxyCheck.Gens
         public IGenFactory RegisterType<T>(Func<IGenFactory, IGen<T>> genFunc) =>
             new GenFactory(_registeredGensByType.SetItem(typeof(T), () => genFunc(this)));
 
+        // TODO: Cache this call by (this/T)
         public IReflectedGen<T> Create<T>() => new ReflectedGen<T>(_registeredGensByType);
     }
 
@@ -177,33 +179,46 @@ namespace GalaxyCheck.Gens
         }
 
         protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) =>
-            BuildGen(RegisteredGensByType, MemberOverrides, OverrideMemberError).Advanced.Run(parameters);
+            ReflectedGenCache.BuildGen(this).Advanced.Run(parameters);
+    }
 
-        private static IGen<T> BuildGen(
-            IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
-            IReadOnlyList<ReflectedGenMemberOverride> memberOverrides,
-            OverrideMemberErrorKind? overrideMemberError)
+    internal static class ReflectedGenCache
+    {
+        private static ConditionalWeakTable<IGen, IGen> _cache = new ConditionalWeakTable<IGen, IGen>();
+
+        public static IGen<T> BuildGen<T>(
+            ReflectedGen<T> gen)
         {
-            if (overrideMemberError != null)
+            if (_cache.TryGetValue(gen, out var builtGen) == false)
             {
-                return ResolveError(overrideMemberError);
+                var (registeredGensByType, memberOverrides, overrideMemberError) = gen;
+
+                if (overrideMemberError != null)
+                {
+                    return ResolveError(overrideMemberError);
+                }
+
+                var context = ReflectedGenHandlerContext.Create(typeof(T));
+
+                builtGen = ReflectedGenBuilder
+                    .Build(typeof(T), registeredGensByType, memberOverrides, message => Error<T>(message), context)
+                    .Cast<T>();
+
+                _cache.AddOrUpdate(gen, builtGen);
             }
 
-            var context = ReflectedGenHandlerContext.Create(typeof(T));
-            return ReflectedGenBuilder
-                .Build(typeof(T), registeredGensByType, memberOverrides, Error, context)
-                .Cast<T>();
+            return (IGen<T>)builtGen;
         }
 
-        private static IGen<T> ResolveError(OverrideMemberErrorKind overrideMemberError) => overrideMemberError switch
+        private static IGen<T> ResolveError<T>(ReflectedGen<T>.OverrideMemberErrorKind overrideMemberError) => overrideMemberError switch
         {
-            OverrideMemberErrorKind.InvalidExpression invalidExpression =>
-                Error($"expression '{invalidExpression.Expression}' was invalid, an overridding expression may only contain member access"),
-            OverrideMemberErrorKind.AttemptedOverrideOnRegisteredGen attemptedOverrideOnRegisteredGen =>
-                Error($"attempted to override expression '{attemptedOverrideOnRegisteredGen.Expression}' on type '{typeof(T)}', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)"),
+            ReflectedGen<T>.OverrideMemberErrorKind.InvalidExpression invalidExpression =>
+                Error<T>($"expression '{invalidExpression.Expression}' was invalid, an overridding expression may only contain member access"),
+            ReflectedGen<T>.OverrideMemberErrorKind.AttemptedOverrideOnRegisteredGen attemptedOverrideOnRegisteredGen =>
+                Error<T>($"attempted to override expression '{attemptedOverrideOnRegisteredGen.Expression}' on type '{typeof(T)}', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)"),
             _ => throw new NotSupportedException($"Type not supported in switch: {overrideMemberError.GetType()}")
         };
 
-        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
+        private static IGen<T> Error<T>(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
     }
 }

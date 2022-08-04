@@ -7,6 +7,7 @@ namespace GalaxyCheck.Benchmarks
         static void Main(string[] args)
         {
             BenchmarkRunner.Run<RngBenchmark>();
+            BenchmarkRunner.Run<ReflectedGenBenchmark>();
         }
     }
 }
