@@ -33,16 +33,17 @@ namespace GalaxyCheck
 
         public static IGen<IEnumerable<T>> Zip<T>(IEnumerable<IGen<T>> gens)
         {
-            var (head, tail) = gens;
+            var result = Constant(Enumerable.Empty<T>());
 
-            if (head == null)
+            foreach (var gen in gens)
             {
-                return Constant(Enumerable.Empty<T>());
+                result =
+                    from xs in result
+                    from x in gen
+                    select Enumerable.Concat(xs, new[] { x });
             }
 
-            return from x in head
-                   from xs in Zip(tail)
-                   select Enumerable.Concat(new[] { x }, xs);
+            return result;
         }
     }
 }
