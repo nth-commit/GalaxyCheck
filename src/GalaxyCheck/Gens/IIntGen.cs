@@ -54,6 +54,6 @@ namespace GalaxyCheck.Gens
 
         public IIntGen<T> WithBias(Gen.Bias bias) => this;
 
-        protected override IGen<T> Get => Gen.Advanced.Error<T>(_publicGenName, _ex.Message);
+        public override IGen<T> Get => Gen.Advanced.Error<T>(_publicGenName, _ex.Message);
     }
 }

@@ -92,7 +92,7 @@ namespace GalaxyCheck.Gens
 
         public IIntGen<byte> WithBias(Gen.Bias bias) => this with { Bias = bias };
 
-        protected override IGen<byte> Get
+        public override IGen<byte> Get
         {
             get
             {

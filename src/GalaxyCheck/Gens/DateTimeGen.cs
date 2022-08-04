@@ -61,7 +61,7 @@ namespace GalaxyCheck.Gens
 
         public IDateTimeGen Until(DateTime dateTime) => this with { UntilDateTime = dateTime };
 
-        protected override IGen<DateTime> Get
+        public override IGen<DateTime> Get
         {
             get
             {
