@@ -17,8 +17,8 @@
   "NextParameters": {
     "Rng": {
       "Family": 0,
-      "Seed": 1710798166,
-      "Order": 6
+      "Seed": 41607838,
+      "Order": 4
     },
     "Size": {
       "Value": 0
@@ -26,5 +26,5 @@
   },
   "TerminationReason": "ReachedMaximumIterations",
   "Falsified": false,
-  "RandomnessConsumption": 6
+  "RandomnessConsumption": 4
 }

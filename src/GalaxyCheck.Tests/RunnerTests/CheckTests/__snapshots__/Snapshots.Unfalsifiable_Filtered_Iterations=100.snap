@@ -1,6 +1,6 @@
 ﻿{
   "Iterations": 100,
-  "Discards": 172,
+  "Discards": 121,
   "Shrinks": 0,
   "Counterexample": null,
   "Checks": [],
@@ -17,8 +17,8 @@
   "NextParameters": {
     "Rng": {
       "Family": 0,
-      "Seed": 284257274,
-      "Order": 920
+      "Seed": 893186802,
+      "Order": 302
     },
     "Size": {
       "Value": 0
@@ -26,5 +26,5 @@
   },
   "TerminationReason": "ReachedMaximumIterations",
   "Falsified": false,
-  "RandomnessConsumption": 920
+  "RandomnessConsumption": 302
 }

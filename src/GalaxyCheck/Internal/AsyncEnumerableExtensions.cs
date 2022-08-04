@@ -100,9 +100,16 @@ namespace GalaxyCheck.Internal
 
         public static async Task<(T? head, IAsyncEnumerable<T> tail)> Deconstruct<T>(this IAsyncEnumerable<T> source)
         {
-            var head = await source.FirstOrDefaultAsync();
-            var tail = source.Skip(1);
-            return (head, tail);
+            var enumerator = source.GetAsyncEnumerator();
+            await enumerator.MoveNextAsync();
+            var head = enumerator.Current;
+            return (head, EnumerateTail(enumerator));
+        }
+
+
+        private static async IAsyncEnumerable<T> EnumerateTail<T>(IAsyncEnumerator<T> enumerator)
+        {
+            while (await enumerator.MoveNextAsync()) yield return enumerator.Current;
         }
     }
 }
