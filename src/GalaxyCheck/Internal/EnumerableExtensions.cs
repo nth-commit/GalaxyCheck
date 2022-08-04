@@ -180,8 +180,15 @@ namespace GalaxyCheck.Internal
 
         public static void Deconstruct<T>(this IEnumerable<T> source, out T? head, out IEnumerable<T> tail)
         {
-            head = source.FirstOrDefault();
-            tail = source.Skip(1);
+            var enumerator = source.GetEnumerator();
+            enumerator.MoveNext();
+            head = enumerator.Current;
+            tail = EnumerateTail(enumerator);
+        }
+
+        private static IEnumerable<T> EnumerateTail<T>(IEnumerator<T> enumerator)
+        {
+            while (enumerator.MoveNext()) yield return enumerator.Current;
         }
     }
 }
