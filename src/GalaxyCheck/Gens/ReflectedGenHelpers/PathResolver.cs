@@ -8,17 +8,17 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
 {
     internal class PathResolver
     {
-        public static Either<string, string> FromExpression<T, TMember>(
+        public static Either<(string path, string expression), string> FromExpression<T, TMember>(
             Expression<Func<T, TMember>> expression)
         {
             var path = GetPath(expression);
 
             if (path == null)
             {
-                return new Right<string, string>(expression.ToString());
+                return new Right<(string path, string expression), string>(expression.ToString());
             }
 
-            return new Left<string, string>($"$.{path}");
+            return new Left<(string path, string expression), string>(($"$.{path}", expression.ToString()));
         }
 
         private static string? GetPath<T, TMember>(Expression<Func<T, TMember>> expr)

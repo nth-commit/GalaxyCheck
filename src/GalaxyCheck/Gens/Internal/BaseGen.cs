@@ -27,4 +27,27 @@ namespace GalaxyCheck.Gens.Internal
             IEnumerable<IGenIteration> IGenAdvanced.Run(GenParameters parameters) => _gen.Run(parameters);
         }
     }
+
+    internal abstract record BaseGenV2<T> : IGen<T>
+    {
+        public IGenAdvanced<T> Advanced => new GenAdvanced(this);
+
+        IGenAdvanced IGen.Advanced => Advanced;
+
+        protected abstract IEnumerable<IGenIteration<T>> Run(GenParameters parameters);
+
+        private class GenAdvanced : IGenAdvanced<T>
+        {
+            private readonly BaseGenV2<T> _gen;
+
+            public GenAdvanced(BaseGenV2<T> gen)
+            {
+                _gen = gen;
+            }
+
+            public IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => _gen.Run(parameters);
+
+            IEnumerable<IGenIteration> IGenAdvanced.Run(GenParameters parameters) => _gen.Run(parameters);
+        }
+    }
 }
