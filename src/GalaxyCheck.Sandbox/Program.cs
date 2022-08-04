@@ -4,20 +4,25 @@ namespace GalaxyCheck.Sandbox
 {
     class Program
     {
+        private class ClassWith10Members
+        {
+            public int Property0 { get; set; }
+            public int Property1 { get; set; }
+            public int Property2 { get; set; }
+            public int Property3 { get; set; }
+            public int Property4 { get; set; }
+            public int Property5 { get; set; }
+            public int Property6 { get; set; }
+            public int Property7 { get; set; }
+            public int Property8 { get; set; }
+            public int Property9 { get; set; }
+        }
+
         static void Main(string[] args)
         {
-            var returnGen = Gen.Int32().Between(0, 100);
-            var gen = Gen.Function<int, int>(returnGen);
+            var gen = Gen.Create<ClassWith10Members>();
 
-            var func = gen.SampleOne(seed: 0);
-
-            var xs0 = Enumerable.Range(0, 10).Select(func).ToList();
-            var xs1 = Enumerable.Range(0, 10).Select(func).ToList();
-
-            if (xs0.SequenceEqual(xs1) == false)
-            {
-                throw new System.Exception("Not a pure func");
-            }
+            gen.Sample(iterations: 100, seed: 0);
         }
     }
 }

@@ -2,6 +2,7 @@
 using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace GalaxyCheck.Gens.Internal
 {
@@ -11,7 +12,7 @@ namespace GalaxyCheck.Gens.Internal
 
         IGenAdvanced IGen.Advanced => Advanced;
 
-        protected abstract IGen<T> Get { get; }
+        public abstract IGen<T> Get { get; }
 
         private class GenAdvanced : IGenAdvanced<T>
         {
@@ -22,9 +23,26 @@ namespace GalaxyCheck.Gens.Internal
                 _gen = gen;
             }
 
-            public IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => _gen.Get.Advanced.Run(parameters);
+            public IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => ProvidedGenCache.GetGenCached(_gen).Advanced.Run(parameters);
 
-            IEnumerable<IGenIteration> IGenAdvanced.Run(GenParameters parameters) => _gen.Get.Advanced.Run(parameters);
+            IEnumerable<IGenIteration> IGenAdvanced.Run(GenParameters parameters) => ProvidedGenCache.GetGenCached(_gen).Advanced.Run(parameters);
+        }
+    }
+
+    internal static class ProvidedGenCache
+    {
+        private static ConditionalWeakTable<IGen, IGen> _cache = new ConditionalWeakTable<IGen, IGen>();
+
+        public static IGen<T> GetGenCached<T>(GenProvider<T> genProvider)
+        {
+            if (_cache.TryGetValue(genProvider, out var gen) == false)
+            {
+                gen = genProvider.Get;
+
+                _cache.AddOrUpdate(genProvider, gen);
+            }
+
+            return (IGen<T>)gen;
         }
     }
 }
