@@ -141,7 +141,7 @@ namespace GalaxyCheck.Gens
 
         public IListGen<T> DisableCountLimitUnsafe() => this with { EnableCountLimit = false };
 
-        public override IGen<IReadOnlyList<T>> Get => TryGetCountRange(Count).Match(
+        protected override IGen<IReadOnlyList<T>> Get => TryGetCountRange(Count).Match(
             fromLeft: range => GenList( ElementGen, range, Bias ?? Gen.Bias.WithSize, EnableCountLimit ?? true),
             fromRight: gen => gen);
 

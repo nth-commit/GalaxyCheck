@@ -142,7 +142,7 @@ namespace GalaxyCheck.Gens
     internal record ReflectedGen<T>(
         IReadOnlyDictionary<Type, Func<IGen>> RegisteredGensByType,
         ImmutableList<ReflectedGenMemberOverride> MemberOverrides,
-        ReflectedGen<T>.OverrideMemberErrorKind? OverrideMemberError) : BaseGenV2<T>, IReflectedGen<T>
+        ReflectedGen<T>.OverrideMemberErrorKind? OverrideMemberError) : GenProvider<T>, IReflectedGen<T>
     {
         public record OverrideMemberErrorKind
         {
@@ -178,47 +178,32 @@ namespace GalaxyCheck.Gens
                 });
         }
 
-        protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) =>
-            ReflectedGenCache.BuildGen(this).Advanced.Run(parameters);
-    }
-
-    internal static class ReflectedGenCache
-    {
-        private static ConditionalWeakTable<IGen, IGen> _cache = new ConditionalWeakTable<IGen, IGen>();
-
-        public static IGen<T> BuildGen<T>(
-            ReflectedGen<T> gen)
+        protected override IGen<T> Get
         {
-            if (_cache.TryGetValue(gen, out var builtGen) == false)
+            get
             {
-                var (registeredGensByType, memberOverrides, overrideMemberError) = gen;
-
-                if (overrideMemberError != null)
+                if (OverrideMemberError != null)
                 {
-                    return ResolveError(overrideMemberError);
+                    return ResolveError(OverrideMemberError);
                 }
 
                 var context = ReflectedGenHandlerContext.Create(typeof(T));
 
-                builtGen = ReflectedGenBuilder
-                    .Build(typeof(T), registeredGensByType, memberOverrides, message => Error<T>(message), context)
+                return ReflectedGenBuilder
+                    .Build(typeof(T), RegisteredGensByType, MemberOverrides, Error, context)
                     .Cast<T>();
-
-                _cache.AddOrUpdate(gen, builtGen);
             }
-
-            return (IGen<T>)builtGen;
         }
 
-        private static IGen<T> ResolveError<T>(ReflectedGen<T>.OverrideMemberErrorKind overrideMemberError) => overrideMemberError switch
+        private static IGen<T> ResolveError(ReflectedGen<T>.OverrideMemberErrorKind overrideMemberError) => overrideMemberError switch
         {
             ReflectedGen<T>.OverrideMemberErrorKind.InvalidExpression invalidExpression =>
-                Error<T>($"expression '{invalidExpression.Expression}' was invalid, an overridding expression may only contain member access"),
+                Error($"expression '{invalidExpression.Expression}' was invalid, an overridding expression may only contain member access"),
             ReflectedGen<T>.OverrideMemberErrorKind.AttemptedOverrideOnRegisteredGen attemptedOverrideOnRegisteredGen =>
-                Error<T>($"attempted to override expression '{attemptedOverrideOnRegisteredGen.Expression}' on type '{typeof(T)}', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)"),
+                Error($"attempted to override expression '{attemptedOverrideOnRegisteredGen.Expression}' on type '{typeof(T)}', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)"),
             _ => throw new NotSupportedException($"Type not supported in switch: {overrideMemberError.GetType()}")
         };
 
-        private static IGen<T> Error<T>(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
+        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
     }
 }

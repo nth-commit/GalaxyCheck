@@ -37,17 +37,20 @@ namespace GalaxyCheck.Gens
     using System.Linq;
     using System.Reflection;
 
-    internal class ParametersGen : BaseGen<object[]>, IGen<object[]>
+    internal record ParametersGen : GenProvider<object[]>, IGen<object[]>
     {
-        private readonly Lazy<IGen<object[]>> _lazyGen;
+        private readonly MethodInfo _methodInfo;
+        private readonly IGenFactory _genFactory;
+        private readonly IReadOnlyDictionary<int, IGen> _customGens;
 
         public ParametersGen(MethodInfo methodInfo, IGenFactory genFactory, IReadOnlyDictionary<int, IGen> customGens)
         {
-            _lazyGen = new Lazy<IGen<object[]>>(() => CreateGen(methodInfo, genFactory, customGens));
+            _methodInfo = methodInfo;
+            _genFactory = genFactory;
+            _customGens = customGens;
         }
 
-        protected override IEnumerable<IGenIteration<object[]>> Run(GenParameters parameters) =>
-            _lazyGen.Value.Advanced.Run(parameters);
+        protected override IGen<object[]> Get => CreateGen(_methodInfo, _genFactory, _customGens);
 
         private static IGen<object[]> CreateGen(
             MethodInfo methodInfo,

@@ -110,7 +110,7 @@ namespace GalaxyCheck.Gens
             throw new System.NotImplementedException();
         }
 
-        public override IGen<IReadOnlySet<T>> Get => TryGetCountRange(Count).Match(
+        protected override IGen<IReadOnlySet<T>> Get => TryGetCountRange(Count).Match(
             fromLeft: range => range == null
                 ? GenSetOfUnspecifiedCount(ElementGen, Gen.Bias.WithSize)
                 : GenSetOfSpecifiedCount(ElementGen, range.Value, Gen.Bias.WithSize),
