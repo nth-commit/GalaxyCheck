@@ -1,48 +1,48 @@
 ﻿using GalaxyCheck.Gens.Iterations;
 using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace GalaxyCheck.Gens.Internal
 {
     internal abstract record GenProvider<T> : IGen<T>
     {
-        public IGenAdvanced<T> Advanced => new GenAdvanced(this);
-
+        public IGenAdvanced<T> Advanced => new GenAdvanced(GetOrCreateLazy());
         IGenAdvanced IGen.Advanced => Advanced;
 
-        public abstract IGen<T> Get { get; }
+        protected abstract IGen<T> Get { get; }
+
+        private Lazy<IGen<T>>? _lazyGen;
+        private GenProvider<T>? _lazyGenInstance;
+        private Lazy<IGen<T>> GetOrCreateLazy()
+        {
+            // Records don't call the base constructor on clone, so there's no hook to imperatively re-set the lazy if
+            // it was invalidated by some properties of the implementing class updating. The solution to "lazily"
+            // create the lazy, and store the ref that it was created against.
+
+            if (_lazyGen == null || _lazyGenInstance != this)
+            {
+                _lazyGen = new Lazy<IGen<T>>(() => Get, isThreadSafe: true);
+                _lazyGenInstance = this;
+            }
+
+            return _lazyGen;
+        }
 
         private class GenAdvanced : IGenAdvanced<T>
         {
-            private readonly GenProvider<T> _gen;
+            private readonly Lazy<IGen<T>> _lazyGen;
 
-            public GenAdvanced(GenProvider<T> gen)
+            public GenAdvanced(Lazy<IGen<T>> lazyGen)
             {
-                _gen = gen;
+                _lazyGen = lazyGen;
             }
 
-            public IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => ProvidedGenCache.GetGenCached(_gen).Advanced.Run(parameters);
+            public IEnumerable<IGenIteration<T>> Run(GenParameters parameters) => _lazyGen.Value.Advanced.Run(parameters);
 
-            IEnumerable<IGenIteration> IGenAdvanced.Run(GenParameters parameters) => ProvidedGenCache.GetGenCached(_gen).Advanced.Run(parameters);
+            IEnumerable<IGenIteration> IGenAdvanced.Run(GenParameters parameters) => _lazyGen.Value.Advanced.Run(parameters);
         }
     }
 
-    internal static class ProvidedGenCache
-    {
-        private static ConditionalWeakTable<IGen, IGen> _cache = new ConditionalWeakTable<IGen, IGen>();
-
-        public static IGen<T> GetGenCached<T>(GenProvider<T> genProvider)
-        {
-            if (_cache.TryGetValue(genProvider, out var gen) == false)
-            {
-                gen = genProvider.Get;
-
-                _cache.AddOrUpdate(genProvider, gen);
-            }
-
-            return (IGen<T>)gen;
-        }
-    }
 }

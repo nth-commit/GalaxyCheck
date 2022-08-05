@@ -26,12 +26,10 @@ namespace GalaxyCheck
 namespace GalaxyCheck.Gens
 {
     using GalaxyCheck.Gens.Internal;
-    using GalaxyCheck.Gens.Iterations.Generic;
-    using GalaxyCheck.Gens.Parameters;
     using System.Collections.Generic;
     using System.Linq;
 
-    internal class CharGen : BaseGen<char>, IGen<char>
+    internal record CharGen : GenProvider<char>, IGen<char>
     {
         private readonly Gen.CharType _charType;
 
@@ -40,8 +38,7 @@ namespace GalaxyCheck.Gens
             _charType = charType;
         }
 
-        protected override IEnumerable<IGenIteration<char>> Run(GenParameters parameters) =>
-            CreateGen(_charType).Advanced.Run(parameters);
+        protected override IGen<char> Get => CreateGen(_charType);
 
         private static IGen<char> CreateGen(Gen.CharType charType)
         {

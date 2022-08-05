@@ -84,14 +84,20 @@ namespace GalaxyCheck.Gens
 
     internal delegate TResult VariadicFunc<out TResult>(params object?[] args);
 
-    internal class VariadicFunctionGen<TResult> : LazyGen<VariadicFunc<TResult>>
+    internal record VariadicFunctionGen<TResult> : GenProvider<VariadicFunc<TResult>>
     {
+        private readonly IGen<TResult> _returnGen;
+        private readonly int? _invocationLimit;
+
         public VariadicFunctionGen(IGen<TResult> returnGen, int? invocationLimit)
-            : base(() => Create(returnGen, invocationLimit))
         {
+            _returnGen = returnGen;
+            _invocationLimit = invocationLimit;
         }
 
-        public static IGen<VariadicFunc<TResult>> Create(IGen<TResult> returnGen, int? invocationLimit) =>
+        protected override IGen<VariadicFunc<TResult>> Get => Create(_returnGen, _invocationLimit);
+
+        private static IGen<VariadicFunc<TResult>> Create(IGen<TResult> returnGen, int? invocationLimit) =>
             from returnValueSource in returnGen.InfiniteOf(iterationLimit: null)
             select ToPureFunction(returnValueSource, invocationLimit);
 

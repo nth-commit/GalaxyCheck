@@ -105,7 +105,7 @@ namespace GalaxyCheck.Gens
         IStringGen WithLengthBias(Gen.Bias lengthBias);
     }
 
-    internal class StringGen : BaseGen<string>, IStringGen
+    internal record StringGen : GenProvider<string>, IStringGen
     {
         private abstract record StringGenCharConfig
         {
@@ -185,8 +185,7 @@ namespace GalaxyCheck.Gens
             return new StringGen(newConfig);
         }
 
-        protected override IEnumerable<IGenIteration<string>> Run(GenParameters parameters) =>
-            CreateGen(_config).Advanced.Run(parameters);
+        protected override IGen<string> Get => CreateGen(_config);
 
         private static IGen<string> CreateGen(StringGenConfig config)
         {

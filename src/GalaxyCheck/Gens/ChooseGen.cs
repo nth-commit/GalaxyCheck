@@ -52,8 +52,6 @@ namespace GalaxyCheck.Gens
 {
     using GalaxyCheck.ExampleSpaces;
     using GalaxyCheck.Gens.Internal;
-    using GalaxyCheck.Gens.Iterations.Generic;
-    using GalaxyCheck.Gens.Parameters;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
@@ -72,26 +70,20 @@ namespace GalaxyCheck.Gens
         IChooseGen<T> WithChoice(IGen<T> gen, int weight);
     }
 
-    internal class ChooseGen<T> : BaseGen<T>, IChooseGen<T>
+    internal record ChooseGen<T>(ImmutableList<ChooseGen<T>.Choice> Choices) : GenProvider<T>, IChooseGen<T>
     {
-        private record Choice(IGen<T> Gen, int Weight);
-
-        private readonly ImmutableList<Choice> _choices;
-
-        private ChooseGen(ImmutableList<Choice> choices)
-        {
-            _choices = choices;
-        }
+        public record Choice(IGen<T> Gen, int Weight);
 
         public ChooseGen() : this(ImmutableList.Create<Choice>()) { }
 
-        public IChooseGen<T> WithChoice(IGen<T> gen, int weight) =>
-            new ChooseGen<T>(_choices.Add(new Choice(gen, weight)));
+        public IChooseGen<T> WithChoice(IGen<T> gen, int weight) => this with
+        {
+            Choices = Choices.Add(new Choice(gen, weight))
+        };
 
-        protected override IEnumerable<IGenIteration<T>> Run(GenParameters parameters) =>
-            CreateGenerator(_choices).Advanced.Run(parameters);
+        protected override IGen<T> Get => CreateGen(Choices);
 
-        private static IGen<T> CreateGenerator(ImmutableList<Choice> choices)
+        private static IGen<T> CreateGen(ImmutableList<Choice> choices)
         {
             if (choices.Any() == false)
             {
