@@ -25,10 +25,10 @@ namespace GalaxyCheck.Benchmarks
         [Arguments(500)]
         public void ListGen(int size)
         {
-            var gen = Gen.Int32().ListOf().WithCount(size);
+            var gen = Gen.Int32().ListOf().WithCountLessThanEqual(size);
 
             var enumerable = gen.Advanced
-                .Run(GenParameters.Create(_seed, 100))
+                .Run(GenParameters.Create(seed: _seed, size: 100))
                 .Take(OperationsPerInvoke);
 
             foreach (var _ in enumerable) { }

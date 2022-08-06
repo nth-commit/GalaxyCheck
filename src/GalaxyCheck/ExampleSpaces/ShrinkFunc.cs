@@ -162,23 +162,22 @@ namespace GalaxyCheck.ExampleSpaces
             var bisect = Bisect<T>(target);
             var dropOne = DropOne<T>(target);
 
-            return (source) =>
+            return Shrink;
+
+            IEnumerable<IReadOnlyCollection<T>> Shrink(IReadOnlyCollection<T> source)
             {
-                var shrinksForOrdering = order(source);
+                foreach (var shrink in order(source))
+                    yield return shrink;
 
-                var withSomeTailElementsDropped =
-                    towardsCount(source.Count()).Select(length => source.Take(length).ToList());
+                foreach (var shrink in towardsCount(source.Count()).Select(length => source.Take(length).ToList()))
+                    yield return shrink;
 
-                var bisections = bisect(source);
+                foreach (var shrink in bisect(source))
+                    yield return shrink;
 
-                var withOneElementDropped = dropOne(source);
-
-                return EnumerableExtensions.Concat(
-                    shrinksForOrdering,
-                    withSomeTailElementsDropped,
-                    bisections,
-                    withOneElementDropped);
-            };
+                foreach (var shrink in dropOne(source))
+                    yield return shrink;
+            }
         }
 
         /// <summary>
