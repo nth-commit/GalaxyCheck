@@ -172,12 +172,12 @@ namespace GalaxyCheck.Gens
         private static IGen<IReadOnlyList<T>> GenListOfCount(
             IGen<T> elementGen,
             int count,
-            ShrinkFunc<List<IExampleSpace<T>>> shrink,
+            ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrink,
             MeasureFunc<int> measureCount)
         {
             IEnumerable<IGenIteration<IReadOnlyList<T>>> Run(GenParameters parameters)
             {
-                var instances = ImmutableList<IGenInstance<T>>.Empty;
+                var instances = new List<IGenInstance<T>>(count);
 
                 var elementIterationEnumerator = elementGen.Advanced.Run(parameters).GetEnumerator();
 
@@ -188,13 +188,13 @@ namespace GalaxyCheck.Gens
                         throw new Exception("Fatal: Element generator exhausted");
                     }
 
-                    var either = elementIterationEnumerator.Current.ToEither<T, ImmutableList<T>>();
+                    var either = elementIterationEnumerator.Current.ToEither<T, IReadOnlyList<T>>();
 
                     if (either.IsLeft(out IGenInstance<T> instance))
                     {
-                        instances = instances.Add(instance);
+                        instances.Add(instance);
                     }
-                    else if (either.IsRight(out IGenIteration<ImmutableList<T>> right))
+                    else if (either.IsRight(out IGenIteration<IReadOnlyList<T>> right))
                     {
                         yield return right;
                     }
@@ -219,7 +219,7 @@ namespace GalaxyCheck.Gens
             return new FunctionalGen<IReadOnlyList<T>>(Run).Repeat();
         }
 
-        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsCount(int count)
+        private static ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> ShrinkTowardsCount(int count)
         {
             // If the value type is a collection, that is, this generator is building a "collection of collections",
             // it is "less complex" to order the inner collections by descending count. It also lets us find the

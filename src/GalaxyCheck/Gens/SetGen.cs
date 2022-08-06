@@ -138,7 +138,7 @@ namespace GalaxyCheck.Gens
             IGen<T> elementGen,
             int count,
             int minCount,
-            ShrinkFunc<List<IExampleSpace<T>>> shrink,
+            ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrink,
             MeasureFunc<int> measureCount)
         {
             IEnumerable<IGenIteration<IReadOnlySet<T>>> Run(GenParameters parameters)
@@ -215,7 +215,7 @@ namespace GalaxyCheck.Gens
         private static IGen<IReadOnlySet<T>> GenSetOfAttempts(
             IGen<T> elementGen,
             int attempts,
-            ShrinkFunc<List<IExampleSpace<T>>> shrink,
+            ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrink,
             MeasureFunc<int> measureCount)
         {
             IEnumerable<IGenIteration<IReadOnlySet<T>>> Run(GenParameters parameters)
@@ -273,7 +273,7 @@ namespace GalaxyCheck.Gens
             return new FunctionalGen<IReadOnlySet<T>>(Run).Repeat();
         }
 
-        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsCount(int count)
+        private static ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> ShrinkTowardsCount(int count)
         {
             // Order of sets should not be important, so don't provide a variable order function. This cuts down the
             // number of shrinks.

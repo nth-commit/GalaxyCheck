@@ -117,7 +117,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// <param name="orderKeySelector">A function to order the list by, in an attempt to generate the first
         /// shrink</param>
         /// <returns>A shrink function for lists.</returns>
-        public static ShrinkFunc<List<T>> TowardsCount<T, TKey>(int target, Func<T, TKey> orderKeySelector)
+        public static ShrinkFunc<IReadOnlyCollection<T>> TowardsCount<T, TKey>(int target, Func<T, TKey> orderKeySelector)
         {
             var order = Order(orderKeySelector);
             var towardsCount = Towards(target);
@@ -155,7 +155,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// <param name="orderKeySelector">A function to order the list by, in an attempt to generate the first
         /// shrink</param>
         /// <returns></returns>
-        public static ShrinkFunc<List<T>> TowardsCountOptimized<T, TKey>(int target, Func<T, TKey> orderKeySelector)
+        public static ShrinkFunc<IReadOnlyCollection<T>> TowardsCountOptimized<T, TKey>(int target, Func<T, TKey> orderKeySelector)
         {
             var order = Order(orderKeySelector);
             var towardsCount = Towards(target);
@@ -187,13 +187,13 @@ namespace GalaxyCheck.ExampleSpaces
         /// </summary>
         /// <param name="k">The number of elements to choose for a combination.</param>
         /// <returns>A shrink function for enumerables.</returns>
-        public static ShrinkFunc<List<T>> OtherCombinations<T>(int k)
+        public static ShrinkFunc<IReadOnlyCollection<T>> OtherCombinations<T>(int k)
         {
-            static IEnumerable<List<T>> TailCombinations(int k, List<T> list)
+            static IEnumerable<IReadOnlyCollection<T>> TailCombinations(int k, List<T> list)
             {
                 if (list.Any() == false)
                 {
-                    return Enumerable.Empty<List<T>>();
+                    return Enumerable.Empty<IReadOnlyCollection<T>>();
                 }
 
                 var head = list[0];
@@ -201,7 +201,7 @@ namespace GalaxyCheck.ExampleSpaces
                 return AllCombinations(k - 1, tail).Select(tail => Enumerable.Concat(new[] { head }, tail).ToList());
             }
 
-            static IEnumerable<List<T>> AllCombinations(int k, List<T> list)
+            static IEnumerable<IReadOnlyCollection<T>> AllCombinations(int k, List<T> list)
             {
                 if (k == 1)
                 {
@@ -229,7 +229,7 @@ namespace GalaxyCheck.ExampleSpaces
             {
                 var list = source.ToList();
                 return k >= list.Count()
-                    ? Enumerable.Empty<List<T>>()
+                    ? Enumerable.Empty<IReadOnlyCollection<T>>()
                     : AllCombinations(k, list);
             };
         }
@@ -240,7 +240,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// </summary>
         /// <param name="keySelector">A function used to select the comparator for the sort.</param>
         /// <returns>A shrink function for enumerables.</returns>
-        public static ShrinkFunc<List<T>> Order<T, TKey>(Func<T, TKey> keySelector) => source =>
+        public static ShrinkFunc<IReadOnlyCollection<T>> Order<T, TKey>(Func<T, TKey> keySelector) => source =>
         {
             var orderedWithInitialIndex = source
                 .Select((element, index) => new { element, index })
@@ -266,7 +266,7 @@ namespace GalaxyCheck.ExampleSpaces
         /// </summary>
         /// <param name="minLength">The minimum length for a shrunk list.</param>
         /// <returns>A shrink function for lists.</returns>
-        public static ShrinkFunc<List<T>> Bisect<T>(int minLength) => source =>
+        public static ShrinkFunc<IReadOnlyCollection<T>> Bisect<T>(int minLength) => source =>
         {
             var length = source.Count();
             if (length <= 1)
@@ -286,11 +286,11 @@ namespace GalaxyCheck.ExampleSpaces
                 source.Skip(halfLength).ToList()
             };
         };
-        public static ShrinkFunc<List<T>> DropOne<T>(int minLength) => source =>
+        public static ShrinkFunc<IReadOnlyCollection<T>> DropOne<T>(int minLength) => source =>
         {
             if (source.Count <= minLength)
             {
-                return Enumerable.Empty<List<T>>();
+                return Enumerable.Empty<IReadOnlyCollection<T>>();
             }
 
             if (source.Count == 1)

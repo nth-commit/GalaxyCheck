@@ -9,10 +9,10 @@ namespace GalaxyCheck.ExampleSpaces
     internal static partial class ExampleSpaceFactory
     {
         public static IExampleSpace<TResult> Merge<T, TResult>(
-            List<IExampleSpace<T>> exampleSpaces,
-            Func<List<T>, TResult> mergeValues,
-            ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
-            MeasureFunc<List<IExampleSpace<T>>> measureMerge,
+            IReadOnlyCollection<IExampleSpace<T>> exampleSpaces,
+            Func<IReadOnlyCollection<T>, TResult> mergeValues,
+            ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrinkExampleSpaces,
+            MeasureFunc<IReadOnlyCollection<IExampleSpace<T>>> measureMerge,
             bool enableSmallestExampleSpacesOptimization) =>
                 MergeHelpers.MergeInternal(
                     exampleSpaces,
@@ -26,10 +26,10 @@ namespace GalaxyCheck.ExampleSpaces
         private static class MergeHelpers
         {
             public static IExampleSpace<TResult> MergeInternal<T, TResult>(
-                List<IExampleSpace<T>> exampleSpaces,
-                Func<List<T>, TResult> mergeValues,
-                ShrinkFunc<List<IExampleSpace<T>>> shrinkExampleSpaces,
-                MeasureFunc<List<IExampleSpace<T>>> measureMerge,
+                IReadOnlyCollection<IExampleSpace<T>> exampleSpaces,
+                Func<IReadOnlyCollection<T>, TResult> mergeValues,
+                ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrinkExampleSpaces,
+                MeasureFunc<IReadOnlyCollection<IExampleSpace<T>>> measureMerge,
                 ImmutableHashSet<ExampleId> encounteredIds,
                 bool enableSmallestExampleSpacesOptimization,
                 bool isRoot)
