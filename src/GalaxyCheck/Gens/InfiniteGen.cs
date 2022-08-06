@@ -145,7 +145,7 @@ namespace GalaxyCheck.Gens
             return new SpyEnumerable<IExampleSpace<T>>(ThrowOnLimit(source, iterationLimit));
         }
 
-        private static ShrinkFunc<List<IExampleSpace<T>>> ShrinkTowardsLength(int length)
+        private static ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> ShrinkTowardsLength(int length)
         {
             // If the value type is a collection, that is, this generator is building a "collection of collections",
             // it is "less complex" to order the inner collections by descending length. It also lets us find the
