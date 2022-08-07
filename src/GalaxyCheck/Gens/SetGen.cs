@@ -184,10 +184,10 @@ namespace GalaxyCheck.Gens
                 var exampleSpace = ExampleSpaceFactory
                     .Merge(
                         instances.Select(instance => instance.ExampleSpace).ToList(),
-                        values => ImmutableHashSet.CreateRange(values),
                         shrink,
                         exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
                         enableSmallestExampleSpacesOptimization: true)
+                    .Map(values => ImmutableHashSet.CreateRange(values))
                     .Filter(set => set.Count >= minCount);
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace!);
@@ -260,12 +260,13 @@ namespace GalaxyCheck.Gens
                     }
                 }
 
-                var exampleSpace = ExampleSpaceFactory.Merge(
-                    instances.Select(instance => instance.ExampleSpace).ToList(),
-                    values => ImmutableHashSet.CreateRange(values),
-                    shrink,
-                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
-                    enableSmallestExampleSpacesOptimization: true);
+                var exampleSpace = ExampleSpaceFactory
+                    .Merge(
+                        instances.Select(instance => instance.ExampleSpace).ToList(),
+                        shrink,
+                        exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
+                        enableSmallestExampleSpacesOptimization: true)
+                    .Map(values => ImmutableHashSet.CreateRange(values));
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace!);
             }

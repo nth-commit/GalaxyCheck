@@ -118,7 +118,6 @@ namespace GalaxyCheck.Gens
 
                     var rootExampleExplored = ExampleSpaceFactory.Merge(
                         exampleSpaces,
-                        xs => xs,
                         ShrinkTowardsLength(1),
                         (_) => 0,
                         enableSmallestExampleSpacesOptimization: false);
