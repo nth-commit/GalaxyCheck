@@ -206,12 +206,13 @@ namespace GalaxyCheck.Gens
 
                 var nextParameters = instances.Any() ? instances.Last().NextParameters : parameters;
 
-                var exampleSpace = ExampleSpaceFactory.Merge(
-                    instances.Select(instance => instance.ExampleSpace).ToList(),
-                    values => values.ToImmutableList(),
-                    shrink,
-                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
-                    enableSmallestExampleSpacesOptimization: true);
+                var exampleSpace = ExampleSpaceFactory
+                    .Merge(
+                        instances.Select(instance => instance.ExampleSpace).ToList(),
+                        shrink,
+                        exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
+                        enableSmallestExampleSpacesOptimization: true)
+                    .Map(ex => ex.ToList());
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
             }
