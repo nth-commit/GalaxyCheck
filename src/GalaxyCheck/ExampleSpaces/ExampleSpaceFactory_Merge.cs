@@ -31,16 +31,13 @@ namespace GalaxyCheck.ExampleSpaces
                 bool enableSmallestExampleSpacesOptimization,
                 bool isRoot)
             {
-                IExampleSpace<IReadOnlyCollection<T>> GenerateNextExampleSpace(IEnumerable<IExampleSpace<T>> exampleSpaces, ImmutableHashSet<ExampleId> encounteredIds)
-                {
-                    return MergeInternal(
-                        exampleSpaces.ToList(),
-                        shrinkExampleSpaces,
-                        measureMerge,
-                        encounteredIds,
-                        enableSmallestExampleSpacesOptimization,
-                        false);
-                }
+                IExampleSpace<IReadOnlyCollection<T>> GenerateNextExampleSpace(IEnumerable<IExampleSpace<T>> exampleSpaces, ImmutableHashSet<ExampleId> encounteredIds) => MergeInternal(
+                    exampleSpaces.ToList(),
+                    shrinkExampleSpaces,
+                    measureMerge,
+                    encounteredIds,
+                    enableSmallestExampleSpacesOptimization,
+                    false);
 
                 var mergedId = exampleSpaces.Aggregate(
                     ExampleId.Primitive(exampleSpaces.Count()),
@@ -53,30 +50,64 @@ namespace GalaxyCheck.ExampleSpaces
                     exampleSpaces.Select(es => es.Current.Value).ToList(),
                     mergedDistance);
 
-                var smallestExampleSpacesShrink = enableSmallestExampleSpacesOptimization && isRoot && exampleSpaces.Any(exampleSpace => exampleSpace.Subspace.Any())
-                    ? exampleSpaces
+                var shrinks = Shrink(exampleSpaces, shrinkExampleSpaces, encounteredIds, enableSmallestExampleSpacesOptimization, isRoot, GenerateNextExampleSpace);
+
+                return new ExampleSpace<IReadOnlyCollection<T>>(current, shrinks);
+            }
+
+            private static IEnumerable<IExampleSpace<IReadOnlyCollection<T>>> Shrink<T>(
+                IReadOnlyCollection<IExampleSpace<T>> exampleSpaces,
+                ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrinkExampleSpaces,
+                ImmutableHashSet<ExampleId> encounteredIds,
+                bool enableSmallestExampleSpacesOptimization,
+                bool isRoot,
+                Func<IEnumerable<IExampleSpace<T>>, ImmutableHashSet<ExampleId>, IExampleSpace<IReadOnlyCollection<T>>> nextExampleSpace)
+            {
+                var preMergeShrinks = PreMergeShrink(exampleSpaces, shrinkExampleSpaces, enableSmallestExampleSpacesOptimization, isRoot);
+
+                var shrinks = TraverseUnencountered(
+                    preMergeShrinks,
+                    encounteredIds,
+                    nextExampleSpace);
+
+                foreach (var shrink in shrinks)
+                {
+                    yield return shrink;
+                }
+            }
+
+            private static IEnumerable<IEnumerable<IExampleSpace<T>>> PreMergeShrink<T>(
+                IReadOnlyCollection<IExampleSpace<T>> exampleSpaces,
+                ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrinkExampleSpaces,
+                bool enableSmallestExampleSpacesOptimization,
+                bool isRoot)
+            {
+                if (enableSmallestExampleSpacesOptimization && isRoot && exampleSpaces.Any(exampleSpace => exampleSpace.Subspace.Any()))
+                {
+                    var smallestExampleSpacesShrink = exampleSpaces
                         .Select(exampleSpace =>
                         {
                             var smallestExampleSpace = exampleSpace.Subspace.FirstOrDefault() ?? exampleSpace;
                             return smallestExampleSpace;
                         })
-                        .ToList()
-                    : null;
+                        .ToList();
+
+                    yield return smallestExampleSpacesShrink;
+                }
 
                 var exampleSpaceCullingShrinks = shrinkExampleSpaces(exampleSpaces);
+                foreach (var shrink in exampleSpaceCullingShrinks)
+                {
+                    yield return shrink;
+                }
 
                 var subspaceMergingShrinks = exampleSpaces
                     .Select((exampleSpace, index) => LiftAndInsertSubspace(exampleSpaces, exampleSpace.Subspace, index))
                     .SelectMany(exampleSpaces => exampleSpaces);
-
-                var shrinks = TraverseUnencountered(
-                    Enumerable.Concat(
-                        smallestExampleSpacesShrink == null ? Enumerable.Empty<List<IExampleSpace<T>>>() : new[] { smallestExampleSpacesShrink }.AsEnumerable(),
-                        Enumerable.Concat(exampleSpaceCullingShrinks, subspaceMergingShrinks)),
-                    encounteredIds,
-                    GenerateNextExampleSpace);
-
-                return new ExampleSpace<IReadOnlyCollection<T>>(current, shrinks);
+                foreach (var shrink in subspaceMergingShrinks)
+                {
+                    yield return shrink;
+                }
             }
 
             private static IEnumerable<IEnumerable<IExampleSpace<T>>> LiftAndInsertSubspace<T>(
@@ -126,8 +157,7 @@ namespace GalaxyCheck.ExampleSpaces
                         Option.Some<IExampleSpace<T>> some => some.Value,
                         _ => null
                     })
-                    .Where(exampleSpace => exampleSpace != null)
-                    .Cast<IExampleSpace<T>>();
+                    .Where(exampleSpace => exampleSpace != null)!;
             }
 
             private class UnfoldSubspaceState<T>
