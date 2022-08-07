@@ -175,6 +175,23 @@ namespace GalaxyCheck.Gens
             ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrink,
             MeasureFunc<int> measureCount)
         {
+            if (count == 0)
+            {
+                // TODO: Assumes measureCount returns 0 (it probably does...)
+                return Gen.Constant(new List<T>());
+            }
+            else
+            {
+                return GenNonEmptyListOfCount(elementGen, count, shrink, measureCount);
+            }
+        }
+
+        private static IGen<IReadOnlyList<T>> GenNonEmptyListOfCount(
+            IGen<T> elementGen,
+            int count,
+            ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrink,
+            MeasureFunc<int> measureCount)
+        {
             IEnumerable<IGenIteration<IReadOnlyList<T>>> Run(GenParameters parameters)
             {
                 var instances = new List<IGenInstance<T>>(count);
@@ -204,7 +221,7 @@ namespace GalaxyCheck.Gens
                     }
                 }
 
-                var nextParameters = instances.Any() ? instances.Last().NextParameters : parameters;
+                var nextParameters = instances[count - 1].NextParameters;
 
                 var exampleSpace = ExampleSpaceFactory
                     .Merge(
