@@ -12,13 +12,13 @@ namespace GalaxyCheck
             this IGen<T> gen,
             Func<T, IEnumerable<T>> shrinkValue,
             Func<T, decimal>? measureValue = null,
-            Func<T, int>? identifyValue = null)
+            Func<T, long>? identifyValue = null)
         {
             return gen.Unfold(value => ExampleSpaceFactory.Unfold(
                 value,
                 shrinkValue.Invoke,
-                measureValue == null ? MeasureFunc.Unmeasured<T>() : measureValue!.Invoke,
-                identifyValue == null ? IdentifyFuncs.Default<T>() : value0 => ExampleId.Primitive(identifyValue!(value0))));
+                measureValue == null ? MeasureFunc.Unmeasured<T>() : measureValue.Invoke,
+                identifyValue == null ? IdentifyFuncs.Default<T>() : value0 => ExampleId.Primitive(identifyValue(value0))));
         }
 
         public static IGen<T> Unfold<T>(

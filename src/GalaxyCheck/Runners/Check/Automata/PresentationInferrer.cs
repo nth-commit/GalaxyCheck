@@ -23,13 +23,13 @@ namespace GalaxyCheck.Runners.Check.Automata
                 return null;
             }
 
-            var lastHashCode = head.Value.Current.Id.HashCode;
+            var lastId = head.Value.Current.Id;
 
             var presentationalExampleSpaces =
                 from lazyExs in tail
                 let exs = lazyExs.Value
                 where exs != null
-                where exs.Current.Id.HashCode == lastHashCode
+                where exs.Current.Id == lastId
                 where exs.Current.Value == null || IsTest(exs.Current.Value) == false
                 select exs;
 

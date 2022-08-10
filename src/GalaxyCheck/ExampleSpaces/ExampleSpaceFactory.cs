@@ -111,7 +111,7 @@ namespace GalaxyCheck.ExampleSpaces
             value,
             new Int64OptimizedContextualShrinker(origin),
             MeasureFunc.DistanceFromOrigin(origin, min, max),
-            IdentifyFuncs.Default<long>());
+            value => ExampleId.Primitive(value));
 
         private record Int64OptimizedContext(
             ImmutableStack<long> EncounteredValues,
