@@ -1,4 +1,9 @@
-﻿using GalaxyCheck.Internal;
+﻿using GalaxyCheck.ExampleSpaces;
+using GalaxyCheck.Gens.Internal;
+using GalaxyCheck.Gens.Internal.Iterations;
+using GalaxyCheck.Gens.Iterations.Generic;
+using GalaxyCheck.Gens.Parameters;
+using GalaxyCheck.Internal;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,17 +38,57 @@ namespace GalaxyCheck
 
         public static IGen<IEnumerable<T>> Zip<T>(IEnumerable<IGen<T>> gens)
         {
-            var result = Constant(Enumerable.Empty<T>());
+            var gensList = gens.ToList();
+            var shrink = ShrinkFunc.None<IReadOnlyCollection<IExampleSpace<T>>>();
 
-            foreach (var gen in gens)
+            return new FunctionalGen<IEnumerable<T>>(RunOnce).Repeat();
+
+            IEnumerable<IGenIteration<IEnumerable<T>>> RunOnce(GenParameters parameters)
             {
-                result =
-                    from xs in result
-                    from x in gen
-                    select Enumerable.Concat(xs, new[] { x });
-            }
+                var nextParameters = parameters;
+                var exampleSpaces = new List<IExampleSpace<T>>(gensList.Count);
 
-            return result;
+                foreach (var gen in gensList)
+                {
+                    IGenInstance<T>? instance = null;
+
+                    foreach (var iteration in gen.Advanced.Run(nextParameters))
+                    {
+                        var either = iteration.ToEither<T, IReadOnlyList<T>>();
+                        if (either.IsLeft(out IGenInstance<T> instance0))
+                        {
+                            instance = instance0;
+                            break;
+                        }
+                        else if (either.IsRight(out IGenIteration<IReadOnlyList<T>> nonInstance))
+                        {
+                            yield return nonInstance;
+                        }
+                        else
+                        {
+                            throw new System.Exception("Unhandled case");
+                        }
+                    }
+
+                    if (instance == null)
+                    {
+                        throw new System.Exception("Fatal: Element generator exhausted");
+                    }
+                    else
+                    {
+                        exampleSpaces.Add(instance.ExampleSpace);
+                        nextParameters = instance.NextParameters;
+                    }
+                }
+
+                var exampleSpace = ExampleSpaceFactory.Merge(
+                    exampleSpaces,
+                    shrink,
+                    exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance),
+                    enableSmallestExampleSpacesOptimization: false);
+
+                yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
+            }
         }
     }
 }

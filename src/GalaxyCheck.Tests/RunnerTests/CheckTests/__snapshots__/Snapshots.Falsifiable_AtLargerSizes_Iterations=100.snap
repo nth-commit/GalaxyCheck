@@ -3,9 +3,7 @@
   "Discards": 0,
   "Shrinks": 0,
   "Counterexample": {
-    "Id": {
-      "HashCode": -1923861349
-    },
+    "Id": {},
     "Value": 50,
     "Distance": 0.0,
     "ReplayParameters": {

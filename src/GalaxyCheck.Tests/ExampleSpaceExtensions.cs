@@ -28,7 +28,7 @@ namespace Tests.V2
             var distanceRounded = Math.Round(example.Distance, 4);
             var distanceRendered = distance == distanceRounded ? distanceRounded.ToString() : $"{distanceRounded}...";
 
-            yield return $"{renderValue(example.Value)} (Id = {example.Id.HashCode}, Distance = {distanceRendered})";
+            yield return $"{renderValue(example.Value)} (Id = {example.Id}, Distance = {distanceRendered})";
 
             var subExampleSpaces = exampleSpace.Subspace.ToList();
 
