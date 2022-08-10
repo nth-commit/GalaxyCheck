@@ -142,7 +142,7 @@ namespace GalaxyCheck.Gens.Parameters.Internal
                     if (_internalValues.TryGetValue(key, out var value) == false)
                     {
                         value = _produceValue(key);
-                        _internalValues.Add(key, value);
+                        _internalValues[key] = value;
                     }
 
                     return value;
