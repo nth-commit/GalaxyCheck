@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace GalaxyCheck.Gens.Parameters.Internal
@@ -13,16 +15,16 @@ namespace GalaxyCheck.Gens.Parameters.Internal
     {
         public static SizingToBoundsLongFunc Exponential => (min, max, origin) =>
         {
-            static Dictionary<Size, long> GetBoundsBySize(long from, long to)
+            static IReadOnlyDictionary<int, long> GetBoundsBySize(long from, long to)
             {
                 var discreteBounds = GetIntervals(from, to).Select(interval => IntervalToBound(from, to, interval));
-                return InterpolateBoundOverSizes(discreteBounds.ToImmutableList());
+                return InterpolateBoundOverSizes(discreteBounds.ToList());
             }
 
             var leftIntervals = GetBoundsBySize(origin, min);
             var rightIntervals = GetBoundsBySize(origin, max);
 
-            return (size) => (leftIntervals[size], rightIntervals[size]);
+            return (size) => (leftIntervals[size.Value], rightIntervals[size.Value]);
         };
 
         private static Func<int, int> Interpolate(int x1, int y1, int x2, int y2) => (x) =>
@@ -104,18 +106,74 @@ namespace GalaxyCheck.Gens.Parameters.Internal
             (ulong.MaxValue / 4) * 3,
             (ulong.MaxValue / 8) * 7);
 
-        private static Dictionary<Size, long> InterpolateBoundOverSizes(ImmutableList<long> bounds)
+        private static IReadOnlyDictionary<int, long> InterpolateBoundOverSizes(IReadOnlyList<long> bounds)
         {
             var interpolate = Interpolate(0, 0, 100, bounds.Count - 1);
 
-            return Enumerable.Range(0, 101).ToDictionary(
-                size => new Size(size),
-                size =>
+            return new LazyRangedDictionary<long>(0, 100, (size) =>
+            {
+                var interpolatedIndex = interpolate(size);
+                var boundIndex = size == 0 ? 0 : Math.Min(interpolatedIndex + 1, bounds.Count - 1);
+                return bounds[boundIndex];
+            });
+        }
+
+        private class LazyRangedDictionary<Value> : IReadOnlyDictionary<int, Value>
+        {
+            private readonly int _start;
+            private readonly int _end;
+            private readonly Func<int, Value> _produceValue;
+            private readonly int _count;
+
+            private readonly Dictionary<int, Value> _internalValues = new();
+
+            public LazyRangedDictionary(int start, int end, Func<int, Value> produceValue)
+            {
+                _start = start;
+                _end = end;
+                _produceValue = produceValue;
+                _count = end - start + 1;
+            }
+
+            public Value this[int key]
+            {
+                get
                 {
-                    var interpolatedIndex = interpolate(size);
-                    var boundIndex = size == 0 ? 0 : Math.Min(interpolatedIndex + 1, bounds.Count - 1);
-                    return bounds[boundIndex];
-                });
+                    if (_internalValues.TryGetValue(key, out var value) == false)
+                    {
+                        value = _produceValue(key);
+                        _internalValues.Add(key, value);
+                    }
+
+                    return value;
+                }
+            }
+
+            public IEnumerable<int> Keys => Enumerable.Range(_start, _count);
+
+            public IEnumerable<Value> Values => Keys.Select(k => this[k]);
+
+            public int Count => _count;
+
+            public bool ContainsKey(int key) => key >= _start && key <= _end;
+
+            public IEnumerator<KeyValuePair<int, Value>> GetEnumerator() => Keys.Select(k => new KeyValuePair<int, Value>(k, this[k])).GetEnumerator();
+
+            public bool TryGetValue(int key, [MaybeNullWhen(false)] out Value value)
+            {
+                if (ContainsKey(key))
+                {
+                    value = this[key];
+                    return true;
+                }
+                else
+                {
+                    value = default;
+                    return false;
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

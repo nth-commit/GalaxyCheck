@@ -107,7 +107,7 @@ namespace GalaxyCheck.Gens.Internal.Iterations
         {
             var instanceData = GenData<T>.InstanceData(
                 exampleSpace,
-                Enumerable.Concat(lastExampleSpaceHistory, new[] { exampleSpace }));
+                lastExampleSpaceHistory.Append(exampleSpace));
 
             return new GenIteration<T>(replayParameters, nextParameters, instanceData);
         }
