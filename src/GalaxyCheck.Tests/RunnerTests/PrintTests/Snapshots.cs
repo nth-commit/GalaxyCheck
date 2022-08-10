@@ -3,6 +3,7 @@ using Snapshooter.Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.V2.RunnerTests.PrintTests
@@ -117,6 +118,74 @@ namespace Tests.V2.RunnerTests.PrintTests
 
                 return string.Join(Environment.NewLine, log);
             }
-        }        
+        }
+
+        public class PrintAsyncProperty
+        {
+            [Fact]
+            public async Task PrintNullaryProperty()
+            {
+                var property = Property.NullaryAsync(() => Task.FromResult(false));
+
+                var print = await PrintAndCollect(property);
+
+                Snapshot.Match(print);
+            }
+
+            [Fact]
+            public async Task PrintUnaryProperty()
+            {
+                var property = Gen.Int32().ForAllAsync((_) => Task.FromResult(false));
+
+                var print = await PrintAndCollect(property);
+
+                Snapshot.Match(print);
+            }
+
+            [Fact]
+            public async Task PrintBinaryProperty()
+            {
+                var property = new AsyncProperty(
+                    from x in Gen.Int32().LessThan(int.MaxValue)
+                    from y in Gen.Int32().GreaterThan(x)
+                    select Property.ForTheseAsync(() => Task.FromResult(false)));
+
+                var print = await PrintAndCollect(property);
+
+                Snapshot.Match(print);
+            }
+
+            [Fact]
+            public async Task PrintUnaryListProperty()
+            {
+                var property = Gen.Int32().ListOf().ForAllAsync((_) => Task.FromResult(false));
+
+                var print = await PrintAndCollect(property);
+
+                Snapshot.Match(print);
+            }
+
+            [Fact]
+            public async Task PrintBinaryListProperty()
+            {
+                var property = new AsyncProperty(
+                    from xs in Gen.Int32().ListOf()
+                    from ys in Gen.Int32().ListOf().WithCountGreaterThan(xs.Count)
+                    select Property.ForTheseAsync(() => Task.FromResult(false)));
+
+                var print = await PrintAndCollect(property);
+
+                Snapshot.Match(print);
+            }
+
+            private static async Task<string> PrintAndCollect(AsyncProperty property)
+            {
+                var log = new List<string>();
+
+                await property.PrintAsync(seed: 0, stdout: log.Add);
+
+                return string.Join(Environment.NewLine, log);
+            }
+        }
     }
 }
