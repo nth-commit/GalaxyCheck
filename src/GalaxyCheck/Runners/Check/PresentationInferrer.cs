@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GalaxyCheck.Runners.Check.AsyncAutomata
+namespace GalaxyCheck.Runners.Check
 {
     internal static class PresentationInferrer
     {
@@ -38,7 +38,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
         private static bool IsTest(object obj)
         {
-            return obj.GetType().GetInterfaces().Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(AsyncTest<>));
+            return obj.GetType().GetInterfaces().Any(t => t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(Test<>) || t.GetGenericTypeDefinition() == typeof(AsyncTest<>)));
         }
 
         private static object?[] UnwrapBinding(object? obj)
