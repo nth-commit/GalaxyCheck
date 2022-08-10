@@ -9,6 +9,8 @@ namespace GalaxyCheck.Benchmarks
             BenchmarkRunner.Run<RngBenchmark>();
             BenchmarkRunner.Run<ReflectedGenBenchmark>();
             BenchmarkRunner.Run<ListGenBenchmark>();
+            BenchmarkRunner.Run<SelectManyGenBenchmark>();
+            BenchmarkRunner.Run<SelectGenBenchmark>();
         }
     }
 }
