@@ -73,24 +73,36 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
         private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
+            var nullabilityInfoCtx = new NullabilityInfoContext();
             return type
                 .GetProperties()
                 .Where(property => property.CanWrite)
-                .Select(property => innerHandler
-                    .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType))
-                    .Cast<object>()
-                    .Select<object, Action<object>>(value => obj => property.SetValue(obj, value)));
+                .Select(property =>
+                {
+                    var nullabilityInfo = nullabilityInfoCtx.Create(property);
+                    return innerHandler
+                        .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType, nullabilityInfo))
+                        .Cast<object>()
+                        .MaybeNullableByNullabilityInfo(nullabilityInfo, property.PropertyType)
+                        .Select((Func<object?, Action<object>>)(value => obj => property.SetValue(obj, value)));
+                });
         }
 
         private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
+            var nullabilityInfoCtx = new NullabilityInfoContext();
             return type
                 .GetFields()
                 .Where(field => field.IsPublic)
-                .Select(field => innerHandler
-                    .CreateGen(field.FieldType, context.Next(field.Name, field.FieldType))
-                    .Cast<object>()
-                    .Select<object, Action<object>>(value => obj => field.SetValue(obj, value)));
+                .Select(field =>
+                {
+                    var nullabilityInfo = nullabilityInfoCtx.Create(field);
+                    return innerHandler
+                        .CreateGen(field.FieldType, context.Next(field.Name, field.FieldType, nullabilityInfo))
+                        .Cast<object>()
+                        .MaybeNullableByNullabilityInfo(nullabilityInfo, field.FieldType)
+                        .Select((Func<object?, Action<object>>)(value => obj => field.SetValue(obj, value)));
+                });
         }
     }
 }

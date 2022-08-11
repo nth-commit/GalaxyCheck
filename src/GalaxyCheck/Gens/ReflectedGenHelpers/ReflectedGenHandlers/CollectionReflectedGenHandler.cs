@@ -22,7 +22,9 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
         public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             var elementType = type.GetGenericArguments().Single();
-            var elementGen = innerHandler.CreateGen(elementType, context);
+            var elementGen = innerHandler
+                .CreateGen(elementType, context)
+                .MaybeNullableByNullabilityInfo(context.NullabilityInfo?.GenericTypeArguments.Single(), elementType);
 
             var genericTypeDefinition = type.GetGenericTypeDefinition();
             var methodName = GenMethodByGenericTypeDefinition[genericTypeDefinition];
@@ -43,7 +45,11 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             { typeof(List<>), nameof(CreateListGen) },
             { typeof(ImmutableList<>), nameof(CreateImmutableListGen) },
             { typeof(IList<>), nameof(CreateListGen) },
-            { typeof(IEnumerable<>), nameof(CreateListGen) }
+            { typeof(IEnumerable<>), nameof(CreateListGen) },
+            { typeof(IReadOnlySet<>), nameof(CreateHashSetGen) },
+            { typeof(HashSet<>), nameof(CreateHashSetGen) },
+            { typeof(ISet<>), nameof(CreateHashSetGen) },
+            { typeof(ImmutableHashSet<>), nameof(CreateImmutableHashSetGen) },
         };
 
         private static IGen<IReadOnlyList<T>> CreateIReadOnlyListGen<T>(IGen<T> elementGen) => elementGen.ListOf();
@@ -51,5 +57,9 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
         private static IGen<List<T>> CreateListGen<T>(IGen<T> elementGen) => CreateIReadOnlyListGen(elementGen).Select(x => x.ToList());
 
         private static IGen<ImmutableList<T>> CreateImmutableListGen<T>(IGen<T> elementGen) => CreateIReadOnlyListGen(elementGen).Select(x => x.ToImmutableList());
+
+        private static IGen<HashSet<T>> CreateHashSetGen<T>(IGen<T> elementGen) => elementGen.SetOf().Select(s => new HashSet<T>(s));
+
+        private static IGen<ImmutableHashSet<T>> CreateImmutableHashSetGen<T>(IGen<T> elementGen) => CreateHashSetGen(elementGen).Select(x => x.ToImmutableHashSet());
     }
 }

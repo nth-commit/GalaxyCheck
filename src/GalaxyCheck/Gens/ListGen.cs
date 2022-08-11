@@ -228,7 +228,8 @@ namespace GalaxyCheck.Gens
                         instances.Select(instance => instance.ExampleSpace).ToList(),
                         shrink,
                         exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
-                        enableSmallestExampleSpacesOptimization: true)
+                        enableSmallestExampleSpacesOptimization: true,
+                        enableUniqueIds: true)
                     .Map(ex => ex.ToList());
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);

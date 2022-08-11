@@ -120,7 +120,8 @@ namespace GalaxyCheck.Gens
                         exampleSpaces,
                         ShrinkTowardsLength(1),
                         (_) => 0,
-                        enableSmallestExampleSpacesOptimization: false);
+                        enableSmallestExampleSpacesOptimization: false,
+                        enableUniqueIds: true);
 
                     return rootExampleExplored.Subspace.Select(es => es.Map(SealEnumerable));
                 });

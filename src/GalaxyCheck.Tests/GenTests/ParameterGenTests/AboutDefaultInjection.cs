@@ -101,6 +101,50 @@ namespace Tests.V2.GenTests.ParameterGenTests
             sample.SimpleObject.Should().NotBeNull();
         }
 
+        private static void MethodWithNullableStructParameter(int? parameter)
+        {
+        }
+
+        [Property]
+        public void ItCanGenerateNullableStructs([Seed] int seed, [Size] int size)
+        {
+            List<int?> SampleTraversal(GalaxyCheck.IGen<int?> gen) =>
+                AboutDefaultInjection.SampleTraversal(gen, seed: seed, size: size);
+
+            var gen0 = GalaxyCheck.Gen
+                .Parameters(GetMethod(nameof(MethodWithNullableStructParameter)))
+                .Select(x => x.Single())
+                .Cast<int?>();
+            var gen1 = GalaxyCheck.Gen.NullableStruct(GalaxyCheck.Gen.Int32());
+
+            var sample0 = SampleTraversal(gen0);
+            var sample1 = SampleTraversal(gen1);
+
+            sample0.Should().BeEquivalentTo(sample1);
+        }
+
+        private static void MethodWithNullableReferenceParameter(string? parameter)
+        {
+        }
+
+        [Property]
+        public void ItCanGenerateNullableReferences([Seed] int seed, [Size] int size)
+        {
+            List<string?> SampleTraversal(GalaxyCheck.IGen<string?> gen) =>
+                AboutDefaultInjection.SampleTraversal(gen, seed: seed, size: size);
+
+            var gen0 = GalaxyCheck.Gen
+                .Parameters(GetMethod(nameof(MethodWithNullableReferenceParameter)))
+                .Select(x => x.Single())
+                .Cast<string?>();
+            var gen1 = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String());
+
+            var sample0 = SampleTraversal(gen0);
+            var sample1 = SampleTraversal(gen1);
+
+            sample0.Should().BeEquivalentTo(sample1);
+        }
+
         private static MethodInfo GetMethod(string name)
         {
             return typeof(AboutDefaultInjection).GetMethod(name, BindingFlags.NonPublic | BindingFlags.Static)!;
