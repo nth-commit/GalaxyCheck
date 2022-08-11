@@ -12,13 +12,15 @@ namespace GalaxyCheck.ExampleSpaces
             IReadOnlyCollection<IExampleSpace<T>> exampleSpaces,
             ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrinkExampleSpaces,
             MeasureFunc<IReadOnlyCollection<IExampleSpace<T>>> measureMerge,
-            bool enableSmallestExampleSpacesOptimization) =>
+            bool enableSmallestExampleSpacesOptimization,
+            bool enableUniqueIds) =>
                 MergeHelpers.MergeInternal(
                     exampleSpaces,
                     shrinkExampleSpaces,
                     measureMerge,
                     ImmutableHashSet.Create<ExampleId>(),
                     enableSmallestExampleSpacesOptimization,
+                    enableUniqueIds,
                     true);
 
         private static class MergeHelpers
@@ -29,6 +31,7 @@ namespace GalaxyCheck.ExampleSpaces
                 MeasureFunc<IReadOnlyCollection<IExampleSpace<T>>> measureMerge,
                 ImmutableHashSet<ExampleId> encounteredIds,
                 bool enableSmallestExampleSpacesOptimization,
+                bool enableUniqueIds,
                 bool isRoot)
             {
                 IExampleSpace<IReadOnlyCollection<T>> GenerateNextExampleSpace(IEnumerable<IExampleSpace<T>> exampleSpaces, ImmutableHashSet<ExampleId> encounteredIds) => MergeInternal(
@@ -37,6 +40,7 @@ namespace GalaxyCheck.ExampleSpaces
                     measureMerge,
                     encounteredIds,
                     enableSmallestExampleSpacesOptimization,
+                    enableUniqueIds,
                     false);
 
                 var mergedId = exampleSpaces.Aggregate(
@@ -50,7 +54,14 @@ namespace GalaxyCheck.ExampleSpaces
                     exampleSpaces.Select(es => es.Current.Value).ToList(),
                     mergedDistance);
 
-                var shrinks = Shrink(exampleSpaces, shrinkExampleSpaces, encounteredIds, enableSmallestExampleSpacesOptimization, isRoot, GenerateNextExampleSpace);
+                var shrinks = Shrink(
+                    exampleSpaces,
+                    shrinkExampleSpaces,
+                    encounteredIds,
+                    enableSmallestExampleSpacesOptimization,
+                    enableUniqueIds,
+                    isRoot,
+                    GenerateNextExampleSpace);
 
                 return new ExampleSpace<IReadOnlyCollection<T>>(current, shrinks);
             }
@@ -60,6 +71,7 @@ namespace GalaxyCheck.ExampleSpaces
                 ShrinkFunc<IReadOnlyCollection<IExampleSpace<T>>> shrinkExampleSpaces,
                 ImmutableHashSet<ExampleId> encounteredIds,
                 bool enableSmallestExampleSpacesOptimization,
+                bool enableUniqueIds,
                 bool isRoot,
                 Func<IEnumerable<IExampleSpace<T>>, ImmutableHashSet<ExampleId>, IExampleSpace<IReadOnlyCollection<T>>> nextExampleSpace)
             {
@@ -68,7 +80,8 @@ namespace GalaxyCheck.ExampleSpaces
                 var shrinks = TraverseUnencountered(
                     preMergeShrinks,
                     encounteredIds,
-                    nextExampleSpace);
+                    nextExampleSpace,
+                    enableUniqueIds);
 
                 foreach (var shrink in shrinks)
                 {
@@ -128,7 +141,8 @@ namespace GalaxyCheck.ExampleSpaces
             private static IEnumerable<IExampleSpace<T>> TraverseUnencountered<TAccumulator, T>(
                 IEnumerable<TAccumulator> accumulators,
                 ImmutableHashSet<ExampleId> encounteredIds,
-                Func<TAccumulator, ImmutableHashSet<ExampleId>, IExampleSpace<T>> nextExampleSpace)
+                Func<TAccumulator, ImmutableHashSet<ExampleId>, IExampleSpace<T>> nextExampleSpace,
+                bool enableUniqueIds)
             {
                 return accumulators
                     .Scan(
@@ -140,7 +154,7 @@ namespace GalaxyCheck.ExampleSpaces
                             var exampleSpace = nextExampleSpace(curr, acc.Encountered);
 
                             var hasBeenEncountered = acc.Encountered.Contains(exampleSpace.Current.Id);
-                            if (hasBeenEncountered)
+                            if (hasBeenEncountered && enableUniqueIds)
                             {
                                 return new UnfoldSubspaceState<T>(
                                     new Option.None<IExampleSpace<T>>(),

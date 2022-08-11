@@ -85,7 +85,8 @@ namespace GalaxyCheck
                     exampleSpaces,
                     shrink,
                     exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance),
-                    enableSmallestExampleSpacesOptimization: false);
+                    enableSmallestExampleSpacesOptimization: false,
+                    enableUniqueIds: false);
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace);
             }

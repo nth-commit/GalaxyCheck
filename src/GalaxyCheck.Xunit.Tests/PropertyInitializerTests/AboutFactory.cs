@@ -98,7 +98,7 @@ namespace Tests.PropertyInitializerTests
 
         private class GenFactory1 : IGenFactory
         {
-            public IReflectedGen<T> Create<T>()
+            public IReflectedGen<T> Create<T>(NullabilityInfo? nullabilityInfo = null) where T : notnull
             {
                 throw new NotImplementedException();
             }
@@ -131,7 +131,7 @@ namespace Tests.PropertyInitializerTests
 
         private class GenFactory2 : IGenFactory
         {
-            public IReflectedGen<T> Create<T>()
+            public IReflectedGen<T> Create<T>(NullabilityInfo? nullabilityInfo = null) where T : notnull
             {
                 throw new NotImplementedException();
             }

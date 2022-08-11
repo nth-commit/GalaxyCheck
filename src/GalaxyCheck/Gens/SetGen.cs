@@ -186,7 +186,8 @@ namespace GalaxyCheck.Gens
                         instances.Select(instance => instance.ExampleSpace).ToList(),
                         shrink,
                         exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
-                        enableSmallestExampleSpacesOptimization: true)
+                        enableSmallestExampleSpacesOptimization: true,
+                        enableUniqueIds: true)
                     .Map(values => ImmutableHashSet.CreateRange(values))
                     .Filter(set => set.Count >= minCount);
 
@@ -265,7 +266,8 @@ namespace GalaxyCheck.Gens
                         instances.Select(instance => instance.ExampleSpace).ToList(),
                         shrink,
                         exampleSpaces => exampleSpaces.Sum(exs => exs.Current.Distance) + measureCount(exampleSpaces.Count),
-                        enableSmallestExampleSpacesOptimization: true)
+                        enableSmallestExampleSpacesOptimization: true,
+                        enableUniqueIds: true)
                     .Map(values => ImmutableHashSet.CreateRange(values));
 
                 yield return GenIterationFactory.Instance(parameters, nextParameters, exampleSpace!);

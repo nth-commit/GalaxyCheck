@@ -17,7 +17,7 @@ namespace GalaxyCheck
         /// with minimal configuration through reflection.
         /// </summary>
         /// <returns>A generator for the given type.</returns>
-        public static IReflectedGen<T> Create<T>() => Factory().Create<T>();
+        public static IReflectedGen<T> Create<T>() where T : notnull => Factory().Create<T>();
 
         /// <summary>
         /// Generates instances by the given function. Instances will not shrink by default, to enable shrinking on the
@@ -40,7 +40,7 @@ namespace GalaxyCheck
                 }
             }
 
-            return new FunctionalGen<T>(parameters => GenFunc(parameters));
+            return new FunctionalGen<T>(GenFunc);
         }
     }
 }

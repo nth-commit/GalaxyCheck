@@ -29,18 +29,25 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
         private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context, ContextualErrorFactory errorFactory)
         {
+            var nullabilityInfoCtx = new NullabilityInfoContext();
             var constructor = TryFindConstructor(typeof(T))!;
 
             var parameterGens = constructor
                 .GetParameters()
-                .Select(parameter => innerHandler
-                    .CreateGen(parameter.ParameterType, context.Next(parameter.Name ?? "<unknown>", parameter.ParameterType)) // TODO: Indicate it's a ctor param in the path
-                    .Cast<object>());
+                .Select(parameter =>
+                {
+                    var nullabilityInfo = nullabilityInfoCtx.Create(parameter);
+                    return innerHandler
+                        .CreateGen(parameter.ParameterType, context.Next(parameter.Name ?? "<unknown>", parameter.ParameterType, nullabilityInfo)) // TODO: Indicate it's a ctor param in the path
+                        .Cast<object>()
+                        .MaybeNullableByNullabilityInfo(nullabilityInfo, parameter.ParameterType);
+                });
 
             return Gen
                 .Zip(parameterGens)
                 .SelectMany(parameters =>
                 {
+                    // TODO: Try avoid SelectMany here
                     try
                     {
                         return Gen.Constant((T)constructor.Invoke(parameters.ToArray()));
