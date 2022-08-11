@@ -22,9 +22,8 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
         public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             var elementType = type.GetGenericArguments().Single();
-            var elementGen = innerHandler
-                .CreateGen(elementType, context)
-                .MaybeNullableByNullabilityInfo(context.NullabilityInfo?.GenericTypeArguments.Single(), elementType);
+            var elementNullabilityInfo = context.NullabilityInfo?.GenericTypeArguments.SingleOrDefault();
+            var elementGen = innerHandler.CreateGen(elementType, context.Next("[*]", elementType, elementNullabilityInfo));
 
             var genericTypeDefinition = type.GetGenericTypeDefinition();
             var methodName = GenMethodByGenericTypeDefinition[genericTypeDefinition];

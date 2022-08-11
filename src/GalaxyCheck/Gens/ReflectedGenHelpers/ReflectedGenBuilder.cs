@@ -23,7 +23,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
             var genFactoriesByPriority = new List<IReflectedGenHandler>
             {
                 new MemberOverrideReflectedGenHandler(memberOverrides),
-                new NullableStructGenHandler(),
+                new NullableGenHandler(),
                 new RegistryReflectedGenHandler(registeredGensByType, contextualErrorFactory),
                 new CollectionReflectedGenHandler(),
                 new ArrayReflectedGenHandler(),
@@ -34,9 +34,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
 
             var compositeReflectedGenFactory = new CompositeReflectedGenHandler(genFactoriesByPriority, contextualErrorFactory);
 
-            return compositeReflectedGenFactory
-                .CreateGen(type, context)
-                .MaybeNullableByNullabilityInfo(context.NullabilityInfo, type);
+            return compositeReflectedGenFactory.CreateGen(type, context);
         }
     }
 }
