@@ -11,7 +11,8 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
         public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
             var elementType = type.GetElementType()!;
-            var elementGen = innerHandler.CreateGen(elementType, context);
+            var elementNullabilityInfo = context.NullabilityInfo?.ElementType;
+            var elementGen = innerHandler.CreateGen(elementType, context.Next("[*]", elementType, elementNullabilityInfo));
 
             var methodInfo = typeof(ArrayReflectedGenHandler).GetMethod(
                 nameof(CreateArrayGen),

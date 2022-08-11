@@ -34,14 +34,9 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
             var parameterGens = constructor
                 .GetParameters()
-                .Select(parameter =>
-                {
-                    var nullabilityInfo = nullabilityInfoCtx.Create(parameter);
-                    return innerHandler
-                        .CreateGen(parameter.ParameterType, context.Next(parameter.Name ?? "<unknown>", parameter.ParameterType, nullabilityInfo)) // TODO: Indicate it's a ctor param in the path
-                        .Cast<object>()
-                        .MaybeNullableByNullabilityInfo(nullabilityInfo, parameter.ParameterType);
-                });
+                .Select(parameter => innerHandler
+                    .CreateGen(parameter.ParameterType, context.Next(parameter.Name ?? "<unknown>", parameter.ParameterType, nullabilityInfoCtx.Create(parameter))) // TODO: Indicate it's a ctor param in the path
+                    .Cast<object>());
 
             return Gen
                 .Zip(parameterGens)

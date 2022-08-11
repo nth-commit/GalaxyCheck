@@ -12,8 +12,13 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
         public static ReflectedGenHandlerContext Create(Type type, NullabilityInfo? nullabilityInfo) =>
             new ReflectedGenHandlerContext(ImmutableList.Create("$"), ImmutableStack.Create(type), nullabilityInfo);
 
-        public ReflectedGenHandlerContext Next(string memberName, Type type, NullabilityInfo nullabilityInfo) =>
+        public ReflectedGenHandlerContext Next(string memberName, Type type, NullabilityInfo? nullabilityInfo) =>
             new ReflectedGenHandlerContext(Members.Add(memberName), TypeHistory.Push(type), nullabilityInfo);
+
+        public ReflectedGenHandlerContext SuppressNullability() => this with
+        {
+            NullabilityInfo = null
+        };
 
         public string MemberPath => string.Join(".", Members);
     }

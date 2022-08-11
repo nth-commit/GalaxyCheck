@@ -9,6 +9,21 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 {
     public class AboutNullableGeneration
     {
+        private record RecordWithNonullableReference(string Property);
+
+        [Property]
+        public void ItDoesNotGenerateNullsForNonNullableReferences([Seed] int seed, [Size] int size)
+        {
+            List<string?> SampleTraversal(GalaxyCheck.IGen<string?> gen) =>
+                AboutNullableGeneration.SampleTraversal(gen, seed, size);
+
+            var gen = GalaxyCheck.Gen.Create<RecordWithNonullableReference>().Select(x => x.Property);
+
+            var sample = SampleTraversal(gen);
+
+            sample.Should().NotContainNulls();
+        }
+
         private record RecordWithNullableStruct(int? Property);
 
         [Property]
@@ -192,6 +207,38 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
             var gen0 = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String()).SetOf();
             var gen1 = GalaxyCheck.Gen.Create<RecordWithNullableReferenceInSet>().Select(x => x.Property);
+
+            var sample0 = SampleTraversal(gen0);
+            var sample1 = SampleTraversal(gen1);
+
+            sample1.Should().BeEquivalentTo(sample0);
+        }
+
+        [Property]
+        public void ItGeneratesNullablesStructsInArrays([Seed] int seed, [Size] int size)
+        {
+            List<int?[]> SampleTraversal(GalaxyCheck.IGen<int?[]> gen) =>
+                AboutNullableGeneration.SampleTraversal(gen, seed, size);
+
+            var gen0 = GalaxyCheck.Gen.NullableStruct(GalaxyCheck.Gen.Int32()).ListOf().Select(x => x.ToArray());
+            var gen1 = GalaxyCheck.Gen.Create<int?[]>();
+
+            var sample0 = SampleTraversal(gen0);
+            var sample1 = SampleTraversal(gen1);
+
+            sample1.Should().BeEquivalentTo(sample0);
+        }
+
+        private record RecordWithNullableReferenceInArray(string?[] Property);
+
+        [Property]
+        public void ItGeneratesNullablesReferencesInArrays([Seed] int seed, [Size] int size)
+        {
+            List<string?[]> SampleTraversal(GalaxyCheck.IGen<string?[]> gen) =>
+                AboutNullableGeneration.SampleTraversal(gen, seed, size);
+
+            var gen0 = GalaxyCheck.Gen.Nullable(GalaxyCheck.Gen.String()).ListOf().Select(x => x.ToArray());
+            var gen1 = GalaxyCheck.Gen.Create<RecordWithNullableReferenceInArray>().Select(x => x.Property);
 
             var sample0 = SampleTraversal(gen0);
             var sample1 = SampleTraversal(gen1);
