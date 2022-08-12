@@ -86,8 +86,8 @@ namespace GalaxyCheck.Gens
                     .GetMethod(nameof(IGenFactory.Create))!
                     .MakeGenericMethod(parameterInfo.ParameterType);
 
-                var nullabilityInfoCtx = new NullabilityInfoContext();
-                var nullabilityInfo = nullabilityInfoCtx.Create(parameterInfo);
+                var nullabilityInfoContext = new NullabilityInfoContext();
+                var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
 
                 var gen = (IGen)createGenMethodInfo.Invoke(configuredGenFactory, new object[] { nullabilityInfo })!;
 

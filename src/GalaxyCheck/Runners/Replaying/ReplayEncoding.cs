@@ -43,14 +43,19 @@ namespace GalaxyCheck.Runners.Replaying
 
         public static string Encode(Replay replay)
         {
-            var str = string.Join(".", new[]
+            var encodingComponents = new List<string>()
             {
                 EncodeInt(replay.GenParameters.Rng.Seed),
                 EncodeInt(replay.GenParameters.Size.Value),
                 EncodeExampleSpacePath(replay.ExampleSpacePath)
-            });
+            };
 
-            return CompressString(str);
+            if (replay.GenParameters.RngWaypoint != null)
+            {
+                encodingComponents.Add(EncodeInt(replay.GenParameters.RngWaypoint.Seed));
+            }
+
+            return CompressString(string.Join(".", encodingComponents));
         }
 
         public static Replay Decode(string str)
@@ -63,8 +68,10 @@ namespace GalaxyCheck.Runners.Replaying
             var size = DecodeInt(components[1]);
             var exampleSpacePath = DecodeExampleSpacePath(components[2]);
 
+            int? seedWapoint = components.Count() > 3 ? DecodeInt(components[3]) : null;
+
             return new Replay(
-                GenParameters.Create(seed, size),
+                GenParameters.Parse(seed, size, seedWapoint),
                 exampleSpacePath);
         }
     }

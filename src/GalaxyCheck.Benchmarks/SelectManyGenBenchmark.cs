@@ -27,7 +27,7 @@ namespace GalaxyCheck.Benchmarks
                 select (x, y);
 
             var enumerable = gen.Advanced
-                .Run(GenParameters.Create(seed: _seed, size: 100))
+                .Run(GenParameters.Parse(seed: _seed, size: 100))
                 .Take(OperationsPerInvoke);
 
             foreach (var _ in enumerable) { }
@@ -39,7 +39,7 @@ namespace GalaxyCheck.Benchmarks
             var gen = Gen.Int32();
 
             var enumerable = gen.Advanced
-                .Run(GenParameters.Create(seed: _seed, size: 100))
+                .Run(GenParameters.Parse(seed: _seed, size: 100))
                 .Take(OperationsPerInvoke * 2);
 
             foreach (var _ in enumerable) { }

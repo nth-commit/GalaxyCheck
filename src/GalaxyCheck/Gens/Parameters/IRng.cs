@@ -37,6 +37,14 @@
         IRng Fork();
 
         /// <summary>
+        /// Creates a new RNG with the given seed. This will affect how the next value is generated, but not disrupt
+        /// any other properties of the RNG.
+        /// </summary>
+        /// <param name="seed">The next seed to use.</param>
+        /// <returns></returns>
+        IRng Influence(int seed);
+
+        /// <summary>
         /// Generates a random 64-bit integer, based off of the seed, and some given boundaries. This is a pure
         /// function and will always return the same integer, given the same boundaries.
         /// </summary>

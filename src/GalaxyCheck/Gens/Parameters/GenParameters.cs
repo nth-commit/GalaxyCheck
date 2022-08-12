@@ -1,45 +1,38 @@
 ﻿namespace GalaxyCheck.Gens.Parameters
 {
-    public record GenParameters
+    public record GenParameters(
+        IRng Rng,
+        Size Size,
+        IRng? RngWaypoint)
     {
-        public IRng Rng { get; init; }
-
-        public Size Size { get; init; }
-
-        private GenParameters(IRng rng, Size size)
+        public static GenParameters Parse(int seed, int size, int? seedWaypoint = null)
         {
-            Rng = rng;
-            Size = size;
-        }
-
-        public static GenParameters Create(int seed, int size)
-        {
-            return new GenParameters(Internal.Rng.Create(seed), new Size(size));
-        }
-
-        public static GenParameters Create(int size)
-        {
-            return new GenParameters(Internal.Rng.Spawn(), new Size(size));
+            return new GenParameters(
+                Internal.Rng.Create(seed),
+                new Size(size),
+                seedWaypoint == null ? null : Internal.Rng.Create(seedWaypoint.Value));
         }
 
         internal static GenParameters Create(IRng rng, Size size)
         {
-            return new GenParameters(rng, size);
+            return new GenParameters(rng, size, null);
         }
 
-        internal static GenParameters Create(Size size)
+        internal static GenParameters CreateRandom(Size size)
         {
-            return new GenParameters(Internal.Rng.Spawn(), size);
+            return new GenParameters(Internal.Rng.Spawn(), size, null);
         }
-
-        public GenParameters With(
-            IRng? rng = null,
-            Size? size = null) =>
-                new GenParameters(rng ?? Rng, size ?? Size);
 
         public override string ToString()
         {
-            return $"Rng={Rng},Size={Size}";
+            var result = $"Rng={Rng},Size={Size}";
+
+            if (RngWaypoint != null)
+            {
+                result += $",RngWaypoing={RngWaypoint}";
+            }
+
+            return result;
         }
     }
 }

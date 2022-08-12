@@ -27,7 +27,7 @@ namespace GalaxyCheck
             var (initialSize, resizeStrategy) = SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
 
             var initialParameters = seed == null
-                ? GenParameters.Create(initialSize)
+                ? GenParameters.CreateRandom(initialSize)
                 : GenParameters.Create(Rng.Create(seed.Value), initialSize);
 
             var initialContext = new Automata.CheckStateContext<T>(
@@ -72,7 +72,7 @@ namespace GalaxyCheck
             var (initialSize, resizeStrategy) = SizingAspectsAsync<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
 
             var initialParameters = seed == null
-                ? GenParameters.Create(initialSize)
+                ? GenParameters.CreateRandom(initialSize)
                 : GenParameters.Create(Rng.Create(seed.Value), initialSize);
 
             var initialContext = new AsyncAutomata.CheckStateContext<T>(
