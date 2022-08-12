@@ -23,8 +23,6 @@ namespace GalaxyCheck
 namespace GalaxyCheck.Gens
 {
     using GalaxyCheck.Gens.Internal;
-    using GalaxyCheck.Gens.Iterations.Generic;
-    using GalaxyCheck.Gens.Parameters;
     using GalaxyCheck.Gens.ReflectedGenHelpers;
     using GalaxyCheck.Internal;
     using System;
@@ -33,7 +31,6 @@ namespace GalaxyCheck.Gens
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
 
     public interface IReflectedGen<T> : IGen<T>
     {
@@ -122,20 +119,20 @@ namespace GalaxyCheck.Gens
         {
         }
 
-        public IGenFactory RegisterType(Type type, IGen gen) =>
-            RegisterType(type, (_) => gen);
+        IGenFactory IGenFactory.RegisterType(Type type, IGen gen) => RegisterType(type, (_) => gen);
 
-        public IGenFactory RegisterType<T>(IGen<T> gen) =>
-            RegisterType((_) => gen);
+        IGenFactory IGenFactory.RegisterType<T>(IGen<T> gen) => RegisterType(typeof(T), (_) => gen);
 
-        public IGenFactory RegisterType(Type type, Func<IGenFactory, IGen> genFunc) =>
+        IGenFactory IGenFactory.RegisterType(Type type, Func<IGenFactory, IGen> genFunc) => RegisterType(type, genFunc);
+
+        IGenFactory IGenFactory.RegisterType<T>(Func<IGenFactory, IGen<T>> genFunc) => RegisterType(typeof(T), genFunc);
+
+        //// TODO: Cache this call by (this/T)
+        IReflectedGen<T> IGenFactory.Create<T>(NullabilityInfo? nullabilityInfo) =>
+            new ReflectedGen<T>(_registeredGensByType, nullabilityInfo);
+
+        private IGenFactory RegisterType(Type type, Func<IGenFactory, IGen> genFunc) =>
             new GenFactory(_registeredGensByType.SetItem(type, () => genFunc(this)));
-
-        public IGenFactory RegisterType<T>(Func<IGenFactory, IGen<T>> genFunc) =>
-            new GenFactory(_registeredGensByType.SetItem(typeof(T), () => genFunc(this)));
-
-        // TODO: Cache this call by (this/T)
-        public IReflectedGen<T> Create<T>(NullabilityInfo? nullabilityInfo = null) where T : notnull => new ReflectedGen<T>(_registeredGensByType, nullabilityInfo);
     }
 
     internal record ReflectedGenMemberOverride(string Path, IGen Gen);
@@ -155,8 +152,14 @@ namespace GalaxyCheck.Gens
             public record AttemptedOverrideOnRegisteredGen(string Expression) : OverrideMemberErrorKind;
         }
 
-        public ReflectedGen(IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType, NullabilityInfo? nullabilityInfo)
-            : this(registeredGensByType, ImmutableList.Create<ReflectedGenMemberOverride>(), null, nullabilityInfo)
+        public ReflectedGen(
+            IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
+            NullabilityInfo? nullabilityInfo)
+            : this(
+                  registeredGensByType,
+                  ImmutableList.Create<ReflectedGenMemberOverride>(),
+                  null,
+                  nullabilityInfo)
         {
         }
 

@@ -103,7 +103,7 @@ namespace GalaxyCheck
                         var innerStream = BindExampleSpace(
                             instance.ExampleSpace,
                             selector,
-                            instance.ReplayParameters.With(rng: instance.NextParameters.Rng));
+                            instance.ReplayParameters with { Rng = instance.NextParameters.Rng });
 
                         foreach (var innerIteration in innerStream)
                         {

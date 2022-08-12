@@ -90,7 +90,7 @@ namespace Tests.V2.RunnerTests.CheckTests
         private static Replay CreateReplay(int replaySeed, int replaySize, IEnumerable<int> replayPath)
         {
             return new Replay(
-                GalaxyCheck.Gens.Parameters.GenParameters.Create(replaySeed, replaySize),
+                GalaxyCheck.Gens.Parameters.GenParameters.Parse(replaySeed, replaySize),
                 replayPath);
         }
     }

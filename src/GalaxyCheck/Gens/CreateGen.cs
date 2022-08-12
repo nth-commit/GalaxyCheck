@@ -6,6 +6,7 @@ using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace GalaxyCheck
 {
@@ -17,7 +18,7 @@ namespace GalaxyCheck
         /// with minimal configuration through reflection.
         /// </summary>
         /// <returns>A generator for the given type.</returns>
-        public static IReflectedGen<T> Create<T>() where T : notnull => Factory().Create<T>();
+        public static IReflectedGen<T> Create<T>(NullabilityInfo? nullabilityInfo = null) where T : notnull => Factory().Create<T>(nullabilityInfo);
 
         /// <summary>
         /// Generates instances by the given function. Instances will not shrink by default, to enable shrinking on the

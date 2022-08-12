@@ -12,7 +12,8 @@
     },
     "Size": {
       "Value": 100
-    }
+    },
+    "RngWaypoint": null
   },
   "NextParameters": {
     "Rng": {
@@ -22,7 +23,8 @@
     },
     "Size": {
       "Value": 0
-    }
+    },
+    "RngWaypoint": null
   },
   "TerminationReason": "ReachedMaximumIterations",
   "Falsified": false,

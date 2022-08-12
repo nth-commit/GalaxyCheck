@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace GalaxyCheck.Gens.ReflectedGenHelpers
 {
@@ -21,5 +23,18 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
         };
 
         public string MemberPath => string.Join(".", Members);
+    }
+
+    internal static class ReflectedGenHandlerContextExtensions
+    {
+        public static int CalculateStableSeed(this ReflectedGenHandlerContext context) => Encoding.Unicode
+            .GetBytes(context.MemberPath)
+            .Aggregate(0, (acc, curr) =>
+            {
+                unchecked
+                {
+                    return acc + curr;
+                }
+            });
     }
 }

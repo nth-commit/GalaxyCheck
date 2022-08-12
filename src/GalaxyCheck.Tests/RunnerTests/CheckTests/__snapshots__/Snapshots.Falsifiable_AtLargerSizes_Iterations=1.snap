@@ -14,7 +14,8 @@
       },
       "Size": {
         "Value": 100
-      }
+      },
+      "RngWaypoint": null
     },
     "ReplayPath": [],
     "Replay": "",
@@ -32,7 +33,8 @@
     },
     "Size": {
       "Value": 100
-    }
+    },
+    "RngWaypoint": null
   },
   "NextParameters": {
     "Rng": {
@@ -42,7 +44,8 @@
     },
     "Size": {
       "Value": 100
-    }
+    },
+    "RngWaypoint": null
   },
   "TerminationReason": "ReachedMaximumIterations",
   "Falsified": true,

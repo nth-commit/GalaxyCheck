@@ -27,16 +27,22 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory })!;
         }
 
-        private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context, ContextualErrorFactory errorFactory)
+        private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext constructorContext, ContextualErrorFactory errorFactory)
         {
-            var nullabilityInfoCtx = new NullabilityInfoContext();
+            var nullabilityInfoContext = new NullabilityInfoContext();
             var constructor = TryFindConstructor(typeof(T))!;
 
             var parameterGens = constructor
                 .GetParameters()
-                .Select(parameter => innerHandler
-                    .CreateGen(parameter.ParameterType, context.Next(parameter.Name ?? "<unknown>", parameter.ParameterType, nullabilityInfoCtx.Create(parameter))) // TODO: Indicate it's a ctor param in the path
-                    .Cast<object>());
+                .Select(parameter =>
+                {
+                    // TODO: Indicate it's a ctor param in the path
+                    var parameterContext = constructorContext.Next(parameter.Name ?? "<unknown>", parameter.ParameterType, nullabilityInfoContext.Create(parameter));
+                    return innerHandler
+                        .CreateGen(parameter.ParameterType, parameterContext)
+                        .Cast<object>()
+                        .Advanced.ReferenceRngWaypoint(rngWaypoint => rngWaypoint.Influence(parameterContext.CalculateStableSeed()));
+                });
 
             return Gen
                 .Zip(parameterGens)
@@ -51,7 +57,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                     {
                         var innerEx = ex.InnerException;
                         var message = $"'{innerEx!.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
-                        return errorFactory(message, context).Cast<T>();
+                        return errorFactory(message, constructorContext).Cast<T>();
                     }
                 });
         }

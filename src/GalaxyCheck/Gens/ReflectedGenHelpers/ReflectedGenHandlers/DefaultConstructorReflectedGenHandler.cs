@@ -71,28 +71,38 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                 });
         }
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
+        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
         {
-            var nullabilityInfoCtx = new NullabilityInfoContext();
+            var nullabilityInfoContext = new NullabilityInfoContext();
             return type
                 .GetProperties()
                 .Where(property => property.CanWrite)
-                .Select(property => innerHandler
-                    .CreateGen(property.PropertyType, context.Next(property.Name, property.PropertyType, nullabilityInfoCtx.Create(property)))
-                    .Cast<object>()
-                    .Select((Func<object?, Action<object>>)(value => obj => property.SetValue(obj, value))));
+                .Select(property =>
+                {
+                    var context = parentContext.Next(property.Name, property.PropertyType, nullabilityInfoContext.Create(property));
+                    return innerHandler
+                        .CreateGen(property.PropertyType, context)
+                        .Cast<object>()
+                        .Advanced.ReferenceRngWaypoint(rngWaypoint => rngWaypoint.Influence(context.CalculateStableSeed()))
+                        .Select((Func<object?, Action<object>>)(value => obj => property.SetValue(obj, value)));
+                });
         }
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
+        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
         {
-            var nullabilityInfoCtx = new NullabilityInfoContext();
+            var nullabilityInfoContext = new NullabilityInfoContext();
             return type
                 .GetFields()
                 .Where(field => field.IsPublic)
-                .Select(field => innerHandler
-                    .CreateGen(field.FieldType, context.Next(field.Name, field.FieldType, nullabilityInfoCtx.Create(field)))
-                    .Cast<object>()
-                    .Select((Func<object?, Action<object>>)(value => obj => field.SetValue(obj, value))));
+                .Select(field =>
+                {
+                    var context = parentContext.Next(field.Name, field.FieldType, nullabilityInfoContext.Create(field));
+                    return innerHandler
+                        .CreateGen(field.FieldType, context)
+                        .Cast<object>()
+                        .Advanced.ReferenceRngWaypoint(rngWaypoint => rngWaypoint.Influence(context.CalculateStableSeed()))
+                        .Select((Func<object?, Action<object>>)(value => obj => field.SetValue(obj, value)));
+                });
         }
     }
 }

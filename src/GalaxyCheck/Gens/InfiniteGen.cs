@@ -74,11 +74,11 @@ namespace GalaxyCheck.Gens
                 var nextRng = initialRng.Next();
                 var forkedRng = initialRng.Fork();
 
-                var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, parameters.With(rng: forkedRng), _iterationLimit);
+                var exampleSpace = CreateInfiniteEnumerableSpace(_elementGen, parameters with { Rng = forkedRng }, _iterationLimit);
 
                 yield return GenIterationFactory.Instance(
-                    parameters.With(rng: initialRng),
-                    parameters.With(rng: nextRng),
+                    parameters with { Rng = initialRng },
+                    parameters with { Rng = nextRng },
                     exampleSpace);
 
                 rng = rng.Next();
