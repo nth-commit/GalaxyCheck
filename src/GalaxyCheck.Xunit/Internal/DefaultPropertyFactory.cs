@@ -1,8 +1,9 @@
 ﻿using GalaxyCheck.Gens;
+using GalaxyCheck.Internal;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace GalaxyCheck.Xunit.Internal
+namespace GalaxyCheck.Internal
 {
     internal class DefaultPropertyFactory : IPropertyFactory
     {

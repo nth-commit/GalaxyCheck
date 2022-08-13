@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace GalaxyCheck.Xunit.Internal
+namespace GalaxyCheck.Internal
 {
     public class PropertyTestCase : XunitTestCase
     {
@@ -72,7 +72,8 @@ namespace GalaxyCheck.Xunit.Internal
                     TestMethod.TestClass.Class.ToRuntimeType(),
                     TestMethod.Method.ToRuntimeMethod(),
                     constructorArguments,
-                    new DefaultPropertyFactory());
+                    new DefaultPropertyFactory(),
+                    GlobalConfiguration.Instance);
             }
             catch (Exception exception)
             {

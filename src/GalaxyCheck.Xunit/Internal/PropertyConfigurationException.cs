@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GalaxyCheck.Xunit.Internal
+namespace GalaxyCheck.Internal
 {
     internal class PropertyConfigurationException : Exception
     {

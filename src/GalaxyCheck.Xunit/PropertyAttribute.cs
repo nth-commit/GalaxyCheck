@@ -1,4 +1,4 @@
-﻿using GalaxyCheck.Xunit.Internal;
+﻿using GalaxyCheck.Internal;
 using System;
 using Xunit;
 using Xunit.Sdk;
@@ -6,12 +6,46 @@ using Xunit.Sdk;
 namespace GalaxyCheck
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    [XunitTestCaseDiscoverer("GalaxyCheck.Xunit.Internal.PropertyDiscoverer", "GalaxyCheck.Xunit")]
+    [XunitTestCaseDiscoverer("GalaxyCheck.Internal.PropertyDiscoverer", "GalaxyCheck.Xunit")]
     public class PropertyAttribute : FactAttribute
     {
-        public int ShrinkLimit { get; set; } = 500;
+        public int Iterations
+        {
+            get
+            {
+                if (NullableIterations == null)
+                {
+                    throw new InvalidOperationException($"{nameof(Iterations)} was not set, and does not have a default value");
+                }
 
-        public int Iterations { get; set; } = 100;
+                throw new InvalidOperationException("");
+            }
+            set
+            {
+                NullableIterations = value;
+            }
+        }
+
+        internal int? NullableIterations { get; private set; }
+
+        public int ShrinkLimit
+        {
+            get
+            {
+                if (NullableShrinkLimit == null)
+                {
+                    throw new InvalidOperationException($"{nameof(ShrinkLimit)} was not set, and does not have a default value");
+                }
+
+                throw new InvalidOperationException("");
+            }
+            set
+            {
+                NullableShrinkLimit = value;
+            }
+        }
+
+        internal int? NullableShrinkLimit { get; private set; }
 
         public int Seed
         {

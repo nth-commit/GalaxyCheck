@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
-using GalaxyCheck.Xunit.Internal;
+using GalaxyCheck.Internal;
 using System;
 using System.Reflection;
 using Xunit;
@@ -35,18 +35,40 @@ namespace Tests.PropertyInitializerTests
         }
 
         [Theory]
-        [InlineData(nameof(Properties.PropertyWithDefaultIterations), 100)]
         [InlineData(nameof(Properties.PropertyWith10Iterations), 10)]
-        [InlineData(nameof(Properties.SampleWithDefaultIterations), 100)]
         [InlineData(nameof(Properties.SampleWith10Iterations), 10)]
         public void ItPassesThroughIterations(string testMethodName, int expectedIterations)
         {
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            var result = PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                new DefaultPropertyFactory(),
+                new GlobalConfiguration { DefaultIterations = 999 });
 
             result.Parameters.Iterations.Should().Be(expectedIterations);
+        }
+
+        [Theory]
+        [InlineData(nameof(Properties.PropertyWithDefaultIterations))]
+        [InlineData(nameof(Properties.SampleWithDefaultIterations))]
+        public void ItPassesThroughTheDefaultIterationsIfNotExplicitlySet(string testMethodName)
+        {
+            var defaultIterations = 1000;
+            var testClassType = typeof(Properties);
+            var testMethodInfo = GetMethod(testMethodName);
+
+            var result = PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                new DefaultPropertyFactory(),
+                new GlobalConfiguration { DefaultIterations = defaultIterations });
+
+            result.Parameters.Iterations.Should().Be(defaultIterations);
         }
 
         private static MethodInfo GetMethod(string name)
