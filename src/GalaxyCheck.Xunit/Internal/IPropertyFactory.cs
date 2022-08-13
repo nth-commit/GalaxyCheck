@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace GalaxyCheck.Xunit.Internal
+namespace GalaxyCheck.Internal
 {
     public interface IPropertyFactory
     {

@@ -1,10 +1,11 @@
-﻿using GalaxyCheck.Gens;
+﻿using GalaxyCheck.Configuration;
+using GalaxyCheck.Gens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace GalaxyCheck.Xunit.Internal
+namespace GalaxyCheck.Internal
 {
     internal record PropertyInitializationResult(
         IPropertyRunner Runner,
@@ -20,7 +21,8 @@ namespace GalaxyCheck.Xunit.Internal
             Type testClassType,
             MethodInfo testMethodInfo,
             object[] constructorArguments,
-            IPropertyFactory propertyFactory)
+            IPropertyFactory propertyFactory,
+            IGlobalConfiguration globalConfig)
         {
             var testClassInstance = Activator.CreateInstance(testClassType, constructorArguments)!;
             var propertyAttribute = testMethodInfo.GetCustomAttributes<PropertyAttribute>(inherit: true).Single();
@@ -32,8 +34,8 @@ namespace GalaxyCheck.Xunit.Internal
 
             var propertyRunParameters = new PropertyRunParameters(
                 Property: property,
-                Iterations: propertyAttribute.Iterations,
-                ShrinkLimit: propertyAttribute.ShrinkLimit,
+                Iterations: propertyAttribute.NullableIterations ?? globalConfig.DefaultIterations,
+                ShrinkLimit: propertyAttribute.NullableShrinkLimit ?? globalConfig.DefaultShrinkLimit,
                 Replay: replay,
                 Seed: replay == null ? propertyAttribute.NullableSeed : null,
                 Size: replay == null ? propertyAttribute.NullableSize : null);

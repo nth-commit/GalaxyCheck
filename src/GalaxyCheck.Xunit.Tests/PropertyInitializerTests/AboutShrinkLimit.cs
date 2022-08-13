@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
-using GalaxyCheck.Xunit.Internal;
+using GalaxyCheck.Internal;
 using System;
 using System.Reflection;
 using Xunit;
@@ -35,18 +35,40 @@ namespace Tests.PropertyInitializerTests
         }
 
         [Theory]
-        [InlineData(nameof(Properties.PropertyWithDefaultShrinkLimit), 500)]
         [InlineData(nameof(Properties.PropertyWith10ShrinkLimit), 10)]
-        [InlineData(nameof(Properties.SampleWithDefaultShrinkLimit), 500)]
         [InlineData(nameof(Properties.SampleWith10ShrinkLimit), 10)]
         public void ItPassesThroughShrinkLimit(string testMethodName, int expectedShrinkLimit)
         {
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            var result = PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                new DefaultPropertyFactory(),
+                new GlobalConfiguration() { DefaultShrinkLimit = 999 });
 
             result.Parameters.ShrinkLimit.Should().Be(expectedShrinkLimit);
+        }
+
+        [Theory]
+        [InlineData(nameof(Properties.PropertyWithDefaultShrinkLimit))]
+        [InlineData(nameof(Properties.SampleWithDefaultShrinkLimit))]
+        public void ItPassesThroughTheDefaultShrinkLimitIfNotExplicitlySet(string testMethodName)
+        {
+            var defaultShrinkLimit = 1000;
+            var testClassType = typeof(Properties);
+            var testMethodInfo = GetMethod(testMethodName);
+
+            var result = PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                new DefaultPropertyFactory(),
+                new GlobalConfiguration { DefaultShrinkLimit = defaultShrinkLimit });
+
+            result.Parameters.ShrinkLimit.Should().Be(defaultShrinkLimit);
         }
 
         private static MethodInfo GetMethod(string name)

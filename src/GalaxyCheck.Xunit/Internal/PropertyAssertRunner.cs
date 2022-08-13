@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace GalaxyCheck.Xunit.Internal
+namespace GalaxyCheck.Internal
 {
     internal class PropertyAssertRunner : IPropertyRunner
     {

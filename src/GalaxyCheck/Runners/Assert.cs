@@ -21,7 +21,7 @@ namespace GalaxyCheck
             Func<string, string>? formatMessage = null)
         {
             var checkResult = property.Check(iterations: iterations, seed: seed, size: size, shrinkLimit: shrinkLimit, replay: replay, deepCheck: deepCheck);
-            ThrowIfFalsified(checkResult);
+            ThrowIfFalsified(checkResult, formatReproduction, formatMessage);
         }
 
         public static async Task AssertAsync<T>(
@@ -36,13 +36,13 @@ namespace GalaxyCheck
             Func<string, string>? formatMessage = null)
         {
             var checkResult = await property.CheckAsync(iterations: iterations, seed: seed, size: size, shrinkLimit: shrinkLimit, replay: replay, deepCheck: deepCheck);
-            ThrowIfFalsified(checkResult);
+            ThrowIfFalsified(checkResult, formatReproduction, formatMessage);
         }
 
         private static void ThrowIfFalsified<T>(
             CheckResult<T> checkResult,
-            Func<string, string>? formatReproduction = null,
-            Func<string, string>? formatMessage = null)
+            Func<string, string>? formatReproduction,
+            Func<string, string>? formatMessage)
         {
             if (checkResult.Falsified)
             {

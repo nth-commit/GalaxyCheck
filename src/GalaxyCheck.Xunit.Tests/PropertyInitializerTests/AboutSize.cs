@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
-using GalaxyCheck.Xunit.Internal;
+using GalaxyCheck.Internal;
 using System;
 using System.Reflection;
 using Xunit;
@@ -66,7 +66,12 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            var result = PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                new DefaultPropertyFactory(),
+                new GlobalConfiguration());
 
             result.Parameters.Size.Should().Be(expectedSize);
         }
@@ -81,7 +86,12 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            var result = PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            var result = PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                new DefaultPropertyFactory(),
+                new GlobalConfiguration());
 
             result.Parameters.Size.Should().Be(null);
         }

@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using GalaxyCheck;
 using GalaxyCheck.Gens;
-using GalaxyCheck.Xunit.Internal;
+using GalaxyCheck.Internal;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -87,7 +87,12 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            Action test = () => PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, new DefaultPropertyFactory());
+            Action test = () => PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                new DefaultPropertyFactory(),
+                new GlobalConfiguration());
 
             test.Should()
                 .Throw<Exception>()
@@ -108,7 +113,12 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
+            PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                mockPropertyFactory.Object,
+                new GlobalConfiguration());
 
             VerifyGenPassedThrough(mockPropertyFactory, Gen, 0);
         }
@@ -122,7 +132,7 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object);
+            PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object, new GlobalConfiguration());
 
             VerifyGenPassedThrough(mockPropertyFactory, Gen, expectedIndex);
         }
