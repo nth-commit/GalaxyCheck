@@ -77,10 +77,11 @@ namespace Tests.V2.RunnerTests.PrintTests
             [Fact]
             public void PrintBinaryProperty()
             {
-                var property = new Property(
+                var gen =
                     from x in Gen.Int32().LessThan(int.MaxValue)
                     from y in Gen.Int32().GreaterThan(x)
-                    select Property.ForThese(() => false));
+                    select (x, y);
+                var property = gen.ForAll((_) => false);
 
                 var print = PrintAndCollect(property);
 
@@ -100,10 +101,11 @@ namespace Tests.V2.RunnerTests.PrintTests
             [Fact]
             public void PrintBinaryListProperty()
             {
-                var property = new Property(
+                var gen =
                     from xs in Gen.Int32().ListOf()
                     from ys in Gen.Int32().ListOf().WithCountGreaterThan(xs.Count)
-                    select Property.ForThese(() => false));
+                    select (xs, ys);
+                var property = gen.ForAll((_) => false);
 
                 var print = PrintAndCollect(property);
 
@@ -145,10 +147,11 @@ namespace Tests.V2.RunnerTests.PrintTests
             [Fact]
             public async Task PrintBinaryProperty()
             {
-                var property = new AsyncProperty(
+                var gen =
                     from x in Gen.Int32().LessThan(int.MaxValue)
                     from y in Gen.Int32().GreaterThan(x)
-                    select Property.ForTheseAsync(() => Task.FromResult(false)));
+                    select (x, y);
+                var property = gen.ForAllAsync((_) => Task.FromResult(false));
 
                 var print = await PrintAndCollect(property);
 
@@ -168,10 +171,11 @@ namespace Tests.V2.RunnerTests.PrintTests
             [Fact]
             public async Task PrintBinaryListProperty()
             {
-                var property = new AsyncProperty(
+                var gen =
                     from xs in Gen.Int32().ListOf()
                     from ys in Gen.Int32().ListOf().WithCountGreaterThan(xs.Count)
-                    select Property.ForTheseAsync(() => Task.FromResult(false)));
+                    select (xs, ys);
+                var property = gen.ForAllAsync((_) => Task.FromResult(false));
 
                 var print = await PrintAndCollect(property);
 

@@ -90,9 +90,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
             {
                 return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
-                    PresentationalValue:
-                        state.TestExampleSpace.Current.Value.PresentedInput ??
-                        PresentationInferrer.InferValue(state.ExampleSpaceHistory),
+                    PresentedInput: state.TestExampleSpace.Current.Value.PresentedInput,
                     ExampleSpace: state.InputExampleSpace,
                     Parameters: state.CounterexampleContext.ReplayParameters,
                     Path: state.CounterexampleContext.ReplayPath,
@@ -104,9 +102,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
             {
                 return new CheckIteration<T>(
                     Value: state.InputExampleSpace.Current.Value,
-                    PresentationalValue:
-                        state.TestExampleSpace.Current.Value.PresentedInput ??
-                        PresentationInferrer.InferValue(state.ExampleSpaceHistory),
+                    PresentedInput: state.TestExampleSpace.Current.Value.PresentedInput,
                     ExampleSpace: state.InputExampleSpace,
                     Parameters: state.Instance.ReplayParameters,
                     Path: state.NonCounterexampleExploration.Path,

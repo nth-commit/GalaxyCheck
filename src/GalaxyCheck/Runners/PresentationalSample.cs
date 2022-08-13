@@ -90,7 +90,7 @@ namespace GalaxyCheck.Runners.Sample
         private static SampleWithMetricsResult<IReadOnlyList<object?>> ExtractSampleFromCheckResult<T>(CheckResult<T> checkResult)
         {
             var values = checkResult.Checks
-                .Select(check => check.PresentationalValue)
+                .Select(check => check.PresentedInput)
                 .ToList();
 
             return new SampleWithMetricsResult<IReadOnlyList<object?>>(

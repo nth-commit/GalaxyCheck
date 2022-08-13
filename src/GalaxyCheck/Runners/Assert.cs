@@ -66,7 +66,7 @@ namespace GalaxyCheck
                 counterexample.ReplayPath,
                 counterexample.Replay,
                 counterexample.Exception,
-                counterexample.PresentationalValue);
+                counterexample.PresentedInput);
         }
     }
 }
@@ -151,7 +151,7 @@ namespace GalaxyCheck.Runners
 
         private static string CounterexampleValueLine(Counterexample<object?> counterexample)
         {
-            var lines = ExampleRenderer.Render(counterexample.PresentationalValue).ToList();
+            var lines = ExampleRenderer.Render(counterexample.PresentedInput).ToList();
 
             return lines.Count switch
             {

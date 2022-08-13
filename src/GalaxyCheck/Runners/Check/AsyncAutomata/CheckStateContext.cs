@@ -125,7 +125,6 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
     internal record CounterexampleContext<T>(
        IExampleSpace<AsyncTest<T>> TestExampleSpace,
-       IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory,
        GenParameters ReplayParameters,
        IEnumerable<int> ReplayPath,
        Exception? Exception)
@@ -134,14 +133,6 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
         public T Value => ExampleSpace.Current.Value;
 
-        public IReadOnlyList<object?> PresentationalValue
-        {
-            get
-            {
-                var test = TestExampleSpace.Current.Value;
-                var arity = test.PresentedInput?.Count;
-                return arity > 0 ? test.PresentedInput! : PresentationInferrer.InferValue(ExampleSpaceHistory);
-            }
-        }
+        public IReadOnlyList<object?> PresentedInput => TestExampleSpace.Current.Value.PresentedInput;
     }
 }

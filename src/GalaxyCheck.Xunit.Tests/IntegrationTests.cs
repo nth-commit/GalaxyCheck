@@ -21,8 +21,6 @@ namespace Tests
         }
 
         [Theory]
-        [InlineData("InfalliblePureProperty")]
-        [InlineData("InfalliblePurePropertyAsync")]
         [InlineData("InfallibleVoidProperty")]
         [InlineData("InfallibleVoidPropertyAsync")]
         [InlineData("InfallibleBooleanProperty")]
@@ -41,8 +39,6 @@ namespace Tests
         }
 
         [Theory]
-        [InlineData("FalliblePureProperty")]
-        [InlineData("FalliblePurePropertyAsync")]
         [InlineData("FallibleVoidProperty")]
         [InlineData("FallibleVoidPropertyAsync")]
         [InlineData("FallibleBooleanProperty")]
@@ -58,8 +54,6 @@ namespace Tests
         }
 
         [Theory]
-        [InlineData("SamplePureProperty")]
-        [InlineData("SamplePurePropertyAsync")]
         [InlineData("SampleVoidProperty")]
         [InlineData("SampleVoidPropertyAsync")]
         public void SampledProperties(string testName)

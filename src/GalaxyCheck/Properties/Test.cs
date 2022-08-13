@@ -12,7 +12,7 @@ namespace GalaxyCheck
 
         Lazy<TOutput> Output { get; }
 
-        IReadOnlyList<object?>? PresentedInput { get; }
+        IReadOnlyList<object?> PresentedInput { get; }
     }
 
     public interface Test<out T> : TestInput<T, TestOutput>

@@ -18,23 +18,6 @@ namespace IntegrationSample
         }
 
         [Property]
-        public IGen<Test> InfalliblePureProperty() =>
-            from a in Gen.Int32().Between(0, 100)
-            select Property.ForThese(() =>
-            {
-                AnnounceTestInvocation(nameof(InfalliblePureProperty));
-            });
-
-        [Property]
-        public IGen<Test> FalliblePureProperty() =>
-            from a in Gen.Int32().Between(0, 100)
-            select Property.ForThese(() =>
-            {
-                AnnounceTestInvocation(nameof(FalliblePureProperty));
-                throw new Exception("Failed!");
-            });
-
-        [Property]
         public void InfallibleVoidProperty([Between(0, 100)] int x)
         {
             AnnounceTestInvocation(nameof(InfallibleVoidProperty));
@@ -95,13 +78,6 @@ namespace IntegrationSample
             AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactory), new[] { x });
             Assert.True(x % 2 != 1, "They are not odd!");
         }
-
-        [Sample]
-        public IGen<Test> SamplePureProperty() =>
-            from a in Gen.Int32().Between(0, 100)
-            select Property.ForThese(() =>
-            {
-            });
 
         [Sample]
         public void SampleVoidProperty([Between(0, 100)] int x)

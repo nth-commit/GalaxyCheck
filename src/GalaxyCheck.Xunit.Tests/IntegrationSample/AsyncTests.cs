@@ -19,25 +19,6 @@ namespace IntegrationSample
         }
 
         [Property]
-        public IGen<AsyncTest> InfalliblePurePropertyAsync() =>
-            from a in Gen.Int32().Between(0, 100)
-            select Property.ForTheseAsync(async () =>
-            {
-                await Task.Delay(1);
-                AnnounceTestInvocation(nameof(InfalliblePurePropertyAsync));
-            });
-
-        [Property]
-        public IGen<AsyncTest> FalliblePurePropertyAsync() =>
-            from a in Gen.Int32().Between(0, 100)
-            select Property.ForTheseAsync(async () =>
-            {
-                await Task.Delay(1);
-                AnnounceTestInvocation(nameof(FalliblePurePropertyAsync));
-                throw new Exception("Failed!");
-            });
-
-        [Property]
         public async Task InfallibleVoidPropertyAsync([Between(0, 100)] int x)
         {
             await Task.Delay(1);
@@ -111,14 +92,6 @@ namespace IntegrationSample
             AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactoryAsync), new[] { x });
             Assert.True(x % 2 != 1, "They are not odd!");
         }
-
-        [Sample]
-        public IGen<AsyncTest> SamplePurePropertyAsync() =>
-            from a in Gen.Int32().Between(0, 100)
-            select Property.ForTheseAsync(async () =>
-            {
-                await Task.Delay(1);
-            });
 
         [Sample]
         public async Task SampleVoidPropertyAsync([Between(0, 100)] int x)

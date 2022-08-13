@@ -33,8 +33,7 @@ namespace GalaxyCheck
                 return GenIterationFactory.Instance(
                     instance.ReplayParameters,
                     instance.NextParameters,
-                    filteredExampleSpace,
-                    instance.ExampleSpaceHistory);
+                    filteredExampleSpace);
             };
 
             GenStreamTransformation<T, T> resizeAndTerminateAfterConsecutiveDiscards = (stream) =>
