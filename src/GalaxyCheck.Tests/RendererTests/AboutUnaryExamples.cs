@@ -42,7 +42,40 @@ namespace Tests.V2.RendererTests
             rendering.Should().Be("{ Self = <Circular reference> }");
         }
 
-        public static TheoryData<object?, string> Values => new TheoryData<object?, string>
+        public static TheoryData<object?, object[]> TupleValues => new TheoryData<object?, object[]>
+        {
+            { new Tuple<int, int, int>(1, 2, 3), new object[] { 1, 2, 3 } },
+            { (1, 2, 3), new object[] { 1, 2, 3 } },
+            { (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), new object[] {1, 2, 3, 4, 5, 6, 7 } },
+        };
+
+        [Theory]
+        [MemberData(nameof(TupleValues))]
+        public void TuplesAreExpanded(object value, object[] expectedExpandedValues)
+        {
+            var rendering = ExampleRenderer.Render(new object[] { value }).ToList();
+
+            rendering.Should().HaveCount(expectedExpandedValues.Length);
+        }
+
+        public static TheoryData<object?, string> TupleValueRenders => new TheoryData<object?, string>
+        {
+            { new Tuple<int, int, int>(1, 2, 3), "(Item1 = 1, Item2 = 2, Item3 = 3)" },
+            { (1, 2, 3), "(Item1 = 1, Item2 = 2, Item3 = 3)" },
+            { (1, 2, 3, 4, 5, 6, 7, 8), "(Item1 = 1, Item2 = 2, Item3 = 3, Item4 = 4, Item5 = 5, Item6 = 6, Item7 = 7, Rest = ...)" },
+        };
+
+        [Theory]
+        [MemberData(nameof(TupleValueRenders))]
+        public void TupleExamples(object value, string expectedRendering)
+        {
+            // Pass two params to force tuple not to be unwrapped
+            var rendering = ExampleRenderer.Render(new object[] { value, null! }).First().Substring("[0] = ".Length);
+
+            rendering.Should().Be(expectedRendering);
+        }
+
+        public static TheoryData<object?, string> OtherValueRenders => new TheoryData<object?, string>
         {
             { null, "null" },
             { 1, "1" },
@@ -61,16 +94,13 @@ namespace Tests.V2.RendererTests
             { new Func<int, bool>((_) => true), "System.Func`2[System.Int32,System.Boolean]" },
             { new Func<Func<int, bool>>(() => (_) => true), "System.Func`1[System.Func`2[System.Int32,System.Boolean]]" },
             { new Action(() => { }), "System.Action" },
-            { new Tuple<int, int, int>(1, 2, 3), "(Item1 = 1, Item2 = 2, Item3 = 3)" },
-            { (1, 2, 3), "(Item1 = 1, Item2 = 2, Item3 = 3)" },
-            { (1, 2, 3, 4, 5, 6, 7, 8), "(Item1 = 1, Item2 = 2, Item3 = 3, Item4 = 4, Item5 = 5, Item6 = 6, Item7 = 7, Rest = ...)" },
             { Operations.Create, "Create" },
             { new FaultyRecord(), "<Rendering failed>" },
         };
 
         [Theory]
-        [MemberData(nameof(Values))]
-        public void Examples(object value, string expectedRendering)
+        [MemberData(nameof(OtherValueRenders))]
+        public void OtherExamples(object value, string expectedRendering)
         {
             var rendering = ExampleRenderer.Render(new object[] { value }).Single();
 

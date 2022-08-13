@@ -111,8 +111,7 @@ namespace GalaxyCheck
                                 onInstance: innerInstance => GenIterationFactory.Instance(
                                     iteration.ReplayParameters,
                                     innerIteration.NextParameters,
-                                    innerInstance.ExampleSpace,
-                                    instance.ExampleSpaceHistory),
+                                    innerInstance.ExampleSpace),
                                 onError: innerError => GenIterationFactory.Error<TResult>(
                                     iteration.ReplayParameters,
                                     innerIteration.NextParameters,

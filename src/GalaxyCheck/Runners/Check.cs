@@ -118,7 +118,7 @@ namespace GalaxyCheck
                 counterexampleContext.ReplayPath,
                 replayEncoded,
                 counterexampleContext.Exception,
-                counterexampleContext.PresentationalValue);
+                counterexampleContext.PresentedInput);
         }
 
         private static Counterexample<T> FromCounterexampleContext<T>(
@@ -135,7 +135,7 @@ namespace GalaxyCheck
                 counterexampleContext.ReplayPath,
                 replayEncoded,
                 counterexampleContext.Exception,
-                counterexampleContext.PresentationalValue);
+                counterexampleContext.PresentedInput);
         }
     }
 }
@@ -187,7 +187,7 @@ namespace GalaxyCheck.Runners.Check
 
     public record CheckIteration<T>(
         T Value,
-        IReadOnlyList<object?> PresentationalValue,
+        IReadOnlyList<object?> PresentedInput,
         IExampleSpace<T> ExampleSpace,
         GenParameters Parameters,
         IEnumerable<int> Path,
@@ -202,7 +202,7 @@ namespace GalaxyCheck.Runners.Check
         IEnumerable<int> ReplayPath,
         string Replay,
         Exception? Exception,
-        IReadOnlyList<object?> PresentationalValue);
+        IReadOnlyList<object?> PresentedInput);
 
     public enum TerminationReason
     {

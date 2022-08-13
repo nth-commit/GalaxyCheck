@@ -64,7 +64,6 @@ namespace GalaxyCheck.Runners.Check.Automata
         {
             var counterexampleContext = new CounterexampleContext<T>(
                 counterexample.ExampleSpace,
-                GetNavigatedExampleSpaceHistory(instance, replayDecoded.ExampleSpacePath),
                 replayDecoded.GenParameters,
                 replayDecoded.ExampleSpacePath,
                 counterexample.Exception);
@@ -82,10 +81,5 @@ namespace GalaxyCheck.Runners.Check.Automata
                     "parameter and run the property again. This is probably due to the generator setup changing."),
                 context);
         }
-
-        private static IEnumerable<Lazy<IExampleSpace<object>?>> GetNavigatedExampleSpaceHistory(
-            IGenInstance<Test<T>> instance,
-            IEnumerable<int> path) =>
-                instance.ExampleSpaceHistory.Select(exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(path)));
     }
 }

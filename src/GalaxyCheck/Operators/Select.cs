@@ -32,8 +32,7 @@ namespace GalaxyCheck
                 return GenIterationFactory.Instance(
                     instance.ReplayParameters,
                     instance.NextParameters,
-                    projectedExampleSpace,
-                    instance.ExampleSpaceHistory);
+                    projectedExampleSpace);
             };
 
             return gen.TransformInstances(transformation);

@@ -14,8 +14,7 @@ namespace GalaxyCheck
                     onInstance: instance => GenIterationFactory.Instance<T>(
                         iteration.ReplayParameters,
                         iteration.NextParameters,
-                        instance.ExampleSpace.Cast<T>(),
-                        instance.ExampleSpaceHistory),
+                        instance.ExampleSpace.Cast<T>()),
                     onError: error => GenIterationFactory.Error<T>(
                         iteration.ReplayParameters,
                         iteration.NextParameters,

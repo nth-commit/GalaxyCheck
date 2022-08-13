@@ -8,21 +8,21 @@ namespace GalaxyCheck.Properties
     {
         private record TestOutputImpl(TestResult Result, Exception? Exception) : TestOutput;
 
-        private record TestImpl<T>(T Input, Lazy<TestOutput> Output, IReadOnlyList<object?>? PresentedInput) : Test<T>;
+        private record TestImpl<T>(T Input, Lazy<TestOutput> Output, IReadOnlyList<object?> PresentedInput) : Test<T>;
 
-        private record TestImpl(object? Input, Lazy<TestOutput> Output, IReadOnlyList<object?>? PresentedInput) : Test;
+        private record TestImpl(object? Input, Lazy<TestOutput> Output, IReadOnlyList<object?> PresentedInput) : Test;
 
-        public static Test<T> Create<T>(T input, Lazy<TestOutput> output, IReadOnlyList<object?>? presentedInput)
+        public static Test<T> Create<T>(T input, Lazy<TestOutput> output, IReadOnlyList<object?> presentedInput)
         {
             return new TestImpl<T>(input, output, presentedInput);
         }
 
-        public static Test<T> Create<T>(T input, Func<bool> generateOutput, IReadOnlyList<object?>? presentedInput)
+        public static Test<T> Create<T>(T input, Func<bool> generateOutput, IReadOnlyList<object?> presentedInput)
         {
             return new TestImpl<T>(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }
 
-        public static Test Create(object[] input, Func<bool> generateOutput, IReadOnlyList<object?>? presentedInput)
+        public static Test Create(object[] input, Func<bool> generateOutput, IReadOnlyList<object?> presentedInput)
         {
             return new TestImpl(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }
@@ -39,21 +39,21 @@ namespace GalaxyCheck.Properties
             }
         });
 
-        private record AsyncTestImpl<T>(T Input, Lazy<ValueTask<TestOutput>> Output, IReadOnlyList<object?>? PresentedInput) : AsyncTest<T>;
+        private record AsyncTestImpl<T>(T Input, Lazy<ValueTask<TestOutput>> Output, IReadOnlyList<object?> PresentedInput) : AsyncTest<T>;
 
-        private record AsyncTestImpl(object? Input, Lazy<ValueTask<TestOutput>> Output, IReadOnlyList<object?>? PresentedInput) : AsyncTest;
+        private record AsyncTestImpl(object? Input, Lazy<ValueTask<TestOutput>> Output, IReadOnlyList<object?> PresentedInput) : AsyncTest;
 
-        public static AsyncTest<T> Create<T>(T input, Lazy<ValueTask<TestOutput>> output, IReadOnlyList<object?>? presentedInput)
+        public static AsyncTest<T> Create<T>(T input, Lazy<ValueTask<TestOutput>> output, IReadOnlyList<object?> presentedInput)
         {
             return new AsyncTestImpl<T>(input, output, presentedInput);
         }
 
-        public static AsyncTest<T> Create<T>(T input, Func<ValueTask<bool>> generateOutput, IReadOnlyList<object?>? presentedInput)
+        public static AsyncTest<T> Create<T>(T input, Func<ValueTask<bool>> generateOutput, IReadOnlyList<object?> presentedInput)
         {
             return new AsyncTestImpl<T>(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }
 
-        public static AsyncTest Create(object[] input, Func<ValueTask<bool>> generateOutput, IReadOnlyList<object?>? presentedInput)
+        public static AsyncTest Create(object[] input, Func<ValueTask<bool>> generateOutput, IReadOnlyList<object?> presentedInput)
         {
             return new AsyncTestImpl(input, AnalyzeBooleanOutput(generateOutput), presentedInput);
         }

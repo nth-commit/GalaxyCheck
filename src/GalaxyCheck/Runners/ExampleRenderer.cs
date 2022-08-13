@@ -10,10 +10,42 @@ namespace GalaxyCheck.Runners
     {
         public static IEnumerable<string> Render(IReadOnlyList<object?> example) => example.Count switch
         {
-            0 => new string[] { "(no value)" },
-            1 => new string[] { RenderValue(example.Single()) },
-            _ => example.Select((value, index) => $"[{index}] = {RenderValue(value)}"),
+            0 => RenderNullary(),
+            1 => TryUnwrapTuple(example.Single(), out var unwrapped) ? RenderMultiary(unwrapped!) : RenderUnary(example),
+            _ => RenderMultiary(example),
         };
+
+        private static string[] RenderNullary()
+        {
+            return new string[] { "(no value)" };
+        }
+
+        private static string[] RenderUnary(IReadOnlyList<object?> example)
+        {
+            return new string[] { RenderValue(example.Single()) };
+        }
+
+        private static IEnumerable<string> RenderMultiary(IReadOnlyList<object?> example)
+        {
+            return example.Select((value, index) => $"[{index}] = {RenderValue(value)}");
+        }
+
+        private static bool TryUnwrapTuple(object? obj, out IReadOnlyList<object?>? unwrapped)
+        {
+            if (IsClassTupleInstance(obj))
+            {
+                unwrapped = obj!.GetType().GetProperties().Select(p => p.GetValue(obj)).ToList();
+                return true;
+            }
+            else if (IsTupleLiteralInstance(obj))
+            {
+                unwrapped = obj!.GetType().GetFields().Where(f => f.Name != "Rest").Select(f => f.GetValue(obj)).ToList();
+                return true;
+            }
+
+            unwrapped = null;
+            return false;
+        }
 
         private static string RenderValue(object? obj)
         {
@@ -23,10 +55,12 @@ namespace GalaxyCheck.Runners
             var handler = new CompositeExampleRendererHandler(
                 new List<IExampleRendererHandler>
                 {
+                    new AbbreviationRendererHandler(),
                     new StringExampleRendererHandler(),
                     new PrimitiveExampleRendererHandler(),
                     new EnumerableExampleRendererHandler(elementLimit: BreadthLimit),
-                    new TupleRendererHandler(),
+                    new ClassTupleRendererHandler(),
+                    new TupleLiteralRendererHandler(),
                     new ObjectRendererHandler(propertyLimit: BreadthLimit)
                 },
                 DepthLimit);
@@ -137,40 +171,47 @@ namespace GalaxyCheck.Runners
             }
         }
 
-        private class TupleRendererHandler : IExampleRendererHandler
+        private abstract class BaseTupleRendererHandler : IExampleRendererHandler
         {
-            public bool CanRender(object? obj) =>
-                obj is not null &&
-                obj.GetType().GetInterface("System.Runtime.CompilerServices.ITuple") != null;
+            public abstract bool CanRender(object? obj);
 
             public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
-                return obj!.GetType().GetFields().Any()
-                    ? RenderTupleLiteral(obj, renderer, path)
-                    : RenderClassTuple(obj, renderer, path);
+                var renderedElements = GetTupleElements(obj).Select((x) => $"{x.name} = {renderer.Render(x.value, renderer, path)}");
+
+                return "(" + string.Join(", ", renderedElements) + ")";
             }
 
-            private static string RenderTupleLiteral(object obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
+            protected abstract IEnumerable<(string name, object? value)> GetTupleElements(object? obj);
+        }
+
+        private class ClassTupleRendererHandler : BaseTupleRendererHandler
+        {
+            public override bool CanRender(object? obj) => IsClassTupleInstance(obj);
+
+            protected override IEnumerable<(string name, object? value)> GetTupleElements(object? obj) =>
+                obj!.GetType().GetProperties().Select(p => (p.Name, p.GetValue(obj!)));
+        }
+
+        private class TupleLiteralRendererHandler : BaseTupleRendererHandler
+        {
+            public override bool CanRender(object? obj) => IsTupleLiteralInstance(obj);
+
+            protected override IEnumerable<(string name, object? value)> GetTupleElements(object? obj)
             {
                 var fields = obj!.GetType().GetFields();
 
                 var fieldsToRender = fields.Where(f => f.Name != "Rest").ToList();
+                foreach (var field in fields.Where(f => f.Name != "Rest").ToList())
+                {
+                    yield return (field.Name, field.GetValue(obj));
+                }
+
                 var hasMoreFields = fields.Any(f => f.Name == "Rest");
-
-                var renderedFields = Enumerable.Concat(
-                    fieldsToRender.Select(f => $"{f.Name} = {renderer.Render(f.GetValue(obj), renderer, path)}"),
-                    hasMoreFields ? new[] { "Rest = ..." } : Enumerable.Empty<string>());
-
-                return "(" + string.Join(", ", renderedFields) + ")";
-            }
-
-            private static string RenderClassTuple(object obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
-            {
-                var properties = obj!.GetType().GetProperties();
-
-                var renderedProperties = properties.Select(p => $"{p.Name} = {renderer.Render(p.GetValue(obj), renderer, path)}");
-
-                return "(" + string.Join(", ", renderedProperties) + ")";
+                if (hasMoreFields)
+                {
+                    yield return ("Rest", AbbreviationRendererHandler.AbbreviationSymbol);
+                }
             }
         }
 
@@ -200,5 +241,31 @@ namespace GalaxyCheck.Runners
                 return "{ " + string.Join(", ", renderedProperties) + " }";
             }
         }
+
+        private class AbbreviationRendererHandler : IExampleRendererHandler
+        {
+            public static readonly object AbbreviationSymbol = new object();
+
+            public bool CanRender(object? obj) => obj == AbbreviationSymbol;
+
+            public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path) => "...";
+        }
+
+        private static bool IsClassTupleInstance(object? value)
+        {
+            return
+                value is not null &&
+                value.GetType().GetInterface("System.Runtime.CompilerServices.ITuple") != null &&
+                value!.GetType().GetFields().Any() == false;
+        }
+
+        private static bool IsTupleLiteralInstance(object? value)
+        {
+            return
+                value is not null &&
+                value.GetType().GetInterface("System.Runtime.CompilerServices.ITuple") != null &&
+                value!.GetType().GetFields().Any() == true;
+        }
+
     }
 }

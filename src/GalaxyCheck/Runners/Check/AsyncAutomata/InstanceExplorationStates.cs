@@ -76,7 +76,6 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
             public CounterexampleContext<T> CounterexampleContext => new CounterexampleContext<T>(
                 CounterexampleExploration.ExampleSpace,
-                ExampleSpaceHistory,
                 Instance.ReplayParameters,
                 CounterexampleExploration.Path,
                 CounterexampleExploration.Exception);
@@ -86,9 +85,6 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
             public IExampleSpace<T> InputExampleSpace => CounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
             public IEnumerable<int> Path => CounterexampleExploration.Path;
-
-            public IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory => Instance.ExampleSpaceHistory.Select(
-                exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(Path)));
         }
 
         internal record InstanceExploration_NonCounterexample<T>(
@@ -111,9 +107,6 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
             public IExampleSpace<T> InputExampleSpace => NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
             public IEnumerable<int> Path => NonCounterexampleExploration.Path;
-
-            public IEnumerable<Lazy<IExampleSpace<object>?>> ExampleSpaceHistory => Instance.ExampleSpaceHistory.Select(
-                exs => new Lazy<IExampleSpace<object>?>(() => exs.Cast<object>().Navigate(Path)));
         }
 
         internal record InstanceExploration_End<T>(

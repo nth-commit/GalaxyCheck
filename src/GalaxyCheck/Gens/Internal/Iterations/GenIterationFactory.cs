@@ -29,7 +29,7 @@ namespace GalaxyCheck.Gens.Internal.Iterations
             public IGenData<T> Data { get; init; }
 
             IGenData IGenIteration.Data => Data.Match<IGenData>(
-                onInstance: instanceData => GenData.InstanceData(instanceData.ExampleSpace, instanceData.ExampleSpaceHistory),
+                onInstance: instanceData => GenData.InstanceData(instanceData.ExampleSpace),
                 onError: errorData => GenData.ErrorData(errorData.GenName, errorData.Message),
                 onDiscard: discardData => GenData.DiscardData(discardData.ExampleSpace));
 
@@ -52,8 +52,6 @@ namespace GalaxyCheck.Gens.Internal.Iterations
                 }
 
                 public IExampleSpace<U> ExampleSpace => Data.Instance!.ExampleSpace;
-
-                public IEnumerable<IExampleSpace> ExampleSpaceHistory => Data.Instance!.ExampleSpaceHistory;
 
                 IExampleSpace IGenInstanceData.ExampleSpace => ExampleSpace;
             }
@@ -92,23 +90,7 @@ namespace GalaxyCheck.Gens.Internal.Iterations
             GenParameters nextParameters,
             IExampleSpace<T> exampleSpace)
         {
-            var instanceData = GenData<T>.InstanceData(
-                exampleSpace,
-                new[] { exampleSpace });
-
-            return new GenIteration<T>(replayParameters, nextParameters, instanceData);
-        }
-
-        public static IGenIteration<T> Instance<T>(
-            GenParameters replayParameters,
-            GenParameters nextParameters,
-            IExampleSpace<T> exampleSpace,
-            IEnumerable<IExampleSpace> lastExampleSpaceHistory)
-        {
-            var instanceData = GenData<T>.InstanceData(
-                exampleSpace,
-                lastExampleSpaceHistory.Append(exampleSpace));
-
+            var instanceData = GenData<T>.InstanceData(exampleSpace);
             return new GenIteration<T>(replayParameters, nextParameters, instanceData);
         }
 
