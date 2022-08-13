@@ -1,8 +1,11 @@
 ﻿namespace GalaxyCheck
 {
-    public enum TestResult
+    public partial class Property
     {
-        Succeeded = 1,
-        Failed = 2
+        public enum TestResult
+        {
+            Succeeded = 1,
+            Failed = 2
+        }
     }
 }

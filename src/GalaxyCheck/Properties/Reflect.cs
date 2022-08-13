@@ -92,7 +92,6 @@ namespace GalaxyCheck
                 { typeof(void), ToVoidProperty },
                 { typeof(bool), ToBooleanProperty },
                 { typeof(Property), ToReturnedProperty },
-                { typeof(IGen<Test>), ToPureProperty },
             }.ToImmutableDictionary();
 
         private readonly static ImmutableDictionary<Type, AsyncReflectedPropertyHandler> AsyncMethodPropertyHandlers =
@@ -101,7 +100,6 @@ namespace GalaxyCheck
                 { typeof(Task), ToTaskProperty },
                 { typeof(Task<bool>), ToTaskBooleanProperty },
                 { typeof(AsyncProperty), ToReturnedAsyncProperty },
-                { typeof(IGen<AsyncTest>), ToPureAsyncProperty },
             }.ToImmutableDictionary();
 
         private static ReflectedPropertyHandler ToVoidProperty => (methodInfo, target, genFactory, customGens) =>
@@ -155,18 +153,6 @@ namespace GalaxyCheck
             }
         };
 
-        private static ReflectedPropertyHandler ToPureProperty => (methodInfo, target, _, _) =>
-        {
-            try
-            {
-                return new Property((IGen<Test>)methodInfo.Invoke(target, new object[] { })!);
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException!;
-            }
-        };
-
         private static AsyncReflectedPropertyHandler ToTaskProperty => (methodInfo, target, genFactory, customGens) =>
         {
             return new AsyncProperty(Gen
@@ -211,18 +197,6 @@ namespace GalaxyCheck
             try
             {
                 return (AsyncProperty)methodInfo.Invoke(target, new object[] { })!;
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw ex.InnerException!;
-            }
-        };
-
-        private static AsyncReflectedPropertyHandler ToPureAsyncProperty => (methodInfo, target, _, _) =>
-        {
-            try
-            {
-                return new AsyncProperty((IGen<AsyncTest>)methodInfo.Invoke(target, new object[] { })!);
             }
             catch (TargetInvocationException ex)
             {

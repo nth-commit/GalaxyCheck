@@ -33,7 +33,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                 onDiscard: _ => Task.FromResult(HandleError(context)));
         }
 
-        private static async Task<CheckStateTransition<T>> HandleInstance(CheckStateContext<T> ctx, IGenInstance<AsyncTest<T>> instance, Replay replayDecoded)
+        private static async Task<CheckStateTransition<T>> HandleInstance(CheckStateContext<T> ctx, IGenInstance<Property.AsyncTest<T>> instance, Replay replayDecoded)
         {
             var exampleSpace = instance.ExampleSpace.Navigate(replayDecoded.ExampleSpacePath);
             if (exampleSpace == null)
@@ -50,7 +50,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
         private static CheckStateTransition<T> HandleReplayedNonCounterexample(
             CheckStateContext<T> context,
-            IGenInstance<AsyncTest<T>> instance)
+            IGenInstance<Property.AsyncTest<T>> instance)
         {
             return new CheckStateTransition<T>(
                 new GenerationStates.Generation_End<T>(instance, null, false, false, true),
@@ -59,9 +59,9 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 
         private static CheckStateTransition<T> HandleReplayedCounterexample(
             CheckStateContext<T> context,
-            IGenInstance<AsyncTest<T>> instance,
+            IGenInstance<Property.AsyncTest<T>> instance,
             Replay replayDecoded,
-            ExplorationStage<AsyncTest<T>>.Counterexample counterexample)
+            ExplorationStage<Property.AsyncTest<T>>.Counterexample counterexample)
         {
             var counterexampleContext = new CounterexampleContext<T>(
                 counterexample.ExampleSpace,

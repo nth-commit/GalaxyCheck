@@ -27,7 +27,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             }
         }
 
-        internal record Generation_HoldingNextIteration<T>(IEnumerable<IGenIteration<Test<T>>> Iterations) : CheckState<T>
+        internal record Generation_HoldingNextIteration<T>(IEnumerable<IGenIteration<Property.Test<T>>> Iterations) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context)
             {
@@ -45,7 +45,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             }
         }
 
-        internal record Generation_Instance<T>(IGenInstance<Test<T>> Iteration) : CheckState<T>
+        internal record Generation_Instance<T>(IGenInstance<Property.Test<T>> Iteration) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
                 new InstanceExplorationStates.InstanceExploration_Begin<T>(Iteration),
@@ -53,8 +53,8 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record Generation_Discard<T>(
-            IEnumerable<IGenIteration<Test<T>>> NextIterations,
-            IGenDiscard<Test<T>> Iteration) : CheckState<T>
+            IEnumerable<IGenIteration<Property.Test<T>>> NextIterations,
+            IGenDiscard<Property.Test<T>> Iteration) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
                 new Generation_HoldingNextIteration<T>(NextIterations),
@@ -69,7 +69,7 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record Generation_End<T>(
-            IGenInstance<Test<T>> Instance,
+            IGenInstance<Property.Test<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
             bool WasLateDiscard,
@@ -83,7 +83,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 
             private static CheckStateTransition<T> TransitionFromDiscard(
                 CheckStateContext<T> context,
-                IGenInstance<Test<T>> instance,
+                IGenInstance<Property.Test<T>> instance,
                 bool wasLateDiscard) => new CheckStateTransition<T>(
                     new Generation_Begin<T>(),
                     context
@@ -92,7 +92,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 
             private static CheckStateTransition<T> NextStateWithoutCounterexample(
                 CheckStateContext<T> context,
-                IGenInstance<Test<T>> instance)
+                IGenInstance<Property.Test<T>> instance)
             {
                 var nextContext = context
                     .IncrementCompletedIterations()
@@ -103,7 +103,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 
             private static CheckStateTransition<T> NextStateWithCounterexample(
                 CheckStateContext<T> context,
-                IGenInstance<Test<T>> instance,
+                IGenInstance<Property.Test<T>> instance,
                 CounterexampleContext<T> counterexampleContext,
                 bool wasReplay)
             {
@@ -126,7 +126,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             private static TerminationReason? TryTerminate(
                 CheckStateContext<T> state,
                 CounterexampleContext<T> counterexampleContext,
-                IGenInstance<Test<T>> instance,
+                IGenInstance<Property.Test<T>> instance,
                 bool wasReplay)
             {
                 if (wasReplay)

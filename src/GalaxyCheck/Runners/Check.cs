@@ -15,7 +15,7 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static CheckResult<T> Check<T>(
-             this IGen<Test<T>> property,
+             this IGen<Property.Test<T>> property,
              int? iterations = null,
              int? seed = null,
              int? size = null,
@@ -60,7 +60,7 @@ namespace GalaxyCheck
         }
 
         public static async Task<CheckResult<T>> CheckAsync<T>(
-             this IGen<AsyncTest<T>> property,
+             this IGen<Property.AsyncTest<T>> property,
              int? iterations = null,
              int? seed = null,
              int? size = null,

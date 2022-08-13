@@ -74,13 +74,13 @@ namespace GalaxyCheck.Runners.Sample
             return ExtractSampleFromCheckResult(checkResult);
         }
 
-        private static Test<T> MuteTestFailure<T>(Test<T> test)
+        private static Property.Test<T> MuteTestFailure<T>(Property.Test<T> test)
         {
             
             return TestFactory.Create(test.Input, () => true, test.PresentedInput);
         }
 
-        private static AsyncTest<T> MuteTestFailure<T>(AsyncTest<T> test)
+        private static Property.AsyncTest<T> MuteTestFailure<T>(Property.AsyncTest<T> test)
         {
             // Create a test that always passes using the same input. We don't care if a property passes or fails when
             // we're sampling the input.
