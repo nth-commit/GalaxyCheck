@@ -13,16 +13,16 @@ namespace GalaxyCheck
         }
     }
 
-    public class Property<T> : IGen<Test<T>>
+    public class Property<T> : IGen<Property.Test<T>>
     {
-        private readonly IGen<Test<T>> _gen;
+        private readonly IGen<Property.Test<T>> _gen;
 
-        public Property(IGen<Test<T>> gen)
+        public Property(IGen<Property.Test<T>> gen)
         {
             _gen = gen;
         }
 
-        public IGenAdvanced<Test<T>> Advanced => _gen.Advanced;
+        public IGenAdvanced<Property.Test<T>> Advanced => _gen.Advanced;
 
         IGenAdvanced IGen.Advanced => Advanced;
 
@@ -33,25 +33,25 @@ namespace GalaxyCheck
 
     public class AsyncProperty : AsyncProperty<object>
     {
-        public AsyncProperty(IGen<AsyncTest<object>> gen) : base(gen)
+        public AsyncProperty(IGen<Property.AsyncTest<object>> gen) : base(gen)
         {
         }
 
-        public AsyncProperty(IGen<AsyncTest> gen) : this(gen.Select(t => t.Cast<object>()))
+        public AsyncProperty(IGen<Property.AsyncTest> gen) : this(gen.Select(t => t.Cast<object>()))
         {
         }
     }
 
-    public class AsyncProperty<T> : IGen<AsyncTest<T>>
+    public class AsyncProperty<T> : IGen<Property.AsyncTest<T>>
     {
-        private readonly IGen<AsyncTest<T>> _gen;
+        private readonly IGen<Property.AsyncTest<T>> _gen;
 
-        public AsyncProperty(IGen<AsyncTest<T>> gen)
+        public AsyncProperty(IGen<Property.AsyncTest<T>> gen)
         {
             _gen = gen;
         }
 
-        public IGenAdvanced<AsyncTest<T>> Advanced => _gen.Advanced;
+        public IGenAdvanced<Property.AsyncTest<T>> Advanced => _gen.Advanced;
 
         IGenAdvanced IGen.Advanced => Advanced;
 

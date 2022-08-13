@@ -9,5 +9,5 @@ namespace GalaxyCheck.Runners.Check.Sizing
     internal record ResizeStrategyInformationAsync<T>(
         CheckStateContext<T> CheckStateContext,
         CounterexampleContext<T>? CounterexampleContext,
-        IGenInstance<AsyncTest<T>> Iteration);
+        IGenInstance<Property.AsyncTest<T>> Iteration);
 }

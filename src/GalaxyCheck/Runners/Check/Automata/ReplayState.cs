@@ -32,7 +32,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                 onDiscard: _ => HandleError(context));
         }
 
-        private static CheckStateTransition<T> HandleInstance(CheckStateContext<T> ctx, IGenInstance<Test<T>> instance, Replay replayDecoded)
+        private static CheckStateTransition<T> HandleInstance(CheckStateContext<T> ctx, IGenInstance<Property.Test<T>> instance, Replay replayDecoded)
         {
             var exampleSpace = instance.ExampleSpace.Navigate(replayDecoded.ExampleSpacePath);
             if (exampleSpace == null)
@@ -49,7 +49,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         private static CheckStateTransition<T> HandleReplayedNonCounterexample(
             CheckStateContext<T> context,
-            IGenInstance<Test<T>> instance)
+            IGenInstance<Property.Test<T>> instance)
         {
             return new CheckStateTransition<T>(
                 new GenerationStates.Generation_End<T>(instance, null, false, false, true),
@@ -58,9 +58,9 @@ namespace GalaxyCheck.Runners.Check.Automata
 
         private static CheckStateTransition<T> HandleReplayedCounterexample(
             CheckStateContext<T> context,
-            IGenInstance<Test<T>> instance,
+            IGenInstance<Property.Test<T>> instance,
             Replay replayDecoded,
-            ExplorationStage<Test<T>>.Counterexample counterexample)
+            ExplorationStage<Property.Test<T>>.Counterexample counterexample)
         {
             var counterexampleContext = new CounterexampleContext<T>(
                 counterexample.ExampleSpace,

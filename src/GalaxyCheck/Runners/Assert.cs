@@ -10,7 +10,7 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static void Assert<T>(
-            this IGen<Test<T>> property,
+            this IGen<Property.Test<T>> property,
             int? iterations = null,
             int? seed = null,
             int? size = null,
@@ -25,7 +25,7 @@ namespace GalaxyCheck
         }
 
         public static async Task AssertAsync<T>(
-            this IGen<AsyncTest<T>> property,
+            this IGen<Property.AsyncTest<T>> property,
             int? iterations = null,
             int? seed = null,
             int? size = null,

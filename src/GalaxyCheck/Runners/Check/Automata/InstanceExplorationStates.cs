@@ -10,7 +10,7 @@ namespace GalaxyCheck.Runners.Check.Automata
 {
     internal static class InstanceExplorationStates
     {
-        internal record InstanceExploration_Begin<T>(IGenInstance<Test<T>> Instance) : CheckState<T>
+        internal record InstanceExploration_Begin<T>(IGenInstance<Property.Test<T>> Instance) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context)
             {
@@ -23,8 +23,8 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record InstanceExploration_HoldingNextExplorationStage<T>(
-            IGenInstance<Test<T>> Instance,
-            IEnumerable<ExplorationStage<Test<T>>> Explorations,
+            IGenInstance<Property.Test<T>> Instance,
+            IEnumerable<ExplorationStage<Property.Test<T>>> Explorations,
             CounterexampleContext<T>? CounterexampleContext,
             bool IsFirstExplorationStage) : CheckState<T>
         {
@@ -59,9 +59,9 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record InstanceExploration_Counterexample<T>(
-            IGenInstance<Test<T>> Instance,
-            IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
-            ExplorationStage<Test<T>>.Counterexample CounterexampleExploration) : CheckState<T>
+            IGenInstance<Property.Test<T>> Instance,
+            IEnumerable<ExplorationStage<Property.Test<T>>> NextExplorations,
+            ExplorationStage<Property.Test<T>>.Counterexample CounterexampleExploration) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
                 new InstanceExploration_HoldingNextExplorationStage<T>(
@@ -77,7 +77,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                 CounterexampleExploration.Path,
                 CounterexampleExploration.Exception);
 
-            public IExampleSpace<Test<T>> TestExampleSpace => CounterexampleExploration.ExampleSpace;
+            public IExampleSpace<Property.Test<T>> TestExampleSpace => CounterexampleExploration.ExampleSpace;
 
             public IExampleSpace<T> InputExampleSpace => CounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
@@ -85,9 +85,9 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record InstanceExploration_NonCounterexample<T>(
-            IGenInstance<Test<T>> Instance,
-            IEnumerable<ExplorationStage<Test<T>>> NextExplorations,
-            ExplorationStage<Test<T>>.NonCounterexample NonCounterexampleExploration,
+            IGenInstance<Property.Test<T>> Instance,
+            IEnumerable<ExplorationStage<Property.Test<T>>> NextExplorations,
+            ExplorationStage<Property.Test<T>>.NonCounterexample NonCounterexampleExploration,
             CounterexampleContext<T>? PreviousCounterexampleContext) : CheckState<T>
         {
             public CheckStateTransition<T> Transition(CheckStateContext<T> context) => new CheckStateTransition<T>(
@@ -98,7 +98,7 @@ namespace GalaxyCheck.Runners.Check.Automata
                     IsFirstExplorationStage: false),
                 context);
 
-            public IExampleSpace<Test<T>> TestExampleSpace => NonCounterexampleExploration.ExampleSpace;
+            public IExampleSpace<Property.Test<T>> TestExampleSpace => NonCounterexampleExploration.ExampleSpace;
 
             public IExampleSpace<T> InputExampleSpace => NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
@@ -106,7 +106,7 @@ namespace GalaxyCheck.Runners.Check.Automata
         }
 
         internal record InstanceExploration_End<T>(
-            IGenInstance<Test<T>> Instance,
+            IGenInstance<Property.Test<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
             bool WasReplay) : CheckState<T>

@@ -9,7 +9,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 {
     internal record CheckStateContext<T>
     {
-        public IGen<AsyncTest<T>> Property { get; private init; }
+        public IGen<Property.AsyncTest<T>> Property { get; private init; }
 
         public int RequestedIterations { get; private init; }
 
@@ -36,7 +36,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
         public bool DeepCheck { get; private init; }
 
         private CheckStateContext(
-            IGen<AsyncTest<T>> property,
+            IGen<Property.AsyncTest<T>> property,
             int requestedIterations,
             int shrinkLimit,
             int completedIterationsUntilCounterexample,
@@ -60,7 +60,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
         }
 
         public CheckStateContext(
-            IGen<AsyncTest<T>> property,
+            IGen<Property.AsyncTest<T>> property,
             int requestedIterations,
             int shrinkLimit,
             GenParameters initialParameters,
@@ -124,7 +124,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
     }
 
     internal record CounterexampleContext<T>(
-       IExampleSpace<AsyncTest<T>> TestExampleSpace,
+       IExampleSpace<Property.AsyncTest<T>> TestExampleSpace,
        GenParameters ReplayParameters,
        IEnumerable<int> ReplayPath,
        Exception? Exception)

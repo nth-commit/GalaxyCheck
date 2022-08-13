@@ -11,7 +11,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
 {
     internal static class InstanceExplorationStates
     {
-        internal record InstanceExploration_Begin<T>(IGenInstance<AsyncTest<T>> Instance) : CheckState<T>
+        internal record InstanceExploration_Begin<T>(IGenInstance<Property.AsyncTest<T>> Instance) : CheckState<T>
         {
             public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context)
             {
@@ -24,8 +24,8 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
         }
 
         internal record InstanceExploration_HoldingNextExplorationStage<T>(
-            IGenInstance<AsyncTest<T>> Instance,
-            IAsyncEnumerable<ExplorationStage<AsyncTest<T>>> Explorations,
+            IGenInstance<Property.AsyncTest<T>> Instance,
+            IAsyncEnumerable<ExplorationStage<Property.AsyncTest<T>>> Explorations,
             CounterexampleContext<T>? CounterexampleContext,
             bool IsFirstExplorationStage) : CheckState<T>
         {
@@ -61,9 +61,9 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
         }
 
         internal record InstanceExploration_Counterexample<T>(
-            IGenInstance<AsyncTest<T>> Instance,
-            IAsyncEnumerable<ExplorationStage<AsyncTest<T>>> NextExplorations,
-            ExplorationStage<AsyncTest<T>>.Counterexample CounterexampleExploration) : CheckState<T>
+            IGenInstance<Property.AsyncTest<T>> Instance,
+            IAsyncEnumerable<ExplorationStage<Property.AsyncTest<T>>> NextExplorations,
+            ExplorationStage<Property.AsyncTest<T>>.Counterexample CounterexampleExploration) : CheckState<T>
         {
             public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
                 new CheckStateTransition<T>(
@@ -80,7 +80,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                 CounterexampleExploration.Path,
                 CounterexampleExploration.Exception);
 
-            public IExampleSpace<AsyncTest<T>> TestExampleSpace => CounterexampleExploration.ExampleSpace;
+            public IExampleSpace<Property.AsyncTest<T>> TestExampleSpace => CounterexampleExploration.ExampleSpace;
 
             public IExampleSpace<T> InputExampleSpace => CounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
@@ -88,9 +88,9 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
         }
 
         internal record InstanceExploration_NonCounterexample<T>(
-            IGenInstance<AsyncTest<T>> Instance,
-            IAsyncEnumerable<ExplorationStage<AsyncTest<T>>> NextExplorations,
-            ExplorationStage<AsyncTest<T>>.NonCounterexample NonCounterexampleExploration,
+            IGenInstance<Property.AsyncTest<T>> Instance,
+            IAsyncEnumerable<ExplorationStage<Property.AsyncTest<T>>> NextExplorations,
+            ExplorationStage<Property.AsyncTest<T>>.NonCounterexample NonCounterexampleExploration,
             CounterexampleContext<T>? PreviousCounterexampleContext) : CheckState<T>
         {
             public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
@@ -102,7 +102,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                         IsFirstExplorationStage: false),
                     context));
 
-            public IExampleSpace<AsyncTest<T>> TestExampleSpace => NonCounterexampleExploration.ExampleSpace;
+            public IExampleSpace<Property.AsyncTest<T>> TestExampleSpace => NonCounterexampleExploration.ExampleSpace;
 
             public IExampleSpace<T> InputExampleSpace => NonCounterexampleExploration.ExampleSpace.Map(ex => ex.Input);
 
@@ -110,7 +110,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
         }
 
         internal record InstanceExploration_End<T>(
-            IGenInstance<AsyncTest<T>> Instance,
+            IGenInstance<Property.AsyncTest<T>> Instance,
             CounterexampleContext<T>? CounterexampleContext,
             bool WasDiscard,
             bool WasReplay) : CheckState<T>
