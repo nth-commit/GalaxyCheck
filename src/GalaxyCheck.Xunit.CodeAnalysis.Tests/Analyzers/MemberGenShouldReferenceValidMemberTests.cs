@@ -99,5 +99,32 @@ public class TestClass
 
             await Verifier.Verify(new[] { source }, expectedDiagnostic);
         }
+
+        [Theory]
+        [InlineData("Property")]
+        [InlineData("Sample")]
+        [InlineData("GenSnapshot")]
+        public async Task FindsError_VariousAttributeTypes(string attributeName)
+        {
+            var source = @$"
+using GalaxyCheck;
+
+public class TestClass
+{{
+    private static IGen<string> Gen => null!;
+
+    [{attributeName}]
+    public void TestMethod([MemberGen(""Gen"")] int x)
+    {{
+    }}
+}}";
+
+            var expectedDiagnostic = Verifier
+                .Diagnostic("GalaxyCheckXunit1002")
+                .WithSpan(9, 29, 9, 45)
+                .WithArguments("GalaxyCheck.IGen<int>", "GalaxyCheck.IGen<string>");
+
+            await Verifier.Verify(new[] { source }, expectedDiagnostic);
+        }
     }
 }
