@@ -92,7 +92,7 @@ namespace Tests.PropertyInitializerTests
                 testMethodInfo,
                 new object[] { },
                 new DefaultPropertyFactory(),
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             test.Should()
                 .Throw<Exception>()
@@ -118,7 +118,7 @@ namespace Tests.PropertyInitializerTests
                 testMethodInfo,
                 new object[] { },
                 mockPropertyFactory.Object,
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             VerifyGenPassedThrough(mockPropertyFactory, Gen, 0);
         }
@@ -132,7 +132,7 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object, new GlobalConfiguration());
+            PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object, new GlobalPropertyConfiguration());
 
             VerifyGenPassedThrough(mockPropertyFactory, Gen, expectedIndex);
         }

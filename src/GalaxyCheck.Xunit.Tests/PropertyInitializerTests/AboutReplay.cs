@@ -51,7 +51,7 @@ namespace Tests.PropertyInitializerTests
                 testMethodInfo,
                 new object[] { },
                 new DefaultPropertyFactory(),
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             result.Parameters.Replay.Should().Be(expectedReplay);
         }

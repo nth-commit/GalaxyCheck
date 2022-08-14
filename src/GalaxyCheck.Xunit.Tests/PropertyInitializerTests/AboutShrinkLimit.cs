@@ -47,7 +47,7 @@ namespace Tests.PropertyInitializerTests
                 testMethodInfo,
                 new object[] { },
                 new DefaultPropertyFactory(),
-                new GlobalConfiguration() { DefaultShrinkLimit = 999 });
+                new GlobalPropertyConfiguration() { DefaultShrinkLimit = 999 });
 
             result.Parameters.ShrinkLimit.Should().Be(expectedShrinkLimit);
         }
@@ -66,7 +66,7 @@ namespace Tests.PropertyInitializerTests
                 testMethodInfo,
                 new object[] { },
                 new DefaultPropertyFactory(),
-                new GlobalConfiguration { DefaultShrinkLimit = defaultShrinkLimit });
+                new GlobalPropertyConfiguration { DefaultShrinkLimit = defaultShrinkLimit });
 
             result.Parameters.ShrinkLimit.Should().Be(defaultShrinkLimit);
         }

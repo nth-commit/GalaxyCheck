@@ -2,16 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <IsPackable>false</IsPackable>
     <RootNamespace>Tests</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="IntegrationSample\**" />
-    <EmbeddedResource Remove="IntegrationSample\**" />
-    <None Remove="IntegrationSample\**" />
+    <Compile Remove="samples\**" />
+    <EmbeddedResource Remove="samples\**" />
+    <None Remove="samples\**" />
   </ItemGroup>
 
   <ItemGroup>

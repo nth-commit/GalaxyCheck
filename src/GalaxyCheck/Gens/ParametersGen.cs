@@ -67,11 +67,12 @@ namespace GalaxyCheck.Gens
                     $"parameter index '{invalidIndicies.First()}' of custom generator was not valid");
             }
 
-            var gens = parameters.Select((parameterInfo, parameterIndex) =>
-            {
-                var customGen = customGens.ContainsKey(parameterIndex) ? customGens[parameterIndex] : null;
-                return ResolveGen(genFactory, customGen, parameterInfo);
-            });
+            var gens = parameters
+                .Select((parameterInfo, parameterIndex) =>
+                {
+                    var customGen = customGens.ContainsKey(parameterIndex) ? customGens[parameterIndex] : null;
+                    return ResolveGen(genFactory, customGen, parameterInfo).Advanced.ReferenceRngWaypoint(rng => rng.Influence(parameterIndex));
+                });
 
             return Gen.Zip(gens).Select(xs => xs.ToArray());
         }
