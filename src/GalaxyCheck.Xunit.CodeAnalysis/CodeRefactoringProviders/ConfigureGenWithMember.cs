@@ -23,6 +23,9 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeRefactoringProviders
             var propertyAttributeType = semanticModel.Compilation.TryGetPropertyAttributeType();
             if (propertyAttributeType is null) return;
 
+            var genSnapshotAttributeType = semanticModel.Compilation.TryGetGenSnapshotAttributeType();
+            if (genSnapshotAttributeType is null) return;
+
             var memberGenAttributeType = semanticModel.Compilation.TryGetMemberGenAttributeType();
             if (memberGenAttributeType is null) return;
 
@@ -31,15 +34,17 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.CodeRefactoringProviders
             var activeMethodDeclarationSyntax = activeNode.FirstAncestorOrSelf<MethodDeclarationSyntax>();
             if (activeMethodDeclarationSyntax is null) return;
 
-            var propertyAttribute = activeMethodDeclarationSyntax
+            var testAttribute = activeMethodDeclarationSyntax
                 .AttributeLists
                 .SelectMany(l => l.Attributes)
                 .FirstOrDefault(a =>
                 {
                     var attributeSymbol = semanticModel.GetSymbolInfo(a);
-                    return attributeSymbol.Symbol != null && propertyAttributeType.IsAssignableFrom(attributeSymbol.Symbol.ContainingType);
+                    return attributeSymbol.Symbol != null
+                        && (propertyAttributeType.IsAssignableFrom(attributeSymbol.Symbol.ContainingType)
+                            || genSnapshotAttributeType.IsAssignableFrom(attributeSymbol.Symbol.ContainingType));
                 });
-            if (propertyAttribute is null) return;
+            if (testAttribute is null) return;
 
             var activeParameterSyntax = activeNode.FirstAncestorOrSelf<ParameterSyntax>();
             if (activeParameterSyntax is null) return;
