@@ -71,7 +71,7 @@ namespace Tests.PropertyInitializerTests
                 testMethodInfo,
                 new object[] { },
                 new DefaultPropertyFactory(),
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             result.Parameters.Size.Should().Be(expectedSize);
         }
@@ -91,7 +91,7 @@ namespace Tests.PropertyInitializerTests
                 testMethodInfo,
                 new object[] { },
                 new DefaultPropertyFactory(),
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             result.Parameters.Size.Should().Be(null);
         }

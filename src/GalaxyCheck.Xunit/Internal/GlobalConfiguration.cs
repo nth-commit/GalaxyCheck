@@ -7,9 +7,10 @@ namespace GalaxyCheck.Internal
 {
     internal class GlobalConfiguration : IGlobalConfiguration
     {
-        public int DefaultIterations { get; set; } = 100;
+        public IGlobalPropertyConfiguration Properties { get; } = new GlobalPropertyConfiguration();
 
-        public int DefaultShrinkLimit { get; set; } = 100;
+        public IGlobalGenSnapshotConfiguration GenSnapshots { get; } = new GlobalGenSnapshotConfiguration();
+
 
         private static object _instanceLock = new();
         private static GlobalConfiguration? _instance = null;
@@ -60,5 +61,6 @@ namespace GalaxyCheck.Internal
 
             return instance;
         }
+
     }
 }

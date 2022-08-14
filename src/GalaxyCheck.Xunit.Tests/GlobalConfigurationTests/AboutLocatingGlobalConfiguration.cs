@@ -12,7 +12,7 @@ namespace Tests.GlobalConfigurationTests
         {
             var instance = GlobalConfiguration.Instance;
 
-            instance.DefaultIterations.Should().Be(420);
+            instance.Properties.DefaultIterations.Should().Be(420);
         }
     }
 
@@ -20,7 +20,7 @@ namespace Tests.GlobalConfigurationTests
     {
         public void Configure(IGlobalConfiguration instance)
         {
-            instance.DefaultIterations = 420;
+            instance.Properties.DefaultIterations = 420;
         }
     }
 }

@@ -18,14 +18,14 @@ namespace Tests.PropertyInitializerTests
         {
             var mockPropertyFactory = MockPropertyFactory();
             var testClassType = typeof(PropertiesWithoutFactoryConfig);
-            var testMethodInfo = GetMethod(testMethodName);
+            var testMethodInfo = GetMethod(testClassType, testMethodName);
 
             PropertyInitializer.Initialize(
                 testClassType,
                 testMethodInfo,
                 new object[] { },
                 mockPropertyFactory.Object,
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             VerifyFactoryNotPassedThrough(mockPropertyFactory);
         }
@@ -37,14 +37,14 @@ namespace Tests.PropertyInitializerTests
         {
             var mockPropertyFactory = MockPropertyFactory();
             var testClassType = typeof(PropertiesWithoutFactoryConfig);
-            var testMethodInfo = GetMethod(testMethodName);
+            var testMethodInfo = GetMethod(testClassType, testMethodName);
 
             PropertyInitializer.Initialize(
                 testClassType,
                 testMethodInfo,
                 new object[] { },
                 mockPropertyFactory.Object,
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             VerifyFactoryPassedThrough(mockPropertyFactory, typeof(GenFactory1));
         }
@@ -56,14 +56,14 @@ namespace Tests.PropertyInitializerTests
         {
             var mockPropertyFactory = MockPropertyFactory();
             var testClassType = typeof(PropertiesWithFactoryConfig);
-            var testMethodInfo = GetMethod(testMethodName);
+            var testMethodInfo = GetMethod(testClassType, testMethodName);
 
             PropertyInitializer.Initialize(
                 testClassType,
                 testMethodInfo,
                 new object[] { },
                 mockPropertyFactory.Object,
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             VerifyFactoryPassedThrough(mockPropertyFactory, typeof(GenFactory2));
         }
@@ -75,14 +75,14 @@ namespace Tests.PropertyInitializerTests
         {
             var mockPropertyFactory = MockPropertyFactory();
             var testClassType = typeof(PropertiesWithFactoryConfig);
-            var testMethodInfo = GetMethod(testMethodName);
+            var testMethodInfo = GetMethod(testClassType, testMethodName);
 
             PropertyInitializer.Initialize(
                 testClassType,
                 testMethodInfo,
                 new object[] { },
                 mockPropertyFactory.Object,
-                new GlobalConfiguration());
+                new GlobalPropertyConfiguration());
 
             VerifyFactoryPassedThrough(mockPropertyFactory, typeof(GenFactory1));
         }
@@ -238,9 +238,9 @@ namespace Tests.PropertyInitializerTests
         }
 
 
-        private static MethodInfo GetMethod(string name)
+        private static MethodInfo GetMethod(Type type, string name)
         {
-            var methodInfo = typeof(PropertiesWithoutFactoryConfig).GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
+            var methodInfo = type.GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
 
             if (methodInfo == null)
             {

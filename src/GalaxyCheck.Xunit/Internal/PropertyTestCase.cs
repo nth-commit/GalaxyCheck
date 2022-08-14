@@ -73,7 +73,7 @@ namespace GalaxyCheck.Internal
                     TestMethod.Method.ToRuntimeMethod(),
                     constructorArguments,
                     new DefaultPropertyFactory(),
-                    GlobalConfiguration.Instance);
+                    GlobalConfiguration.Instance.Properties);
             }
             catch (Exception exception)
             {
