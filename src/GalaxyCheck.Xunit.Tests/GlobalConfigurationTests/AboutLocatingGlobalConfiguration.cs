@@ -10,7 +10,7 @@ namespace Tests.GlobalConfigurationTests
         [Fact]
         public void ItWorks()
         {
-            var instance = GlobalConfiguration.Instance;
+            var instance = GlobalConfiguration.GetInstance(typeof(MyConfigureGlobal).Assembly);
 
             instance.Properties.DefaultIterations.Should().Be(420);
         }

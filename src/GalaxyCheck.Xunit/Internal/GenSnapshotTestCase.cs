@@ -63,7 +63,7 @@ namespace GalaxyCheck.Internal
                     testMethod,
                     constructorArguments,
                     new DefaultParametersGenFactory(),
-                    GlobalConfiguration.Instance.GenSnapshots);
+                    GlobalConfiguration.GetInstance(testClassType.Assembly).GenSnapshots);
             }
             catch (Exception exception)
             {
