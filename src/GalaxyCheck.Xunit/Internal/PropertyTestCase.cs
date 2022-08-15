@@ -65,15 +65,18 @@ namespace GalaxyCheck.Internal
                 return new RunSummary() { Failed = 0, Total = 0, Skipped = 1, Time = executionTime };
             }
 
+            var testClassType = TestMethod.TestClass.Class.ToRuntimeType();
+            var testMethod = TestMethod.Method.ToRuntimeMethod();
+
             PropertyInitializationResult? propertyInitResult;
             try
             {
                 propertyInitResult = PropertyInitializer.Initialize(
-                    TestMethod.TestClass.Class.ToRuntimeType(),
-                    TestMethod.Method.ToRuntimeMethod(),
+                    testClassType,
+                    testMethod,
                     constructorArguments,
                     new DefaultPropertyFactory(),
-                    GlobalConfiguration.Instance.Properties);
+                    GlobalConfiguration.GetInstance(testClassType.Assembly).Properties);
             }
             catch (Exception exception)
             {

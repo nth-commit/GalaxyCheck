@@ -1,7 +1,9 @@
 ﻿using GalaxyCheck;
 using GalaxyCheck.Configuration;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
 
 namespace GalaxyCheck.Internal
 {
@@ -11,35 +13,15 @@ namespace GalaxyCheck.Internal
 
         public IGlobalGenSnapshotConfiguration GenSnapshots { get; } = new GlobalGenSnapshotConfiguration();
 
+        private static ConcurrentDictionary<Assembly, GlobalConfiguration> _instancesByAssembly = new();
 
-        private static object _instanceLock = new();
-        private static GlobalConfiguration? _instance = null;
+        public static GlobalConfiguration GetInstance(Assembly assembly) => _instancesByAssembly.GetOrAdd(assembly, CreateConfigurationForAssembly);
 
-        public static GlobalConfiguration Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    lock (_instanceLock)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = CreateInstance();
-                        }
-                    }
-                }
-
-                return _instance;
-            }
-        }
-
-        private static GlobalConfiguration CreateInstance()
+        private static GlobalConfiguration CreateConfigurationForAssembly(Assembly assembly)
         {
             var instance = new GlobalConfiguration();
 
             var configureGlobalTypes =
-                from assembly in AppDomain.CurrentDomain.GetAssemblies()
                 from type in assembly.GetTypes()
                 where type.GetInterfaces().Contains(typeof(IConfigureGlobal))
                 select type;
@@ -61,6 +43,5 @@ namespace GalaxyCheck.Internal
 
             return instance;
         }
-
     }
 }
