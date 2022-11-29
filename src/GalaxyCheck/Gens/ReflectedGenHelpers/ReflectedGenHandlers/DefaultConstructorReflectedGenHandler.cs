@@ -14,8 +14,20 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             _errorFactory = errorFactory;
         }
 
-        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) =>
-            type.GetConstructors().Any(constructor => constructor.GetParameters().Any() == false);
+        public bool CanHandleGen(Type type, ReflectedGenHandlerContext context)
+        {
+            if (IsStruct(type))
+            {
+                // Structs have slightly different constructor semantics.
+                return type.GetConstructors().Any() == false;
+            }
+            else
+            {
+                return type.GetConstructors().Any(constructor => constructor.GetParameters().Any() == false);
+            }
+        }
+
+        private static bool IsStruct(Type type) => type.IsValueType && !type.IsPrimitive && !type.IsEnum;
 
         public IGen CreateGen(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext context)
         {
@@ -36,10 +48,10 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                     Gen.Zip(CreateSetFieldActionGens(innerHandler, typeof(T), context)))
                 .SelectMany((x) =>
                 {
-                    T instance;
+                    object instance;
                     try
                     {
-                        instance = (T)Activator.CreateInstance(typeof(T))!;
+                        instance = Activator.CreateInstance(typeof(T))!;
                     }
                     catch (TargetInvocationException ex)
                     {
@@ -52,7 +64,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                     {
                         try
                         {
-                            setPropertyAction(instance);
+                            setPropertyAction(ref instance);
                         }
                         catch (TargetInvocationException ex)
                         {
@@ -64,14 +76,16 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
                     foreach (var setFieldAction in x.Item2)
                     {
-                        setFieldAction(instance);
+                        setFieldAction(ref instance);
                     }
 
-                    return Gen.Constant(instance);
+                    return Gen.Constant((T)instance);
                 });
         }
+        
+        private delegate void SetMemberAction(ref object instance);
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
+        private static IEnumerable<IGen<SetMemberAction>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
         {
             var nullabilityInfoContext = new NullabilityInfoContext();
             return type
@@ -84,11 +98,11 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                         .CreateGen(property.PropertyType, context)
                         .Cast<object>()
                         .Advanced.ReferenceRngWaypoint(rngWaypoint => rngWaypoint.Influence(context.CalculateStableSeed()))
-                        .Select((Func<object?, Action<object>>)(value => obj => property.SetValue(obj, value)));
+                        .Select((Func<object?, SetMemberAction>)(value => (ref object obj) => property.SetValue(obj, value)));
                 });
         }
 
-        private static IEnumerable<IGen<Action<object>>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
+        private static IEnumerable<IGen<SetMemberAction>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
         {
             var nullabilityInfoContext = new NullabilityInfoContext();
             return type
@@ -101,7 +115,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                         .CreateGen(field.FieldType, context)
                         .Cast<object>()
                         .Advanced.ReferenceRngWaypoint(rngWaypoint => rngWaypoint.Influence(context.CalculateStableSeed()))
-                        .Select((Func<object?, Action<object>>)(value => obj => field.SetValue(obj, value)));
+                        .Select((Func<object?, SetMemberAction>)(value => (ref object obj) => field.SetValue(obj, value)));
                 });
         }
     }

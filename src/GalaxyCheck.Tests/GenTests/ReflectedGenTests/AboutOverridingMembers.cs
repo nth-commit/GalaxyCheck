@@ -14,15 +14,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
     {
         private record RecordWithOneProperty(object Property);
 
-        private class ClassWithOneConstructorArgument
-        {
-            public object Property { get; }
 
-            public ClassWithOneConstructorArgument(object property)
-            {
-                Property = property;
-            }
-        }
 
         [Property]
         public NebulaCheck.IGen<Test> ItCanOverrideAnExternalInitProperty() =>

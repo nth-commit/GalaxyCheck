@@ -96,6 +96,7 @@ namespace Tests.V2.RendererTests
             { new Action(() => { }), "System.Action" },
             { Operations.Create, "Create" },
             { new FaultyRecord(), "<Rendering failed>" },
+            { new Struct { A = 1, B = 2, C = 3 }, "{ A = 1, B = 2, C = 3 }" }
         };
 
         [Theory]
@@ -141,6 +142,15 @@ namespace Tests.V2.RendererTests
         {
             Create,
             Read
+        }
+
+        public struct Struct
+        {
+            public int A { get; set; }
+            
+            public int B { get; set; }
+            
+            public int C { get; set; }
         }
     }
 }
