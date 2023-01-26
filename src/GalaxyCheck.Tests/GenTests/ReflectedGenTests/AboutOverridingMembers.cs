@@ -92,7 +92,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overridding expression may only contain member access");
+                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overriding expression may only contain member access");
             });
 
         [Property]
@@ -111,7 +111,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overridding expression may only contain member access");
+                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overriding expression may only contain member access");
             });
 
         private class ClassWithNonDefaultConstructor

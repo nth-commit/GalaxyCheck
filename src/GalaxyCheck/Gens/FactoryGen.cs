@@ -1,17 +1,11 @@
-﻿/// <summary>
-/// TODO:
-///     - Docs
-///     - Plugin-able strategies for handling nullables, ienumerables etc.
-///     - Render ctor params in path more sensibly
-/// </summary>
-namespace GalaxyCheck
+﻿namespace GalaxyCheck
 {
-    using GalaxyCheck.Gens;
+    using Gens;
 
     public static partial class Gen
     {
         /// <summary>
-        /// Creates a factory for <see cref="ITypedGen{T}"/>. The factory allows you to assign specific generators to
+        /// Creates a factory for <see cref="IReflectedGen{T}"/>. The factory allows you to assign specific generators to
         /// types, and then be able to share that configuration across many auto-generators, see
         /// <see cref="IGenFactory"/>.
         /// </summary>
@@ -22,15 +16,16 @@ namespace GalaxyCheck
 
 namespace GalaxyCheck.Gens
 {
-    using GalaxyCheck.Gens.Internal;
-    using GalaxyCheck.Gens.ReflectedGenHelpers;
+    using Internal;
+    using ReflectedGenHelpers;
     using GalaxyCheck.Internal;
     using System;
     using System.Collections.Generic;
     using System.Collections.Immutable;
-    using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Drawing;
+
 
     public interface IReflectedGen<T> : IGen<T>
     {
@@ -91,18 +86,37 @@ namespace GalaxyCheck.Gens
         private static readonly IReadOnlyDictionary<Type, Func<IGen>> DefaultRegisteredGensByType =
             new Dictionary<Type, Func<IGen>>
             {
+                // Integers and complements
                 { typeof(short), () => Gen.Int16() },
                 { typeof(ushort), () => Gen.Int16().Select(x => (ushort)x) },
                 { typeof(int), () => Gen.Int32() },
                 { typeof(uint), () => Gen.Int32().Select(x => (uint)x) },
                 { typeof(long), () => Gen.Int64() },
                 { typeof(ulong), () => Gen.Int64().Select(x => (ulong)x) },
+                { typeof(byte), () => Gen.Byte() },
+                { typeof(sbyte), () => Gen.Byte().Select(x => (sbyte)x) },
+
+                // Dates and times
+                { typeof(DateTime), () => Gen.DateTime() },
+                {
+                    typeof(DateTimeOffset),
+                    () => Gen.DateTime().Within(new DateTime(1, 1, 2), new DateTime(9998, 12, 30))
+                        .Select((x => new DateTimeOffset(x)))
+                },
+                { typeof(TimeSpan), () => Gen.Int64().Select(x => new TimeSpan(x)) },
+
+                // Decimals - not interesting values, but won't halt the generator at least
+                { typeof(float), () => Gen.Int32().Select(x => (float)x) },
+                { typeof(double), () => Gen.Int32().Select(x => (double)x) },
+                { typeof(decimal), () => Gen.Int32().Select(x => (decimal)x) },
+
+                // Misc...
                 { typeof(char), () => Gen.Char() },
                 { typeof(string), () => Gen.String() },
-                { typeof(byte), () => Gen.Byte() },
                 { typeof(Guid), () => Gen.Guid() },
-                { typeof(DateTime), () => Gen.DateTime() },
-                { typeof(bool), () => Gen.Boolean() }
+                { typeof(bool), () => Gen.Boolean() },
+                { typeof(Color), () => Gen.Int32().Select(x => Color.FromArgb(x)) },
+                { typeof(Uri), () => Gen.Constant(new Uri("https://github.com/nth-commit/GalaxyCheck/releases")) }
             };
 
         private readonly ImmutableDictionary<Type, Func<IGen>> _registeredGensByType;
@@ -145,7 +159,9 @@ namespace GalaxyCheck.Gens
     {
         public record OverrideMemberErrorKind
         {
-            private OverrideMemberErrorKind() { }
+            private OverrideMemberErrorKind()
+            {
+            }
 
             public record InvalidExpression(string Expression) : OverrideMemberErrorKind;
 
@@ -156,14 +172,15 @@ namespace GalaxyCheck.Gens
             IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
             NullabilityInfo? nullabilityInfo)
             : this(
-                  registeredGensByType,
-                  ImmutableList.Create<ReflectedGenMemberOverride>(),
-                  null,
-                  nullabilityInfo)
+                registeredGensByType,
+                ImmutableList.Create<ReflectedGenMemberOverride>(),
+                null,
+                nullabilityInfo)
         {
         }
 
-        public IReflectedGen<T> OverrideMember<TMember>(Expression<Func<T, TMember>> memberSelector, IGen<TMember> fieldGen)
+        public IReflectedGen<T> OverrideMember<TMember>(Expression<Func<T, TMember>> memberSelector,
+            IGen<TMember> fieldGen)
         {
             // TODO: Either.Select, Either.SelectMany, Either.SelectError
             var pathResult = PathResolver.FromExpression(memberSelector);
@@ -200,14 +217,18 @@ namespace GalaxyCheck.Gens
             }
         }
 
-        private static IGen<T> ResolveError(ReflectedGen<T>.OverrideMemberErrorKind overrideMemberError) => overrideMemberError switch
-        {
-            ReflectedGen<T>.OverrideMemberErrorKind.InvalidExpression invalidExpression =>
-                Error($"expression '{invalidExpression.Expression}' was invalid, an overridding expression may only contain member access"),
-            ReflectedGen<T>.OverrideMemberErrorKind.AttemptedOverrideOnRegisteredGen attemptedOverrideOnRegisteredGen =>
-                Error($"attempted to override expression '{attemptedOverrideOnRegisteredGen.Expression}' on type '{typeof(T)}', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)"),
-            _ => throw new NotSupportedException($"Type not supported in switch: {overrideMemberError.GetType()}")
-        };
+        private static IGen<T> ResolveError(OverrideMemberErrorKind overrideMemberError) =>
+            overrideMemberError switch
+            {
+                OverrideMemberErrorKind.InvalidExpression invalidExpression =>
+                    Error(
+                        $"expression '{invalidExpression.Expression}' was invalid, an overriding expression may only contain member access"),
+                OverrideMemberErrorKind.AttemptedOverrideOnRegisteredGen
+                    attemptedOverrideOnRegisteredGen =>
+                    Error(
+                        $"attempted to override expression '{attemptedOverrideOnRegisteredGen.Expression}' on type '{typeof(T)}', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)"),
+                _ => throw new NotSupportedException($"Type not supported in switch: {overrideMemberError.GetType()}")
+            };
 
         private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
     }
