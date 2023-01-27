@@ -1,14 +1,13 @@
-﻿using GalaxyCheck.Gens.Parameters;
+﻿using System;
+using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.Gens.Parameters.Internal;
 using GalaxyCheck.ExampleSpaces;
 using GalaxyCheck.Runners.Check;
-using GalaxyCheck.Runners.Check.Sizing;
-using GalaxyCheck.Runners.Replaying;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AsyncAutomata = GalaxyCheck.Runners.Check.AsyncAutomata;
-using Automata = GalaxyCheck.Runners.Check.Automata;
+using GalaxyCheck.Internal;
+using GalaxyCheck.Runners.Check.StateMachine;
+using GalaxyCheck.Runners.Check.StateMachine.States;
 
 namespace GalaxyCheck
 {
@@ -23,41 +22,56 @@ namespace GalaxyCheck
             string? replay = null,
             bool deepCheck = true)
         {
-            var resolvedIterations = iterations ?? 100;
-            var (initialSize, resizeStrategy) = SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
+            var stateMachineDriver = new SyncCheckStateMachineDriver<T>();
+            var stateMachine = CreateStateMachine<T, Property.Test<T>, IEnumerable<ExplorationStage<Property.Test<T>>>>(
+                stateMachineDriver, property, iterations, seed, size, shrinkLimit, replay, deepCheck);
 
-            var initialParameters = seed == null
-                ? GenParameters.CreateRandom(initialSize)
-                : GenParameters.Create(Rng.Create(seed.Value), initialSize);
+            while (stateMachine.State is not TerminalState<Property.Test<T>>)
+            {
+                if (stateMachine.State is InterruptedCheckState<Property.Test<T>>)
+                {
+                    switch (stateMachine.State)
+                    {
+                        case HoldingInstanceState<Property.Test<T>> holdingInstanceState:
+                        {
+                            var instance = holdingInstanceState.Instance;
 
-            var initialContext = new Automata.CheckStateContext<T>(
-                property,
-                resolvedIterations,
-                shrinkLimit ?? 500,
-                initialParameters,
-                deepCheck);
+                            var initialTestRunExploration = instance.ExampleSpace.Explore(CheckTest<T>());
 
-            Automata.CheckState<T> initialState = replay == null
-                ? new Automata.GenerationStates.Generation_Begin<T>()
-                : new Automata.ReplayState<T>(replay);
+                            var nextState = new BeginTestRunExplorationState<Property.Test<T>, IEnumerable<ExplorationStage<Property.Test<T>>>>(
+                                instance,
+                                initialTestRunExploration);
 
-            var transitionAggregation = Automata.CheckStateAggregator.Aggregate(
-                initialState,
-                initialContext,
-                new[] { new ResizeCheckStateTransitionDecorator<T>(resizeStrategy) });
+                            stateMachine.Jump(nextState);
+                            break;
+                        }
+                        case HoldingTestRunExplorationState<Property.Test<T>, IEnumerable<ExplorationStage<Property.Test<T>>>>
+                            holdingTestRunExplorationState:
+                        {
+                            var (testRun, remainingTestRunExploration) =
+                                holdingTestRunExplorationState.RemainingTestRunExploration;
 
-            return new CheckResult<T>(
-                transitionAggregation.FinalContext.CompletedIterationsUntilCounterexample,
-                transitionAggregation.FinalContext.Discards,
-                transitionAggregation.FinalContext.Shrinks + transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
-                transitionAggregation.FinalContext.Counterexample == null
-                    ? null
-                    : FromCounterexampleContext(transitionAggregation.FinalContext.Counterexample),
-                transitionAggregation.Checks,
-                initialParameters,
-                transitionAggregation.FinalContext.NextParameters,
-                transitionAggregation.TerminationReason);
+                            var nextState = new MaybeHoldingTestRunState<Property.Test<T>, IEnumerable<ExplorationStage<Property.Test<T>>>>(
+                                testRun,
+                                remainingTestRunExploration,
+                                holdingTestRunExplorationState.TestRunExplorationStateData);
+
+                            stateMachine.Jump(nextState);
+                            break;
+                        }
+                        default:
+                            throw new NotImplementedException($"Unrecognized state: {stateMachine.State}");
+                    }
+                }
+                else
+                {
+                    stateMachine.Transition();
+                }
+            }
+
+            return stateMachine.Result;
         }
+
 
         public static async Task<CheckResult<T>> CheckAsync<T>(
             this IGen<Property.AsyncTest<T>> property,
@@ -68,151 +82,117 @@ namespace GalaxyCheck
             string? replay = null,
             bool deepCheck = true)
         {
+            var stateMachineDriver = new AsyncCheckStateMachineDriver<T>();
+            var stateMachine = CreateStateMachine<T, Property.AsyncTest<T>, IAsyncEnumerable<ExplorationStage<Property.AsyncTest<T>>>>(
+                stateMachineDriver, property, iterations, seed, size, shrinkLimit, replay, deepCheck);
+
+            while (stateMachine.State is not TerminalState<Property.AsyncTest<T>>)
+            {
+                if (stateMachine.State is InterruptedCheckState<Property.AsyncTest<T>>)
+                {
+                    switch (stateMachine.State)
+                    {
+                        case HoldingInstanceState<Property.AsyncTest<T>> holdingInstanceState:
+                        {
+                            var instance = holdingInstanceState.Instance;
+
+                            var initialTestRunExploration = instance.ExampleSpace.ExploreAsync(CheckTestAsync<T>());
+
+                            var nextState =
+                                new BeginTestRunExplorationState<Property.AsyncTest<T>, IAsyncEnumerable<ExplorationStage<Property.AsyncTest<T>>>>(
+                                    instance,
+                                    initialTestRunExploration);
+
+                            stateMachine.Jump(nextState);
+                            break;
+                        }
+                        case HoldingTestRunExplorationState<Property.AsyncTest<T>, IAsyncEnumerable<ExplorationStage<Property.AsyncTest<T>>>>
+                            holdingTestRunExplorationState:
+                        {
+                            var (testRun, remainingTestRunExploration) =
+                                await holdingTestRunExplorationState.RemainingTestRunExploration.Deconstruct();
+
+                            var nextState =
+                                new MaybeHoldingTestRunState<Property.AsyncTest<T>, IAsyncEnumerable<ExplorationStage<Property.AsyncTest<T>>>>(
+                                    testRun,
+                                    remainingTestRunExploration,
+                                    holdingTestRunExplorationState.TestRunExplorationStateData);
+
+                            stateMachine.Jump(nextState);
+                            break;
+                        }
+                        default:
+                            throw new NotImplementedException($"Unrecognized state: {stateMachine.State}");
+                    }
+                }
+                else
+                {
+                    stateMachine.Transition();
+                }
+            }
+
+            return stateMachine.Result;
+        }
+
+        private static CheckStateMachine<T, Test, TestRunExploration> CreateStateMachine<T, Test, TestRunExploration>(
+            ICheckStateMachineDriver<T, Test> driver,
+            IGen<Test> property,
+            int? iterations,
+            int? seed,
+            int? size,
+            int? shrinkLimit,
+            string? replay,
+            bool deepCheck
+        )
+            where Test : Property.TestInput<T>
+        {
             var resolvedIterations = iterations ?? 100;
-            var (initialSize, resizeStrategy) = SizingAspectsAsync<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
+
+            var (initialSize, resizeStrategy) =
+                SizingAspects<Test>.Resolve(size == null ? null : new Size(size.Value),
+                    resolvedIterations);
 
             var initialParameters = seed == null
                 ? GenParameters.CreateRandom(initialSize)
                 : GenParameters.Create(Rng.Create(seed.Value), initialSize);
 
-            var initialContext = new AsyncAutomata.CheckStateContext<T>(
-                property,
-                resolvedIterations,
-                shrinkLimit ?? 500,
-                initialParameters,
-                deepCheck);
+            TransitionableCheckState<Test> initialState = replay is null
+                ? new InitialState<Test>()
+                : new ReplayState<Test>(replay);
 
-            AsyncAutomata.CheckState<T> initialState = replay == null
-                ? new AsyncAutomata.GenerationStates.Generation_Begin<T>()
-                : new AsyncAutomata.ReplayState<T>(replay);
+            var initialStateData =
+                CheckStateData<Test>.Initial(
+                    property: property,
+                    resizeStrategy: resizeStrategy,
+                    requestedIterations: resolvedIterations,
+                    shrinkLimit: shrinkLimit ?? 500,
+                    deepCheck: deepCheck,
+                    isReplay: replay is not null,
+                    initialParameters: initialParameters);
 
-            var transitionAggregation = await AsyncAutomata.CheckStateAggregator.Aggregate(
-                initialState,
-                initialContext,
-                new[] { new ResizeCheckStateTransitionDecoratorAsync<T>(resizeStrategy) });
-
-            return new CheckResult<T>(
-                transitionAggregation.FinalContext.CompletedIterationsUntilCounterexample,
-                transitionAggregation.FinalContext.Discards,
-                transitionAggregation.FinalContext.Shrinks + transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
-                transitionAggregation.FinalContext.Counterexample == null
-                    ? null
-                    : FromCounterexampleContext(transitionAggregation.FinalContext.Counterexample),
-                transitionAggregation.Checks,
-                initialParameters,
-                transitionAggregation.FinalContext.NextParameters,
-                transitionAggregation.TerminationReason);
+            return new CheckStateMachine<T, Test, TestRunExploration>(driver, initialState, initialStateData);
         }
 
-        private static Counterexample<T> FromCounterexampleContext<T>(
-            Automata.CounterexampleContext<T> counterexampleContext)
+        private static AnalyzeExploration<Property.Test<T>> CheckTest<T>() => example =>
         {
-            var replay = new Replay(counterexampleContext.ReplayParameters, counterexampleContext.ReplayPath);
-            var replayEncoded = ReplayEncoding.Encode(replay);
+            var testOutput = example.Value.Output.Value;
+            return testOutput.Result switch
+            {
+                Property.TestResult.Succeeded => ExplorationOutcome.Success(),
+                Property.TestResult.Failed => ExplorationOutcome.Fail(testOutput.Exception),
+                _ => throw new Exception("Fatal: Unhandled case")
+            };
+        };
 
-            return new Counterexample<T>(
-                counterexampleContext.ExampleSpace.Current.Id,
-                counterexampleContext.ExampleSpace.Current.Value,
-                counterexampleContext.ExampleSpace.Current.Distance,
-                counterexampleContext.ReplayParameters,
-                counterexampleContext.ReplayPath,
-                replayEncoded,
-                counterexampleContext.Exception,
-                counterexampleContext.PresentedInput);
-        }
-
-        private static Counterexample<T> FromCounterexampleContext<T>(
-            AsyncAutomata.CounterexampleContext<T> counterexampleContext)
+        private static AnalyzeExplorationAsync<Property.AsyncTest<T>> CheckTestAsync<T>() => async example =>
         {
-            var replay = new Replay(counterexampleContext.ReplayParameters, counterexampleContext.ReplayPath);
-            var replayEncoded = ReplayEncoding.Encode(replay);
-
-            return new Counterexample<T>(
-                counterexampleContext.ExampleSpace.Current.Id,
-                counterexampleContext.ExampleSpace.Current.Value,
-                counterexampleContext.ExampleSpace.Current.Distance,
-                counterexampleContext.ReplayParameters,
-                counterexampleContext.ReplayPath,
-                replayEncoded,
-                counterexampleContext.Exception,
-                counterexampleContext.PresentedInput);
-        }
-    }
-}
-
-namespace GalaxyCheck.Runners.Check
-{
-    public record CheckResult<T>
-    {
-        public int Iterations { get; init; }
-
-        public int Discards { get; init; }
-
-        public int Shrinks { get; init; }
-
-        public Counterexample<T>? Counterexample { get; init; }
-
-        public IReadOnlyCollection<CheckIteration<T>> Checks { get; init; }
-
-        public GenParameters InitialParameters { get; set; }
-
-        public GenParameters NextParameters { get; set; }
-
-        public TerminationReason TerminationReason { get; set; }
-
-        public bool Falsified => Counterexample != null;
-
-        public int RandomnessConsumption => NextParameters.Rng.Order - InitialParameters.Rng.Order;
-
-        public CheckResult(
-            int iterations,
-            int discards,
-            int shrinks,
-            Counterexample<T>? counterexample,
-            IReadOnlyCollection<CheckIteration<T>> checks,
-            GenParameters initialParameters,
-            GenParameters nextParameters,
-            TerminationReason terminationReason)
-        {
-            Iterations = iterations;
-            Discards = discards;
-            Shrinks = shrinks;
-            Checks = checks;
-            Counterexample = counterexample;
-            InitialParameters = initialParameters;
-            NextParameters = nextParameters;
-            TerminationReason = terminationReason;
-        }
-    }
-
-    public record CheckIteration<T>(
-        T Value,
-        IReadOnlyList<object?> PresentedInput,
-        IExampleSpace<T> ExampleSpace,
-        GenParameters Parameters,
-        IEnumerable<int> Path,
-        bool IsCounterexample,
-        Exception? Exception);
-
-    public record Counterexample<T>(
-        ExampleId Id,
-        T Value,
-        decimal Distance,
-        GenParameters ReplayParameters,
-        IEnumerable<int> ReplayPath,
-        string Replay,
-        Exception? Exception,
-        IReadOnlyList<object?> PresentedInput);
-
-    public enum TerminationReason
-    {
-        IsReplay = 1,
-        DeepCheckDisabled = 2,
-        ReachedMaximumIterations = 3,
-        ReachedMaximumSize = 4,
-        FoundTheoreticalSmallestCounterexample = 5,
-        FoundPragmaticSmallestCounterexample = 6,
-        FoundError = 7,
-        ReachedShrinkLimit = 8
+            var testOutput = await example.Value.Output.Value;
+            return testOutput.Result switch
+            {
+                Property.TestResult.Succeeded => ExplorationOutcome.Success(),
+                Property.TestResult.Failed => ExplorationOutcome.Fail(testOutput.Exception),
+                _ => throw new Exception("Fatal: Unhandled case")
+            };
+        };
     }
 }

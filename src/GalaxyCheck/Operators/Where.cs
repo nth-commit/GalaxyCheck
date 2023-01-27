@@ -38,7 +38,7 @@ namespace GalaxyCheck
 
             GenStreamTransformation<T, T> resizeAndTerminateAfterConsecutiveDiscards = (stream) =>
             {
-                const int MaxConsecutiveDiscards = 10;
+                const int MaxConsecutiveDiscards = 5;
 
                 return stream
                     .WithConsecutiveDiscardCount(_ => true, iteration => iteration.IsDiscard())
@@ -67,6 +67,7 @@ namespace GalaxyCheck
                     .Select(x => x.iteration);
             };
 
+            // TODO: This should take bigger and bigger jumps if consecutive discards continue to accumulate, even between sizes
             return gen
                 .TransformInstances(applyPredicateToInstance)
                 .TransformStream(resizeAndTerminateAfterConsecutiveDiscards)
