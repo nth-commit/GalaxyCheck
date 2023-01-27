@@ -92,10 +92,9 @@ namespace GalaxyCheck.Gens.Internal.Iterations
 
         public static IGenIteration<T> Error<T>(
             GenParameters replayParameters,
-            GenParameters nextParameters,
             string message) => new GenIteration<T>(
                 replayParameters,
-                nextParameters,
+                replayParameters,
                 GenData<T>.ErrorData(message));
 
         public static IGenIteration<T> Discard<T>(

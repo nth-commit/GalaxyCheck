@@ -8,7 +8,7 @@ namespace Tests.V2
             this ExceptionAssertions<GalaxyCheck.Exceptions.GenErrorException> assertions,
             string messageBody)
         {
-            return assertions.WithMessage("*" + messageBody);
+            return assertions.WithMessage("Error during generation: " + messageBody);
         }
     }
 }

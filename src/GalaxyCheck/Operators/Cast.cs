@@ -17,7 +17,6 @@ namespace GalaxyCheck
                         instance.ExampleSpace.Cast<T>()),
                     onError: error => GenIterationFactory.Error<T>(
                         iteration.ReplayParameters,
-                        iteration.NextParameters,
                         error.Message),
                     onDiscard: discard => GenIterationFactory.Discard<T>(
                         iteration.ReplayParameters,

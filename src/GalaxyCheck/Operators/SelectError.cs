@@ -15,7 +15,6 @@ namespace GalaxyCheck
                 var selectedErrorData = errorSelector(error);
                 return GenIterationFactory.Error<T>(
                     error.ReplayParameters,
-                    error.NextParameters,
                     selectedErrorData.Message);
             }
 
