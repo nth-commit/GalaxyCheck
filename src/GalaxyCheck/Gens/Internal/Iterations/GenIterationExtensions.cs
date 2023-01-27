@@ -9,7 +9,7 @@ namespace GalaxyCheck.Gens.Internal.Iterations
             this IGenIteration<TSource> iteration) => iteration.Match<Either<IGenInstance<TSource>, IGenIteration<TNonInstance>>>(
                 onInstance: instance => new Left<IGenInstance<TSource>, IGenIteration<TNonInstance>>(instance),
                 onError: error => new Right<IGenInstance<TSource>, IGenIteration<TNonInstance>>(
-                    GenIterationFactory.Error<TNonInstance>(error.ReplayParameters, error.NextParameters, error.Message)),
+                    GenIterationFactory.Error<TNonInstance>(error.ReplayParameters, error.Message)),
                 onDiscard: discard => new Right<IGenInstance<TSource>, IGenIteration<TNonInstance>>(
                     GenIterationFactory.Discard<TNonInstance>(discard.ReplayParameters, discard.NextParameters, discard.ExampleSpace)));
 

@@ -38,7 +38,7 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Parameters;
     using System.Collections.Generic;
 
-    internal class ErrorGen<T> : BaseGen<T>, IGen<T>
+    internal record ErrorGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly string _message;
 
@@ -51,7 +51,7 @@ namespace GalaxyCheck.Gens
         {
             while (true)
             {
-                yield return GenIterationFactory.Error<T>(parameters, parameters, _message);
+                yield return GenIterationFactory.Error<T>(parameters, _message);
             }
         }
     }

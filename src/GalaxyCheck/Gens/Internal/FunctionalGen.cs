@@ -6,7 +6,7 @@ namespace GalaxyCheck.Gens.Internal
 {
     internal delegate IEnumerable<IGenIteration<T>> GenFunc<T>(GenParameters parameters);
 
-    internal class FunctionalGen<T> : BaseGen<T>, IGen<T>
+    internal record FunctionalGen<T> : BaseGen<T>, IGen<T>
     {
         private readonly GenFunc<T> _func;
 

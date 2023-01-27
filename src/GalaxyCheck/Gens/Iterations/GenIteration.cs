@@ -1,7 +1,6 @@
 ﻿using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.ExampleSpaces;
 using System;
-using System.Collections.Generic;
 
 namespace GalaxyCheck.Gens.Iterations
 {

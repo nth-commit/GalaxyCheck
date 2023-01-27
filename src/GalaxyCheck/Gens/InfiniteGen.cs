@@ -49,7 +49,7 @@ namespace GalaxyCheck.Gens
     using System.Collections.Generic;
     using System.Linq;
 
-    internal class InfiniteGen<T> : BaseGen<IEnumerable<T>>, IGen<IEnumerable<T>>
+    internal record InfiniteGen<T> : BaseGen<IEnumerable<T>>, IGen<IEnumerable<T>>
     {
         private readonly IGen<T> _elementGen;
         private readonly int? _iterationLimit;
