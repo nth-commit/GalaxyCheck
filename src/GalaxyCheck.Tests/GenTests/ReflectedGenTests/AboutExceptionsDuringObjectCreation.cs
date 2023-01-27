@@ -31,7 +31,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: 'System.Exception' was thrown while calling constructor with message 'Test exception'");
+                    .WithGenErrorMessage("'System.Exception' was thrown while calling constructor with message 'Test exception'");
             });
 
         private class ClassWithNonDefaultThrowingConstructor
@@ -54,7 +54,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: 'System.Exception' was thrown while calling constructor with message 'Test exception'");
+                    .WithGenErrorMessage("'System.Exception' was thrown while calling constructor with message 'Test exception'");
             });
 
         private class ClassWithThrowingPropertySetter
@@ -87,7 +87,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: 'System.Exception' was thrown while setting property with message 'Test exception'");
+                    .WithGenErrorMessage("'System.Exception' was thrown while setting property with message 'Test exception'");
             });
     }
 }

@@ -305,7 +305,7 @@ namespace GalaxyCheck.Gens
             }
         }
 
-        private static IGen<IReadOnlyList<T>> Error(string message) => Gen.Advanced.Error<IReadOnlyList<T>>(nameof(ListGen<T>), message);
+        private static IGen<IReadOnlyList<T>> Error(string message) => Gen.Advanced.Error<IReadOnlyList<T>>(message);
 
         private static IGen<IReadOnlyList<T>> CountLimitError() =>
             Error($"Count limit exceeded. This is a built-in safety mechanism to prevent hanging tests. If generating a list with over 1000 elements was intended, relax this constraint by calling {nameof(IListGen<T>)}.{nameof(IListGen<T>.DisableCountLimitUnsafe)}().");

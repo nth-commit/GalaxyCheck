@@ -143,7 +143,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ReflectedGen: could not resolve type '*ClassWithNoPublicConstructor'");
+                .WithGenErrorMessage("could not resolve type '*ClassWithNoPublicConstructor'");
         }
     }
 }

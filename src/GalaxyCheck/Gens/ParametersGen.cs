@@ -59,12 +59,10 @@ namespace GalaxyCheck.Gens
         {
             var parameters = methodInfo.GetParameters();
 
-            var invalidIndicies = customGens.Keys.Except(Enumerable.Range(0, parameters.Length));
-            if (invalidIndicies.Any())
+            var invalidIndex = customGens.Keys.Except(Enumerable.Range(0, parameters.Length)).Cast<int?>().FirstOrDefault();
+            if (invalidIndex is not null)
             {
-                return Gen.Advanced.Error<object[]>(
-                    nameof(ParametersGen),
-                    $"parameter index '{invalidIndicies.First()}' of custom generator was not valid");
+                return Gen.Advanced.Error<object[]>($"parameter index '{invalidIndex.Value}' of custom generator was not valid");
             }
 
             var gens = parameters
@@ -103,7 +101,6 @@ namespace GalaxyCheck.Gens
                 if (parameterInfo.ParameterType.IsAssignableFrom(genTypeArgument) == false)
                 {
                     return Gen.Advanced.Error<object>(
-                        nameof(ParametersGen),
                         $"generator of type '{genTypeArgument.FullName}' is not compatible with parameter of type '{parameterInfo.ParameterType.FullName}'");
                 }
 
@@ -139,7 +136,6 @@ namespace GalaxyCheck.Gens
             {
                 gen = Gen.Advanced.Error(
                     parameterInfo.ParameterType,
-                    nameof(ParametersGen),
                     $"multiple {nameof(GenAttribute)}s is unsupported");
                 return true;
             }
@@ -150,9 +146,7 @@ namespace GalaxyCheck.Gens
 
         private static Iterations.IGenErrorData SelectParameterError(ParameterInfo parameterInfo, Iterations.IGenErrorData error)
         {
-            return new GenErrorData(
-                nameof(ParametersGen),
-                $"unable to generate value for parameter '{parameterInfo.Name}', {error.Message}");
+            return new GenErrorData($"unable to generate value for parameter '{parameterInfo.Name}', {error.Message}");
         }
     }
 }

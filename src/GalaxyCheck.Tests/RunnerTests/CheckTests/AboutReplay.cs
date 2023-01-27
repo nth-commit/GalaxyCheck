@@ -55,7 +55,7 @@ namespace Tests.V2.RunnerTests.CheckTests
             from replayPath in Gen.Int32().ListOf()
             select Property.ForThese(() =>
             {
-                var property = GalaxyCheck.Gen.Advanced.Error<object>("", "").ForAll(func);
+                var property = GalaxyCheck.Gen.Advanced.Error<object>("").ForAll(func);
                 var replay = ReplayEncoding.Encode(CreateReplay(replaySeed, replaySize, replayPath));
 
                 Action test = () => property.Check(replay: replay);

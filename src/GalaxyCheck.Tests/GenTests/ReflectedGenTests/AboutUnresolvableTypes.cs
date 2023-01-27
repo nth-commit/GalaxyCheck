@@ -18,7 +18,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ReflectedGen: could not resolve type 'System.Int32'");
+                .WithGenErrorMessage("could not resolve type 'System.Int32'");
         }
 
         private class ClassWithOneProperty
@@ -35,7 +35,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ReflectedGen: could not resolve type 'System.Int32' at path '$.Property'");
+                .WithGenErrorMessage("could not resolve type 'System.Int32' at path '$.Property'");
         }
 
         private class ClassWithOneNestedProperty
@@ -52,7 +52,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
             action.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ReflectedGen: could not resolve type 'System.Int32' at path '$.Property.Property'");
+                .WithGenErrorMessage("could not resolve type 'System.Int32' at path '$.Property.Property'");
         }
     }
 }

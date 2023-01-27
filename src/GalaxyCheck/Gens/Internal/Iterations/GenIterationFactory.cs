@@ -3,8 +3,6 @@ using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.ExampleSpaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace GalaxyCheck.Gens.Internal.Iterations
 {
@@ -30,7 +28,7 @@ namespace GalaxyCheck.Gens.Internal.Iterations
 
             IGenData IGenIteration.Data => Data.Match<IGenData>(
                 onInstance: instanceData => GenData.InstanceData(instanceData.ExampleSpace),
-                onError: errorData => GenData.ErrorData(errorData.GenName, errorData.Message),
+                onError: errorData => GenData.ErrorData(errorData.Message),
                 onDiscard: discardData => GenData.DiscardData(discardData.ExampleSpace));
 
             public TResult Match<TResult>(
@@ -66,8 +64,6 @@ namespace GalaxyCheck.Gens.Internal.Iterations
                 {
                 }
 
-                public string GenName => Data.Error!.GenName;
-
                 public string Message => Data.Error!.Message;
             }
 
@@ -97,11 +93,10 @@ namespace GalaxyCheck.Gens.Internal.Iterations
         public static IGenIteration<T> Error<T>(
             GenParameters replayParameters,
             GenParameters nextParameters,
-            string genName,
             string message) => new GenIteration<T>(
                 replayParameters,
                 nextParameters,
-                GenData<T>.ErrorData(genName, message));
+                GenData<T>.ErrorData(message));
 
         public static IGenIteration<T> Discard<T>(
             GenParameters replayParameters,

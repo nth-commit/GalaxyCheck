@@ -10,23 +10,21 @@
             /// <summary>
             /// As an alternative to throwing exceptions, creates a generator that always errors. This is useful when
             /// writing custom generators - if any of the inputs were invalid, switching to an error generator ensures
-            /// that GalaxyCheck will handle the error through its normal error codepath. Otherwise, exceptions might
+            /// that GalaxyCheck will handle the error through its normal error code path. Otherwise, exceptions might
             /// bubble up and provide less-interesting diagnostics.
             /// </summary>
-            /// <param name="genName">The name of the generator where the error was detected.</param>
             /// <param name="message">A message explaining what this error is, and what it might have been caused by.
             /// </param>
             /// <returns>A new generator that errors when it runs.</returns>
-            public static IGen<T> Error<T>(string genName, string message) =>
-                new ErrorGen<T>(genName, message);
+            public static IGen<T> Error<T>(string message) => new ErrorGen<T>(message);
 
-            internal static IGen Error(Type type, string genName, string message)
+            internal static IGen Error(Type type, string message)
             {
                 var genericErrorGen = typeof(Advanced)
                     .GetMethod(nameof(Advanced.Error))!
                     .MakeGenericMethod(type);
 
-                return (IGen)genericErrorGen.Invoke(null, new object?[] { genName, message })!;
+                return (IGen)genericErrorGen.Invoke(null, new object?[] { message })!;
             }
         }
     }
@@ -42,12 +40,10 @@ namespace GalaxyCheck.Gens
 
     internal class ErrorGen<T> : BaseGen<T>, IGen<T>
     {
-        private readonly string _genName;
         private readonly string _message;
 
-        public ErrorGen(string genName, string message)
+        public ErrorGen(string message)
         {
-            _genName = genName;
             _message = message;
         }
 
@@ -55,7 +51,7 @@ namespace GalaxyCheck.Gens
         {
             while (true)
             {
-                yield return GenIterationFactory.Error<T>(parameters, parameters, _genName, _message);
+                yield return GenIterationFactory.Error<T>(parameters, parameters, _message);
             }
         }
     }

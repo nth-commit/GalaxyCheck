@@ -25,8 +25,8 @@ namespace Tests.V2.GenTests.ListGenTests
 
                     test.Should()
                         .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                        .WithMessage(
-                            "Error while running generator ListGen: Count limit exceeded. " +
+                        .WithGenErrorMessage(
+                            "Count limit exceeded. " +
                             "This is a built-in safety mechanism to prevent hanging tests. " +
                             "If generating a list with over 1000 elements was intended, relax this constraint by calling IListGen.DisableCountLimitUnsafe().");
                 }

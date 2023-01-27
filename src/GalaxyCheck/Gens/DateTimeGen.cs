@@ -158,7 +158,6 @@ namespace GalaxyCheck.Gens
                 .Select(seconds => TimeSpan.FromSeconds(seconds));
         }
 
-        private static IGen<DateTime> Error(string message) =>
-            Gen.Advanced.Error<DateTime>(nameof(DateTimeGen), message);
+        private static IGen<DateTime> Error(string message) => Gen.Advanced.Error<DateTime>(message);
     }
 }

@@ -196,7 +196,7 @@ namespace GalaxyCheck.Gens
 
         private static IGen<char> CreateCharGen(StringGenCharConfig? charConfig)
         {
-            static IGen<char> Error(string message) => Gen.Advanced.Error<char>(nameof(StringGen), message);
+            static IGen<char> Error(string message) => Gen.Advanced.Error<char>(message);
 
             charConfig ??= new StringGenCharConfig.FromCharType(Gen.CharType.All);
 
@@ -230,7 +230,7 @@ namespace GalaxyCheck.Gens
         private static IGen<IReadOnlyList<char>> CreateListGen(IGen<char> charGen, StringGenLengthConfig? lengthConfig, Gen.Bias? lengthBias)
         {
             static IGen<IReadOnlyList<char>> Error(string message) =>
-                Gen.Advanced.Error<IReadOnlyList<char>>(nameof(StringGen), message);
+                Gen.Advanced.Error<IReadOnlyList<char>>(message);
 
             lengthConfig ??= new StringGenLengthConfig.Ranged(null, null);
 

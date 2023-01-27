@@ -32,7 +32,7 @@ namespace Tests.V2.GenTests.StringGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator StringGen: 'charType' was not a valid flag value");
+                    .WithGenErrorMessage("'charType' was not a valid flag value");
             });
 
         [Property]
@@ -50,7 +50,7 @@ namespace Tests.V2.GenTests.StringGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator StringGen: 'chars' must not be empty");
+                    .WithGenErrorMessage("'chars' must not be empty");
             });
 
         [Property]
@@ -66,7 +66,7 @@ namespace Tests.V2.GenTests.StringGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator StringGen: 'length' cannot be negative");
+                    .WithGenErrorMessage("'length' cannot be negative");
             });
 
         [Property]
@@ -82,7 +82,7 @@ namespace Tests.V2.GenTests.StringGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator StringGen: 'minLength' cannot be negative");
+                    .WithGenErrorMessage("'minLength' cannot be negative");
             });
 
         [Property]
@@ -98,7 +98,7 @@ namespace Tests.V2.GenTests.StringGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator StringGen: 'maxLength' cannot be negative");
+                    .WithGenErrorMessage("'maxLength' cannot be negative");
             });
 
         [Property]
@@ -115,7 +115,7 @@ namespace Tests.V2.GenTests.StringGenTests
 
                     action.Should()
                         .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                        .WithMessage("Error while running generator StringGen: 'minLength' cannot be greater than 'maxLength'");
+                        .WithGenErrorMessage("'minLength' cannot be greater than 'maxLength'");
                 }
 
                 ShouldError(GalaxyCheck.Gen.String().WithLengthGreaterThanEqual(minLength).WithLengthLessThanEqual(maxLength));

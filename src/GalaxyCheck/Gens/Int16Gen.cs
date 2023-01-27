@@ -10,7 +10,7 @@
         /// <see cref="short.MinValue"/> and <see cref="short.MaxValue"/>, as the generator size increases. However,
         /// short generation can be customised using the builder methods on <see cref="IIntGen{short}"/>.
         /// <returns>The new generator.</returns>
-        public static IIntGen<short> Int16() => new Int16Gen(nameof(Int16));
+        public static IIntGen<short> Int16() => new Int16Gen();
     }
 
     public static partial class Extensions
@@ -44,7 +44,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<short>($"{nameof(Gen.Int16)}().{nameof(LessThan)}({maxExclusive})", ex);
+                return new FatalIntGen<short>(ex);
             }
         }
 
@@ -64,7 +64,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<short>($"{nameof(Gen.Int16)}().{nameof(GreaterThan)}({minExclusive})", ex);
+                return new FatalIntGen<short>(ex);
             }
         }
     }
@@ -76,7 +76,6 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Iterations.Generic;
 
     internal record Int16Gen(
-        string PublicGenName,
         short? Min = null,
         short? Max = null,
         short? Origin = null,
@@ -111,7 +110,7 @@ namespace GalaxyCheck.Gens
 
                 return gen
                     .Select(x => (short)x)
-                    .SelectError(error => new GenErrorData(PublicGenName, error.Message));
+                    .SelectError(error => new GenErrorData(error.Message));
             }
         }
     }

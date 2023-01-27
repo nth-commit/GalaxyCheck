@@ -29,7 +29,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
             test.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', type 'System.String' was not assignable to the type it was registered to, 'System.Int32'");
+                .WithGenErrorMessage("unable to generate value for parameter 'x', type 'System.String' was not assignable to the type it was registered to, 'System.Int32'");
         }
 
         private class AnotherStringGenAttribute : GenAttribute
@@ -48,7 +48,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
 
             test.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ParametersGen: unable to generate value for parameter 'x', multiple GenAttributes is unsupported");
+                .WithGenErrorMessage("unable to generate value for parameter 'x', multiple GenAttributes is unsupported");
         }
 
         private static MethodInfo GetMethod(string name)

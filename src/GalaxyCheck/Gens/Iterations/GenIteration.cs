@@ -35,8 +35,6 @@ namespace GalaxyCheck.Gens.Iterations
 
     public interface IGenErrorData
     {
-        string GenName { get; }
-
         string Message { get; }
     }
 
@@ -47,7 +45,7 @@ namespace GalaxyCheck.Gens.Iterations
 
     public record GenInstanceData(IExampleSpace ExampleSpace) : IGenInstanceData;
 
-    public record GenErrorData(string GenName, string Message) : IGenErrorData;
+    public record GenErrorData(string Message) : IGenErrorData;
 
     public record GenDiscardData(IExampleSpace ExampleSpace) : IGenDiscardData;
 
@@ -60,10 +58,10 @@ namespace GalaxyCheck.Gens.Iterations
             Discard = null
         };
 
-        public static GenData ErrorData(string genName, string message) => new GenData
+        public static GenData ErrorData(string message) => new GenData
         {
             Instance = null,
-            Error = new GenErrorData(genName, message),
+            Error = new GenErrorData(message),
             Discard = null
         };
 

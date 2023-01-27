@@ -16,7 +16,7 @@ namespace GalaxyCheck
 
             if (sourceList.Count == 0)
             {
-                return Advanced.Error<T>(nameof(Element), "'source' must not be empty");
+                return Advanced.Error<T>("'source' must not be empty");
             }
 
             return Int32().Between(0, sourceList.Count - 1).Select(i => sourceList[i]);

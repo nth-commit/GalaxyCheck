@@ -61,13 +61,13 @@ namespace Tests.V2.GenTests.Int32GenTests
 
                 var gen = mockGen.Object.GreaterThan(int.MaxValue);
 
-                mockGen.Verify(gen => gen.GreaterThanEqual(It.IsAny<int>()), Times.Never);
+                mockGen.Verify(gen0 => gen0.GreaterThanEqual(It.IsAny<int>()), Times.Never);
 
                 Action action = () => gen.SampleOne(seed: seed, size: size);
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Int32().GreaterThan(2147483647): Arithmetic operation resulted in an overflow.");
+                    .WithGenErrorMessage("Arithmetic operation resulted in an overflow.");
             });
 
         [Property]
@@ -98,7 +98,7 @@ namespace Tests.V2.GenTests.Int32GenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Int32().LessThan(-2147483648): Arithmetic operation resulted in an overflow.");
+                    .WithGenErrorMessage("Arithmetic operation resulted in an overflow.");
             });
 
         private static Mock<IIntGen<int>> SetupMock()

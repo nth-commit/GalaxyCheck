@@ -69,7 +69,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
             action.Should()
                 .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ReflectedGen: attempted to override expression 'x => x.Property' on type 'Tests.V2.GenTests.ReflectedGenTests.AboutOverridingMembers+RecordWithOneProperty2', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)");
+                .WithGenErrorMessage("attempted to override expression 'x => x.Property' on type 'Tests.V2.GenTests.ReflectedGenTests.AboutOverridingMembers+RecordWithOneProperty2', but overriding members for registered types is not currently supported (GitHub issue: https://github.com/nth-commit/GalaxyCheck/issues/346)");
         }
 
         private record RecordWithAMethod(object Property)
@@ -92,7 +92,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overriding expression may only contain member access");
+                    .WithGenErrorMessage("expression 'x => x.Method()' was invalid, an overriding expression may only contain member access");
             });
 
         [Property]
@@ -111,7 +111,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Method()' was invalid, an overriding expression may only contain member access");
+                    .WithGenErrorMessage("expression 'x => x.Method()' was invalid, an overriding expression may only contain member access");
             });
 
         private class ClassWithNonDefaultConstructor
@@ -139,7 +139,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: expression 'x => x.Property' targeted a valid member, but the type did not have a default constructor, so the member override would be ignored");
+                    .WithGenErrorMessage("expression 'x => x.Property' targeted a valid member, but the type did not have a default constructor, so the member override would be ignored");
             });
     }
 }

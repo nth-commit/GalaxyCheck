@@ -10,7 +10,7 @@
         /// generator size increases. However, byte generation can be customised using the builder methods on
         /// <see cref="IIntGen{byte}"/>.
         /// <returns>The new generator.</returns>
-        public static IIntGen<byte> Byte() => new ByteGen(nameof(Byte));
+        public static IIntGen<byte> Byte() => new ByteGen();
     }
 
     public static partial class Extensions
@@ -44,7 +44,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<byte>($"{nameof(Gen.Byte)}().{nameof(LessThan)}({maxExclusive})", ex);
+                return new FatalIntGen<byte>(ex);
             }
         }
 
@@ -64,7 +64,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<byte>($"{nameof(Gen.Byte)}().{nameof(GreaterThan)}({minExclusive})", ex);
+                return new FatalIntGen<byte>(ex);
             }
         }
     }
@@ -78,7 +78,6 @@ namespace GalaxyCheck.Gens
     using System.Collections.Generic;
 
     internal record ByteGen(
-        string PublicGenName,
         byte? Min = null,
         byte? Max = null,
         byte? Origin = null,
@@ -113,7 +112,7 @@ namespace GalaxyCheck.Gens
 
                 return gen
                     .Select(x => (byte)x)
-                    .SelectError(error => new GenErrorData(PublicGenName, error.Message));
+                    .SelectError(error => new GenErrorData(error.Message));
             }
         }
     }

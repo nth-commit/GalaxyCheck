@@ -25,7 +25,7 @@ namespace Tests.V2.GenTests.DateTimeGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator DateTimeGen: 'from' datetime cannot be after 'until' datetime");
+                    .WithGenErrorMessage("'from' datetime cannot be after 'until' datetime");
             });
     }
 }

@@ -87,17 +87,17 @@ namespace GalaxyCheck.Gens
         {
             if (choices.Any() == false)
             {
-                return Gen.Advanced.Error<T>(nameof(ChooseGen<T>), "'choices' must be non-empty");
+                return Gen.Advanced.Error<T>("'choices' must be non-empty");
             }
 
             if (choices.Any(choice => choice.Weight < 0))
             {
-                return Gen.Advanced.Error<T>(nameof(ChooseGen<T>), "'choices' must not contain a negatively weighted generator");
+                return Gen.Advanced.Error<T>("'choices' must not contain a negatively weighted generator");
             }
 
             if (choices.Sum(choice => choice.Weight) == 0)
             {
-                return Gen.Advanced.Error<T>(nameof(ChooseGen<T>), "'choices' must contain at least one generator with a weight greater than zero");
+                return Gen.Advanced.Error<T>("'choices' must contain at least one generator with a weight greater than zero");
             }
 
             var weightedIndices = new WeightedList<int>(choices.Select((c, i) => new WeightedElement<int>(c.Weight, i)));

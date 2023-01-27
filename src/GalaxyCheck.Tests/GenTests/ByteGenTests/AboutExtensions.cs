@@ -66,7 +66,7 @@ namespace Tests.V2.GenTests.ByteGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Byte().GreaterThan(255): Arithmetic operation resulted in an overflow.");
+                    .WithGenErrorMessage("Arithmetic operation resulted in an overflow.");
             });
 
         [Property]
@@ -91,13 +91,13 @@ namespace Tests.V2.GenTests.ByteGenTests
 
                 var gen = mockGen.Object.LessThan(byte.MinValue);
 
-                mockGen.Verify(gen => gen.LessThanEqual(It.IsAny<byte>()), Times.Never);
+                mockGen.Verify(gen0 => gen0.LessThanEqual(It.IsAny<byte>()), Times.Never);
 
                 Action action = () => gen.SampleOne(seed: seed, size: size);
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Byte().LessThan(0): Arithmetic operation resulted in an overflow.");
+                    .WithGenErrorMessage("Arithmetic operation resulted in an overflow.");
             });
 
         private static Mock<IIntGen<byte>> SetupMock()

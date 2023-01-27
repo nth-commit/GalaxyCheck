@@ -26,7 +26,7 @@ namespace Tests.V2.GenTests.CharGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator CharGen: 'charType' was not a valid flag value");
+                    .WithGenErrorMessage("'charType' was not a valid flag value");
             });
     }
 }
