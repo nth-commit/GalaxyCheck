@@ -50,7 +50,10 @@ namespace GalaxyCheck
                         {
                             var resizedIteration = GenIterationFactory.Discard<T>(
                                 iteration.ReplayParameters,
-                                iteration.NextParameters with { Size = iteration.NextParameters.Size.BigIncrement() },
+                                iteration.Data.Discard!.NextParameters with
+                                {
+                                    Size = iteration.Data.Discard!.NextParameters.Size.BigIncrement()
+                                },
                                 iteration.Data.Discard!.ExampleSpace);
 
                             return (iteration: resizedIteration, consecutiveDiscardCount);

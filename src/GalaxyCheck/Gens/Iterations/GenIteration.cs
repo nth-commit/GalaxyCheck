@@ -8,8 +8,6 @@ namespace GalaxyCheck.Gens.Iterations
     {
         GenParameters ReplayParameters { get; }
 
-        GenParameters NextParameters { get; }
-
         IGenData Data { get; }
     }
 
@@ -29,6 +27,8 @@ namespace GalaxyCheck.Gens.Iterations
 
     public interface IGenInstanceData
     {
+        GenParameters NextParameters { get; }
+
         IExampleSpace ExampleSpace { get; }
     }
 
@@ -39,20 +39,22 @@ namespace GalaxyCheck.Gens.Iterations
 
     public interface IGenDiscardData
     {
+        GenParameters NextParameters { get; }
+
         IExampleSpace ExampleSpace { get; }
     }
 
-    public record GenInstanceData(IExampleSpace ExampleSpace) : IGenInstanceData;
+    public record GenInstanceData(GenParameters NextParameters, IExampleSpace ExampleSpace) : IGenInstanceData;
 
     public record GenErrorData(string Message) : IGenErrorData;
 
-    public record GenDiscardData(IExampleSpace ExampleSpace) : IGenDiscardData;
+    public record GenDiscardData(GenParameters NextParameters, IExampleSpace ExampleSpace) : IGenDiscardData;
 
     public record GenData : IGenData
     {
-        public static GenData InstanceData(IExampleSpace exampleSpace) => new GenData
+        public static GenData InstanceData(GenParameters nextParameters, IExampleSpace exampleSpace) => new GenData
         {
-            Instance = new GenInstanceData(exampleSpace),
+            Instance = new GenInstanceData(nextParameters, exampleSpace),
             Error = null,
             Discard = null
         };
@@ -64,11 +66,11 @@ namespace GalaxyCheck.Gens.Iterations
             Discard = null
         };
 
-        public static GenData DiscardData(IExampleSpace exampleSpace) => new GenData
+        public static GenData DiscardData(GenParameters nextParameters, IExampleSpace exampleSpace) => new GenData
         {
             Instance = null,
             Error = null,
-            Discard = new GenDiscardData(exampleSpace)
+            Discard = new GenDiscardData(nextParameters, exampleSpace)
         };
 
         public IGenInstanceData? Instance { get; init; }

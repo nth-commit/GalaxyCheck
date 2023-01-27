@@ -79,7 +79,7 @@ namespace GalaxyCheck
 
                                 return GenIterationFactory.Instance(
                                     iteration.ReplayParameters,
-                                    iteration.NextParameters,
+                                    instance.NextParameters,
                                     jointExampleSpace);
                             },
                             onError: error => error,
@@ -110,14 +110,14 @@ namespace GalaxyCheck
                             yield return innerIteration.Match(
                                 onInstance: innerInstance => GenIterationFactory.Instance(
                                     iteration.ReplayParameters,
-                                    innerIteration.NextParameters,
+                                    innerInstance.NextParameters,
                                     innerInstance.ExampleSpace),
                                 onError: innerError => GenIterationFactory.Error<TResult>(
                                     iteration.ReplayParameters,
                                     innerError.Message),
                                 onDiscard: innerDiscard => GenIterationFactory.Discard<TResult>(
                                     iteration.ReplayParameters,
-                                    innerIteration.NextParameters,
+                                    innerDiscard.NextParameters,
                                     innerDiscard.ExampleSpace));
                         }
 

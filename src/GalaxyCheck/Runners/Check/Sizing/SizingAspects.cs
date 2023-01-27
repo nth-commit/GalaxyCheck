@@ -58,7 +58,7 @@ namespace GalaxyCheck.Runners.Check.Sizing
 
                     return nextSize;
                 },
-                onError: error => error.NextParameters.Size,
+                onError: error => error.ReplayParameters.Size,
                 onDiscard: discard => discard.NextParameters.Size);
         }
 
