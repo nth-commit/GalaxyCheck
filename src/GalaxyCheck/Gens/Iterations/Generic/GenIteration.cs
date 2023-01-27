@@ -1,6 +1,6 @@
 ﻿using GalaxyCheck.ExampleSpaces;
 using System;
-using System.Collections.Generic;
+using GalaxyCheck.Gens.Parameters;
 
 namespace GalaxyCheck.Gens.Iterations.Generic
 {
@@ -45,23 +45,24 @@ namespace GalaxyCheck.Gens.Iterations.Generic
         new IExampleSpace<T> ExampleSpace { get; }
     }
 
-    public record GenInstanceData<T>(IExampleSpace<T> ExampleSpace) : IGenInstanceData<T>
+    public record GenInstanceData<T>(GenParameters NextParameters, IExampleSpace<T> ExampleSpace) : IGenInstanceData<T>
     {
         IExampleSpace IGenInstanceData.ExampleSpace => ExampleSpace;
     }
 
     public record GenErrorData(string Message) : IGenErrorData;
 
-    public record GenDiscardData(IExampleSpace ExampleSpace) : IGenDiscardData;
+    public record GenDiscardData(GenParameters NextParameters, IExampleSpace ExampleSpace) : IGenDiscardData;
 
     public record GenData<T> : IGenData<T>
     {
-        public static GenData<T> InstanceData(IExampleSpace<T> exampleSpace) => new GenData<T>
-        {
-            Instance = new GenInstanceData<T>(exampleSpace),
-            Error = null,
-            Discard = null
-        };
+        public static GenData<T> InstanceData(GenParameters nextParameters, IExampleSpace<T> exampleSpace) =>
+            new GenData<T>
+            {
+                Instance = new GenInstanceData<T>(nextParameters, exampleSpace),
+                Error = null,
+                Discard = null
+            };
 
         public static GenData<T> ErrorData(string message) => new GenData<T>
         {
@@ -70,11 +71,11 @@ namespace GalaxyCheck.Gens.Iterations.Generic
             Discard = null
         };
 
-        public static GenData<T> DiscardData(IExampleSpace exampleSpace) => new GenData<T>
+        public static GenData<T> DiscardData(GenParameters nextParameters, IExampleSpace exampleSpace) => new GenData<T>
         {
             Instance = null,
             Error = null,
-            Discard = new GenDiscardData(exampleSpace)
+            Discard = new GenDiscardData(nextParameters, exampleSpace)
         };
 
         public IGenInstanceData<T>? Instance { get; init; }
@@ -87,9 +88,9 @@ namespace GalaxyCheck.Gens.Iterations.Generic
             Func<IGenInstanceData<T>, TResult> onInstance,
             Func<IGenErrorData, TResult> onError,
             Func<IGenDiscardData, TResult> onDiscard) =>
-                Instance != null ? onInstance(Instance) :
-                Error != null ? onError(Error) :
-                Discard != null ? onDiscard(Discard) :
-                throw new NotSupportedException();
+            Instance != null ? onInstance(Instance) :
+            Error != null ? onError(Error) :
+            Discard != null ? onDiscard(Discard) :
+            throw new NotSupportedException();
     }
 }

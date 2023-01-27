@@ -1,5 +1,4 @@
-﻿using GalaxyCheck;
-using GalaxyCheck.Gens.Internal.Iterations;
+﻿using GalaxyCheck.Gens.Internal.Iterations;
 using GalaxyCheck.Gens.Iterations.Generic;
 using GalaxyCheck.Internal;
 using System;
@@ -27,28 +26,28 @@ namespace GalaxyCheck.Gens.Internal
         public static IGen<U> TransformIterations<T, U>(
             this IGen<T> gen,
             GenIterationTransformation<T, U> transformation) =>
-                gen.TransformStream(stream => stream.Select(transformation.Invoke));
+            gen.TransformStream(stream => stream.Select(transformation.Invoke));
 
         public static IGen<U> TransformInstances<T, U>(
             this IGen<T> gen,
             GenInstanceTransformation<T, U> transformation) =>
-                gen.TransformIterations((IGenIteration<T> iteration) =>
-                {
-                    var either = iteration.ToEither<T, U>();
+            gen.TransformIterations((IGenIteration<T> iteration) =>
+            {
+                var either = iteration.ToEither<T, U>();
 
-                    if (EitherExtension.IsLeft(either, out IGenInstance<T> instance))
-                    {
-                        return transformation(instance);
-                    }
-                    else if (EitherExtension.IsRight(either, out IGenIteration<U> iterationConverted))
-                    {
-                        return iterationConverted;
-                    }
-                    else
-                    {
-                        throw new Exception("Fatal: Unhandled branch");
-                    }
-                });
+                if (EitherExtension.IsLeft(either, out IGenInstance<T> instance))
+                {
+                    return transformation(instance);
+                }
+                else if (EitherExtension.IsRight(either, out IGenIteration<U> iterationConverted))
+                {
+                    return iterationConverted;
+                }
+                else
+                {
+                    throw new Exception("Fatal: Unhandled branch");
+                }
+            });
 
         public static IGen<T> Repeat<T>(this IGen<T> gen) => gen.Transform(GenTransformations.Repeat<T>());
     }
@@ -61,7 +60,10 @@ namespace GalaxyCheck.Gens.Internal
                 .Repeat(() => gen.Advanced.Run(parameters))
                 .Tap((iteration) =>
                 {
-                    parameters = iteration.NextParameters;
+                    parameters = iteration.Match(
+                        instance => instance.NextParameters,
+                        error => error.ReplayParameters,
+                        discard => discard.NextParameters);
                 });
         });
     }

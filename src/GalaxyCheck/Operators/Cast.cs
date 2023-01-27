@@ -13,14 +13,14 @@ namespace GalaxyCheck
                 .Select(iteration => iteration.Data.Match(
                     onInstance: instance => GenIterationFactory.Instance<T>(
                         iteration.ReplayParameters,
-                        iteration.NextParameters,
+                        instance.NextParameters,
                         instance.ExampleSpace.Cast<T>()),
                     onError: error => GenIterationFactory.Error<T>(
                         iteration.ReplayParameters,
                         error.Message),
                     onDiscard: discard => GenIterationFactory.Discard<T>(
                         iteration.ReplayParameters,
-                        iteration.NextParameters,
+                        discard.NextParameters,
                         discard.ExampleSpace))));
 
         public static IGen<T> Cast<T>(this IGen<T> gen)

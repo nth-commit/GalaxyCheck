@@ -12,42 +12,39 @@ namespace GalaxyCheck.Gens.Internal.Iterations
         {
             public GenIteration(
                 GenParameters replayParameters,
-                GenParameters nextParameters,
                 IGenData<T> data)
             {
                 ReplayParameters = replayParameters;
-                NextParameters = nextParameters;
                 Data = data;
             }
 
             public GenParameters ReplayParameters { get; init; }
 
-            public GenParameters NextParameters { get; init; }
-
             public IGenData<T> Data { get; init; }
 
             IGenData IGenIteration.Data => Data.Match<IGenData>(
-                onInstance: instanceData => GenData.InstanceData(instanceData.ExampleSpace),
+                onInstance: instanceData => GenData.InstanceData(instanceData.NextParameters, instanceData.ExampleSpace),
                 onError: errorData => GenData.ErrorData(errorData.Message),
-                onDiscard: discardData => GenData.DiscardData(discardData.ExampleSpace));
+                onDiscard: discardData => GenData.DiscardData(discardData.NextParameters, discardData.ExampleSpace));
 
             public TResult Match<TResult>(
                 Func<IGenInstance<T>, TResult> onInstance,
                 Func<IGenError<T>, TResult> onError,
                 Func<IGenDiscard<T>, TResult> onDiscard) => Data.Match(
-                    onInstance: _ => onInstance(new GenInstance<T>(ReplayParameters, NextParameters, Data)),
-                    onError: _ => onError(new GenError<T>(ReplayParameters, NextParameters, Data)),
-                    onDiscard: _ => onDiscard(new GenDiscard<T>(ReplayParameters, NextParameters, Data)));
+                onInstance: _ => onInstance(new GenInstance<T>(ReplayParameters, Data)),
+                onError: _ => onError(new GenError<T>(ReplayParameters, Data)),
+                onDiscard: _ => onDiscard(new GenDiscard<T>(ReplayParameters, Data)));
 
             private record GenInstance<U> : GenIteration<U>, IGenInstance<U>
             {
                 public GenInstance(
                     GenParameters replayParameters,
-                    GenParameters nextParameters,
                     IGenData<U> data)
-                        : base(replayParameters, nextParameters, data)
+                    : base(replayParameters, data)
                 {
                 }
+
+                public GenParameters NextParameters => Data.Instance!.NextParameters;
 
                 public IExampleSpace<U> ExampleSpace => Data.Instance!.ExampleSpace;
 
@@ -56,11 +53,8 @@ namespace GalaxyCheck.Gens.Internal.Iterations
 
             private record GenError<U> : GenIteration<U>, IGenError<U>
             {
-                public GenError(
-                    GenParameters replayParameters,
-                    GenParameters nextParameters,
-                    IGenData<U> data)
-                        : base(replayParameters, nextParameters, data)
+                public GenError(GenParameters replayParameters, IGenData<U> data)
+                    : base(replayParameters, data)
                 {
                 }
 
@@ -71,11 +65,12 @@ namespace GalaxyCheck.Gens.Internal.Iterations
             {
                 public GenDiscard(
                     GenParameters replayParameters,
-                    GenParameters nextParameters,
                     IGenData<U> data)
-                        : base(replayParameters, nextParameters, data)
+                    : base(replayParameters, data)
                 {
                 }
+
+                public GenParameters NextParameters => Data.Discard!.NextParameters;
 
                 public IExampleSpace ExampleSpace => Data.Discard!.ExampleSpace;
             }
@@ -86,21 +81,20 @@ namespace GalaxyCheck.Gens.Internal.Iterations
             GenParameters nextParameters,
             IExampleSpace<T> exampleSpace)
         {
-            var instanceData = GenData<T>.InstanceData(exampleSpace);
-            return new GenIteration<T>(replayParameters, nextParameters, instanceData);
+            var instanceData = GenData<T>.InstanceData(nextParameters, exampleSpace);
+            return new GenIteration<T>(replayParameters, instanceData);
         }
 
         public static IGenIteration<T> Error<T>(
             GenParameters replayParameters,
             string message) => new GenIteration<T>(
-                replayParameters,
-                replayParameters,
-                GenData<T>.ErrorData(message));
+            replayParameters,
+            GenData<T>.ErrorData(message));
 
         public static IGenIteration<T> Discard<T>(
             GenParameters replayParameters,
             GenParameters nextParameters,
             IExampleSpace exampleSpace) =>
-                new GenIteration<T>(replayParameters, nextParameters, GenData<T>.DiscardData(exampleSpace));
+            new GenIteration<T>(replayParameters, GenData<T>.DiscardData(nextParameters, exampleSpace));
     }
 }
