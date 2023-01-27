@@ -50,7 +50,7 @@ namespace GalaxyCheck.Gens.Iterations.Generic
         IExampleSpace IGenInstanceData.ExampleSpace => ExampleSpace;
     }
 
-    public record GenErrorData(string GenName, string Message) : IGenErrorData;
+    public record GenErrorData(string Message) : IGenErrorData;
 
     public record GenDiscardData(IExampleSpace ExampleSpace) : IGenDiscardData;
 
@@ -63,10 +63,10 @@ namespace GalaxyCheck.Gens.Iterations.Generic
             Discard = null
         };
 
-        public static GenData<T> ErrorData(string genName, string message) => new GenData<T>
+        public static GenData<T> ErrorData(string message) => new GenData<T>
         {
             Instance = null,
-            Error = new GenErrorData(genName, message),
+            Error = new GenErrorData(message),
             Discard = null
         };
 

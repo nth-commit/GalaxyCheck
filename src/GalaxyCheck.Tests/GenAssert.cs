@@ -54,7 +54,7 @@ namespace Tests.V2
             {
                 test.Should()
                     .Throw<Exceptions.GenErrorException>()
-                    .WithMessage(expectedMessage);
+                    .WithGenErrorMessage(expectedMessage);
             }
         }
     }

@@ -27,7 +27,7 @@ namespace Tests.V2.GenTests.SetGenTests
 
             test.Should()
                 .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator SetGen: 'count' cannot be negative");
+                .WithGenErrorMessage("'count' cannot be negative");
         }
 
         [Property]
@@ -43,7 +43,7 @@ namespace Tests.V2.GenTests.SetGenTests
 
             test.Should()
                 .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator SetGen: 'minCount' cannot be negative");
+                .WithGenErrorMessage("'minCount' cannot be negative");
         }
 
         [Property]
@@ -59,7 +59,7 @@ namespace Tests.V2.GenTests.SetGenTests
 
             test.Should()
                 .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator SetGen: 'maxCount' cannot be negative");
+                .WithGenErrorMessage("'maxCount' cannot be negative");
         }
 
         [Property]
@@ -77,7 +77,7 @@ namespace Tests.V2.GenTests.SetGenTests
 
                     action.Should()
                         .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                        .WithMessage("Error while running generator SetGen: 'minCount' cannot be greater than 'maxCount'");
+                        .WithGenErrorMessage("'minCount' cannot be greater than 'maxCount'");
                 }
 
                 ShouldError(GalaxyCheck.Gen.Set(elementGen).WithCountGreaterThanEqual(minCount).WithCountLessThanEqual(maxCount));

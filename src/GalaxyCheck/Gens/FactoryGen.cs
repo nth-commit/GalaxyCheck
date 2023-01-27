@@ -230,6 +230,6 @@ namespace GalaxyCheck.Gens
                 _ => throw new NotSupportedException($"Type not supported in switch: {overrideMemberError.GetType()}")
             };
 
-        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(nameof(ReflectedGen<T>), message);
+        private static IGen<T> Error(string message) => Gen.Advanced.Error<T>(message);
     }
 }

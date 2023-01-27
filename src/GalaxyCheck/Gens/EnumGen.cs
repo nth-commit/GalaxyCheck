@@ -13,7 +13,7 @@
             var type = typeof(T);
             if (!type.IsEnum)
             {
-                return Advanced.Error<T>("EnumGen", $"Type '{type}' is not an enum");
+                return Advanced.Error<T>($"Type '{type}' is not an enum");
             }
 
             var isFlagsEnum = type.GetCustomAttributes<FlagsAttribute>().Any();

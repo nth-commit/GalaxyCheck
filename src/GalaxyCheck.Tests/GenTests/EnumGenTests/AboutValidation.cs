@@ -17,7 +17,7 @@ namespace Tests.V2.GenTests.EnumGenTests
 
             action.Should()
                 .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator EnumGen: Type 'System.Int32' is not an enum");
+                .WithGenErrorMessage("Type 'System.Int32' is not an enum");
         }
 
         [Property]
@@ -29,7 +29,7 @@ namespace Tests.V2.GenTests.EnumGenTests
 
             action.Should()
                 .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator EnumGen: Type 'System.Decimal' is not an enum");
+                .WithGenErrorMessage("Type 'System.Decimal' is not an enum");
         }
     }
 }

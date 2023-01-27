@@ -23,7 +23,7 @@ namespace Tests.V2.GenTests.ChooseGenTests
 
                     action.Should()
                         .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                        .WithMessage("Error while running generator ChooseGen: 'choices' must be non-empty");
+                        .WithGenErrorMessage("'choices' must be non-empty");
                 }
 
                 {
@@ -59,7 +59,7 @@ namespace Tests.V2.GenTests.ChooseGenTests
 
                     action.Should()
                         .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                        .WithMessage("Error while running generator ChooseGen: 'choices' must contain at least one generator with a weight greater than zero");
+                        .WithGenErrorMessage("'choices' must contain at least one generator with a weight greater than zero");
                 }
 
                 {
@@ -92,7 +92,7 @@ namespace Tests.V2.GenTests.ChooseGenTests
 
                     action.Should()
                         .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                        .WithMessage("Error while running generator ChooseGen: 'choices' must not contain a negatively weighted generator");
+                        .WithGenErrorMessage("'choices' must not contain a negatively weighted generator");
                 }
 
                 {

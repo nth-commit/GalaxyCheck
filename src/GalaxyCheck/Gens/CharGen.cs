@@ -44,7 +44,7 @@ namespace GalaxyCheck.Gens
         {
             if (charType <= 0 || charType > Gen.CharType.All)
             {
-                return Gen.Advanced.Error<char>(nameof(CharGen), "'charType' was not a valid flag value");
+                return Gen.Advanced.Error<char>("'charType' was not a valid flag value");
             }
 
             var chars = CharacterSetsByFlag

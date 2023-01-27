@@ -66,7 +66,7 @@ namespace Tests.V2.GenTests.Int64GenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Int64().GreaterThan(9223372036854775807): Arithmetic operation resulted in an overflow.");
+                    .WithGenErrorMessage("Arithmetic operation resulted in an overflow.");
             });
 
         [Property]
@@ -97,7 +97,7 @@ namespace Tests.V2.GenTests.Int64GenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Int64().LessThan(-9223372036854775808): Arithmetic operation resulted in an overflow.");
+                    .WithGenErrorMessage("Arithmetic operation resulted in an overflow.");
             });
 
         private static Mock<IIntGen<long>> SetupMock()

@@ -28,7 +28,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
                 GenAssert.Errors(
                     gen,
                     seed: seed,
-                    expectedMessage: $"Error while running generator ParametersGen: parameter index '{i}' of custom generator was not valid");
+                    expectedMessage: $"parameter index '{i}' of custom generator was not valid");
             }
 
             [Property]
@@ -44,7 +44,7 @@ namespace Tests.V2.GenTests.ParameterGenTests
                 GenAssert.Errors(
                     gen,
                     seed: seed,
-                    expectedMessage: $"Error while running generator ParametersGen: generator of type 'System.String' is not compatible with parameter of type 'System.Int32'");
+                    expectedMessage: $"generator of type 'System.String' is not compatible with parameter of type 'System.Int32'");
             }
 
             private static MethodInfo GetMethod(string name)

@@ -56,7 +56,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator ReflectedGen: detected circular reference on type '*ClassWithRecursiveProperty' at path '$.Property'");
+                    .WithGenErrorMessage("detected circular reference on type '*ClassWithRecursiveProperty' at path '$.Property'");
             });
     }
 }

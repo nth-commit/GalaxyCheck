@@ -37,12 +37,10 @@ namespace GalaxyCheck.Gens
 
     internal record FatalIntGen<T> : GenProvider<T>, IIntGen<T>
     {
-        private readonly string _publicGenName;
         private readonly Exception _ex;
 
-        public FatalIntGen(string publicGenName, Exception ex)
+        public FatalIntGen(Exception ex)
         {
-            _publicGenName = publicGenName;
             _ex = ex;
         }
 
@@ -54,6 +52,6 @@ namespace GalaxyCheck.Gens
 
         public IIntGen<T> WithBias(Gen.Bias bias) => this;
 
-        protected override IGen<T> Get => Gen.Advanced.Error<T>(_publicGenName, _ex.Message);
+        protected override IGen<T> Get => Gen.Advanced.Error<T>(_ex.Message);
     }
 }

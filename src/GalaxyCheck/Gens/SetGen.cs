@@ -323,7 +323,6 @@ namespace GalaxyCheck.Gens
                 onBounded: (minCount, maxCount) => FromBounded(minCount, maxCount));
         }
 
-        private static IGen<IReadOnlySet<T>> Error(string message) =>
-            Gen.Advanced.Error<IReadOnlySet<T>>(nameof(SetGen<T>), message);
+        private static IGen<IReadOnlySet<T>> Error(string message) => Gen.Advanced.Error<IReadOnlySet<T>>(message);
     }
 }

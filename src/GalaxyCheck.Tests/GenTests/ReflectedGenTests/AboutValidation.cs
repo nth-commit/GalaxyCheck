@@ -19,7 +19,7 @@ namespace Tests.V2.GenTests.ReflectedGenTests
 
             test.Should()
                 .Throw<Exceptions.GenErrorException>()
-                .WithMessage("Error while running generator ReflectedGen: type 'System.Int32' was not assignable to the type it was registered to, 'System.String'");
+                .WithGenErrorMessage("type 'System.Int32' was not assignable to the type it was registered to, 'System.String'");
         }
     }
 }

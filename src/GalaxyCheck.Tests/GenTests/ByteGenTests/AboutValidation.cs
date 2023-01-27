@@ -25,7 +25,7 @@ namespace Tests.V2.GenTests.ByteGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Byte: 'min' cannot be greater than 'max'");
+                    .WithGenErrorMessage("'min' cannot be greater than 'max'");
             });
 
         [Property]
@@ -42,7 +42,7 @@ namespace Tests.V2.GenTests.ByteGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Byte: 'origin' must be between 'min' and 'max'");
+                    .WithGenErrorMessage("'origin' must be between 'min' and 'max'");
             });
 
         [Property]
@@ -59,7 +59,7 @@ namespace Tests.V2.GenTests.ByteGenTests
 
                 action.Should()
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
-                    .WithMessage("Error while running generator Byte: 'origin' must be between 'min' and 'max'");
+                    .WithGenErrorMessage("'origin' must be between 'min' and 'max'");
             });
     }
 }

@@ -11,7 +11,7 @@
         /// configuration methods to constrain the produced integers further.
         /// </summary>
         /// <returns>The new generator.</returns>
-        public static IIntGen<long> Int64() => new Int64Gen(nameof(Int64));
+        public static IIntGen<long> Int64() => new Int64Gen();
     }
 
     public static partial class Extensions
@@ -45,7 +45,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<long>($"{nameof(Gen.Int64)}().{nameof(LessThan)}({maxExclusive})", ex);
+                return new FatalIntGen<long>(ex);
             }
         }
 
@@ -65,7 +65,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<long>($"{nameof(Gen.Int64)}().{nameof(GreaterThan)}({minExclusive})", ex);
+                return new FatalIntGen<long>(ex);
             }
         }
     }
@@ -80,7 +80,6 @@ namespace GalaxyCheck.Gens
     using System;
 
     internal record Int64Gen(
-        string PublicGenName,
         long? Min = null,
         long? Max = null,
         long? Origin = null,
@@ -103,12 +102,12 @@ namespace GalaxyCheck.Gens
 
                 if (min > max)
                 {
-                    return Error(PublicGenName, "'min' cannot be greater than 'max'");
+                    return Error("'min' cannot be greater than 'max'");
                 }
 
                 if (Origin != null && (Origin < min || Origin > max))
                 {
-                    return Error(PublicGenName, "'origin' must be between 'min' and 'max'");
+                    return Error("'origin' must be between 'min' and 'max'");
                 }
 
                 if (min == max)
@@ -222,7 +221,7 @@ namespace GalaxyCheck.Gens
             ExtremeMaximum = 2
         }
 
-        private static IGen<long> Error(string publicGenName, string message) => Gen.Advanced.Error<long>(publicGenName, message);
+        private static IGen<long> Error(string message) => Gen.Advanced.Error<long>(message);
 
         /// <summary>
         /// Infer the origin by finding the closest value to 0 that is within the bounds.

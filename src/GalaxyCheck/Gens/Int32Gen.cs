@@ -10,7 +10,7 @@
         /// <see cref="int.MinValue"/> and <see cref="int.MaxValue"/>, as the generator size increases. However,
         /// int generation can be customised using the builder methods on <see cref="IIntGen{int}"/>.
         /// <returns>The new generator.</returns>
-        public static IIntGen<int> Int32() => new Int32Gen(nameof(Int32));
+        public static IIntGen<int> Int32() => new Int32Gen();
     }
 
     public static partial class Extensions
@@ -44,7 +44,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<int>($"{nameof(Gen.Int32)}().{nameof(LessThan)}({maxExclusive})", ex);
+                return new FatalIntGen<int>(ex);
             }
         }
 
@@ -64,7 +64,7 @@
             }
             catch (OverflowException ex)
             {
-                return new FatalIntGen<int>($"{nameof(Gen.Int32)}().{nameof(GreaterThan)}({minExclusive})", ex);
+                return new FatalIntGen<int>(ex);
             }
         }
     }
@@ -76,7 +76,6 @@ namespace GalaxyCheck.Gens
     using GalaxyCheck.Gens.Iterations.Generic;
 
     internal record Int32Gen(
-        string PublicGenName,
         int? Min = null,
         int? Max = null,
         int? Origin = null,
@@ -111,7 +110,7 @@ namespace GalaxyCheck.Gens
 
                 return gen
                     .Select(x => (int)x)
-                    .SelectError(error => new GenErrorData(PublicGenName, error.Message));
+                    .SelectError(error => new GenErrorData(error.Message));
             }
         }
     }

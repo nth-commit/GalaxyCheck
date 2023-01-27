@@ -42,7 +42,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                     onDiscard: (discard) =>
                         new Generation_Discard<T>(tail, discard),
                     onError: (error) =>
-                        new Generation_Error<T>($"Error while running generator {error.GenName}: {error.Message}"));
+                        new Generation_Error<T>($"Error during generation: {error.Message}"));
 
                 return Task.FromResult(new CheckStateTransition<T>(state, context));
             }
