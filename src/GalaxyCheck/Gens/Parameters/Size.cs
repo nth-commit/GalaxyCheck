@@ -4,6 +4,9 @@ namespace GalaxyCheck.Gens.Parameters
 {
     public record Size
     {
+        public static Size Zero { get; } = new Size(0);
+        public static Size Max { get; } = new Size(100);
+
         public Size(int value)
         {
             if (value < 0 || value > 100)
