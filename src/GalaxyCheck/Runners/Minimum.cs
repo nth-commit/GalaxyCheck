@@ -35,7 +35,7 @@ namespace GalaxyCheck
                 return result == false;
             });
 
-            var result = property.Check(iterations: iterations, seed: seed, size: size, deepCheck: deepMinimum);
+            var result = property.Check<T>(iterations: iterations, seed: seed, size: size, deepCheck: deepMinimum);
 
             if (result.Falsified)
             {

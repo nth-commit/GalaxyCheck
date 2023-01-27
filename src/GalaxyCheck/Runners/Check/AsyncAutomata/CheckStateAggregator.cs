@@ -27,19 +27,19 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
             CheckState<T> initialState,
             CheckStateContext<T> initialContext,
             IReadOnlyCollection<ICheckStateTransitionDecorator<T>> decorators) => AsyncEnumerableExtensions.Unfold(
-                new CheckStateTransition<T>(initialState, initialContext),
-                async previousTransition =>
+            new CheckStateTransition<T>(initialState, initialContext),
+            async previousTransition =>
+            {
+                if (previousTransition.State is TerminationState<T>)
                 {
-                    if (previousTransition.State is TerminationState<T>)
-                    {
-                        return new Option.None<CheckStateTransition<T>>();
-                    }
+                    return new Option.None<CheckStateTransition<T>>();
+                }
 
-                    var transition = await previousTransition.State.Transition(previousTransition.Context);
-                    var decoratedTransition = DecorateTransition(decorators, previousTransition.State, transition);
+                var transition = await previousTransition.State.Transition(previousTransition.Context);
+                var decoratedTransition = DecorateTransition(decorators, previousTransition.State, transition);
 
-                    return new Option.Some<CheckStateTransition<T>>(decoratedTransition);
-                });
+                return new Option.Some<CheckStateTransition<T>>(decoratedTransition);
+            });
 
         private static CheckStateTransition<T> DecorateTransition<T>(
             IReadOnlyCollection<ICheckStateTransitionDecorator<T>> decorators,
@@ -49,16 +49,17 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                     (previousState, nextTransition),
                     (acc, decorator) =>
                     {
-                        var nextTransition = decorator.Decorate(acc.previousState, acc.nextTransition);
-                        return (previousState: acc.nextTransition.State, nextTransition);
+                        var nextTransition0 = decorator.Decorate(acc.previousState, acc.nextTransition);
+                        return (previousState: acc.nextTransition.State, nextTransition: nextTransition0);
                     })
                 .Select(x => x.nextTransition)
                 .Last();
 
-        private static async Task<TransitionAggregation<T>> AggregateTransitionsAsync<T>(IAsyncEnumerable<CheckStateTransition<T>> transitions)
+        private static async Task<TransitionAggregation<T>> AggregateTransitionsAsync<T>(
+            IAsyncEnumerable<CheckStateTransition<T>> transitions)
         {
             var mappedTransitions = await transitions
-                .WithDiscardCircuitBreaker(isTransitionCountedInConsecutiveDiscardCount, isTransitionDiscard)
+                .WithDiscardCircuitBreaker(IsTransitionCountedInConsecutiveDiscardCount, IsTransitionDiscard)
                 .Select(x => (
                     state: x.State,
                     check: MapStateToIterationOrIgnore(x.State),
@@ -76,45 +77,44 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                 lastMappedTransition.context,
                 terminationState.Reason);
         }
-        private static bool isTransitionCountedInConsecutiveDiscardCount<T>(CheckStateTransition<T> transition) =>
-            transition.State is GenerationStates.Generation_Discard<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_Counterexample<T> ||
-            transition.State is InstanceExplorationStates.InstanceExploration_NonCounterexample<T>;
 
-        private static bool isTransitionDiscard<T>(CheckStateTransition<T> transition) =>
+        private static bool IsTransitionCountedInConsecutiveDiscardCount<T>(CheckStateTransition<T> transition) =>
+            transition.State is GenerationStates.Generation_Discard<T>
+                or InstanceExplorationStates.InstanceExploration_Counterexample<T>
+                or InstanceExplorationStates.InstanceExploration_NonCounterexample<T>;
+
+        private static bool IsTransitionDiscard<T>(CheckStateTransition<T> transition) =>
             transition.State is GenerationStates.Generation_Discard<T>;
 
         private static CheckIteration<T>? MapStateToIterationOrIgnore<T>(CheckState<T> state)
         {
-            CheckIteration<T>? FromHandleCounterexample(InstanceExplorationStates.InstanceExploration_Counterexample<T> state)
+            CheckIteration<T>? FromHandleCounterexample(
+                InstanceExplorationStates.InstanceExploration_Counterexample<T> state0)
             {
                 return new CheckIteration<T>(
-                    Value: state.InputExampleSpace.Current.Value,
-                    PresentedInput: state.TestExampleSpace.Current.Value.PresentedInput,
-                    ExampleSpace: state.InputExampleSpace,
-                    Parameters: state.CounterexampleContext.ReplayParameters,
-                    Path: state.CounterexampleContext.ReplayPath,
-                    Exception: state.CounterexampleContext.Exception,
-                    IsCounterexample: true);
+                    PresentedInput: state0.TestExampleSpace.Current.Value.PresentedInput,
+                    ExampleSpace: state0.InputExampleSpace,
+                    Parameters: state0.CounterexampleContext.ReplayParameters,
+                    Path: state0.CounterexampleContext.ReplayPath,
+                    Exception: state0.CounterexampleContext.Exception);
             }
 
-            CheckIteration<T>? FromHandleNonCounterexample(InstanceExplorationStates.InstanceExploration_NonCounterexample<T> state)
+            CheckIteration<T>? FromHandleNonCounterexample(
+                InstanceExplorationStates.InstanceExploration_NonCounterexample<T> state0)
             {
                 return new CheckIteration<T>(
-                    Value: state.InputExampleSpace.Current.Value,
-                    PresentedInput: state.TestExampleSpace.Current.Value.PresentedInput,
-                    ExampleSpace: state.InputExampleSpace,
-                    Parameters: state.Instance.ReplayParameters,
-                    Path: state.NonCounterexampleExploration.Path,
-                    Exception: null,
-                    IsCounterexample: false);
+                    PresentedInput: state0.TestExampleSpace.Current.Value.PresentedInput,
+                    ExampleSpace: state0.InputExampleSpace,
+                    Parameters: state0.Instance.ReplayParameters,
+                    Path: state0.NonCounterexampleExploration.Path,
+                    Exception: null);
             }
 
             return state switch
             {
                 InstanceExplorationStates.InstanceExploration_Counterexample<T> t => FromHandleCounterexample(t),
                 InstanceExplorationStates.InstanceExploration_NonCounterexample<T> t => FromHandleNonCounterexample(t),
-                GenerationStates.Generation_Error<T> t => throw new Exceptions.GenErrorException(t.Description),
+                GenerationStates.Generation_Error<T> t => throw new Exceptions.GenErrorException(t.Description, t.ReplayParameters),
                 _ => null
             };
         }

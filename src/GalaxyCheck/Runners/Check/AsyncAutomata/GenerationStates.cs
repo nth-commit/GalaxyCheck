@@ -42,7 +42,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                     onDiscard: (discard) =>
                         new Generation_Discard<T>(tail, discard),
                     onError: (error) =>
-                        new Generation_Error<T>($"Error during generation: {error.Message}"));
+                        new Generation_Error<T>($"Error during generation: {error.Message}", error.ReplayParameters));
 
                 return Task.FromResult(new CheckStateTransition<T>(state, context));
             }
@@ -66,7 +66,7 @@ namespace GalaxyCheck.Runners.Check.AsyncAutomata
                     context.IncrementDiscards(wasLateDiscard: false)));
         }
 
-        internal record Generation_Error<T>(string Description) : CheckState<T>
+        internal record Generation_Error<T>(string Description, GenParameters? ReplayParameters) : CheckState<T>
         {
             public Task<CheckStateTransition<T>> Transition(CheckStateContext<T> context) => Task.FromResult(
                 new CheckStateTransition<T>(

@@ -1,4 +1,5 @@
 ﻿using System;
+using GalaxyCheck.Gens.Parameters;
 
 namespace GalaxyCheck
 {
@@ -6,8 +7,11 @@ namespace GalaxyCheck
     {
         public class GenErrorException : Exception
         {
-            public GenErrorException(string message) : base(message)
+            public GenParameters? ReplayParameters { get; }
+
+            public GenErrorException(string message, GenParameters? replayParameters) : base(message)
             {
+                ReplayParameters = replayParameters;
             }
         }
 

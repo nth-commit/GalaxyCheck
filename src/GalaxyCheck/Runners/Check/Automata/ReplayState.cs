@@ -20,7 +20,7 @@ namespace GalaxyCheck.Runners.Check.Automata
             catch (Exception ex)
             {
                 return new CheckStateTransition<T>(
-                    new GenerationStates.Generation_Error<T>($"Error decoding replay string: {ex.Message}"),
+                    new GenerationStates.Generation_Error<T>($"Error decoding replay string: {ex.Message}", null),
                     context);
             }
 
@@ -78,7 +78,8 @@ namespace GalaxyCheck.Runners.Check.Automata
             return new CheckStateTransition<T>(
                 new GenerationStates.Generation_Error<T>(
                     "Error replaying last example, given replay string was no longer valid. Remove the replay " +
-                    "parameter and run the property again. This is probably due to the generator setup changing."),
+                    "parameter and run the property again. This is probably due to the generator setup changing.",
+                    null),
                 context);
         }
     }

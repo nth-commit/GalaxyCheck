@@ -46,7 +46,7 @@
         /// <summary>
         /// Generates values from the source generator or nulls, at a ratio of 10:1.
         /// 
-        /// Note; for generating nullable structs (e.g. `int?`), use <see cref="NullableStruct{T}(IGen{T})"/>. This is
+        /// Note; for generating nullable structs (e.g. `int?`), use <see cref="Gen.NullableStruct{T}(IGen{T})"/>. This is
         /// due to language limitations of C#.
         /// </summary>
         /// <param name="gen">The generator to produce the non-nullable values.</param>

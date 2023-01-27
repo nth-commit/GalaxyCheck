@@ -15,16 +15,17 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static CheckResult<T> Check<T>(
-             this IGen<Property.Test<T>> property,
-             int? iterations = null,
-             int? seed = null,
-             int? size = null,
-             int? shrinkLimit = null,
-             string? replay = null,
-             bool deepCheck = true)
+            this IGen<Property.Test<T>> property,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            int? shrinkLimit = null,
+            string? replay = null,
+            bool deepCheck = true)
         {
             var resolvedIterations = iterations ?? 100;
-            var (initialSize, resizeStrategy) = SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
+            var (initialSize, resizeStrategy) =
+                SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
 
             var initialParameters = seed == null
                 ? GenParameters.CreateRandom(initialSize)
@@ -49,7 +50,8 @@ namespace GalaxyCheck
             return new CheckResult<T>(
                 transitionAggregation.FinalContext.CompletedIterationsUntilCounterexample,
                 transitionAggregation.FinalContext.Discards,
-                transitionAggregation.FinalContext.Shrinks + transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
+                transitionAggregation.FinalContext.Shrinks +
+                transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
                 transitionAggregation.FinalContext.Counterexample == null
                     ? null
                     : FromCounterexampleContext(transitionAggregation.FinalContext.Counterexample),
@@ -60,16 +62,17 @@ namespace GalaxyCheck
         }
 
         public static async Task<CheckResult<T>> CheckAsync<T>(
-             this IGen<Property.AsyncTest<T>> property,
-             int? iterations = null,
-             int? seed = null,
-             int? size = null,
-             int? shrinkLimit = null,
-             string? replay = null,
-             bool deepCheck = true)
+            this IGen<Property.AsyncTest<T>> property,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            int? shrinkLimit = null,
+            string? replay = null,
+            bool deepCheck = true)
         {
             var resolvedIterations = iterations ?? 100;
-            var (initialSize, resizeStrategy) = SizingAspectsAsync<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
+            var (initialSize, resizeStrategy) =
+                SizingAspectsAsync<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
 
             var initialParameters = seed == null
                 ? GenParameters.CreateRandom(initialSize)
@@ -94,7 +97,8 @@ namespace GalaxyCheck
             return new CheckResult<T>(
                 transitionAggregation.FinalContext.CompletedIterationsUntilCounterexample,
                 transitionAggregation.FinalContext.Discards,
-                transitionAggregation.FinalContext.Shrinks + transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
+                transitionAggregation.FinalContext.Shrinks +
+                transitionAggregation.FinalContext.CompletedIterationsAfterCounterexample,
                 transitionAggregation.FinalContext.Counterexample == null
                     ? null
                     : FromCounterexampleContext(transitionAggregation.FinalContext.Counterexample),
@@ -142,57 +146,32 @@ namespace GalaxyCheck
 
 namespace GalaxyCheck.Runners.Check
 {
-    public record CheckResult<T>
+    public record CheckResult<T>(
+        int Iterations,
+        int Discards,
+        int Shrinks,
+        Counterexample<T>? Counterexample,
+        IReadOnlyCollection<CheckIteration<T>> Checks,
+        GenParameters InitialParameters,
+        GenParameters NextParameters,
+        TerminationReason TerminationReason)
     {
-        public int Iterations { get; init; }
-
-        public int Discards { get; init; }
-
-        public int Shrinks { get; init; }
-
-        public Counterexample<T>? Counterexample { get; init; }
-
-        public IReadOnlyCollection<CheckIteration<T>> Checks { get; init; }
-
-        public GenParameters InitialParameters { get; set; }
-
-        public GenParameters NextParameters { get; set; }
-
-        public TerminationReason TerminationReason { get; set; }
+        public TerminationReason TerminationReason { get; set; } = TerminationReason;
 
         public bool Falsified => Counterexample != null;
 
         public int RandomnessConsumption => NextParameters.Rng.Order - InitialParameters.Rng.Order;
-
-        public CheckResult(
-            int iterations,
-            int discards,
-            int shrinks,
-            Counterexample<T>? counterexample,
-            IReadOnlyCollection<CheckIteration<T>> checks,
-            GenParameters initialParameters,
-            GenParameters nextParameters,
-            TerminationReason terminationReason)
-        {
-            Iterations = iterations;
-            Discards = discards;
-            Shrinks = shrinks;
-            Checks = checks;
-            Counterexample = counterexample;
-            InitialParameters = initialParameters;
-            NextParameters = nextParameters;
-            TerminationReason = terminationReason;
-        }
     }
 
     public record CheckIteration<T>(
-        T Value,
         IReadOnlyList<object?> PresentedInput,
         IExampleSpace<T> ExampleSpace,
         GenParameters Parameters,
         IEnumerable<int> Path,
-        bool IsCounterexample,
-        Exception? Exception);
+        Exception? Exception)
+    {
+        public bool IsCounterexample => Exception != null;
+    }
 
     public record Counterexample<T>(
         ExampleId Id,
