@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
-using GalaxyCheck;
 using GalaxyCheck.Runners.Check;
 
-namespace GalaxyCheck_Tests_V3;
+namespace GalaxyCheck.Tests;
 
 public static class TestProxy
 {

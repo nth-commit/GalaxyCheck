@@ -1,13 +1,11 @@
-﻿using GalaxyCheck;
-
-namespace GalaxyCheck_Tests_V3.Features.Generators.Operators;
+﻿namespace GalaxyCheck.Tests.Features.Generators.Operators;
 
 public class AboutWhereOperator
 {
-    [NebulaCheck.Property]
-    public NebulaCheck.Property ItProducesValuesThatPassThePredicate()
+    [Stable.Property]
+    public Stable.Property ItProducesValuesThatPassThePredicate()
     {
-        return NebulaCheck.Property.ForAll(DomainGen.Seed(), DomainGen.Size(), Test);
+        return Stable.Property.ForAll(DomainGen.Seed(), DomainGen.Size(), Test);
 
         static void Test(int seed, int size)
         {
@@ -24,10 +22,10 @@ public class AboutWhereOperator
         }
     }
 
-    [NebulaCheck.Property]
-    public NebulaCheck.Property ItCanAdaptToPredicatesThatOnlyPassForLargerSizes()
+    [Stable.Property]
+    public Stable.Property ItCanAdaptToPredicatesThatOnlyPassForLargerSizes()
     {
-        return NebulaCheck.Property.ForAll(DomainGen.Seed(), DomainGen.Size(), Test);
+        return Stable.Property.ForAll(DomainGen.Seed(), DomainGen.Size(), Test);
 
         static void Test(int seed, int size)
         {

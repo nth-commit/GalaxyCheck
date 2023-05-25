@@ -1,7 +1,6 @@
-﻿using GalaxyCheck;
-using GalaxyCheck.Runners.Replaying;
+﻿using GalaxyCheck.Runners.Replaying;
 
-namespace GalaxyCheck_Tests_V3.Features.Replaying;
+namespace GalaxyCheck.Tests.Features.Replaying;
 
 public class AboutReplaying
 {
@@ -23,10 +22,10 @@ public class AboutReplaying
             .Which.Should().Be(counterexample.Value);
     }
 
-    [NebulaCheck.Property]
-    public NebulaCheck.Property IfReplayIsAnInvalidFormat_ItThrows()
+    [Stable.Property]
+    public Stable.Property IfReplayIsAnInvalidFormat_ItThrows()
     {
-        return NebulaCheck.Property.ForAll(FeatureGen.NotBase64(), DomainGen.Properties.Any(), Test);
+        return Stable.Property.ForAll(FeatureGen.NotBase64(), DomainGen.Properties.Any(), Test);
 
         static void Test(string replay, PropertyProxy property)
         {
@@ -40,10 +39,10 @@ public class AboutReplaying
         }
     }
 
-    [NebulaCheck.Property]
-    public NebulaCheck.Property IfReplayEncodesAnInvalidPath_ItThrows()
+    [Stable.Property]
+    public Stable.Property IfReplayEncodesAnInvalidPath_ItThrows()
     {
-        return NebulaCheck.Property.ForAll(FeatureGen.Replay(allowEmptyPath: false), DomainGen.Properties.Nullary(), Test);
+        return Stable.Property.ForAll(FeatureGen.Replay(allowEmptyPath: false), DomainGen.Properties.Nullary(), Test);
 
         static void Test(Replay replay, Property property)
         {
@@ -57,10 +56,10 @@ public class AboutReplaying
         }
     }
 
-    [NebulaCheck.Property]
-    public NebulaCheck.Property IfReplayEncodesAnError_ItThrows()
+    [Stable.Property]
+    public Stable.Property IfReplayEncodesAnError_ItThrows()
     {
-        return NebulaCheck.Property.ForAll(FeatureGen.Replay(), DomainGen.Gens.Error().ToProperty(), Test);
+        return Stable.Property.ForAll(FeatureGen.Replay(), DomainGen.Gens.Error().ToProperty(), Test);
 
         static void Test(Replay replay, Property property)
         {

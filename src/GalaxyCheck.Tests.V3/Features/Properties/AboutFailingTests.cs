@@ -1,6 +1,4 @@
-﻿using GalaxyCheck;
-
-namespace GalaxyCheck_Tests_V3.Features.Properties;
+﻿namespace GalaxyCheck.Tests.Features.Properties;
 
 public class AboutFailingTests
 {
