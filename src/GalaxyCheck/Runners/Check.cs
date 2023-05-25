@@ -15,13 +15,13 @@ namespace GalaxyCheck
     public static partial class Extensions
     {
         public static CheckResult<T> Check<T>(
-             this IGen<Property.Test<T>> property,
-             int? iterations = null,
-             int? seed = null,
-             int? size = null,
-             int? shrinkLimit = null,
-             string? replay = null,
-             bool deepCheck = true)
+            this IGen<Property.Test<T>> property,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            int? shrinkLimit = null,
+            string? replay = null,
+            bool deepCheck = true)
         {
             var resolvedIterations = iterations ?? 100;
             var (initialSize, resizeStrategy) = SizingAspects<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);
@@ -60,13 +60,13 @@ namespace GalaxyCheck
         }
 
         public static async Task<CheckResult<T>> CheckAsync<T>(
-             this IGen<Property.AsyncTest<T>> property,
-             int? iterations = null,
-             int? seed = null,
-             int? size = null,
-             int? shrinkLimit = null,
-             string? replay = null,
-             bool deepCheck = true)
+            this IGen<Property.AsyncTest<T>> property,
+            int? iterations = null,
+            int? seed = null,
+            int? size = null,
+            int? shrinkLimit = null,
+            string? replay = null,
+            bool deepCheck = true)
         {
             var resolvedIterations = iterations ?? 100;
             var (initialSize, resizeStrategy) = SizingAspectsAsync<T>.Resolve(size == null ? null : new Size(size.Value), resolvedIterations);

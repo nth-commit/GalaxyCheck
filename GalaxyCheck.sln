@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.CodeAnaly
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GalaxyCheck.Xunit.CodeAnalysis.Tests", "src\GalaxyCheck.Xunit.CodeAnalysis.Tests\GalaxyCheck.Xunit.CodeAnalysis.Tests.csproj", "{0BBFED38-BA46-451A-B346-67F29CFCDA04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalaxyCheck.Tests.V3", "src\GalaxyCheck.Tests.V3\GalaxyCheck.Tests.V3.csproj", "{0C715CD7-6439-49FB-BB80-3D80D24AFE9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{0BBFED38-BA46-451A-B346-67F29CFCDA04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BBFED38-BA46-451A-B346-67F29CFCDA04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BBFED38-BA46-451A-B346-67F29CFCDA04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C715CD7-6439-49FB-BB80-3D80D24AFE9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C715CD7-6439-49FB-BB80-3D80D24AFE9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C715CD7-6439-49FB-BB80-3D80D24AFE9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C715CD7-6439-49FB-BB80-3D80D24AFE9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

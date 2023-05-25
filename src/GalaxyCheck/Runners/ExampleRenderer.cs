@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
 
 namespace GalaxyCheck.Runners
 {
@@ -103,7 +104,7 @@ namespace GalaxyCheck.Runners
 
                 try
                 {
-                    var innerHandler = _innerHandlers.Where(h => h.CanRender(obj)).FirstOrDefault();
+                    var innerHandler = _innerHandlers.FirstOrDefault(h => h.CanRender(obj));
 
                     if (innerHandler == null)
                     {
@@ -202,7 +203,7 @@ namespace GalaxyCheck.Runners
                 var fields = obj!.GetType().GetFields();
 
                 var fieldsToRender = fields.Where(f => f.Name != "Rest").ToList();
-                foreach (var field in fields.Where(f => f.Name != "Rest").ToList())
+                foreach (var field in fieldsToRender)
                 {
                     yield return (field.Name, field.GetValue(obj));
                 }
@@ -229,7 +230,12 @@ namespace GalaxyCheck.Runners
 
             public string Render(object? obj, IExampleRendererHandler renderer, ImmutableList<object?> path)
             {
-                var properties = obj!.GetType().GetProperties();
+                if (path.Where(x => x != obj).Select(x => x?.GetType()).Contains(obj!.GetType()))
+                {
+                    return "<Circular reference>";
+                }
+
+                var properties = obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
                 var propertiesToRender = properties.Take(_propertyLimit).ToList();
                 var hasMoreProperties = properties.Skip(_propertyLimit).Any();
@@ -266,6 +272,5 @@ namespace GalaxyCheck.Runners
                 value.GetType().GetInterface("System.Runtime.CompilerServices.ITuple") != null &&
                 value!.GetType().GetFields().Any() == true;
         }
-
     }
 }
