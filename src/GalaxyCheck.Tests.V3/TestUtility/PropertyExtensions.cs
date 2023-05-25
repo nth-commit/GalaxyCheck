@@ -1,7 +1,6 @@
-﻿using GalaxyCheck;
-using GalaxyCheck.Runners.Check;
+﻿using GalaxyCheck.Runners.Check;
 
-namespace GalaxyCheck_Tests_V3.TestUtility;
+namespace GalaxyCheck.Tests.TestUtility;
 
 public static class PropertyExtensions
 {

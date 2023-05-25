@@ -1,7 +1,6 @@
-﻿using GalaxyCheck;
-using GalaxyCheck.Gens.Parameters;
+﻿using GalaxyCheck.Gens.Parameters;
 
-namespace GalaxyCheck_Tests_V3.TestUtility;
+namespace GalaxyCheck.Tests.TestUtility;
 
 public class DummyGens
 {

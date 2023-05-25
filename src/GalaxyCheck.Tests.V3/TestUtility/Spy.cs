@@ -1,4 +1,4 @@
-﻿namespace GalaxyCheck_Tests_V3.TestUtility;
+﻿namespace GalaxyCheck.Tests.TestUtility;
 
 public class Spy<T>
 {

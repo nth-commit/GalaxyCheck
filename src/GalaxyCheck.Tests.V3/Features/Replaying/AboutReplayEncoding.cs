@@ -3,7 +3,7 @@ using GalaxyCheck.Gens.Parameters;
 using GalaxyCheck.Gens.Parameters.Internal;
 using GalaxyCheck.Runners.Replaying;
 
-namespace GalaxyCheck_Tests_V3.Features.Replaying;
+namespace GalaxyCheck.Tests.Features.Replaying;
 
 public class AboutReplayEncoding
 {
@@ -49,10 +49,10 @@ public class AboutReplayEncoding
         encoded.Should().Be(expectedEncoding);
     }
 
-    [NebulaCheck.Property]
-    public NebulaCheck.Property EncodeDecodeRoundtrip()
+    [Stable.Property]
+    public Stable.Property EncodeDecodeRoundtrip()
     {
-        return NebulaCheck.Property.ForAll(DomainGen.Seed(), DomainGen.Size(), DomainGen.SeedWaypoint(), FeatureGen.ShrinkPath(), Test);
+        return Stable.Property.ForAll(DomainGen.Seed(), DomainGen.Size(), DomainGen.SeedWaypoint(), FeatureGen.ShrinkPath(), Test);
 
         static void Test(int seed, int size, int? seedWaypoint, IEnumerable<int> exampleSpacePath)
         {
