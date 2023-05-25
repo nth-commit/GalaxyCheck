@@ -287,7 +287,8 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
-src/NebulaCheck
-src/NebulaCheck.Xunit
+src/GalaxyCheck.Stable
+src/GalaxyCheck.Stable.Xunit
+src/GalaxyCheck.Stable.Xunit.CodeAnalysis
 **/__snapshots__/__mismatch__
 nupkg-prerelease/

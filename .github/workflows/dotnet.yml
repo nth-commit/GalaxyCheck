@@ -16,7 +16,7 @@ env:
   NUGET_TOKEN: ${{ secrets.NUGET_API_KEY }}
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  PRERELEASE_PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit GalaxyCheck.Xunit.CodeAnalysis NebulaCheck NebulaCheck.Xunit NebulaCheck.Xunit.CodeAnalysis
+  PRERELEASE_PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit GalaxyCheck.Xunit.CodeAnalysis GalaxyCheck.Stable GalaxyCheck.Stable.Xunit GalaxyCheck.Stable.Xunit.CodeAnalysis
   PACKABLE_PROJECTS: GalaxyCheck GalaxyCheck.Xunit GalaxyCheck.Xunit.CodeAnalysis
 
 jobs:
@@ -49,10 +49,10 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
-      - name: Make NebulaCheck
+      - name: Make GalaxyCheck.Stable
         run: |
           ls
-          bash ./scripts/makeNebulaCheck.sh
+          bash ./scripts/makeGalaxyCheckStable.sh
       - name: Restore
         run: |
           for project in $PRERELEASE_PACKABLE_PROJECTS; do
