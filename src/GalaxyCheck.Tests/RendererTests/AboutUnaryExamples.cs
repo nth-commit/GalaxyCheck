@@ -46,7 +46,7 @@ namespace Tests.V2.RendererTests
         {
             { new Tuple<int, int, int>(1, 2, 3), new object[] { 1, 2, 3 } },
             { (1, 2, 3), new object[] { 1, 2, 3 } },
-            { (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), new object[] {1, 2, 3, 4, 5, 6, 7 } },
+            { (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), new object[] { 1, 2, 3, 4, 5, 6, 7 } },
         };
 
         [Theory]
@@ -87,8 +87,21 @@ namespace Tests.V2.RendererTests
             { new Dictionary<RecordObj, int> { { new RecordObj(1, 2, 3), 4 } }, "[{ Key = { A = 1, B = 2, C = 3 }, Value = 4 }]" },
             { new RecordObj(1, 2, 3), "{ A = 1, B = 2, C = 3 }" },
             { new RecordObjWithList(new List<int> { 1, 2, 3 }), "{ As = [1, 2, 3] }" },
-            { new RecordObjWithManyProperties(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), "{ A = 1, B = 2, C = 3, D = 4, E = 5, F = 6, G = 7, H = 8, I = 9, J = 10, ... }" },
-            { new { a = new { b = new { c = new { d = new { e = new { f = new { g = new { h = new { i = new { j = new { k = new { } } } } } } } } } } } }, "{ a = { b = { c = { d = { e = { f = { g = { h = { i = { j = ... } } } } } } } } } }" },
+            {
+                new RecordObjWithManyProperties(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                "{ A = 1, B = 2, C = 3, D = 4, E = 5, F = 6, G = 7, H = 8, I = 9, J = 10, ... }"
+            },
+            { new RecordWithStaticProperty(1), "{ A = 1 }" },
+            {
+                new
+                {
+                    a = new
+                    {
+                        b = new { c = new { d = new { e = new { f = new { g = new { h = new { i = new { j = new { k = new { } } } } } } } } } }
+                    }
+                },
+                "{ a = { b = { c = { d = { e = { f = { g = { h = { i = { j = ... } } } } } } } } } }"
+            },
             { new ClassObj(1, 2, 3), "{ A = 1, B = 2, C = 3 }" },
             { new { a = 1, b = 2, c = 3 }, "{ a = 1, b = 2, c = 3 }" },
             { new Func<int, bool>((_) => true), "System.Func`2[System.Int32,System.Boolean]" },
@@ -147,10 +160,15 @@ namespace Tests.V2.RendererTests
         public struct Struct
         {
             public int A { get; set; }
-            
+
             public int B { get; set; }
-            
+
             public int C { get; set; }
+        }
+
+        public record RecordWithStaticProperty(int A)
+        {
+            public static int B => 2;
         }
     }
 }

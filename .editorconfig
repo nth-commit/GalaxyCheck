@@ -10,6 +10,7 @@ indent_size = 4
 indent_size = 4
 insert_final_newline = true
 charset = utf-8-bom
+max_line_length = 150
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
@@ -84,9 +85,9 @@ dotnet_naming_symbols.public_internal_fields.applicable_accessibilities = public
 dotnet_naming_symbols.public_internal_fields.applicable_kinds = field
 # private_protected_fields - Define private and protected fields
 dotnet_naming_symbols.private_protected_fields.applicable_accessibilities = private, protected
-dotnet_naming_symbols.private_protected_fields.applicable_kinds = field 
+dotnet_naming_symbols.private_protected_fields.applicable_kinds = field
 # private_fields - Define private fields
-dotnet_naming_symbols.private_fields.applicable_kinds           = field
+dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 # public_symbols - Define any public symbol
 dotnet_naming_symbols.public_symbols.applicable_accessibilities = public, internal, protected, protected_internal
@@ -107,7 +108,7 @@ dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_naming_style.first_upper.capitalization = first_word_upper
 # prefix_interface_interface_with_i - Interfaces must be PascalCase and the first character of an interface must be an 'I'
 dotnet_naming_style.prefix_interface_interface_with_i.required_prefix = I
-dotnet_naming_style.prefix_interface_interface_with_i.capitalization = pascal_case 
+dotnet_naming_style.prefix_interface_interface_with_i.capitalization = pascal_case
 # prefix_underscore - Define the prefix underscore style
 dotnet_naming_style.prefix_underscore.capitalization = camel_case
 dotnet_naming_style.prefix_underscore.required_prefix = _
@@ -124,7 +125,7 @@ dotnet_naming_rule.non_private_readonly_fields_must_be_pascal_case.style = pasca
 # Static readonly fields must be PascalCase
 dotnet_naming_rule.static_readonly_fields_must_be_pascal_case.severity = warning
 dotnet_naming_rule.static_readonly_fields_must_be_pascal_case.symbols = static_readonly_fields
-dotnet_naming_rule.static_readonly_fields_must_be_pascal_case.style = pascal_case 
+dotnet_naming_rule.static_readonly_fields_must_be_pascal_case.style = pascal_case
 # Private readonly fields be prefixed with underscore
 dotnet_naming_rule.private_readonly_fields_with_underscore.severity = warning
 dotnet_naming_rule.private_readonly_fields_with_underscore.symbols = private_readonly_fields
@@ -132,7 +133,7 @@ dotnet_naming_rule.private_readonly_fields_with_underscore.style = prefix_unders
 # Private fields must be prefixed with underscore
 dotnet_naming_rule.private_members_with_underscore.severity = warning
 dotnet_naming_rule.private_members_with_underscore.symbols = private_fields
-dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
 # Public and internal fields must be PascalCase
 dotnet_naming_rule.public_internal_fields_must_be_pascal_case.severity = warning
 dotnet_naming_rule.public_internal_fields_must_be_pascal_case.symbols = public_internal_fields
@@ -161,7 +162,7 @@ dotnet_naming_rule.interface_types_must_be_prefixed_with_i.style = prefix_interf
 # C# Code Style Settings
 # See https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 # See http://kent-boogaart.com/blog/editorconfig-reference-for-c-developers
-[*.cs,csx,cake]
+[*.cs,csx, cake]
 # Indentation Options
 csharp_indent_block_contents = true:warning
 csharp_indent_braces = false:warning
