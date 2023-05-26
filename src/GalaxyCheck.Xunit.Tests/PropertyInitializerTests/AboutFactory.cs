@@ -24,6 +24,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 mockPropertyFactory.Object,
                 new GlobalPropertyConfiguration());
 
@@ -43,6 +44,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 mockPropertyFactory.Object,
                 new GlobalPropertyConfiguration());
 
@@ -62,6 +64,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 mockPropertyFactory.Object,
                 new GlobalPropertyConfiguration());
 
@@ -81,6 +84,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 mockPropertyFactory.Object,
                 new GlobalPropertyConfiguration());
 
@@ -101,7 +105,8 @@ namespace Tests.PropertyInitializerTests
                     It.IsAny<MethodInfo>(),
                     It.IsAny<object?>(),
                     It.Is<IGenFactory?>(factory => factory!.GetType() == expectedFactoryType),
-                    It.IsAny<IReadOnlyDictionary<int, IGen>>()),
+                    It.IsAny<IReadOnlyDictionary<int, IGen>>(),
+                    It.IsAny<object?[]?>()),
                 Times.Once);
         }
 
@@ -112,7 +117,8 @@ namespace Tests.PropertyInitializerTests
                     It.IsAny<MethodInfo>(),
                     It.IsAny<object?>(),
                     It.Is<IGenFactory?>(x => x == null),
-                    It.IsAny<IReadOnlyDictionary<int, IGen>>()),
+                    It.IsAny<IReadOnlyDictionary<int, IGen>>(),
+                    It.IsAny<object?[]?>()),
                 Times.Once);
         }
 

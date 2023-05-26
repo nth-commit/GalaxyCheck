@@ -70,6 +70,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 new DefaultPropertyFactory(),
                 new GlobalPropertyConfiguration());
 
@@ -90,6 +91,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 new DefaultPropertyFactory(),
                 new GlobalPropertyConfiguration());
 

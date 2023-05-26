@@ -1,0 +1,14 @@
+﻿Outcome: Passed
+
+Output:
+
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[0]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[0]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[-2]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[2]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[62]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[-62]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[1262]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[79136866]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[-1712087576]}
+{"testName":"PropertyWithGenFromMemberGenAsync","injectedValues":[747512566]}

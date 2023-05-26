@@ -2,7 +2,7 @@
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace GalaxyCheck.Internal
+namespace GalaxyCheck.Internal.Infrastructure.Xunit
 {
     public class GenSnapshotDiscoverer : IXunitTestCaseDiscoverer
     {

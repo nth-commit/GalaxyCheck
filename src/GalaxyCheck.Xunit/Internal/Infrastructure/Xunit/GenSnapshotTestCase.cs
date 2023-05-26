@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace GalaxyCheck.Internal
+namespace GalaxyCheck.Internal.Infrastructure.Xunit
 {
     public class GenSnapshotTestCase : XunitTestCase
     {

@@ -1,5 +1,4 @@
 ﻿using GalaxyCheck.Gens;
-using GalaxyCheck.Internal;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -11,6 +10,7 @@ namespace GalaxyCheck.Internal
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
-            IReadOnlyDictionary<int, IGen> customGens) => Property.ReflectAsync(methodInfo, target, genFactory, customGens);
+            IReadOnlyDictionary<int, IGen> customGens,
+            object?[]? controlData) => Property.ReflectAsync(methodInfo, target, genFactory, customGens, controlData);
     }
 }

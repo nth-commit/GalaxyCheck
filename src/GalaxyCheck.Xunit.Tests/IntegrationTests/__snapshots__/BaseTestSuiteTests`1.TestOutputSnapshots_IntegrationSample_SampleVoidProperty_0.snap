@@ -1,0 +1,18 @@
+﻿Outcome: Failed
+
+Output:
+
+GalaxyCheck.SampleException : Test case failed to prevent false-positives.
+
+Sampled 10 values (0 discarded):
+
+Sample[0]: [0]
+Sample[1]: [1]
+Sample[2]: [4]
+Sample[3]: [5]
+Sample[4]: [6]
+Sample[5]: [6]
+Sample[6]: [46]
+Sample[7]: [100]
+Sample[8]: [0]
+Sample[9]: [58]

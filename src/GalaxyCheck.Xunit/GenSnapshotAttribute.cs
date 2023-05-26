@@ -6,7 +6,7 @@ using Xunit.Sdk;
 namespace GalaxyCheck
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    [XunitTestCaseDiscoverer("GalaxyCheck.Internal.GenSnapshotDiscoverer", "GalaxyCheck.Xunit")]
+    [XunitTestCaseDiscoverer("GalaxyCheck.Internal.Infrastructure.Xunit.GenSnapshotDiscoverer", "GalaxyCheck.Xunit")]
     public sealed class GenSnapshotAttribute : FactAttribute
     {
         public GenSnapshotAttribute([CallerFilePath] string? testFilePath = null)

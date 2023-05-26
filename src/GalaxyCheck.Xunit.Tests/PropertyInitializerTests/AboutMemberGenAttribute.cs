@@ -13,7 +13,6 @@ namespace Tests.PropertyInitializerTests
 {
     public class AboutMemberGenAttribute
     {
-
         private static readonly IGen<int> Gen = GalaxyCheck.Gen.Int32();
 
 #pragma warning disable xUnit1000 // Test classes must be public
@@ -91,6 +90,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 new DefaultPropertyFactory(),
                 new GlobalPropertyConfiguration());
 
@@ -117,6 +117,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 mockPropertyFactory.Object,
                 new GlobalPropertyConfiguration());
 
@@ -132,7 +133,13 @@ namespace Tests.PropertyInitializerTests
             var testClassType = typeof(Properties);
             var testMethodInfo = GetMethod(testMethodName);
 
-            PropertyInitializer.Initialize(testClassType, testMethodInfo, new object[] { }, mockPropertyFactory.Object, new GlobalPropertyConfiguration());
+            PropertyInitializer.Initialize(
+                testClassType,
+                testMethodInfo,
+                new object[] { },
+                null,
+                mockPropertyFactory.Object,
+                new GlobalPropertyConfiguration());
 
             VerifyGenPassedThrough(mockPropertyFactory, Gen, expectedIndex);
         }
@@ -163,7 +170,9 @@ namespace Tests.PropertyInitializerTests
                     It.IsAny<MethodInfo>(),
                     It.IsAny<object?>(),
                     It.IsAny<IGenFactory>(),
-                    It.Is<IReadOnlyDictionary<int, IGen>>(x => x.SequenceEqual(new [] { new KeyValuePair<int, IGen>(expectedParameterIndex, expectedGen) }))),
+                    It.Is<IReadOnlyDictionary<int, IGen>>(x =>
+                        x.SequenceEqual(new[] { new KeyValuePair<int, IGen>(expectedParameterIndex, expectedGen) })),
+                    It.IsAny<object?[]?>()),
                 Times.Once);
         }
     }

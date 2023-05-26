@@ -3,6 +3,7 @@ using GalaxyCheck.Gens;
 using GalaxyCheck.Gens.Injection.Int32;
 using Newtonsoft.Json;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,50 +22,50 @@ namespace IntegrationSample
         [Property]
         public async Task InfallibleVoidPropertyAsync([Between(0, 100)] int x)
         {
-            await Task.Delay(1);
-            AnnounceTestInvocation(nameof(InfallibleVoidPropertyAsync));
+            await Task.CompletedTask;
+            AnnounceTestInvocation(new object[] { x });
         }
 
         [Property]
         public async Task FallibleVoidPropertyAsync([Between(0, 100)] int x)
         {
-            await Task.Delay(1);
-            AnnounceTestInvocation(nameof(FallibleVoidPropertyAsync));
+            await Task.CompletedTask;
+            AnnounceTestInvocation(new object[] { x });
             throw new Exception("Failed!");
         }
 
         [Property]
         public async Task InfallibleBooleanPropertyAsync([Between(0, 100)] int x)
         {
-            await Task.Delay(1);
-            AnnounceTestInvocation(nameof(InfallibleBooleanPropertyAsync));
+            await Task.CompletedTask;
+            AnnounceTestInvocation(new object[] { x });
         }
 
         [Property]
         public async Task FallibleBooleanPropertyAsync([Between(0, 100)] int x)
         {
-            await Task.Delay(1);
-            AnnounceTestInvocation(nameof(FallibleBooleanPropertyAsync));
+            await Task.CompletedTask;
+            AnnounceTestInvocation(new object[] { x });
             throw new Exception("Failed!");
         }
 
         [Property]
         public AsyncProperty InfallibleReturnedPropertyAsync()
         {
-            AnnounceTestInvocation(nameof(InfallibleReturnedPropertyAsync));
-            return Gen.Int32().Between(0, 100).ForAllAsync(async y =>
-            { 
-                await Task.Delay(1);
+            return Gen.Int32().Between(0, 100).ForAllAsync(async x =>
+            {
+                AnnounceTestInvocation(new object[] { x });
+                await Task.CompletedTask;
             });
         }
 
         [Property]
         public AsyncProperty FallibleReturnedPropertyAsync()
         {
-            AnnounceTestInvocation(nameof(FallibleReturnedPropertyAsync));
-            return Gen.Int32().Between(0, 100).ForAllAsync(async y =>
+            return Gen.Int32().Between(0, 100).ForAllAsync(async x =>
             {
-                await Task.Delay(1);
+                await Task.CompletedTask;
+                AnnounceTestInvocation(new object[] { x });
                 throw new Exception("Failed!");
             });
         }
@@ -78,8 +79,8 @@ namespace IntegrationSample
         [GenFactoryWhereIntsAreNonNegative]
         public async Task PropertyWithGenFromGenFactoryAsync(int x)
         {
-            await Task.Delay(1);
-            AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactoryAsync), new [] { x });
+            await Task.CompletedTask;
+            AnnounceTestInvocation(new object[] { x });
             Assert.True(x >= 0, "They are not negative!");
         }
 
@@ -88,19 +89,50 @@ namespace IntegrationSample
         [Property]
         public async Task PropertyWithGenFromMemberGenAsync([MemberGen(nameof(EvenInt32))] int x)
         {
-            await Task.Delay(1);
-            AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactoryAsync), new[] { x });
+            await Task.CompletedTask;
+            AnnounceTestInvocation(new object[] { x });
             Assert.True(x % 2 != 1, "They are not odd!");
+        }
+
+        [Property]
+        [InlineData(0)]
+        [InlineData(1)]
+        public AsyncProperty InfalliblePropertyWithControlDataAsync(int x)
+        {
+            return Gen.Int32().Between(0, 100).ForAllAsync(async y =>
+            {
+                await Task.CompletedTask;
+                AnnounceTestInvocation(new object[] { x, y }, new object[] { x });
+            });
+        }
+
+        [Property]
+        [InlineData(0)]
+        [InlineData(1)]
+        public AsyncProperty FalliblePropertyWithControlDataAsync(int x)
+        {
+            return Gen.Int32().Between(0, 100).ForAllAsync(async y =>
+            {
+                await Task.CompletedTask;
+                AnnounceTestInvocation(new object[] { x, y }, new object[] { x });
+                return x != 1;
+            });
         }
 
         [Sample]
         public async Task SampleVoidPropertyAsync([Between(0, 100)] int x)
         {
-            await Task.Delay(1);
+            await Task.CompletedTask;
+            AnnounceTestInvocation(new object[] { x });
         }
 
-        private void AnnounceTestInvocation(string testName, params object[] injectedValues)
+        private void AnnounceTestInvocation(object[] injectedValues, object[]? controlData = null, [CallerMemberName] string testName = "")
         {
+            if (controlData is not null)
+            {
+                testName += $"_{string.Join("_", controlData)}";
+            }
+
             _testOutputHelper.WriteLine(JsonConvert.SerializeObject(new
             {
                 testName,

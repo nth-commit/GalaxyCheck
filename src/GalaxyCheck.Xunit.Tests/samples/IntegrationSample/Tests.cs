@@ -3,6 +3,7 @@ using GalaxyCheck.Gens;
 using GalaxyCheck.Gens.Injection.Int32;
 using Newtonsoft.Json;
 using System;
+using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,41 +21,43 @@ namespace IntegrationSample
         [Property]
         public void InfallibleVoidProperty([Between(0, 100)] int x)
         {
-            AnnounceTestInvocation(nameof(InfallibleVoidProperty));
+            AnnounceTestInvocation(new object[] { x });
         }
 
         [Property]
         public void FallibleVoidProperty([Between(0, 100)] int x)
         {
-            AnnounceTestInvocation(nameof(FallibleVoidProperty));
+            AnnounceTestInvocation(new object[] { x });
             throw new Exception("Failed!");
         }
 
         [Property]
         public void InfallibleBooleanProperty([Between(0, 100)] int x)
         {
-            AnnounceTestInvocation(nameof(InfallibleBooleanProperty));
+            AnnounceTestInvocation(new object[] { x });
         }
 
         [Property]
         public void FallibleBooleanProperty([Between(0, 100)] int x)
         {
-            AnnounceTestInvocation(nameof(FallibleBooleanProperty));
+            AnnounceTestInvocation(new object[] { x });
             throw new Exception("Failed!");
         }
 
         [Property]
         public Property InfallibleReturnedProperty()
         {
-            AnnounceTestInvocation(nameof(InfallibleReturnedProperty));
-            return Gen.Int32().Between(0, 100).ForAll(y => { });
+            return Gen.Int32().Between(0, 100).ForAll(x => { AnnounceTestInvocation(new object[] { x }); });
         }
 
         [Property]
         public Property FallibleReturnedProperty()
         {
-            AnnounceTestInvocation(nameof(FallibleReturnedProperty));
-            return Gen.Int32().Between(0, 100).ForAll(y => { throw new Exception("Failed!"); });
+            return Gen.Int32().Between(0, 100).ForAll(x =>
+            {
+                AnnounceTestInvocation(new object[] { x });
+                throw new Exception("Failed!");
+            });
         }
 
         public class GenFactoryWhereIntsAreNonNegativeAttribute : GenFactoryAttribute
@@ -66,7 +69,7 @@ namespace IntegrationSample
         [GenFactoryWhereIntsAreNonNegative]
         public void PropertyWithGenFromGenFactory(int x)
         {
-            AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactory), new [] { x });
+            AnnounceTestInvocation(new object[] { x });
             Assert.True(x >= 0, "They are not negative!");
         }
 
@@ -75,8 +78,28 @@ namespace IntegrationSample
         [Property]
         public void PropertyWithGenFromMemberGen([MemberGen(nameof(EvenInt32))] int x)
         {
-            AnnounceTestInvocation(nameof(PropertyWithGenFromGenFactory), new[] { x });
+            AnnounceTestInvocation(new object[] { x });
             Assert.True(x % 2 != 1, "They are not odd!");
+        }
+
+        [Property]
+        [InlineData(0)]
+        [InlineData(1)]
+        public Property InfalliblePropertyWithControlData(int x)
+        {
+            return Gen.Int32().Between(0, 100).ForAll(y => { AnnounceTestInvocation(new object[] { x, y }, new object[] { x }); });
+        }
+
+        [Property]
+        [InlineData(0)]
+        [InlineData(1)]
+        public Property FalliblePropertyWithControlData(int x)
+        {
+            return Gen.Int32().Between(0, 100).ForAll(y =>
+            {
+                AnnounceTestInvocation(new object[] { x, y }, new object[] { x });
+                return x != 1;
+            });
         }
 
         [Sample]
@@ -84,8 +107,13 @@ namespace IntegrationSample
         {
         }
 
-        private void AnnounceTestInvocation(string testName, params object[] injectedValues)
+        private void AnnounceTestInvocation(object[] injectedValues, object[]? controlData = null, [CallerMemberName] string testName = "")
         {
+            if (controlData is not null)
+            {
+                testName += $"_{string.Join("_", controlData)}";
+            }
+
             _testOutputHelper.WriteLine(JsonConvert.SerializeObject(new
             {
                 testName,

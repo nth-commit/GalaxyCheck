@@ -7,5 +7,7 @@ namespace GalaxyCheck.Internal
         public int DefaultIterations { get; set; } = 100;
 
         public int DefaultShrinkLimit { get; set; } = 100;
+
+        public int? Seed { get; set; }
     }
 }

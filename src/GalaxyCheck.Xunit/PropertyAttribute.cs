@@ -6,7 +6,7 @@ using Xunit.Sdk;
 namespace GalaxyCheck
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    [XunitTestCaseDiscoverer("GalaxyCheck.Internal.PropertyDiscoverer", "GalaxyCheck.Xunit")]
+    [XunitTestCaseDiscoverer("GalaxyCheck.Internal.Infrastructure.Xunit.PropertyDiscoverer", "GalaxyCheck.Xunit")]
     public class PropertyAttribute : FactAttribute
     {
         public int Iterations
@@ -20,10 +20,7 @@ namespace GalaxyCheck
 
                 throw new InvalidOperationException("");
             }
-            set
-            {
-                NullableIterations = value;
-            }
+            set { NullableIterations = value; }
         }
 
         internal int? NullableIterations { get; private set; }
@@ -39,10 +36,7 @@ namespace GalaxyCheck
 
                 throw new InvalidOperationException("");
             }
-            set
-            {
-                NullableShrinkLimit = value;
-            }
+            set { NullableShrinkLimit = value; }
         }
 
         internal int? NullableShrinkLimit { get; private set; }
@@ -58,10 +52,7 @@ namespace GalaxyCheck
 
                 throw new InvalidOperationException("");
             }
-            set
-            {
-                NullableSeed = value;
-            }
+            set { NullableSeed = value; }
         }
 
         internal int? NullableSeed { get; private set; }
@@ -77,10 +68,7 @@ namespace GalaxyCheck
 
                 throw new InvalidOperationException("");
             }
-            set
-            {
-                NullableSize = value;
-            }
+            set { NullableSize = value; }
         }
 
         internal int? NullableSize { get; private set; }

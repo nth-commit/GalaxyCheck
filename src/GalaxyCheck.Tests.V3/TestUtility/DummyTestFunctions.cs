@@ -13,6 +13,6 @@ public static class DummyTestFunctions
             size => size.Value > value.Value;
 
         public static Func<GalaxyCheck.Gens.Parameters.Size, bool> Top50thPercentile() =>
-            IsGreaterThan(new GalaxyCheck.Gens.Parameters.Size(GalaxyCheck.Gens.Parameters.Size.Max.Value / 2));
+            IsGreaterThan(new GalaxyCheck.Gens.Parameters.Size(Gens.Parameters.Size.Max.Value / 2));
     }
 }

@@ -15,6 +15,8 @@ namespace GalaxyCheck.Configuration
         int DefaultIterations { get; set; }
 
         int DefaultShrinkLimit { get; set; }
+
+        int? Seed { get; set; }
     }
 
     public interface IGlobalGenSnapshotConfiguration

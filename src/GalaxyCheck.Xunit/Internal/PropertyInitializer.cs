@@ -19,6 +19,7 @@ namespace GalaxyCheck.Internal
             Type testClassType,
             MethodInfo testMethodInfo,
             object[] constructorArguments,
+            object[]? testMethodArguments,
             IPropertyFactory propertyFactory,
             IGlobalPropertyConfiguration config)
         {
@@ -27,7 +28,7 @@ namespace GalaxyCheck.Internal
 
             var genFactory = ReflectionHelpers.TryResolveGenFactory(testClassType, testMethodInfo);
             var customGens = ReflectionHelpers.ResolveCustomGens(testClassInstance, testMethodInfo);
-            var property = propertyFactory.CreateProperty(testMethodInfo, testClassInstance, genFactory, customGens);
+            var property = propertyFactory.CreateProperty(testMethodInfo, testClassInstance, genFactory, customGens, testMethodArguments);
             var replay = testMethodInfo.GetCustomAttributes<ReplayAttribute>().SingleOrDefault()?.Replay;
 
             var propertyRunParameters = new PropertyRunParameters(
@@ -35,7 +36,7 @@ namespace GalaxyCheck.Internal
                 Iterations: propertyAttribute.NullableIterations ?? config.DefaultIterations,
                 ShrinkLimit: propertyAttribute.NullableShrinkLimit ?? config.DefaultShrinkLimit,
                 Replay: replay,
-                Seed: replay == null ? propertyAttribute.NullableSeed : null,
+                Seed: replay == null ? propertyAttribute.NullableSeed ?? config.Seed : null,
                 Size: replay == null ? propertyAttribute.NullableSize : null);
 
             return new PropertyInitializationResult(
