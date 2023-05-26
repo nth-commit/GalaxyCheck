@@ -1,0 +1,12 @@
+﻿Outcome: Failed
+
+Output:
+
+{"testName":"FallibleBooleanPropertyAsync","injectedValues":[0]}GalaxyCheck.Runners.PropertyFailedException : 
+
+Falsified after 1 test (0 shrinks)
+Reproduction: 
+    [Replay("H4sIAAAAAAAACjMx0jPQAwCnieL5BQAAAA==")]
+Counterexample: [0]
+
+---- Failed!

@@ -1,0 +1,14 @@
+﻿Outcome: Passed
+
+Output:
+
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[0]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[1]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[4]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[5]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[6]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[6]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[46]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[100]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[0]}
+{"testName":"InfallibleReturnedPropertyAsync","injectedValues":[58]}

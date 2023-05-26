@@ -1,0 +1,14 @@
+﻿Outcome: Passed
+
+Output:
+
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[0]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[1]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[4]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[5]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[6]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[6]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[46]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[100]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[0]}
+{"testName":"InfallibleVoidPropertyAsync","injectedValues":[58]}

@@ -1,0 +1,14 @@
+﻿Outcome: Passed
+
+Output:
+
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,0]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,1]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,4]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,5]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,6]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,6]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,46]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,100]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,0]}
+{"testName":"FalliblePropertyWithControlDataAsync_0","injectedValues":[0,58]}

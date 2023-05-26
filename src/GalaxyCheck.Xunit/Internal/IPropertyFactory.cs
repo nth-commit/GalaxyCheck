@@ -10,6 +10,7 @@ namespace GalaxyCheck.Internal
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
-            IReadOnlyDictionary<int, IGen> customGens);
+            IReadOnlyDictionary<int, IGen> customGens,
+            object?[]? controlData);
     }
 }

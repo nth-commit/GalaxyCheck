@@ -46,6 +46,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 new DefaultPropertyFactory(),
                 new GlobalPropertyConfiguration { DefaultIterations = 999 });
 
@@ -65,6 +66,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 new DefaultPropertyFactory(),
                 new GlobalPropertyConfiguration { DefaultIterations = defaultIterations });
 

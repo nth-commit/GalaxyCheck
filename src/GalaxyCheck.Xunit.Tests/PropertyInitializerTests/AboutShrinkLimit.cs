@@ -12,7 +12,7 @@ namespace Tests.PropertyInitializerTests
 #pragma warning disable xUnit1000 // Test classes must be public
         private class Properties
 #pragma warning restore xUnit1000 // Test classes must be public
-        { 
+        {
             [Property]
             public void PropertyWithDefaultShrinkLimit()
             {
@@ -46,6 +46,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 new DefaultPropertyFactory(),
                 new GlobalPropertyConfiguration() { DefaultShrinkLimit = 999 });
 
@@ -65,6 +66,7 @@ namespace Tests.PropertyInitializerTests
                 testClassType,
                 testMethodInfo,
                 new object[] { },
+                null,
                 new DefaultPropertyFactory(),
                 new GlobalPropertyConfiguration { DefaultShrinkLimit = defaultShrinkLimit });
 

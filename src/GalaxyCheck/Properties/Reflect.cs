@@ -14,7 +14,8 @@ namespace GalaxyCheck
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory = null,
-            IReadOnlyDictionary<int, IGen>? customGens = null)
+            IReadOnlyDictionary<int, IGen>? customGens = null,
+            object?[]? controlData = null)
         {
             if (MethodPropertyHandlers.TryGetValue(methodInfo.ReturnType, out var handler) == false)
             {
@@ -33,14 +34,15 @@ namespace GalaxyCheck
                 throw new Exception(message);
             }
 
-            return handler(methodInfo, target, genFactory, customGens);
+            return handler(methodInfo, target, genFactory, customGens, controlData);
         }
 
         public static AsyncProperty ReflectAsync(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory = null,
-            IReadOnlyDictionary<int, IGen>? customGens = null)
+            IReadOnlyDictionary<int, IGen>? customGens = null,
+            object?[]? controlData = null)
         {
             if (MethodPropertyHandlers.TryGetValue(methodInfo.ReturnType, out var handler) == false)
             {
@@ -51,12 +53,12 @@ namespace GalaxyCheck
                     throw new Exception(message);
                 }
 
-                return asyncHandler(methodInfo, target, genFactory, customGens);
+                return asyncHandler(methodInfo, target, genFactory, customGens, controlData);
             }
             else
             {
                 var asyncHandler = ToAsyncPropertyHandler(handler);
-                return asyncHandler(methodInfo, target, genFactory, customGens);
+                return asyncHandler(methodInfo, target, genFactory, customGens, controlData);
             }
         }
 
@@ -69,19 +71,21 @@ namespace GalaxyCheck
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
-            IReadOnlyDictionary<int, IGen>? customGens);
+            IReadOnlyDictionary<int, IGen>? customGens,
+            object?[]? controlData);
 
         private delegate AsyncProperty AsyncReflectedPropertyHandler(
             MethodInfo methodInfo,
             object? target,
             IGenFactory? genFactory,
-            IReadOnlyDictionary<int, IGen>? customGens);
+            IReadOnlyDictionary<int, IGen>? customGens,
+            object?[]? controlData);
 
         private static AsyncReflectedPropertyHandler ToAsyncPropertyHandler(ReflectedPropertyHandler handler)
         {
-            return (methodInfo, target, genFactory, customGens) =>
+            return (methodInfo, target, genFactory, customGens, controlData) =>
             {
-                var property = handler(methodInfo, target, genFactory, customGens);
+                var property = handler(methodInfo, target, genFactory, customGens, controlData);
                 return new AsyncProperty(property.Select(test => test.AsAsync()));
             };
         }
@@ -102,7 +106,7 @@ namespace GalaxyCheck
                 { typeof(AsyncProperty), ToReturnedAsyncProperty },
             }.ToImmutableDictionary();
 
-        private static ReflectedPropertyHandler ToVoidProperty => (methodInfo, target, genFactory, customGens) =>
+        private static ReflectedPropertyHandler ToVoidProperty => (methodInfo, target, genFactory, customGens, controlData) =>
         {
             return new Property(Gen
                 .Parameters(methodInfo, genFactory, customGens)
@@ -119,7 +123,7 @@ namespace GalaxyCheck
                 }));
         };
 
-        private static ReflectedPropertyHandler ToBooleanProperty => (methodInfo, target, genFactory, customGens) =>
+        private static ReflectedPropertyHandler ToBooleanProperty => (methodInfo, target, genFactory, customGens, controlData) =>
         {
             return new Property(Gen
                 .Parameters(methodInfo, genFactory, customGens)
@@ -136,16 +140,16 @@ namespace GalaxyCheck
                 }));
         };
 
-        private static ReflectedPropertyHandler ToReturnedProperty => (methodInfo, target, genFactory, customGens) =>
+        private static ReflectedPropertyHandler ToReturnedProperty => (methodInfo, target, genFactory, customGens, controlData) =>
         {
-            if (methodInfo.GetParameters().Any())
+            if (methodInfo.GetParameters().Any() && controlData is null)
             {
-                throw new Exception($"Parameters are not support for methods returning properties. Violating signature: \"{methodInfo}\"");
+                throw new Exception($"Parameters are not support for methods returning properties, unless control data is injected. Violating signature: \"{methodInfo}\"");
             }
 
             try
             {
-                return (Property)methodInfo.Invoke(target, new object[] {})!;
+                return (Property)methodInfo.Invoke(target, controlData ?? Array.Empty<object>())!;
             }
             catch (TargetInvocationException ex)
             {
@@ -153,7 +157,7 @@ namespace GalaxyCheck
             }
         };
 
-        private static AsyncReflectedPropertyHandler ToTaskProperty => (methodInfo, target, genFactory, customGens) =>
+        private static AsyncReflectedPropertyHandler ToTaskProperty => (methodInfo, target, genFactory, customGens, controlData) =>
         {
             return new AsyncProperty(Gen
                 .Parameters(methodInfo, genFactory, customGens)
@@ -170,7 +174,7 @@ namespace GalaxyCheck
                 }));
         };
 
-        private static AsyncReflectedPropertyHandler ToTaskBooleanProperty => (methodInfo, target, genFactory, customGens) =>
+        private static AsyncReflectedPropertyHandler ToTaskBooleanProperty => (methodInfo, target, genFactory, customGens, controlData) =>
         {
             return new AsyncProperty(Gen
                 .Parameters(methodInfo, genFactory, customGens)
@@ -187,16 +191,16 @@ namespace GalaxyCheck
                 }));
         };
 
-        private static AsyncReflectedPropertyHandler ToReturnedAsyncProperty => (methodInfo, target, genFactory, customGens) =>
+        private static AsyncReflectedPropertyHandler ToReturnedAsyncProperty => (methodInfo, target, genFactory, customGens, controlData) =>
         {
-            if (methodInfo.GetParameters().Any())
+            if (methodInfo.GetParameters().Any() && controlData is null)
             {
-                throw new Exception($"Parameters are not support for methods returning properties. Violating signature: \"{methodInfo}\"");
+                throw new Exception($"Parameters are not support for methods returning properties, unless control data is injected. Violating signature: \"{methodInfo}\"");
             }
 
             try
             {
-                return (AsyncProperty)methodInfo.Invoke(target, new object[] { })!;
+                return (AsyncProperty)methodInfo.Invoke(target, controlData ?? Array.Empty<object>())!;
             }
             catch (TargetInvocationException ex)
             {

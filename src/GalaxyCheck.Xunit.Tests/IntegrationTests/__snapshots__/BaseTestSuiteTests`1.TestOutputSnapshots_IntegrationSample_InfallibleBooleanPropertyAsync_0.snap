@@ -1,0 +1,14 @@
+﻿Outcome: Passed
+
+Output:
+
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[0]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[1]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[4]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[5]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[6]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[6]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[46]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[100]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[0]}
+{"testName":"InfallibleBooleanPropertyAsync","injectedValues":[58]}
