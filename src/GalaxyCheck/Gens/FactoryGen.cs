@@ -1,4 +1,7 @@
-﻿namespace GalaxyCheck
+﻿using System;
+using System.Reflection;
+
+namespace GalaxyCheck
 {
     using Gens;
 
@@ -11,6 +14,20 @@
         /// </summary>
         /// <returns>A factory for auto-generators.</returns>
         public static IGenFactory Factory() => new GenFactory();
+    }
+
+    public static partial class Extensions
+    {
+        /// <summary>
+        /// Creates an auto-generator for the given type, using the configuration that was specified on this factory.
+        /// </summary>
+        /// <returns>A generator for the given type.</returns>
+        public static IGen<object> Create(this IGenFactory factory, Type type, NullabilityInfo? nullabilityInfo = null)
+        {
+            var method = typeof(IGenFactory).GetMethod(nameof(IGenFactory.Create), BindingFlags.Public | BindingFlags.Instance);
+            var genericMethod = method.MakeGenericMethod(type);
+            return ((IGen)genericMethod.Invoke(obj: factory, new object?[] { nullabilityInfo })).Cast<object>();
+        }
     }
 }
 
