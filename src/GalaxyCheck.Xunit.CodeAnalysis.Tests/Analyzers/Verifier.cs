@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.IO;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
@@ -23,7 +24,12 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.Analyzers
         {
             var test = new CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier>()
             {
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+                ReferenceAssemblies = new ReferenceAssemblies(
+                    "net7.0",
+                    new PackageIdentity(
+                        "Microsoft.NETCore.App.Ref",
+                        "7.0.0"),
+                    Path.Combine("ref", "net7.0"))
             };
 
             foreach (var source in sources)

@@ -15,6 +15,7 @@ namespace GalaxyCheck.Runners.Replaying
 
         private static string EncodeExampleSpacePath(IEnumerable<int> exampleSpacePath) =>
             string.Join(":", exampleSpacePath.Select(EncodeInt));
+
         private static IEnumerable<int> DecodeExampleSpacePath(string str) =>
             str.Split(':').Where(x => x != "").Select(DecodeInt);
 
@@ -22,7 +23,7 @@ namespace GalaxyCheck.Runners.Replaying
         {
             using var msIn = new MemoryStream(Encoding.ASCII.GetBytes(str));
             using var msOut = new MemoryStream();
-            using var gzs = new GZipStream(msOut, CompressionMode.Compress);
+            using var gzs = new DeflateStream(msOut, CompressionMode.Compress);
 
             msIn.CopyTo(gzs);
             gzs.Close();
@@ -33,7 +34,7 @@ namespace GalaxyCheck.Runners.Replaying
         private static string DecompressString(string str)
         {
             using var msIn = new MemoryStream(Convert.FromBase64String(str));
-            using var gzs = new GZipStream(msIn, CompressionMode.Decompress);
+            using var gzs = new DeflateStream(msIn, CompressionMode.Decompress);
             using var msOut = new MemoryStream();
 
             gzs.CopyTo(msOut);

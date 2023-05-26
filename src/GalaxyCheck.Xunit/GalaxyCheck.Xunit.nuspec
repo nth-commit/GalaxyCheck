@@ -9,16 +9,17 @@
         <license type="expression">MIT</license>
         <tags>GalaxyCheck;Property-Based Testing;Test Framework;Xunit</tags>
         <dependencies>
-            <group targetFramework="net6.0">
-                <dependency id="xunit.extensibility.execution" version="2.4.1" exclude="Build,Analyzers" />
+            <group targetFramework="net7.0">
+                <dependency id="xunit.extensibility.execution" version="2.4.1"
+                    exclude="Build,Analyzers" />
                 <dependency id="GalaxyCheck" version="$PackageVersion$" exclude="Build,Analyzers" />
                 <dependency id="GalaxyCheck.Xunit.CodeAnalysis" version="$PackageVersion$" />
             </group>
         </dependencies>
     </metadata>
     <files>
-        <file src="bin\Release\net6.0\GalaxyCheck.Xunit.dll" target="lib\net6.0" />
-        <file src="bin\Release\net6.0\GalaxyCheck.Xunit.xml" target="lib\net6.0" />
-        <file src="bin\Release\net6.0\GalaxyCheck.Xunit.pdb" target="lib\net6.0" />
+        <file src="bin\Release\net7.0\GalaxyCheck.Xunit.dll" target="lib\net7.0" />
+        <file src="bin\Release\net7.0\GalaxyCheck.Xunit.xml" target="lib\net7.0" />
+        <file src="bin\Release\net7.0\GalaxyCheck.Xunit.pdb" target="lib\net7.0" />
     </files>
 </package>

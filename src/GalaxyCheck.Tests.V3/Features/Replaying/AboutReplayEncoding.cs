@@ -12,23 +12,23 @@ public class AboutReplayEncoding
         {
             {
                 0, 0, null, new[] { 0 },
-                "H4sIAAAAAAAACjPQM9AzAACGS1suBQAAAA=="
+                "M9Az0DMAAA=="
             },
             {
                 0, 0, null, new[] { 0, 0, 0, 0, 0, 0 },
-                "H4sIAAAAAAAACjPQM9AzsIJDALKWW5IPAAAA"
+                "M9Az0DOwgkMA"
             },
             {
                 0, 0, null, Enumerable.Range(0, 10).Select(_ => 0),
-                "H4sIAAAAAAAACjPQM9AzsMKAANukRbAXAAAA"
+                "M9Az0DOwwoAA"
             },
             {
                 0, 0, null, Enumerable.Range(0, 100).Select(_ => 0),
-                "H4sIAAAAAAAACjPQM9AzsBoWEAC35Wk5ywAAAA=="
+                "M9Az0DOwGhYQAA=="
             },
             {
                 int.MaxValue, 100, int.MaxValue, Enumerable.Range(0, 100),
-                "H4sIAAAAAAAACj2Qxw0EQQzDOlo4yIn9F3bzuq8ABSpco83WfG72GU6QiKIZlsOf6HjgiQsvvPHBFz/CiOcJIgkRRTQxxBJHGunki0xSZJFNDrnkIUOOAr1GoUKNBi06yiingkrqDSqqqaGWOtpop4NOWvTb2/TQSx9jjDPBJCOmmIczzDLHGutssMmKLbbZR7vsccY5F1xy4oprbrh3xn3xP+wHz39ZWzsBAAA="
+                "PZDHDQRBDMM6WjjIif0XdvO6rwAFKlyjzdZ8bvYZTpCIohmWw5/oeOCJCy+88cEXP8KI5wkiCRFFNDHEEkca6eSLTFJkkU0OueQhQ44CvUahQo0GLTrKKKeCSuoNKqqpoZY62ming05a9Nvb9NBLH2OMM8EkI6aYhzPMMsca62ywyYotttlHu+xxxjkXXHLiimtuuHfGffE/7Ac="
             },
         };
 
@@ -36,12 +36,6 @@ public class AboutReplayEncoding
     [MemberData(nameof(Data))]
     public void Examples(int seed, int size, int? seedWaypoint, IEnumerable<int> exampleSpacePath, string expectedEncoding)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
-        {
-            // TODO: Cross-platform support for this behaviour - I think this might be fixed in .NET 7
-            return;
-        }
-
         var replay = CreateReplay(seed, size, seedWaypoint, exampleSpacePath);
 
         var encoded = ReplayEncoding.Encode(replay);

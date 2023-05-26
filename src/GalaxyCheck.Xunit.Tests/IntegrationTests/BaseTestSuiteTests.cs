@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Snapshooter;
 using Snapshooter.Xunit;
 using Xunit;
@@ -24,12 +23,6 @@ public abstract class BaseTestSuiteTests<Fixture> : IClassFixture<Fixture>
     [Fact]
     public void TestOutputSnapshots()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
-        {
-            // TODO: Cross-platform support for this behaviour - I think this might be fixed in .NET 7
-            return;
-        }
-
         foreach (var (testName, testOutput) in _fixture.TestNameToTestResult)
         {
             Snapshot.Match(testOutput, SnapshotNameExtension.Create(_fixture.TestSuiteName, testName));

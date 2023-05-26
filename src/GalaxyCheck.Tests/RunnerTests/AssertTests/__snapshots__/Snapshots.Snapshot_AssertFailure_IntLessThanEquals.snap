@@ -1,5 +1,5 @@
 ﻿Falsified after 60 tests (34 shrinks)
-Reproduction: H4sIAAAAAAAACjMxNzE3BCJjPTNLPSMrEDQEQQADC63VGAAAAA==
+Reproduction: MzE3MTcEImM9M0s9IysQNARBAA==
 Counterexample: 1000
 
 Property function returned false

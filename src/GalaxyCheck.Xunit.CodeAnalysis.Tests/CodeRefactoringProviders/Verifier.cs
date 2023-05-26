@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.IO;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeRefactorings;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
@@ -24,15 +25,18 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.CodeRefactoringProviders
                 TestCode = code,
                 FixedCode = expectedRefactoredCode,
                 CodeActionValidationMode = CodeActionValidationMode.None,
-                CodeActionVerifier = (codeAction, verifier) =>
-                {
-                    verifier.Equal(codeAction.Title, expectedRefactoringTitle);
-                },
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+                CodeActionVerifier = (codeAction, verifier) => { verifier.Equal(codeAction.Title, expectedRefactoringTitle); },
+                ReferenceAssemblies = new ReferenceAssemblies(
+                    "net7.0",
+                    new PackageIdentity(
+                        "Microsoft.NETCore.App.Ref",
+                        "7.0.0"),
+                    Path.Combine("ref", "net7.0"))
             };
 
             test.ExpectedDiagnostics.Add(new DiagnosticResult("Refactoring", DiagnosticSeverity.Hidden)
-                .WithSpan(codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character, codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character));
+                .WithSpan(codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character, codeProvidingRefactorPosition.Line,
+                    codeProvidingRefactorPosition.Character));
 
             test.OffersEmptyRefactoring = true;
 
@@ -54,15 +58,18 @@ namespace GalaxyCheck.Xunit.CodeAnalysis.Tests.CodeRefactoringProviders
             {
                 TestCode = code,
                 FixedCode = code,
-                CodeActionVerifier = (codeAction, verifier) =>
-                {
-                    verifier.Fail("Expected code not to be refactored");
-                },
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+                CodeActionVerifier = (codeAction, verifier) => { verifier.Fail("Expected code not to be refactored"); },
+                ReferenceAssemblies = new ReferenceAssemblies(
+                    "net7.0",
+                    new PackageIdentity(
+                        "Microsoft.NETCore.App.Ref",
+                        "7.0.0"),
+                    Path.Combine("ref", "net7.0"))
             };
 
             test.ExpectedDiagnostics.Add(new DiagnosticResult("Refactoring", DiagnosticSeverity.Hidden)
-                .WithSpan(codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character, codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character));
+                .WithSpan(codeProvidingRefactorPosition.Line, codeProvidingRefactorPosition.Character, codeProvidingRefactorPosition.Line,
+                    codeProvidingRefactorPosition.Character));
 
             test.TestState.AdditionalReferences.AddRange(new[]
             {

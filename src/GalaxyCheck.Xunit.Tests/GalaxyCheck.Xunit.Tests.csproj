@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <LangVersion>10.0</LangVersion>
     <IsPackable>false</IsPackable>
     <RootNamespace>Tests</RootNamespace>
@@ -32,10 +32,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GalaxyCheck.Xunit\GalaxyCheck.Xunit.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="IntegrationTests\__snapshots__" />
   </ItemGroup>
 
 </Project>
