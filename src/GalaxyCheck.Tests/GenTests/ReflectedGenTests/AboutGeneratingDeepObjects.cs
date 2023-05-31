@@ -3,6 +3,7 @@ using GalaxyCheck;
 using NebulaCheck;
 using System;
 using System.Linq;
+using Xunit;
 using Property = NebulaCheck.Property;
 using Test = NebulaCheck.Test;
 
@@ -58,5 +59,20 @@ namespace Tests.V2.GenTests.ReflectedGenTests
                     .Throw<GalaxyCheck.Exceptions.GenErrorException>()
                     .WithGenErrorMessage("detected circular reference on type '*ClassWithRecursiveProperty' at path '$.Property'");
             });
+
+        [Fact]
+        public void ItCanHandleDeepErrors()
+        {
+            // Arrange
+            var gen = GalaxyCheck.Gen.Create<ClassWithOneNestedProperty>()
+                .OverrideMember(x => x.Property.Property, GalaxyCheck.Gen.Advanced.Error<object>("Error", "Error"));
+            
+            Action action = () => gen.SampleOne(seed: 0, size: 0);
+
+            action.Should()
+                .Throw<GalaxyCheck.Exceptions.GenErrorException>()
+                .WithMessage("Error while running generator Error at path '$.Property': Error");
+        }
+        
     }
 }
