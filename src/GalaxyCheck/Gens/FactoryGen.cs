@@ -24,9 +24,9 @@ namespace GalaxyCheck
         /// <returns>A generator for the given type.</returns>
         public static IGen<object> Create(this IGenFactory factory, Type type, NullabilityInfo? nullabilityInfo = null)
         {
-            var method = typeof(IGenFactory).GetMethod(nameof(IGenFactory.Create), BindingFlags.Public | BindingFlags.Instance);
+            var method = typeof(IGenFactory).GetMethod(nameof(IGenFactory.Create), BindingFlags.Public | BindingFlags.Instance)!;
             var genericMethod = method.MakeGenericMethod(type);
-            return ((IGen)genericMethod.Invoke(obj: factory, new object?[] { nullabilityInfo })).Cast<object>();
+            return ((IGen)genericMethod.Invoke(obj: factory, new object?[] { nullabilityInfo })!).Cast<object>();
         }
     }
 }

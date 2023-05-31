@@ -28,6 +28,28 @@ public static class TestProxy
         }
     }
 
+    public static void Assert<T>(this Property<T> property, Func<AssertPropertyArgs, AssertPropertyArgs>? configure = null)
+    {
+        var args = AssertPropertyArgs.Default;
+        if (configure != null)
+        {
+            args = configure(args);
+        }
+
+        // Rider can't handle static partial extensions :( Completely shits itself.
+        try
+        {
+            typeof(Extensions)
+                .GetMethod(nameof(Assert))!
+                .MakeGenericMethod(typeof(T))
+                .Invoke(null, new object?[] { property, args.Size, args.Seed, null, null, args.Replay, true, args.FormatReproduction, null });
+        }
+        catch (TargetInvocationException ex)
+        {
+            throw ex.InnerException!;
+        }
+    }
+
     public static CheckResult<object> Check(this PropertyProxy propertyProxy, Func<CheckPropertyArgs, CheckPropertyArgs>? configure = null)
     {
         var property = Property.ForAll(DummyGens.Object(), propertyProxy.TestFunction);
@@ -53,9 +75,9 @@ public static class TestProxy
     /// Samples a generator by traversing the example space. This is useful to ensure that not only the produced value satisfies some invariant, but
     /// also all shrunk values.
     /// </summary>
-    public static IReadOnlyCollection<T> Sample<T>(this IGen<T> gen, Func<SamplePropertyArgs, SamplePropertyArgs>? configure = null)
+    public static IReadOnlyCollection<T> Sample<T>(this IGen<T> gen, Func<SampleGenArgs, SampleGenArgs>? configure = null)
     {
-        var args = SamplePropertyArgs.Default;
+        var args = SampleGenArgs.Default;
         if (configure != null)
         {
             args = configure(args);
@@ -73,9 +95,14 @@ public static class TestProxy
         public static CheckPropertyArgs Default { get; } = new(0, null, null);
     }
 
-    public record SamplePropertyArgs(int Seed, int? Size, int MaxSampleSize)
+    public record AssertPropertyArgs(int Seed, int? Size, string? Replay, Func<string, string> FormatReproduction)
     {
-        public static SamplePropertyArgs Default { get; } = new(0, null, 100);
+        public static AssertPropertyArgs Default { get; } = new(0, null, null, _ => "<scrubbed>");
+    }
+
+    public record SampleGenArgs(int Seed, int? Size, int MaxSampleSize)
+    {
+        public static SampleGenArgs Default { get; } = new(0, null, 100);
     }
 }
 
