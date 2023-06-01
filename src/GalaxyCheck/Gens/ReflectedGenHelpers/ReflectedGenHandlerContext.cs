@@ -36,5 +36,17 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
                     return acc + curr;
                 }
             });
+
+        public static IGen<T> Error<T>(this ReflectedGenHandlerContext context, string message)
+        {
+            var suffix = context.Members.Count == 1 ? "" : $" at path '{context.MemberPath}'";
+            return Gen.Advanced.Error<T>(message + suffix);
+        }
+
+        public static IGen Error(this ReflectedGenHandlerContext context, Type type, string message)
+        {
+            var suffix = context.Members.Count == 1 ? "" : $" at path '{context.MemberPath}'";
+            return Gen.Advanced.Error(type, message + suffix);
+        }
     }
 }

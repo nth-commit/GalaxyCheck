@@ -15,7 +15,7 @@ public class AboutWhereOperator
             var filteredGen = baseGen.Where(testFunction);
 
             // Act
-            var sample = filteredGen.Sample(args => args with { Seed = seed, Size = size });
+            var sample = filteredGen.SampleTraversal(args => args with { Seed = seed, Size = size });
 
             // Assert
             sample.Should().OnlyContain(x => testFunction(x));
@@ -35,7 +35,7 @@ public class AboutWhereOperator
             var filteredGen = baseGen.Where(testFunction);
 
             // Act
-            var act = () => filteredGen.Sample(args => args with { Seed = seed, Size = size });
+            var act = () => filteredGen.SampleTraversal(args => args with { Seed = seed, Size = size });
 
             // Assert
             act.Should().NotThrow<Exceptions.GenExhaustionException>();

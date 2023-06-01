@@ -7,13 +7,6 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 {
     internal class DefaultConstructorReflectedGenHandler : IReflectedGenHandler
     {
-        private readonly ContextualErrorFactory _errorFactory;
-
-        public DefaultConstructorReflectedGenHandler(ContextualErrorFactory errorFactory)
-        {
-            _errorFactory = errorFactory;
-        }
-
         public bool CanHandleGen(Type type, ReflectedGenHandlerContext context)
         {
             if (IsStruct(type))
@@ -37,10 +30,10 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
             var genericMethodInfo = methodInfo.MakeGenericMethod(type);
 
-            return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context, _errorFactory })!;
+            return (IGen)genericMethodInfo.Invoke(null!, new object[] { innerHandler, context })!;
         }
 
-        private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context, ContextualErrorFactory errorFactory)
+        private static IGen<T> CreateGenGeneric<T>(IReflectedGenHandler innerHandler, ReflectedGenHandlerContext context)
         {
             return Gen
                 .Zip(
@@ -57,7 +50,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                     {
                         var innerEx = ex.InnerException;
                         var message = $"'{innerEx!.GetType()}' was thrown while calling constructor with message '{innerEx.Message}'";
-                        return errorFactory(message, context).Cast<T>();
+                        return context.Error<T>(message);
                     }
 
                     foreach (var setPropertyAction in x.Item1)
@@ -70,7 +63,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                         {
                             var innerEx = ex.InnerException;
                             var message = $"'{innerEx!.GetType()}' was thrown while setting property with message '{innerEx.Message}'";
-                            return errorFactory(message, context).Cast<T>();
+                            return context.Error<T>(message);
                         }
                     }
 
@@ -82,10 +75,11 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                     return Gen.Constant((T)instance);
                 });
         }
-        
+
         private delegate void SetMemberAction(ref object instance);
 
-        private static IEnumerable<IGen<SetMemberAction>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
+        private static IEnumerable<IGen<SetMemberAction>> CreateSetPropertyActionGens(IReflectedGenHandler innerHandler, Type type,
+            ReflectedGenHandlerContext parentContext)
         {
             var nullabilityInfoContext = new NullabilityInfoContext();
             return type
@@ -102,7 +96,8 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
                 });
         }
 
-        private static IEnumerable<IGen<SetMemberAction>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type, ReflectedGenHandlerContext parentContext)
+        private static IEnumerable<IGen<SetMemberAction>> CreateSetFieldActionGens(IReflectedGenHandler innerHandler, Type type,
+            ReflectedGenHandlerContext parentContext)
         {
             var nullabilityInfoContext = new NullabilityInfoContext();
             return type

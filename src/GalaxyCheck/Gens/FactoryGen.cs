@@ -229,7 +229,7 @@ namespace GalaxyCheck.Gens
                 var context = ReflectedGenHandlerContext.Create(typeof(T), NullabilityInfo);
 
                 return ReflectedGenBuilder
-                    .Build(typeof(T), RegisteredGensByType, MemberOverrides, Error, context)
+                    .Build(typeof(T), RegisteredGensByType, MemberOverrides, context)
                     .Cast<T>();
             }
         }

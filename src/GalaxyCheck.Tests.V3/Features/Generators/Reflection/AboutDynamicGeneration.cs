@@ -16,7 +16,7 @@ public class AboutDynamicGeneration
         var gen = Gen.Create(type);
 
         // Act
-        var sample = gen.Sample();
+        var sample = gen.SampleTraversal();
 
         // Assert
         sample.Should().AllBeAssignableTo(type);
