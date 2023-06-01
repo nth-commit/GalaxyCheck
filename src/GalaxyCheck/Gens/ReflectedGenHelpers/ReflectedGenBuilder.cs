@@ -11,30 +11,30 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
             Type type,
             IReadOnlyDictionary<Type, Func<IGen>> registeredGensByType,
             IReadOnlyList<ReflectedGenMemberOverride> memberOverrides,
-            ErrorFactory errorFactory,
             ReflectedGenHandlerContext context)
         {
-            ContextualErrorFactory contextualErrorFactory = (message, context) =>
-            {
-                var suffix = context.Members.Count() == 1 ? "" : $" at path '{context.MemberPath}'";
-                return errorFactory(message + suffix);
-            };
-
             var genFactoriesByPriority = new List<IReflectedGenHandler>
             {
                 new MemberOverrideReflectedGenHandler(memberOverrides),
                 new NullableGenHandler(),
-                new RegistryReflectedGenHandler(registeredGensByType, contextualErrorFactory),
+                new RegistryReflectedGenHandler(registeredGensByType),
                 new CollectionReflectedGenHandler(),
                 new ArrayReflectedGenHandler(),
                 new EnumReflectedGenHandler(),
-                new DefaultConstructorReflectedGenHandler(contextualErrorFactory),
-                new NonDefaultConstructorReflectedGenHandler(contextualErrorFactory),
+                new DefaultConstructorReflectedGenHandler(),
+                new NonDefaultConstructorReflectedGenHandler(),
             };
 
-            var compositeReflectedGenFactory = new CompositeReflectedGenHandler(genFactoriesByPriority, contextualErrorFactory);
+            var compositeReflectedGenFactory = new CompositeReflectedGenHandler(genFactoriesByPriority);
 
-            return compositeReflectedGenFactory.CreateGen(type, context);
+            try
+            {
+                return compositeReflectedGenFactory.CreateGen(type, context);
+            }
+            catch (Exception ex)
+            {
+                return Gen.Advanced.Error(type, $"{ex.Message} \n {ex.StackTrace}");
+            }
         }
     }
 }

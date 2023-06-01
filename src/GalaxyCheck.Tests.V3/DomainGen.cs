@@ -35,7 +35,7 @@ public static class DomainGen
     public static Stable.IGen<int> Size() =>
         Stable.Gen.Int32().Between(GalaxyCheck.Gens.Parameters.Size.Zero.Value, GalaxyCheck.Gens.Parameters.Size.Max.Value);
 
-    public static Stable.IGen<int> Seed() => Stable.Gen.Int32();
+    public static Stable.IGen<int> Seed() => Stable.Gen.Int32().NoShrink();
 
     public static Stable.IGen<int?> SeedWaypoint() => Seed().OrNullStruct();
 
@@ -43,4 +43,9 @@ public static class DomainGen
         from gen in metaGen
         from testFunction in TestFunctions.Unary<object>()
         select new Property((IGen<Property.Test<object>>)Property.ForAll<object>(gen, testFunction));
+
+    public class SeedAttribute : Stable.GenAttribute
+    {
+        public override Stable.IGen Value => Seed();
+    }
 }

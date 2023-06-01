@@ -7,14 +7,10 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
     internal class CompositeReflectedGenHandler : IReflectedGenHandler
     {
         private readonly IReadOnlyList<IReflectedGenHandler> _genHandlersByPriority;
-        private readonly ContextualErrorFactory _errorFactory;
 
-        public CompositeReflectedGenHandler(
-            IReadOnlyList<IReflectedGenHandler> genHandlersByPriority,
-            ContextualErrorFactory errorFactory)
+        public CompositeReflectedGenHandler(IReadOnlyList<IReflectedGenHandler> genHandlersByPriority)
         {
             _genHandlersByPriority = genHandlersByPriority;
-            _errorFactory = errorFactory;
         }
 
         public bool CanHandleGen(Type type, ReflectedGenHandlerContext context) =>
@@ -24,7 +20,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
         {
             if (context.TypeHistory.Skip(1).Any(t => t == type))
             {
-                return _errorFactory($"detected circular reference on type '{type}'", context);
+                return context.Error(type, $"detected circular reference on type '{type}'");
             }
 
             var gen = _genHandlersByPriority
@@ -34,7 +30,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
 
             if (gen == null)
             {
-                return _errorFactory($"could not resolve type '{type}'", context);
+                return context.Error(type, $"could not resolve type '{type}'");
             }
 
             return gen;

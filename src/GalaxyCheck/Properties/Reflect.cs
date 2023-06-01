@@ -24,11 +24,14 @@ namespace GalaxyCheck
                 var message = $"Return type is not supported by {nameof(Property)}.{nameof(Reflect)}.";
                 if (AsyncMethodPropertyHandlers.ContainsKey(methodInfo.ReturnType))
                 {
-                    message += $" Did you mean to use {nameof(Property)}.{nameof(ReflectAsync)}? Otherwise, please use one of: {supportedReturnTypesFormatted}.";
+                    message +=
+                        $" Did you mean to use {nameof(Property)}.{nameof(ReflectAsync)}? Otherwise, please use one of: {supportedReturnTypesFormatted}.";
                 }
-                else { 
+                else
+                {
                     message += $" Please use one of: {supportedReturnTypesFormatted}.";
                 }
+
                 message += $" Return type was: {methodInfo.ReturnType}.";
 
                 throw new Exception(message);
@@ -48,8 +51,10 @@ namespace GalaxyCheck
             {
                 if (AsyncMethodPropertyHandlers.TryGetValue(methodInfo.ReturnType, out var asyncHandler) == false)
                 {
-                    var supportedReturnTypesFormatted = FormatSupportReturnTypes(Enumerable.Concat(MethodPropertyHandlers.Keys, AsyncMethodPropertyHandlers.Keys));
-                    var message = $"Return type is not supported by {nameof(Property)}.{nameof(ReflectAsync)}. Please use one of: {supportedReturnTypesFormatted}. Return type was: {methodInfo.ReturnType}.";
+                    var supportedReturnTypesFormatted =
+                        FormatSupportReturnTypes(Enumerable.Concat(MethodPropertyHandlers.Keys, AsyncMethodPropertyHandlers.Keys));
+                    var message =
+                        $"Return type is not supported by {nameof(Property)}.{nameof(ReflectAsync)}. Please use one of: {supportedReturnTypesFormatted}. Return type was: {methodInfo.ReturnType}.";
                     throw new Exception(message);
                 }
 
@@ -112,14 +117,11 @@ namespace GalaxyCheck
                 .Parameters(methodInfo, genFactory, customGens)
                 .ForAll(parameters =>
                 {
-                    try
+                    SafeInvoke(() =>
                     {
                         methodInfo.Invoke(target, parameters);
-                    }
-                    catch (TargetInvocationException ex)
-                    {
-                        throw ex.InnerException!;
-                    }
+                        return 0;
+                    });
                 }));
         };
 
@@ -144,7 +146,8 @@ namespace GalaxyCheck
         {
             if (methodInfo.GetParameters().Any() && controlData is null)
             {
-                throw new Exception($"Parameters are not support for methods returning properties, unless control data is injected. Violating signature: \"{methodInfo}\"");
+                throw new Exception(
+                    $"Parameters are not support for methods returning properties, unless control data is injected. Violating signature: \"{methodInfo}\"");
             }
 
             try
@@ -195,7 +198,8 @@ namespace GalaxyCheck
         {
             if (methodInfo.GetParameters().Any() && controlData is null)
             {
-                throw new Exception($"Parameters are not support for methods returning properties, unless control data is injected. Violating signature: \"{methodInfo}\"");
+                throw new Exception(
+                    $"Parameters are not support for methods returning properties, unless control data is injected. Violating signature: \"{methodInfo}\"");
             }
 
             try
@@ -207,5 +211,33 @@ namespace GalaxyCheck
                 throw ex.InnerException!;
             }
         };
+
+        private static T SafeInvoke<T>(Func<T> invoke)
+        {
+            try
+            {
+                return invoke();
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw Unwrap(ex);
+            }
+        }
+
+        private static Exception Unwrap(TargetInvocationException ex)
+        {
+            var nextEx = ex.InnerException;
+            if (nextEx is null)
+            {
+                return ex;
+            }
+
+            if (nextEx is TargetInvocationException nextTargetInvocationEx)
+            {
+                return Unwrap(nextTargetInvocationEx);
+            }
+
+            return nextEx;
+        }
     }
 }
