@@ -49,6 +49,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers.ReflectedGenHandlers
             { typeof(HashSet<>), nameof(CreateHashSetGen) },
             { typeof(ISet<>), nameof(CreateHashSetGen) },
             { typeof(ImmutableHashSet<>), nameof(CreateImmutableHashSetGen) },
+            { typeof(ICollection<>), nameof(CreateListGen) }
         };
 
         private static IGen<IReadOnlyList<T>> CreateIReadOnlyListGen<T>(IGen<T> elementGen) => elementGen.ListOf();
