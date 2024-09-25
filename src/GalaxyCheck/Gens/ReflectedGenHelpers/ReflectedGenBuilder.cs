@@ -19,6 +19,7 @@ namespace GalaxyCheck.Gens.ReflectedGenHelpers
                 new NullableGenHandler(),
                 new RegistryReflectedGenHandler(registeredGensByType),
                 new CollectionReflectedGenHandler(),
+                new DictionaryReflectedGenHandler(),
                 new ArrayReflectedGenHandler(),
                 new EnumReflectedGenHandler(),
                 new DefaultConstructorReflectedGenHandler(),
